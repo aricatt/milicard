@@ -1,0 +1,1124 @@
+[
+    {
+        "type": "Table",
+        "element_id": "d9ebff61d4fa0e22f1053c38f4744622",
+        "text": "编号 直播间号 备注",
+        "metadata": {
+            "page_name": "直播间档案",
+            "page_number": 1,
+            "text_as_html": "<table><tr><td>编号</td><td>直播间号</td><td>备注</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "4ea3ebf188930549d7c3a31fda2a7842",
+        "text": "自动生成 有几个直播间我们新增直播间号：例如直播间一，供后面仓位的选择",
+        "metadata": {
+            "page_name": "直播间档案",
+            "page_number": 1,
+            "text_as_html": "<table><tr><td>自动生成</td><td>有几个直播间我们新增直播间号：例如直播间一，供后面仓位的选择</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "183f0c12801ac5ab05ae6c69bc266f5d",
+        "text": "编号 名称 位置 备注 自动生成 505 自动生成 506",
+        "metadata": {
+            "page_name": "直播间档案",
+            "page_number": 1,
+            "text_as_html": "<table><tr><td>编号</td><td>名称</td><td>位置</td><td>备注</td></tr><tr><td>自动生成</td><td/><td>505</td><td/></tr><tr><td>自动生成</td><td/><td>506</td><td/></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "66d2a7ba9014a5e082ac81593047df24",
+        "text": "编号 主播名称 备注",
+        "metadata": {
+            "page_name": "主播档案",
+            "page_number": 2,
+            "text_as_html": "<table><tr><td>编号</td><td>主播名称</td><td>备注</td></tr></table>",
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "61f0f68439435c48e136cd30a6c5234d",
+        "text": "自动生成 有几个主播我们新增：例如欧皇蛙拆卡（来财版），供后面调货利润等表选择",
+        "metadata": {
+            "page_name": "主播档案",
+            "page_number": 2,
+            "text_as_html": "<table><tr><td>自动生成</td><td>有几个主播我们新增：例如欧皇蛙拆卡（来财版），供后面调货利润等表选择</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "6679bf15321ae039b924df235f871a6b",
+        "text": "编号 仓库名称 仓库位置 备注",
+        "metadata": {
+            "page_name": "仓库管理",
+            "page_number": 3,
+            "text_as_html": "<table><tr><td>编号</td><td>仓库名称</td><td>仓库位置</td><td>备注</td></tr></table>",
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "008588550651a5b496b91b5560e9a804",
+        "text": "编号 单位",
+        "metadata": {
+            "page_name": "产品单位",
+            "page_number": 4,
+            "text_as_html": "<table><tr><td>编号</td><td>单位</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "7e478a8041ba6d5b793d82216d62f7f9",
+        "text": "自动生成 我们手动新增，例如箱、盒、包、抽，供后面箱规选择",
+        "metadata": {
+            "page_name": "产品单位",
+            "page_number": 4,
+            "text_as_html": "<table><tr><td>自动生成</td><td>我们手动新增，例如箱、盒、包、抽，供后面箱规选择</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "4d2fde679f2efc8f5c3cd2e3c24e538f",
+        "text": "商品编码 商品名称 箱规 厂家 零售价 自动生成 手动填 1箱有几盒 1盒有几包/几抽 手动填 手动填",
+        "metadata": {
+            "page_name": "商品（规格）",
+            "page_number": 5,
+            "text_as_html": "<table><tr><td>商品编码</td><td>商品名称</td><td>箱规</td><td/><td>厂家</td><td>零售价</td></tr><tr><td>自动生成</td><td>手动填</td><td>1箱有几盒</td><td>1盒有几包/几抽</td><td>手动填</td><td>手动填</td></tr></table>",
+            "languages": [
+                "kor",
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "69c248959012ae674fa73ede7f6d8158",
+        "text": "我们手动填数字，",
+        "metadata": {
+            "page_name": "商品（规格）",
+            "page_number": 5,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "48b0b5581ab3b9f8a40fc5e928e1af36",
+        "text": "编号 商品名称 箱规（盒/箱） 盒规（包/盒） 厂家 零售价（元） 一级 二级 三级 20250619001 百闻牌第四弹 24 6 编号 商品名称 数量 单位（规格） 数量 单位（箱规） 数量 单位（盒规） 厂家 零售价（元） 20250619001 百闻牌四弹 填写 选择 填写 选择 填写 选择 填写 填写 20250619001 百闻牌四弹 1 箱 24 盒 6 包 4200 喜羊羊吧唧 1 箱 36 件 1 个",
+        "metadata": {
+            "page_name": "商品（规格）",
+            "page_number": 5,
+            "text_as_html": "<table><tr><td>编号</td><td>商品名称</td><td>箱规（盒/箱）</td><td>盒规（包/盒）</td><td>厂家</td><td>零售价（元）</td><td/><td/><td/><td>一级</td><td/><td>二级</td><td/><td>三级</td><td/><td/><td/></tr><tr><td>20250619001</td><td>百闻牌第四弹</td><td>24</td><td>6</td><td/><td/><td/><td>编号</td><td>商品名称</td><td>数量</td><td>单位（规格）</td><td>数量</td><td>单位（箱规）</td><td>数量</td><td>单位（盒规）</td><td>厂家</td><td>零售价（元）</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td>20250619001</td><td>百闻牌四弹</td><td>填写</td><td>选择</td><td>填写</td><td>选择</td><td>填写</td><td>选择</td><td>填写</td><td>填写</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td>20250619001</td><td>百闻牌四弹</td><td>1</td><td>箱</td><td>24</td><td>盒</td><td>6</td><td>包</td><td/><td>4200</td></tr><tr><td/><td/><td/><td/><td/><td/><td/><td/><td>喜羊羊吧唧</td><td>1</td><td>箱</td><td>36</td><td>件</td><td>1</td><td>个</td><td/><td/></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "69c248959012ae674fa73ede7f6d8158",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "f70c7846c7e45548f5a465e5aa86b9fc",
+        "text": "编号 供应商名称 备注",
+        "metadata": {
+            "page_name": "供应商档案",
+            "page_number": 6,
+            "text_as_html": "<table><tr><td>编号</td><td>供应商名称</td><td>备注</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "69c248959012ae674fa73ede7f6d8158",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "490ab942400563a9bba69526e8eab75a",
+        "text": "自动生成 我们手动新增",
+        "metadata": {
+            "page_name": "供应商档案",
+            "page_number": 6,
+            "text_as_html": "<table><tr><td>自动生成</td><td>我们手动新增</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "69c248959012ae674fa73ede7f6d8158",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "486ae7793e298ab5a7c666bad4fcff6e",
+        "text": "老板，财务可看部分",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "5fac4491fd24acf328e0a331c70accb4",
+        "text": "商品编码 产品名称 单位 数量 零售价 拿货价 折扣 拿货单价\\n 一包拿货单价\\n 一抽拿货单价\\n 金额（CNY） 采购日期 供应商 是否付款 付款日期 付款金额 未付款金额 到货数量 到货时间 到货仓位 到货差",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "text_as_html": "<table><tr><td>商品编码</td><td>产品名称</td><td>单位</td><td>数量</td><td>零售价</td><td>拿货价</td><td>折扣</td><td>拿货单价\\n</td><td>一包拿货单价\\n</td><td>一抽拿货单价\\n</td><td>金额（CNY）</td><td>采购日期</td><td>供应商</td><td>是否付款</td><td>付款日期</td><td>付款金额</td><td>未付款金额</td><td>到货数量</td><td>到货时间</td><td>到货仓位</td><td>到货差</td></tr></table>",
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "486ae7793e298ab5a7c666bad4fcff6e",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "1da6cb5c05d5f5d56c2cc31ea8d461b2",
+        "text": "根据选择的商品名称自动跳转 选择商品库里的商品 提供选择项箱/盒/包（产品规格表中的） 手动填 根据商品库的数据，选择产品名称自动匹配 手动填 有公式=拿货价/零售价 公式=拿货价/这个商品在商品库里填的一箱有几盒 公式=一盒拿货价/这个商品在商品库里填的1盒有几包 公式=一箱拿货价/这个商品在商品库里填的1箱有几抽 公式=拿货价*拿货数量 手动填，有日期可选择 供应商档案可供选择 有选项是/否 手动填，有日期可选择 手动填 公式=J列金额-付款金额 手动填 手动填，有日期可选择 直播间档案表里数据仓位可选择 公式=拿货数量-到货数量",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "text_as_html": "<table><tr><td>根据选择的商品名称自动跳转</td><td>选择商品库里的商品</td><td>提供选择项箱/盒/包（产品规格表中的）</td><td>手动填</td><td>根据商品库的数据，选择产品名称自动匹配</td><td>手动填</td><td>有公式=拿货价/零售价</td><td>公式=拿货价/这个商品在商品库里填的一箱有几盒</td><td>公式=一盒拿货价/这个商品在商品库里填的1盒有几包</td><td>公式=一箱拿货价/这个商品在商品库里填的1箱有几抽</td><td>公式=拿货价*拿货数量</td><td>手动填，有日期可选择</td><td>供应商档案可供选择</td><td>有选项是/否</td><td>手动填，有日期可选择</td><td>手动填</td><td>公式=J列金额-付款金额</td><td>手动填</td><td>手动填，有日期可选择</td><td>直播间档案表里数据仓位可选择</td><td>公式=拿货数量-到货数量</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "486ae7793e298ab5a7c666bad4fcff6e",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "b3c3ec8eae364917e4a2f2209fd99330",
+        "text": "001 百闻牌四弹 盒 36 4200 2800 0.666667 116.666667 百闻牌四弹 盒 100 4200 3000 0.714286 20.833333 可输入多条，有一条采购是分几次到货的，只至到货差为0时不可再填",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "text_as_html": "<table><tr><td>001</td><td>百闻牌四弹</td><td>盒</td><td>36</td><td>4200</td><td>2800</td><td>0.666667</td><td>116.666667</td><td/><td/><td/><td/><td/><td/><td/><td/><td/><td/></tr><tr><td/><td>百闻牌四弹</td><td>盒</td><td>100</td><td>4200</td><td>3000</td><td>0.714286</td><td>20.833333</td><td/><td/><td/><td/><td/><td/><td/><td/><td/><td>可输入多条，有一条采购是分几次到货的，只至到货差为0时不可再填</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "486ae7793e298ab5a7c666bad4fcff6e",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "97230d38e622710361ec4e259fff402e",
+        "text": "运营，仓管可看部分",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "edc00729dc6384558b5f605cf7ce1c4e",
+        "text": "商品编码 产品名称 拿货单位 拿货数量 采购日期 供应商 到货数量 到货时间 到货仓位 到货差",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "text_as_html": "<table><tr><td>商品编码</td><td>产品名称</td><td>拿货单位</td><td>拿货数量</td><td>采购日期</td><td>供应商</td><td>到货数量</td><td>到货时间</td><td>到货仓位</td><td/><td>到货差</td></tr></table>",
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "97230d38e622710361ec4e259fff402e",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "5ed9bc1c54f1d891b58af722b09e20b6",
+        "text": "根据选择的商品名称自动跳转 选择商品库里的商品 提供选择项箱/盒/包（产品规格表中的） 手动填 手动填 供应商档案可供选择 手动填 手动填，有日期可选择 直播间档案表里数据仓位可选择 公式=拿货数量-到货数量",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "text_as_html": "<table><tr><td>根据选择的商品名称自动跳转</td><td>选择商品库里的商品</td><td>提供选择项箱/盒/包（产品规格表中的）</td><td>手动填</td><td>手动填</td><td>供应商档案可供选择</td><td>手动填</td><td>手动填，有日期可选择</td><td>直播间档案表里数据仓位可选择</td><td/><td>公式=拿货数量-到货数量</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "97230d38e622710361ec4e259fff402e",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "dc36e5cb6654dcf7c3d457b00839aace",
+        "text": "可输入多条，有一条采购是分几次到货的，只至到货差为0时不可再填",
+        "metadata": {
+            "page_name": "采购到货表",
+            "page_number": 7,
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "971174daf285d26cadff4169525afa2b",
+        "text": "调出仓位 调出主播 产品名称 厂家 单位 数量 调入仓位 调入主播 调货时间 备注 直播间档案表里数据仓位可选择 可选择主播档案里的主播 可选择商品库的名称 根据产品名称在产品库里对应的供应商自动跳转 提供选择项箱/盒/包（产品规格表中的） 手动填 直播间档案表里数据仓位可选择 可选择主播档案里的主播 手动填，有日期可选择 手动填，不填也可保存",
+        "metadata": {
+            "page_name": "调货",
+            "page_number": 8,
+            "text_as_html": "<table><tr><td>调出仓位</td><td>调出主播</td><td>产品名称</td><td>厂家</td><td>单位</td><td>数量</td><td>调入仓位</td><td>调入主播</td><td>调货时间</td><td>备注</td></tr><tr><td>直播间档案表里数据仓位可选择</td><td>可选择主播档案里的主播</td><td>可选择商品库的名称</td><td>根据产品名称在产品库里对应的供应商自动跳转</td><td>提供选择项箱/盒/包（产品规格表中的）</td><td>手动填</td><td>直播间档案表里数据仓位可选择</td><td>可选择主播档案里的主播</td><td>手动填，有日期可选择</td><td>手动填，不填也可保存</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "dc36e5cb6654dcf7c3d457b00839aace",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "ff5a13de4d60c2e3bc214a68995902ad",
+        "text": "可导入表格，可手动一条一条填",
+        "metadata": {
+            "page_name": "调货",
+            "page_number": 8,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "6b076724cc178e5fb4f870921b18599a",
+        "text": "老板、财务可看全部",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "545183a97aa4f55f61a900aca3a26c79",
+        "text": "日期 直播间仓位 主播 商品名称 期初数量 到货数量 调入数量 调出数量 期末数量 消耗数量 单价 消耗金额",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "text_as_html": "<table><tr><td>日期</td><td>直播间仓位</td><td>主播</td><td>商品名称</td><td>期初数量</td><td/><td/><td>到货数量</td><td/><td/><td>调入数量</td><td/><td/><td>调出数量</td><td/><td/><td>期末数量</td><td/><td/><td>消耗数量</td><td/><td/><td>单价</td><td/><td/><td>消耗金额</td></tr></table>",
+            "languages": [
+                "kor",
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "6b076724cc178e5fb4f870921b18599a",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "cd6b1ca2e177a7c9e6495741e1f5ee5f",
+        "text": "箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 手动填，有日期可选择 选择直播间档案表里的 可选择主播档案里的主播 可选择商品库里的名称 最开始的期初是我们手动填，后续的是前一天的期末 根据采购到货表里的到货时间→到货仓位（=直播间物理位置）→商品名称所对应的箱数 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的包数 对应调货表里的日期→调入仓位→调入主播，主动计算 对应调货表里的日期→调出仓位→调出主播，主动计算 手动填写直播间库存 公式=期初箱数+调入箱数-调出箱数-期末箱数 公式=期初盒数+调入盒数-调出盒数-期末盒数 公式=期初包数+调入包数-调出包数-期末包数 采购到货表中对应的商品名称自动跳转后面的箱单价 采购到货表中对应的商品名称自动跳转后面的盒单价 采购到货表中对应的商品名称自动跳转后面的包单价 公式=消耗的箱数*商品的单价+消耗的盒数*盒单价+消耗的包数*包单价",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "text_as_html": "<table><tr><td/><td/><td/><td/><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td/></tr><tr><td>手动填，有日期可选择</td><td>选择直播间档案表里的</td><td>可选择主播档案里的主播</td><td>可选择商品库里的名称</td><td>最开始的期初是我们手动填，后续的是前一天的期末</td><td/><td/><td>根据采购到货表里的到货时间→到货仓位（=直播间物理位置）→商品名称所对应的箱数</td><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数</td><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的包数</td><td>对应调货表里的日期→调入仓位→调入主播，主动计算</td><td/><td/><td>对应调货表里的日期→调出仓位→调出主播，主动计算</td><td/><td/><td>手动填写直播间库存</td><td/><td/><td>公式=期初箱数+调入箱数-调出箱数-期末箱数</td><td>公式=期初盒数+调入盒数-调出盒数-期末盒数</td><td>公式=期初包数+调入包数-调出包数-期末包数</td><td>采购到货表中对应的商品名称自动跳转后面的箱单价</td><td>采购到货表中对应的商品名称自动跳转后面的盒单价</td><td>采购到货表中对应的商品名称自动跳转后面的包单价</td><td>公式=消耗的箱数*商品的单价+消耗的盒数*盒单价+消耗的包数*包单价</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "6b076724cc178e5fb4f870921b18599a",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "170df729a9138a0229717af711e8c5e8",
+        "text": "下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "text_as_html": "<table><tr><td>下面有合计数</td><td/><td/><td/><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "6b076724cc178e5fb4f870921b18599a",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "3ef0830ce8ef28eb15ddfe3afa45e701",
+        "text": "有日期可供选择，后续查6.1-6.2，就可以看到这个期间的数据，",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "ef6c34a1a79f9d58aa91fb87d9a3c068",
+        "text": "运营、仓管可看数据",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "2653ab7740bcdfe0627adec069fbb976",
+        "text": "日期 直播间物理地址 直播间名称 商品名称 期初数量 到货数量 调入数量 调出数量 期末数量 消耗数量",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "text_as_html": "<table><tr><td>日期</td><td>直播间物理地址</td><td>直播间名称</td><td>商品名称</td><td>期初数量</td><td/><td/><td>到货数量</td><td/><td/><td>调入数量</td><td/><td/><td>调出数量</td><td/><td/><td>期末数量</td><td/><td/><td>消耗数量</td></tr></table>",
+            "languages": [
+                "kor",
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "ef6c34a1a79f9d58aa91fb87d9a3c068",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "4e1989543938452f504ba786219f37ba",
+        "text": "箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 手动填，有日期可选择 选择直播间档案表里的 可选择主播档案里的主播 可选择商品库里的名称 最开始的期初是我们手动填，后续的是前一天的期末 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的箱数 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的包数 对应调货表里的日期→调入仓位→调入主播，主动计算 对应调货表里的日期→调出仓位→调出主播，主动计算 手动填写直播间库存 公式=期初箱数+调入箱数-调出箱数-期末箱数 公式=期初盒数+调入盒数-调出盒数-期末盒数 公式=期初包数+调入包数-调出包数-期末包数",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "text_as_html": "<table><tr><td/><td/><td/><td/><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td></tr><tr><td>手动填，有日期可选择</td><td>选择直播间档案表里的</td><td>可选择主播档案里的主播</td><td>可选择商品库里的名称</td><td>最开始的期初是我们手动填，后续的是前一天的期末</td><td/><td/><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的箱数</td><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数</td><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的包数</td><td>对应调货表里的日期→调入仓位→调入主播，主动计算</td><td/><td/><td>对应调货表里的日期→调出仓位→调出主播，主动计算</td><td/><td/><td>手动填写直播间库存</td><td/><td/><td>公式=期初箱数+调入箱数-调出箱数-期末箱数</td><td>公式=期初盒数+调入盒数-调出盒数-期末盒数</td><td>公式=期初包数+调入包数-调出包数-期末包数</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "ef6c34a1a79f9d58aa91fb87d9a3c068",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "c9311ca4866a4faf0984ecca26fcb113",
+        "text": "下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "text_as_html": "<table><tr><td>下面有合计数</td><td/><td/><td/><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "ef6c34a1a79f9d58aa91fb87d9a3c068",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "6934860096c7de7d18e336183f4be39d",
+        "text": "有日期可供选择，后续查6.1-6.2，就可以看到这个期间的数据，",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "34dce4ae5e77ba12d2599040098ee464",
+        "text": " ",
+        "metadata": {
+            "page_name": "直播间库存及消耗",
+            "page_number": 9,
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "3d0dacd461f0c89af59a05853b90937f",
+        "text": "老板、财务可看全部",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "3b8d357bfceac3ce661f870039419be7",
+        "text": "日期 直播间物理地址 商品名称 期初 到货数量 调入数量 调出数量 期末数量 消耗数量 单价",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "text_as_html": "<table><tr><td>日期</td><td>直播间物理地址</td><td>商品名称</td><td>期初</td><td/><td/><td>到货数量</td><td/><td/><td>调入数量</td><td/><td/><td>调出数量</td><td/><td/><td>期末数量</td><td/><td/><td>消耗数量</td><td/><td/><td>单价</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "3d0dacd461f0c89af59a05853b90937f",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "ff428a8a82ef5768f5bb5a59fe459f5c",
+        "text": "金额",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "f041cc66b1b216beddd1943ab6db6e49",
+        "text": "箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 手动填，有日期可选择 选择直播间档案表里的 可选择商品库里的名称 最开始的期初是我们手动填，后续的是前一天的期末 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的箱数 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数 根据采购到货表里的到货时间-到货仓位（=直播间屋里位置）-商品名称所对应的包数 对应调货表里的日期-调入仓位-调入主播，主动计算 对应调货表里的日期-调出仓位-调出主播，主动计算 公式=期初+到货+调入-调出 先算完期末数量，消耗=期初数量+到货数量+调入数量-期末数量 采购到货表中对应的商品名称自动跳转后面的箱单价 采购到货表中对应的商品名称自动跳转后面的盒单价 采购到货表中对应的商品名称自动跳转后面的包单价 公式=消耗的箱数*商品的单价+消耗的盒数*盒单价+消耗的包数*包单价",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "text_as_html": "<table><tr><td/><td/><td/><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td/></tr><tr><td>手动填，有日期可选择</td><td>选择直播间档案表里的</td><td>可选择商品库里的名称</td><td>最开始的期初是我们手动填，后续的是前一天的期末</td><td/><td/><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的箱数</td><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数</td><td>根据采购到货表里的到货时间-到货仓位（=直播间屋里位置）-商品名称所对应的包数</td><td>对应调货表里的日期-调入仓位-调入主播，主动计算</td><td/><td/><td>对应调货表里的日期-调出仓位-调出主播，主动计算</td><td/><td/><td>公式=期初+到货+调入-调出</td><td/><td/><td>先算完期末数量，消耗=期初数量+到货数量+调入数量-期末数量</td><td/><td/><td>采购到货表中对应的商品名称自动跳转后面的箱单价</td><td>采购到货表中对应的商品名称自动跳转后面的盒单价</td><td>采购到货表中对应的商品名称自动跳转后面的包单价</td><td>公式=消耗的箱数*商品的单价+消耗的盒数*盒单价+消耗的包数*包单价</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "ff428a8a82ef5768f5bb5a59fe459f5c",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "4b01465efe0a0b31afd3bcc16e52ba43",
+        "text": "下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "text_as_html": "<table><tr><td>下面有合计数</td><td/><td/><td/><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "ff428a8a82ef5768f5bb5a59fe459f5c",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "ee9c28be7feb2a73f8347ac12f54aaf5",
+        "text": "有日期可供选择，后续查6.1-6.2，就可以看到这个期间的数据，",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "cda60911a065f55f969516fadae4868d",
+        "text": "运营、仓管可看部分",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "76093fa54d4f9b1b4bc1150356b2868a",
+        "text": "日期 直播间物理地址 商品名称 期初数量 到货数量 调入数量 调出数量 期末数量 消耗数量",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "text_as_html": "<table><tr><td>日期</td><td>直播间物理地址</td><td>商品名称</td><td>期初数量</td><td/><td/><td>到货数量</td><td/><td/><td>调入数量</td><td/><td/><td>调出数量</td><td/><td/><td>期末数量</td><td/><td/><td>消耗数量</td></tr></table>",
+            "languages": [
+                "kor",
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "cda60911a065f55f969516fadae4868d",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "8ac5249a5d236ea19a7daeddf1952042",
+        "text": "箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 箱 盒 包 手动填，有日期可选择 选择直播间档案表里的 可选择商品库里的名称 最开始的期初是我们手动填，后续的是前一天的期末 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的箱数 根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数 根据采购到货表里的到货时间-到货仓位（=直播间屋里位置）-商品名称所对应的包数 对应调货表里的日期-调入仓位-调入主播，主动计算 对应调货表里的日期-调出仓位-调出主播，主动计算 公式=期初+到货+调入-调出 先算完期末数量，消耗=期初数量+到货数量+调入数量-期末数量",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "text_as_html": "<table><tr><td/><td/><td/><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td><td>箱</td><td>盒</td><td>包</td></tr><tr><td>手动填，有日期可选择</td><td>选择直播间档案表里的</td><td>可选择商品库里的名称</td><td>最开始的期初是我们手动填，后续的是前一天的期末</td><td/><td/><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的箱数</td><td>根据采购到货表里的到货时间→到货仓位（=直播间屋里位置）→商品名称所对应的盒数</td><td>根据采购到货表里的到货时间-到货仓位（=直播间屋里位置）-商品名称所对应的包数</td><td>对应调货表里的日期-调入仓位-调入主播，主动计算</td><td/><td/><td>对应调货表里的日期-调出仓位-调出主播，主动计算</td><td/><td/><td>公式=期初+到货+调入-调出</td><td/><td/><td>先算完期末数量，消耗=期初数量+到货数量+调入数量-期末数量</td><td/><td/></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "cda60911a065f55f969516fadae4868d",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "aa2dbe462924c85bb9f1b016248d63e6",
+        "text": "下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "text_as_html": "<table><tr><td>下面有合计数</td><td/><td/><td/><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td><td/><td/><td>下面有合计数</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "cda60911a065f55f969516fadae4868d",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "bcf76b3ef8181aac9b7bb40013541adc",
+        "text": "有日期可供选择，后续查6.1-6.2，就可以看到这个期间的数据，",
+        "metadata": {
+            "page_name": "总仓公共仓的库存",
+            "page_number": 10,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "4126260319cc49a4745db8746eafb379",
+        "text": "日期 主播名称 走平台GMV 退款金额 走水金额 当日销售额 实际消耗货值 投流费用 平台扣点 利润 毛利率 手动填，有日期可选择 可选择主播档案里的主播 手动填 手动填 手动填 有公式=走平台GMV+走水金额-退款金额 根据日期+主播名称匹配直播间库存及消耗表中的消耗金额 手动填 公式=（走平台GMV-退款金额）*扣点点数 公式=当日销售额-实际消耗货值-投流费用-平台扣点 公式=利润/当日销售额",
+        "metadata": {
+            "page_name": "直播间利润",
+            "page_number": 11,
+            "text_as_html": "<table><tr><td>日期</td><td>主播名称</td><td>走平台GMV</td><td>退款金额</td><td>走水金额</td><td>当日销售额</td><td>实际消耗货值</td><td>投流费用</td><td>平台扣点</td><td>利润</td><td>毛利率</td></tr><tr><td>手动填，有日期可选择</td><td>可选择主播档案里的主播</td><td>手动填</td><td>手动填</td><td>手动填</td><td>有公式=走平台GMV+走水金额-退款金额</td><td>根据日期+主播名称匹配直播间库存及消耗表中的消耗金额</td><td>手动填</td><td>公式=（走平台GMV-退款金额）*扣点点数</td><td>公式=当日销售额-实际消耗货值-投流费用-平台扣点</td><td>公式=利润/当日销售额</td></tr></table>",
+            "languages": [
+                "zho",
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "bcf76b3ef8181aac9b7bb40013541adc",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "de267a6ab10f77997f911d48d26a4cce",
+        "text": "下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数 下面有合计数",
+        "metadata": {
+            "page_name": "直播间利润",
+            "page_number": 11,
+            "text_as_html": "<table><tr><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td><td>下面有合计数</td></tr></table>",
+            "languages": [
+                "kor"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "bcf76b3ef8181aac9b7bb40013541adc",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Title",
+        "element_id": "a33d83e64c1cdb3bb52b1e3fd859efd8",
+        "text": "有日期可供选择，后续查6.1-6.2，就可以看到这个期间汇总的数据，",
+        "metadata": {
+            "page_name": "直播间利润",
+            "page_number": 11,
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "8e2a5e537097b221936636db6aa6eb64",
+        "text": "商品编码 产品名称 单位 数量 零售价 拿货价 折扣 拿货单价\\n 金额（CNY） 采购日期 供应商 是否付款 付款日期 付款金额 未付款金额 到货数量 到货时间 到货仓位 到货差",
+        "metadata": {
+            "page_name": "Sheet1",
+            "page_number": 12,
+            "text_as_html": "<table><tr><td>商品编码</td><td>产品名称</td><td>单位</td><td>数量</td><td>零售价</td><td>拿货价</td><td>折扣</td><td>拿货单价\\n</td><td>金额（CNY）</td><td>采购日期</td><td>供应商</td><td>是否付款</td><td>付款日期</td><td>付款金额</td><td>未付款金额</td><td>到货数量</td><td>到货时间</td><td>到货仓位</td><td>到货差</td></tr></table>",
+            "languages": [
+                "kor",
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "a33d83e64c1cdb3bb52b1e3fd859efd8",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    },
+    {
+        "type": "Table",
+        "element_id": "fb8fc94c6a5361c3f19df2c1182a31ae",
+        "text": "根据选择的商品名称自动跳转 选择商品库里的商品 提供选择项箱/盒/包（产品规格表中的） 手动填 根据商品库的数据，选择产品名称自动匹配 手动填 有公式=拿货价/零售价 公式=拿货价/数量 公式=拿货价*拿货数量 手动填，有日期可选择 供应商档案可供选择 有选项是/否 手动填，有日期可选择 手动填 公式=J列金额-付款金额 手动填 手动填，有日期可选择 直播间档案表里数据仓位可选择 公式=拿货数量-到货数量",
+        "metadata": {
+            "page_name": "Sheet1",
+            "page_number": 12,
+            "text_as_html": "<table><tr><td>根据选择的商品名称自动跳转</td><td>选择商品库里的商品</td><td>提供选择项箱/盒/包（产品规格表中的）</td><td>手动填</td><td>根据商品库的数据，选择产品名称自动匹配</td><td>手动填</td><td>有公式=拿货价/零售价</td><td>公式=拿货价/数量</td><td>公式=拿货价*拿货数量</td><td>手动填，有日期可选择</td><td>供应商档案可供选择</td><td>有选项是/否</td><td>手动填，有日期可选择</td><td>手动填</td><td>公式=J列金额-付款金额</td><td>手动填</td><td>手动填，有日期可选择</td><td>直播间档案表里数据仓位可选择</td><td>公式=拿货数量-到货数量</td></tr></table>",
+            "languages": [
+                "zho"
+            ],
+            "filename": "基地利润做系统-3732a11a.xlsx",
+            "filetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "parent_id": "a33d83e64c1cdb3bb52b1e3fd859efd8",
+            "data_source": {
+                "url": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx",
+                "record_locator": {
+                    "protocol": "file",
+                    "remote_file_path": "file:///home/etl/node/downloads/00000000-0000-0000-0000-000000000001-downloader/06d91f4f-基地利润做系统-3732a11a.xlsx"
+                }
+            }
+        }
+    }
+]
