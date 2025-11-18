@@ -15,7 +15,7 @@ import { PermissionService } from './services/permissionService'
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 6601
 
 // 基础中间件
 app.use(helmet())
@@ -42,11 +42,13 @@ import authRoutes from './routes/authRoutes'
 import translationRoutes from './routes/translationRoutes'
 import permissionRoutes from './routes/permissionRoutes'
 import goodsRoutes from './routes/goodsRoutes'
+import inventoryRoutes from './routes/inventoryRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
 app.use('/api/v1/permissions', permissionRoutes)
 app.use('/api/v1/goods', goodsRoutes)
+app.use('/api/v1/inventory', inventoryRoutes)
 
 app.use('/api/v1', (req, res) => {
   res.json({ 
@@ -56,6 +58,7 @@ app.use('/api/v1', (req, res) => {
       translations: '/api/v1/translations',
       permissions: '/api/v1/permissions',
       goods: '/api/v1/goods',
+      inventory: '/api/v1/inventory',
       health: '/health'
     }
   })

@@ -41,13 +41,21 @@ afterAll(async () => {
 async function cleanupTestData() {
   // 按依赖关系顺序删除数据
   const tablenames = [
+    'transfer_order_items',
+    'transfer_orders',
+    'arrival_order_items',
+    'arrival_orders',
+    'purchase_order_items',
+    'purchase_orders',
+    'inventory',
+    'user_locations',
+    'locations',
+    'goods',
     'user_roles',
     'users',
     'roles',
     'translations',
-    'translation_reviews',
-    'inventory',
-    'goods'
+    'translation_reviews'
   ]
 
   for (const tablename of tablenames) {
