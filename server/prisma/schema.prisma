@@ -1,0 +1,653 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// 用户权限模块
+// ================================
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String?  @unique
+  passwordHash  String   @map("password_hash")
+  name          String
+  phone         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  userRoles     UserRole[]
+  userLocations UserLocation[]
+  
+  // 创建的记录
+  purchaseOrders    PurchaseOrder[] @relation("PurchaseOrderCreator")
+  arrivalOrders     ArrivalOrder[] @relation("ArrivalOrderCreator")
+  transferOrders    TransferOrder[] @relation("TransferOrderCreator")
+  distributionOrders DistributionOrder[] @relation("DistributionOrderCreator")
+  stockOutOrders    StockOutOrder[] @relation("StockOutOrderCreator")
+  stockConsumptions StockConsumption[] @relation("StockConsumptionCreator")
+  anchorProfits     AnchorProfit[] @relation("AnchorProfitCreator")
+  receivables       Receivable[] @relation("ReceivableCreator")
+  payables          Payable[] @relation("PayableCreator")
+  receivablePayments ReceivablePayment[] @relation("ReceivablePaymentCreator")
+  payablePayments   PayablePayment[] @relation("PayablePaymentCreator")
+  
+  // 翻译相关
+  createdTranslations Translation[] @relation("TranslationCreator")
+  updatedTranslations Translation[] @relation("TranslationUpdater")
+  translationReviews  TranslationReview[] @relation("TranslationReviewer")
+  
+  @@map("users")
+  @@index([username])
+  @@index([email])
+  @@index([isActive])
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  nameKey     String?  @map("name_key") // 多语言键，如 'role.super_admin'
+  description String?
+  descriptionKey String? @map("description_key") // 多语言键
+  permissions Json     // 权限代码数组
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  userRoles   UserRole[]
+  
+  @@map("roles")
+  @@index([name])
+  @@index([nameKey])
+  @@index([isSystem])
+}
+
+model UserRole {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  roleId     String    @map("role_id")
+  assignedBy String    @map("assigned_by")
+  assignedAt DateTime  @default(now()) @map("assigned_at")
+  expiresAt  DateTime? @map("expires_at")
+  isActive   Boolean   @default(true) @map("is_active")
+
+  // 关联关系
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@map("user_roles")
+  @@unique([userId, roleId, isActive], name: "uk_user_role_active")
+  @@index([userId])
+  @@index([roleId])
+  @@index([expiresAt])
+  @@index([isActive])
+}
+
+// ================================
+// 基础数据模块
+// ================================
+
+enum LocationType {
+  WAREHOUSE
+  LIVE_ROOM
+}
+
+model Location {
+  id            String       @id @default(uuid())
+  name          String
+  type          LocationType
+  description   String?
+  address       String?
+  contactPerson String?      @map("contact_person")
+  contactPhone  String?      @map("contact_phone")
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  // 关联关系
+  userLocations     UserLocation[]
+  inventory         Inventory[]
+  purchaseOrders    PurchaseOrder[] @relation("PurchaseOrderTarget")
+  arrivalOrders     ArrivalOrder[]
+  transferOrdersFrom TransferOrder[] @relation("TransferOrderFrom")
+  transferOrdersTo   TransferOrder[] @relation("TransferOrderTo")
+  stockOutOrders    StockOutOrder[]
+  stockConsumptions StockConsumption[]
+  anchorProfits     AnchorProfit[]
+  
+  @@map("locations")
+  @@index([name])
+  @@index([type])
+  @@index([isActive])
+}
+
+model UserLocation {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  locationId String   @map("location_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  @@map("user_locations")
+  @@unique([userId, locationId])
+  @@index([userId])
+  @@index([locationId])
+}
+
+model Customer {
+  id            String   @id @default(uuid())
+  
+  // 多语言字段
+  name          Json     // 客户名称多语言
+  address       Json?    // 地址多语言
+  
+  // 非多语言字段
+  contactPerson String?  @map("contact_person")
+  phone         String?
+  email         String?
+  notes         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  distributionOrders DistributionOrder[]
+  receivables        Receivable[]
+  
+  @@map("customers")
+  @@index([phone])
+  @@index([isActive])
+}
+
+model Goods {
+  id            String  @id @default(uuid())
+  code          String  @unique
+  
+  // 多语言字段 - JSON格式存储
+  name          Json    // { "zh_CN": "iPhone 15", "en_US": "iPhone 15", "vi_VN": "iPhone 15", "th_TH": "iPhone 15" }
+  description   Json?   // 多语言描述
+  
+  // 非多语言字段
+  retailPrice   Decimal @default(0) @map("retail_price") @db.Decimal(12, 2)
+  purchasePrice Decimal @default(0) @map("purchase_price") @db.Decimal(12, 2)
+  boxQuantity   Int     @default(1) @map("box_quantity")
+  packPerBox    Int     @default(1) @map("pack_per_box")
+  piecePerPack  Int     @default(1) @map("piece_per_pack")
+  imageUrl      String? @map("image_url")
+  notes         String?
+  isActive      Boolean @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  inventory             Inventory[]
+  purchaseOrderItems    PurchaseOrderItem[]
+  arrivalOrderItems     ArrivalOrderItem[]
+  transferOrderItems    TransferOrderItem[]
+  distributionOrderItems DistributionOrderItem[]
+  stockOutOrderItems    StockOutOrderItem[]
+  stockConsumptions     StockConsumption[]
+  
+  @@map("goods")
+  @@index([code])
+  @@index([name])
+  @@index([isActive])
+}
+
+// ================================
+// 库存管理模块
+// ================================
+
+model Inventory {
+  id            String  @id @default(uuid())
+  goodsId       String  @map("goods_id")
+  locationId    String  @map("location_id")
+  stockQuantity Int     @default(0) @map("stock_quantity")
+  averageCost   Decimal @default(0) @map("average_cost") @db.Decimal(12, 2)
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  goods    Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  @@map("inventory")
+  @@unique([goodsId, locationId])
+  @@index([goodsId])
+  @@index([locationId])
+}
+
+model PurchaseOrder {
+  id               String   @id @default(uuid())
+  orderNo          String   @unique @map("order_no")
+  supplierName     String   @map("supplier_name")
+  targetLocationId String   @map("target_location_id")
+  purchaseDate     DateTime @map("purchase_date") @db.Date
+  totalAmount      Decimal  @default(0) @map("total_amount") @db.Decimal(12, 2)
+  notes            String?
+  createdBy        String   @map("created_by")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  targetLocation Location            @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
+  creator        User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
+  items          PurchaseOrderItem[]
+  arrivalOrders  ArrivalOrder[]
+  payables       Payable[]
+  
+  @@map("purchase_orders")
+  @@index([orderNo])
+  @@index([supplierName])
+  @@index([targetLocationId])
+  @@index([purchaseDate])
+  @@index([createdBy])
+}
+
+model PurchaseOrderItem {
+  id              String  @id @default(uuid())
+  purchaseOrderId String  @map("purchase_order_id")
+  goodsId         String  @map("goods_id")
+  boxQuantity     Int     @default(0) @map("box_quantity")
+  packQuantity    Int     @default(0) @map("pack_quantity")
+  pieceQuantity   Int     @default(0) @map("piece_quantity")
+  totalPieces     Int     @map("total_pieces")
+  unitPrice       Decimal @map("unit_price") @db.Decimal(12, 2)
+  totalPrice      Decimal @map("total_price") @db.Decimal(12, 2)
+  notes           String?
+
+  // 关联关系
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  goods         Goods         @relation(fields: [goodsId], references: [id])
+  
+  @@map("purchase_order_items")
+  @@index([purchaseOrderId])
+  @@index([goodsId])
+}
+
+model ArrivalOrder {
+  id              String   @id @default(uuid())
+  arrivalNo       String   @unique @map("arrival_no")
+  purchaseOrderId String   @map("purchase_order_id")
+  locationId      String   @map("location_id")
+  arrivalDate     DateTime @map("arrival_date") @db.Date
+  notes           String?
+  createdBy       String   @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  purchaseOrder PurchaseOrder       @relation(fields: [purchaseOrderId], references: [id])
+  location      Location            @relation(fields: [locationId], references: [id])
+  creator       User                @relation("ArrivalOrderCreator", fields: [createdBy], references: [id])
+  items         ArrivalOrderItem[]
+  
+  @@map("arrival_orders")
+  @@index([arrivalNo])
+  @@index([purchaseOrderId])
+  @@index([locationId])
+  @@index([arrivalDate])
+}
+
+model ArrivalOrderItem {
+  id             String  @id @default(uuid())
+  arrivalOrderId String  @map("arrival_order_id")
+  goodsId        String  @map("goods_id")
+  quantity       Int
+  unitCost       Decimal @map("unit_cost") @db.Decimal(12, 2)
+  notes          String?
+
+  // 关联关系
+  arrivalOrder ArrivalOrder @relation(fields: [arrivalOrderId], references: [id], onDelete: Cascade)
+  goods        Goods        @relation(fields: [goodsId], references: [id])
+  
+  @@map("arrival_order_items")
+  @@index([arrivalOrderId])
+  @@index([goodsId])
+}
+
+model TransferOrder {
+  id             String   @id @default(uuid())
+  transferNo     String   @unique @map("transfer_no")
+  fromLocationId String   @map("from_location_id")
+  toLocationId   String   @map("to_location_id")
+  transferDate   DateTime @map("transfer_date") @db.Date
+  notes          String?
+  createdBy      String   @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  fromLocation Location             @relation("TransferOrderFrom", fields: [fromLocationId], references: [id])
+  toLocation   Location             @relation("TransferOrderTo", fields: [toLocationId], references: [id])
+  creator      User                 @relation("TransferOrderCreator", fields: [createdBy], references: [id])
+  items        TransferOrderItem[]
+  
+  @@map("transfer_orders")
+  @@index([transferNo])
+  @@index([fromLocationId])
+  @@index([toLocationId])
+  @@index([transferDate])
+}
+
+model TransferOrderItem {
+  id              String  @id @default(uuid())
+  transferOrderId String  @map("transfer_order_id")
+  goodsId         String  @map("goods_id")
+  quantity        Int
+  notes           String?
+
+  // 关联关系
+  transferOrder TransferOrder @relation(fields: [transferOrderId], references: [id], onDelete: Cascade)
+  goods         Goods         @relation(fields: [goodsId], references: [id])
+  
+  @@map("transfer_order_items")
+  @@index([transferOrderId])
+  @@index([goodsId])
+}
+
+model StockConsumption {
+  id                    String   @id @default(uuid())
+  locationId            String   @map("location_id")
+  goodsId               String   @map("goods_id")
+  consumptionDate       DateTime @map("consumption_date") @db.Date
+  openingStock          Int      @default(0) @map("opening_stock")
+  closingStock          Int      @default(0) @map("closing_stock")
+  arrivalQuantity       Int      @default(0) @map("arrival_quantity")
+  transferIn            Int      @default(0) @map("transfer_in")
+  transferOut           Int      @default(0) @map("transfer_out")
+  stockOut              Int      @default(0) @map("stock_out")
+  consumption           Int      @default(0)
+  consumptionUnitPrice  Decimal  @default(0) @map("consumption_unit_price") @db.Decimal(12, 2)
+  consumptionValue      Decimal  @default(0) @map("consumption_value") @db.Decimal(12, 2)
+  notes                 String?
+  createdBy             String   @map("created_by")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  location Location @relation(fields: [locationId], references: [id])
+  goods    Goods    @relation(fields: [goodsId], references: [id])
+  creator  User     @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
+  
+  @@map("stock_consumption")
+  @@unique([locationId, goodsId, consumptionDate])
+  @@index([locationId])
+  @@index([goodsId])
+  @@index([consumptionDate])
+}
+
+// ================================
+// 销售管理模块
+// ================================
+
+model DistributionOrder {
+  id             String   @id @default(uuid())
+  orderNo        String   @unique @map("order_no")
+  customerId     String   @map("customer_id")
+  totalAmount    Decimal  @default(0) @map("total_amount") @db.Decimal(12, 2)
+  discountPercent Decimal @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  finalAmount    Decimal  @default(0) @map("final_amount") @db.Decimal(12, 2)
+  orderDate      DateTime @map("order_date") @db.Date
+  notes          String?
+  createdBy      String   @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  customer       Customer                @relation(fields: [customerId], references: [id])
+  creator        User                    @relation("DistributionOrderCreator", fields: [createdBy], references: [id])
+  items          DistributionOrderItem[]
+  stockOutOrders StockOutOrder[]
+  receivables    Receivable[]
+  
+  @@map("distribution_orders")
+  @@index([orderNo])
+  @@index([customerId])
+  @@index([orderDate])
+  @@index([createdBy])
+}
+
+model DistributionOrderItem {
+  id                  String  @id @default(uuid())
+  distributionOrderId String  @map("distribution_order_id")
+  goodsId             String  @map("goods_id")
+  quantity            Int
+  unitPrice           Decimal @map("unit_price") @db.Decimal(12, 2)
+  discountPercent     Decimal @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  finalUnitPrice      Decimal @map("final_unit_price") @db.Decimal(12, 2)
+  totalPrice          Decimal @map("total_price") @db.Decimal(12, 2)
+  pendingQuantity     Int     @map("pending_quantity")
+  notes               String?
+
+  // 关联关系
+  distributionOrder DistributionOrder @relation(fields: [distributionOrderId], references: [id], onDelete: Cascade)
+  goods             Goods             @relation(fields: [goodsId], references: [id])
+  
+  @@map("distribution_order_items")
+  @@index([distributionOrderId])
+  @@index([goodsId])
+}
+
+model StockOutOrder {
+  id                  String   @id @default(uuid())
+  outNo               String   @unique @map("out_no")
+  distributionOrderId String   @map("distribution_order_id")
+  locationId          String   @map("location_id")
+  outDate             DateTime @map("out_date") @db.Date
+  notes               String?
+  createdBy           String   @map("created_by")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  distributionOrder DistributionOrder    @relation(fields: [distributionOrderId], references: [id])
+  location          Location             @relation(fields: [locationId], references: [id])
+  creator           User                 @relation("StockOutOrderCreator", fields: [createdBy], references: [id])
+  items             StockOutOrderItem[]
+  
+  @@map("stock_out_orders")
+  @@index([outNo])
+  @@index([distributionOrderId])
+  @@index([locationId])
+  @@index([outDate])
+}
+
+model StockOutOrderItem {
+  id               String  @id @default(uuid())
+  stockOutOrderId  String  @map("stock_out_order_id")
+  goodsId          String  @map("goods_id")
+  quantity         Int
+  pendingBefore    Int     @map("pending_before")
+  notes            String?
+
+  // 关联关系
+  stockOutOrder StockOutOrder @relation(fields: [stockOutOrderId], references: [id], onDelete: Cascade)
+  goods         Goods         @relation(fields: [goodsId], references: [id])
+  
+  @@map("stock_out_order_items")
+  @@index([stockOutOrderId])
+  @@index([goodsId])
+}
+
+// ================================
+// 财务管理模块
+// ================================
+
+model AnchorProfit {
+  id                    String   @id @default(uuid())
+  locationId            String   @map("location_id")
+  profitDate            DateTime @map("profit_date") @db.Date
+  gmvAmount             Decimal  @default(0) @map("gmv_amount") @db.Decimal(12, 2)
+  refundAmount          Decimal  @default(0) @map("refund_amount") @db.Decimal(12, 2)
+  offlineAmount         Decimal  @default(0) @map("offline_amount") @db.Decimal(12, 2)
+  consumptionValue      Decimal  @default(0) @map("consumption_value") @db.Decimal(12, 2)
+  adCost                Decimal  @default(0) @map("ad_cost") @db.Decimal(12, 2)
+  platformFeeRate       Decimal  @default(0) @map("platform_fee_rate") @db.Decimal(5, 2)
+  platformFee           Decimal  @default(0) @map("platform_fee") @db.Decimal(12, 2)
+  dailySales            Decimal  @default(0) @map("daily_sales") @db.Decimal(12, 2)
+  profitAmount          Decimal  @default(0) @map("profit_amount") @db.Decimal(12, 2)
+  profitRate            Decimal  @default(0) @map("profit_rate") @db.Decimal(5, 2)
+  notes                 String?
+  createdBy             String   @map("created_by")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  location Location @relation(fields: [locationId], references: [id])
+  creator  User     @relation("AnchorProfitCreator", fields: [createdBy], references: [id])
+  
+  @@map("anchor_profits")
+  @@unique([locationId, profitDate])
+  @@index([locationId])
+  @@index([profitDate])
+}
+
+model Receivable {
+  id                  String   @id @default(uuid())
+  distributionOrderId String   @map("distribution_order_id")
+  customerId          String   @map("customer_id")
+  totalAmount         Decimal  @map("total_amount") @db.Decimal(12, 2)
+  receivedAmount      Decimal  @default(0) @map("received_amount") @db.Decimal(12, 2)
+  pendingAmount       Decimal  @map("pending_amount") @db.Decimal(12, 2)
+  dueDate             DateTime? @map("due_date") @db.Date
+  notes               String?
+  createdBy           String   @map("created_by")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  distributionOrder DistributionOrder    @relation(fields: [distributionOrderId], references: [id])
+  customer          Customer             @relation(fields: [customerId], references: [id])
+  creator           User                 @relation("ReceivableCreator", fields: [createdBy], references: [id])
+  payments          ReceivablePayment[]
+  
+  @@map("receivables")
+  @@index([distributionOrderId])
+  @@index([customerId])
+  @@index([dueDate])
+}
+
+model ReceivablePayment {
+  id            String   @id @default(uuid())
+  receivableId  String   @map("receivable_id")
+  paymentAmount Decimal  @map("payment_amount") @db.Decimal(12, 2)
+  paymentDate   DateTime @map("payment_date") @db.Date
+  paymentMethod String?  @map("payment_method")
+  notes         String?
+  createdBy     String   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  receivable Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+  creator    User       @relation("ReceivablePaymentCreator", fields: [createdBy], references: [id])
+  
+  @@map("receivable_payments")
+  @@index([receivableId])
+  @@index([paymentDate])
+}
+
+model Payable {
+  id              String   @id @default(uuid())
+  purchaseOrderId String   @map("purchase_order_id")
+  supplierName    String   @map("supplier_name")
+  totalAmount     Decimal  @map("total_amount") @db.Decimal(12, 2)
+  paidAmount      Decimal  @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  pendingAmount   Decimal  @map("pending_amount") @db.Decimal(12, 2)
+  dueDate         DateTime? @map("due_date") @db.Date
+  notes           String?
+  createdBy       String   @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  purchaseOrder PurchaseOrder     @relation(fields: [purchaseOrderId], references: [id])
+  creator       User              @relation("PayableCreator", fields: [createdBy], references: [id])
+  payments      PayablePayment[]
+  
+  @@map("payables")
+  @@index([purchaseOrderId])
+  @@index([supplierName])
+  @@index([dueDate])
+}
+
+model PayablePayment {
+  id            String   @id @default(uuid())
+  payableId     String   @map("payable_id")
+  paymentAmount Decimal  @map("payment_amount") @db.Decimal(12, 2)
+  paymentDate   DateTime @map("payment_date") @db.Date
+  paymentMethod String?  @map("payment_method")
+  notes         String?
+  createdBy     String   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  payable Payable @relation(fields: [payableId], references: [id], onDelete: Cascade)
+  creator User    @relation("PayablePaymentCreator", fields: [createdBy], references: [id])
+  
+  @@map("payable_payments")
+  @@index([payableId])
+  @@index([paymentDate])
+}
+
+// ================================
+// 多语言翻译模块
+// ================================
+
+model Translation {
+  id          String   @id @default(uuid())
+  key         String   // 翻译键，如 'role.super_admin'
+  language    String   // 语言代码，如 'zh-CN', 'en-US', 'vi-VN', 'th-TH'
+  value       String   // 翻译值
+  namespace   String?  // 命名空间，如 'role', 'goods', 'system'
+  description String?  // 翻译说明，方便翻译人员理解
+  isSystem    Boolean  @default(false) @map("is_system") // 是否为系统内置翻译
+  isAiGenerated Boolean @default(false) @map("is_ai_generated") // 是否为AI生成
+  reviewStatus String  @default("pending") @map("review_status") // pending, approved, rejected
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   String?  @map("created_by") // 创建者ID
+  updatedBy   String?  @map("updated_by") // 更新者ID
+
+  // 关联关系
+  creator   User? @relation("TranslationCreator", fields: [createdBy], references: [id])
+  updater   User? @relation("TranslationUpdater", fields: [updatedBy], references: [id])
+  reviews   TranslationReview[]
+
+  @@unique([key, language])
+  @@map("translations")
+  @@index([key])
+  @@index([language])
+  @@index([namespace])
+  @@index([reviewStatus])
+}
+
+// 翻译审核表
+model TranslationReview {
+  id            String   @id @default(uuid())
+  translationId String   @map("translation_id")
+  reviewerId    String   @map("reviewer_id")
+  status        String   // 'approved', 'rejected', 'needs_revision'
+  comment       String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  // 关联关系
+  translation Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+  reviewer    User        @relation("TranslationReviewer", fields: [reviewerId], references: [id])
+  
+  @@map("translation_reviews")
+  @@index([translationId])
+  @@index([reviewerId])
+  @@index([status])
+}

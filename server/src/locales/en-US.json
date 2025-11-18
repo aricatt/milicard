@@ -1,0 +1,31 @@
+{
+  "role": {
+    "super_admin": "Super Administrator",
+    "super_admin.description": "Highest system privileges, can manage all functions",
+    "boss": "Boss",
+    "boss.description": "Highest business privileges, can view all business data",
+    "finance": "Finance",
+    "finance.description": "Finance personnel privileges, can view price costs and manage finance",
+    "warehouse_manager": "Warehouse Manager",
+    "warehouse_manager.description": "Warehouse manager privileges, responsible for inventory and logistics management",
+    "anchor": "Anchor",
+    "anchor.description": "Anchor privileges, manage own inventory consumption and profit"
+  },
+  "module": {
+    "inventory": "Inventory Management",
+    "sales": "Sales Management",
+    "finance": "Finance Management",
+    "system": "System Management"
+  },
+  "location": {
+    "warehouse": "Warehouse",
+    "live_room": "Live Room"
+  },
+  "goods": {
+    "name": "Product Name",
+    "code": "Product Code",
+    "description": "Product Description",
+    "retail_price": "Retail Price",
+    "purchase_price": "Purchase Price"
+  }
+}

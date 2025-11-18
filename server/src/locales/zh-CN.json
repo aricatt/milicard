@@ -1,0 +1,31 @@
+{
+  "role": {
+    "super_admin": "超级管理员",
+    "super_admin.description": "系统最高权限，可以管理所有功能",
+    "boss": "老板",
+    "boss.description": "业务最高权限，可查看所有业务数据",
+    "finance": "财务",
+    "finance.description": "财务人员权限，可查看价格成本和管理财务",
+    "warehouse_manager": "仓管",
+    "warehouse_manager.description": "仓库管理员权限，负责库存和物流管理",
+    "anchor": "主播",
+    "anchor.description": "主播权限，管理自己的库存消耗和利润"
+  },
+  "module": {
+    "inventory": "库存管理",
+    "sales": "销售管理",
+    "finance": "财务管理",
+    "system": "系统管理"
+  },
+  "location": {
+    "warehouse": "仓库",
+    "live_room": "直播间"
+  },
+  "goods": {
+    "name": "商品名称",
+    "code": "商品编码",
+    "description": "商品描述",
+    "retail_price": "零售价",
+    "purchase_price": "采购价"
+  }
+}

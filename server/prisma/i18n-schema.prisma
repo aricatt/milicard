@@ -1,0 +1,36 @@
+// 多语言数据库方案示例
+
+model Translation {
+  id          String   @id @default(uuid())
+  key         String   // 翻译键，如 'role.super_admin'
+  language    String   // 语言代码，如 'zh-CN', 'en-US'
+  value       String   // 翻译值
+  namespace   String?  // 命名空间，如 'role', 'goods', 'system'
+  description String?  // 翻译说明，方便翻译人员理解
+  isSystem    Boolean  @default(false) // 是否为系统内置翻译
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  // 创建者ID
+  updatedBy   String?  // 更新者ID
+
+  @@unique([key, language])
+  @@map("translations")
+  @@index([key])
+  @@index([language])
+  @@index([namespace])
+}
+
+// 翻译审核表（可选）
+model TranslationReview {
+  id            String   @id @default(uuid())
+  translationId String
+  reviewerId    String
+  status        String   // 'pending', 'approved', 'rejected'
+  comment       String?
+  createdAt     DateTime @default(now())
+  
+  translation   Translation @relation(fields: [translationId], references: [id])
+  reviewer      User        @relation(fields: [reviewerId], references: [id])
+  
+  @@map("translation_reviews")
+}
