@@ -9,6 +9,7 @@ import { logger } from './utils/logger'
 import { errorHandler } from './middleware/errorHandler'
 import { notFoundHandler } from './middleware/notFoundHandler'
 import { requestLogger } from './middleware/requestLogger'
+import { PermissionService } from './services/permissionService'
 
 // 加载环境变量
 dotenv.config()
@@ -39,9 +40,11 @@ app.get('/health', (req, res) => {
 // API路由
 import authRoutes from './routes/authRoutes'
 import translationRoutes from './routes/translationRoutes'
+import permissionRoutes from './routes/permissionRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
+app.use('/api/v1/permissions', permissionRoutes)
 
 app.use('/api/v1', (req, res) => {
   res.json({ 
@@ -49,6 +52,7 @@ app.use('/api/v1', (req, res) => {
     endpoints: {
       auth: '/api/v1/auth',
       translations: '/api/v1/translations',
+      permissions: '/api/v1/permissions',
       health: '/health'
     }
   })
@@ -59,10 +63,19 @@ app.use(notFoundHandler)
 app.use(errorHandler)
 
 // 启动服务器
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info(`🚀 Milicard Server running on port ${PORT}`)
   logger.info(`📝 Environment: ${process.env.NODE_ENV}`)
   logger.info(`🔗 Health check: http://localhost:${PORT}/health`)
+  
+  // 初始化权限系统
+  try {
+    await PermissionService.initialize()
+    logger.info('🔐 权限系统初始化完成')
+  } catch (error) {
+    logger.error('❌ 权限系统初始化失败', { error })
+    process.exit(1)
+  }
 })
 
 export default app
