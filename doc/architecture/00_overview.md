@@ -194,11 +194,14 @@ const rolePermissions = {
 
 ```
 doc/
-├── architecture/           # 架构文档
-│   ├── 00_overview.md     # 总览（本文档）
-│   ├── 01_backend_architecture.md    # 后端架构
-│   ├── 02_frontend_architecture.md   # 前端架构
-│   └── 03_ai_friendly_system.md      # AI友好系统
+├── architecture/         ## 📚 文档结构
+
+### 架构设计
+- [总体架构](./00_overview.md) - 系统架构总览
+- [后端架构](./01_backend_architecture.md) - Node.js + Express + Prisma
+- [前端架构](./02_frontend_architecture.md) - React + Ant Design Pro
+- [AI友好系统](./03_ai_friendly_system.md) - 错误诊断和维护
+- [国际化架构](./04_internationalization.md) - 多语言支持方案
 ├── prd/                   # 产品需求文档
 │   └── 01_live_base/      # 直播基础模块PRD
 └── api/                   # API文档
