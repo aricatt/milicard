@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import 'express-async-errors'
 
@@ -23,6 +24,7 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 app.use(requestLogger)
 
 // 健康检查端点
@@ -35,14 +37,17 @@ app.get('/health', (req, res) => {
 })
 
 // API路由
+import authRoutes from './routes/authRoutes'
 import translationRoutes from './routes/translationRoutes'
 
+app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
 
 app.use('/api/v1', (req, res) => {
   res.json({ 
     message: 'Milicard API v1.0',
     endpoints: {
+      auth: '/api/v1/auth',
       translations: '/api/v1/translations',
       health: '/health'
     }

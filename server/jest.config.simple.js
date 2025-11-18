@@ -1,0 +1,13 @@
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  testMatch: [
+    '**/__tests__/**/*.test.ts',
+    '**/?(*.)+(spec|test).ts'
+  ],
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  testTimeout: 10000,
+  clearMocks: true,
+  verbose: true,
+  collectCoverage: false
+}
