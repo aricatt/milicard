@@ -41,10 +41,12 @@ app.get('/health', (req, res) => {
 import authRoutes from './routes/authRoutes'
 import translationRoutes from './routes/translationRoutes'
 import permissionRoutes from './routes/permissionRoutes'
+import goodsRoutes from './routes/goodsRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
 app.use('/api/v1/permissions', permissionRoutes)
+app.use('/api/v1/goods', goodsRoutes)
 
 app.use('/api/v1', (req, res) => {
   res.json({ 
@@ -53,6 +55,7 @@ app.use('/api/v1', (req, res) => {
       auth: '/api/v1/auth',
       translations: '/api/v1/translations',
       permissions: '/api/v1/permissions',
+      goods: '/api/v1/goods',
       health: '/health'
     }
   })

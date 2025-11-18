@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import dotenv from 'dotenv'
+import bcrypt from 'bcryptjs'
 
 // 加载测试环境变量
 dotenv.config({ path: '.env.test' })
@@ -44,7 +45,9 @@ async function cleanupTestData() {
     'users',
     'roles',
     'translations',
-    'translation_reviews'
+    'translation_reviews',
+    'inventory',
+    'goods'
   ]
 
   for (const tablename of tablenames) {
@@ -72,12 +75,14 @@ export async function createTestUser(userData: {
     isActive: true
   }
 
+  const { password, ...userDataWithoutPassword } = userData
+
   return await prisma.user.create({
     data: {
       ...defaultData,
-      ...userData,
-      passwordHash: userData.password 
-        ? '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/VJBzwxEy2' 
+      ...userDataWithoutPassword,
+      passwordHash: password
+        ? await bcrypt.hash(password, 12)
         : defaultData.passwordHash
     }
   })
