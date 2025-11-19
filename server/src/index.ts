@@ -43,14 +43,16 @@ import translationRoutes from './routes/translationRoutes'
 import permissionRoutes from './routes/permissionRoutes'
 import goodsRoutes from './routes/goodsRoutes'
 import inventoryRoutes from './routes/inventoryRoutes'
-import purchaseRoutes from './routes/purchaseRoutes'
+// import purchaseRoutes from './routes/purchaseRoutes' // 暂时注释掉
+import salesRoutes from './routes/salesRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
 app.use('/api/v1/permissions', permissionRoutes)
 app.use('/api/v1/goods', goodsRoutes)
 app.use('/api/v1/inventory', inventoryRoutes)
-app.use('/api/v1/purchase', purchaseRoutes)
+// app.use('/api/v1/purchase', purchaseRoutes) // 暂时注释掉
+app.use('/api/v1/sales', salesRoutes)
 
 app.use('/api/v1', (req, res) => {
   res.json({ 
@@ -62,6 +64,7 @@ app.use('/api/v1', (req, res) => {
       goods: '/api/v1/goods',
       inventory: '/api/v1/inventory',
       purchase: '/api/v1/purchase',
+      sales: '/api/v1/sales',
       health: '/health'
     }
   })
@@ -71,8 +74,12 @@ app.use('/api/v1', (req, res) => {
 app.use(notFoundHandler)
 app.use(errorHandler)
 
+// 导出app供测试使用
+export { app }
+
 // 启动服务器
-app.listen(PORT, async () => {
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, async () => {
   logger.info(`🚀 Milicard Server running on port ${PORT}`)
   logger.info(`📝 Environment: ${process.env.NODE_ENV}`)
   logger.info(`🔗 Health check: http://localhost:${PORT}/health`)
@@ -85,6 +92,7 @@ app.listen(PORT, async () => {
     logger.error('❌ 权限系统初始化失败', { error })
     process.exit(1)
   }
-})
+  })
+}
 
 export default app
