@@ -576,3 +576,17 @@ enum LocationType {
   WAREHOUSE
   LIVE_ROOM
 }
+
+model Base {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  createdBy String   @map("created_by")
+  updatedBy String   @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@index([name])
+  @@map("bases")
+}
