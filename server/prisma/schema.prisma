@@ -16,8 +16,15 @@ model User {
   phone               String?
   isActive            Boolean             @default(true) @map("is_active")
   lastLoginAt         DateTime?           @map("last_login_at")
+  defaultBaseId       Int?                @map("default_base_id")
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
+  
+  // 基地相关关系
+  defaultBase         Base?               @relation("UserDefaultBase", fields: [defaultBaseId], references: [id])
+  userBases           UserBase[]
+  
+  // 原有关系
   anchorProfits       AnchorProfit[]      @relation("AnchorProfitCreator")
   arrivalOrders       ArrivalOrder[]      @relation("ArrivalOrderCreator")
   distributionOrders  DistributionOrder[] @relation("DistributionOrderCreator")
@@ -38,6 +45,7 @@ model User {
   @@index([username])
   @@index([email])
   @@index([isActive])
+  @@index([defaultBaseId])
   @@map("users")
 }
 
@@ -86,9 +94,15 @@ model Location {
   address            String?
   contactPerson      String?            @map("contact_person")
   contactPhone       String?            @map("contact_phone")
+  baseId             Int                @map("base_id")
   isActive           Boolean            @default(true) @map("is_active")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
+  
+  // 基地关系
+  base               Base               @relation(fields: [baseId], references: [id])
+  
+  // 原有关系
   anchorProfits      AnchorProfit[]
   arrivalOrders      ArrivalOrder[]
   inventory          Inventory[]
@@ -127,9 +141,15 @@ model Customer {
   email              String?
   address            String?
   notes              String?
+  baseId             Int?                @map("base_id")
   isActive           Boolean             @default(true) @map("is_active")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
+  
+  // 基地关系 (可选，支持跨基地客户)
+  base               Base?               @relation(fields: [baseId], references: [id])
+  
+  // 原有关系
   distributionOrders DistributionOrder[]
   receivables        Receivable[]
 
@@ -154,6 +174,11 @@ model Goods {
   isActive               Boolean                 @default(true) @map("is_active")
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @updatedAt @map("updated_at")
+  
+  // 基地相关关系
+  goodsBases             GoodsBase[]
+  
+  // 原有关系
   arrivalOrderItems      ArrivalOrderItem[]
   distributionOrderItems DistributionOrderItem[]
   inventory              Inventory[]
@@ -172,15 +197,20 @@ model Inventory {
   id            String   @id @default(uuid())
   goodsId       String   @map("goods_id")
   locationId    String   @map("location_id")
+  baseId        Int      @map("base_id")
   stockQuantity Int      @default(0) @map("stock_quantity")
   averageCost   Decimal  @default(0) @map("average_cost") @db.Decimal(12, 2)
   updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  // 关联关系
   goods         Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
   location      Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  base          Base     @relation(fields: [baseId], references: [id])
 
   @@unique([goodsId, locationId])
   @@index([goodsId])
   @@index([locationId])
+  @@index([baseId])
   @@map("inventory")
 }
 
@@ -189,12 +219,16 @@ model PurchaseOrder {
   orderNo          String              @unique @map("order_no")
   supplierName     String              @map("supplier_name")
   targetLocationId String              @map("target_location_id")
+  baseId           Int                 @map("base_id")
   purchaseDate     DateTime            @map("purchase_date") @db.Date
   totalAmount      Decimal             @default(0) @map("total_amount") @db.Decimal(12, 2)
   notes            String?
   createdBy        String              @map("created_by")
   createdAt        DateTime            @default(now()) @map("created_at")
   updatedAt        DateTime            @updatedAt @map("updated_at")
+  
+  // 关联关系
+  base             Base                @relation(fields: [baseId], references: [id])
   arrivalOrders    ArrivalOrder[]
   payables         Payable[]
   items            PurchaseOrderItem[]
@@ -204,6 +238,7 @@ model PurchaseOrder {
   @@index([orderNo])
   @@index([supplierName])
   @@index([targetLocationId])
+  @@index([baseId])
   @@index([purchaseDate])
   @@index([createdBy])
   @@map("purchase_orders")
@@ -578,15 +613,118 @@ enum LocationType {
 }
 
 model Base {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
-  name      String
-  createdBy String   @map("created_by")
-  updatedBy String   @map("updated_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            Int      @id @default(autoincrement())
+  code          String   @unique
+  name          String
+  description   String?
+  address       String?
+  contactPerson String?  @map("contact_person")
+  contactPhone  String?  @map("contact_phone")
+  contactEmail  String?  @map("contact_email")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdBy     String   @map("created_by")
+  updatedBy     String   @map("updated_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // 关联关系 (先实现核心模块)
+  userBases           UserBase[]
+  goodsBases          GoodsBase[]
+  supplierBases       SupplierBase[]
+  locations           Location[]
+  inventory           Inventory[]
+  purchaseOrders      PurchaseOrder[]
+  defaultUsers        User[]           @relation("UserDefaultBase")
+  customers           Customer[]
 
   @@index([code])
   @@index([name])
+  @@index([isActive])
   @@map("bases")
+}
+
+model UserBase {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  baseId    Int      @map("base_id")
+  roles     String[] @default([])
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  base Base @relation(fields: [baseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, baseId])
+  @@index([userId])
+  @@index([baseId])
+  @@index([isActive])
+  @@map("user_bases")
+}
+
+model GoodsBase {
+  id            String   @id @default(uuid())
+  goodsId       String   @map("goods_id")
+  baseId        Int      @map("base_id")
+  isActive      Boolean  @default(true) @map("is_active")
+  retailPrice   Decimal? @map("retail_price") @db.Decimal(12, 2)
+  purchasePrice Decimal? @map("purchase_price") @db.Decimal(12, 2)
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  goods Goods @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  base  Base  @relation(fields: [baseId], references: [id], onDelete: Cascade)
+
+  @@unique([goodsId, baseId])
+  @@index([goodsId])
+  @@index([baseId])
+  @@index([isActive])
+  @@map("goods_bases")
+}
+
+model Supplier {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  contactPerson String? @map("contact_person")
+  phone       String?
+  email       String?
+  address     String?
+  taxNumber   String?  @map("tax_number")
+  bankAccount String?  @map("bank_account")
+  bankName    String?  @map("bank_name")
+  notes       String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  supplierBases SupplierBase[]
+
+  @@index([code])
+  @@index([name])
+  @@index([isActive])
+  @@map("suppliers")
+}
+
+model SupplierBase {
+  id             String   @id @default(uuid())
+  supplierId     String   @map("supplier_id")
+  baseId         Int      @map("base_id")
+  isActive       Boolean  @default(true) @map("is_active")
+  paymentTerms   String?  @map("payment_terms")
+  deliveryTerms  String?  @map("delivery_terms")
+  creditLimit    Decimal  @default(0) @map("credit_limit") @db.Decimal(12, 2)
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  base     Base     @relation(fields: [baseId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, baseId])
+  @@index([supplierId])
+  @@index([baseId])
+  @@index([isActive])
+  @@map("supplier_bases")
 }
