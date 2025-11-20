@@ -1,5 +1,5 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Tabs, Row, Col, Typography, Tag, Space, Divider } from 'antd';
+import { Card, Tabs, Row, Col, Typography, Tag, Space, Divider, Button } from 'antd';
 import { 
   DashboardOutlined, 
   FormOutlined, 
@@ -8,8 +8,11 @@ import {
   ProfileOutlined,
   ExceptionOutlined,
   CheckCircleOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  EyeOutlined,
+  LinkOutlined
 } from '@ant-design/icons';
+import { history } from '@umijs/max';
 import React from 'react';
 
 const { Title, Paragraph, Text } = Typography;
@@ -21,15 +24,40 @@ const TemplateCard: React.FC<{
   title: string;
   description: string;
   path: string;
+  routePath: string;
   tags: string[];
   icon: React.ReactNode;
   features: string[];
-}> = ({ title, description, path, tags, icon, features }) => {
+}> = ({ title, description, path, routePath, tags, icon, features }) => {
+  
+  const handleViewTemplate = () => {
+    history.push(routePath);
+  };
+
   return (
     <Card
       hoverable
       style={{ height: '100%' }}
       bodyStyle={{ padding: '16px' }}
+      actions={[
+        <Button 
+          key="view" 
+          type="primary" 
+          icon={<EyeOutlined />} 
+          onClick={handleViewTemplate}
+          size="small"
+        >
+          查看模板
+        </Button>,
+        <Button 
+          key="link" 
+          icon={<LinkOutlined />} 
+          onClick={() => window.open(`https://github.com/ant-design/ant-design-pro/tree/master/src/pages${path}`, '_blank')}
+          size="small"
+        >
+          源码
+        </Button>
+      ]}
     >
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ marginRight: 8, fontSize: 20, color: '#1890ff' }}>
@@ -52,7 +80,7 @@ const TemplateCard: React.FC<{
       <div style={{ marginBottom: 12 }}>
         <Space size={4} wrap>
           {tags.map(tag => (
-            <Tag key={tag} size="small" color="blue">{tag}</Tag>
+            <Tag key={tag} color="blue" style={{ fontSize: '11px' }}>{tag}</Tag>
           ))}
         </Space>
       </div>
@@ -82,6 +110,7 @@ const TemplateReference: React.FC = () => {
       title: '分析页',
       description: '数据分析展示页面，包含各种图表和统计信息',
       path: '/src/pages/dashboard/analysis',
+      routePath: '/template-reference/dashboard/analysis',
       tags: ['图表', '数据分析', '统计'],
       icon: <DashboardOutlined />,
       features: [
@@ -96,6 +125,7 @@ const TemplateReference: React.FC = () => {
       title: '监控页',
       description: '系统监控页面，实时展示系统运行状态',
       path: '/src/pages/dashboard/monitor',
+      routePath: '/template-reference/dashboard/monitor',
       tags: ['监控', '实时数据', '系统状态'],
       icon: <DashboardOutlined />,
       features: [
@@ -109,6 +139,7 @@ const TemplateReference: React.FC = () => {
       title: '工作台',
       description: '个人工作台页面，展示个人任务和项目信息',
       path: '/src/pages/dashboard/workplace',
+      routePath: '/template-reference/dashboard/workplace',
       tags: ['工作台', '个人中心', '任务管理'],
       icon: <DashboardOutlined />,
       features: [
@@ -126,6 +157,7 @@ const TemplateReference: React.FC = () => {
       title: '基础表单',
       description: '标准的表单页面，包含各种表单控件',
       path: '/src/pages/form/basic-form',
+      routePath: '/template-reference/form/basic-form',
       tags: ['表单', '基础组件', '验证'],
       icon: <FormOutlined />,
       features: [
@@ -139,6 +171,7 @@ const TemplateReference: React.FC = () => {
       title: '分步表单',
       description: '多步骤表单，适用于复杂的数据录入流程',
       path: '/src/pages/form/step-form',
+      routePath: '/template-reference/form/step-form',
       tags: ['分步', '流程', '向导'],
       icon: <FormOutlined />,
       features: [
@@ -152,6 +185,7 @@ const TemplateReference: React.FC = () => {
       title: '高级表单',
       description: '复杂的表单页面，包含动态表单和复杂布局',
       path: '/src/pages/form/advanced-form',
+      routePath: '/template-reference/form/advanced-form',
       tags: ['高级', '动态表单', '复杂布局'],
       icon: <FormOutlined />,
       features: [
@@ -169,6 +203,7 @@ const TemplateReference: React.FC = () => {
       title: '标准列表',
       description: '标准的数据列表页面，包含搜索、筛选、分页',
       path: '/src/pages/list/table-list',
+      routePath: '/template-reference/list/table-list',
       tags: ['表格', '搜索', '分页'],
       icon: <TableOutlined />,
       features: [
@@ -182,6 +217,7 @@ const TemplateReference: React.FC = () => {
       title: '基础列表',
       description: '基础的列表页面，适用于简单的数据展示',
       path: '/src/pages/list/basic-list',
+      routePath: '/template-reference/list/basic-list',
       tags: ['列表', '基础', '简单'],
       icon: <TableOutlined />,
       features: [
@@ -195,6 +231,7 @@ const TemplateReference: React.FC = () => {
       title: '卡片列表',
       description: '卡片式列表页面，适用于图文混合的内容展示',
       path: '/src/pages/list/card-list',
+      routePath: '/template-reference/list/card-list',
       tags: ['卡片', '图文', '展示'],
       icon: <TableOutlined />,
       features: [
@@ -208,6 +245,7 @@ const TemplateReference: React.FC = () => {
       title: '搜索列表',
       description: '带搜索功能的列表页面，支持多种搜索方式',
       path: '/src/pages/list/search',
+      routePath: '/template-reference/list/search/articles',
       tags: ['搜索', '筛选', '多条件'],
       icon: <TableOutlined />,
       features: [
@@ -225,6 +263,7 @@ const TemplateReference: React.FC = () => {
       title: '基础详情页',
       description: '标准的详情展示页面',
       path: '/src/pages/profile/basic',
+      routePath: '/template-reference/profile/basic',
       tags: ['详情', '展示', '基础'],
       icon: <ProfileOutlined />,
       features: [
@@ -238,6 +277,7 @@ const TemplateReference: React.FC = () => {
       title: '高级详情页',
       description: '复杂的详情页面，包含多种数据展示方式',
       path: '/src/pages/profile/advanced',
+      routePath: '/template-reference/profile/advanced',
       tags: ['详情', '高级', '复杂'],
       icon: <ProfileOutlined />,
       features: [
@@ -255,6 +295,7 @@ const TemplateReference: React.FC = () => {
       title: '成功页',
       description: '操作成功的结果页面',
       path: '/src/pages/result/success',
+      routePath: '/template-reference/result/success',
       tags: ['结果页', '成功', '反馈'],
       icon: <CheckCircleOutlined />,
       features: [
@@ -268,6 +309,7 @@ const TemplateReference: React.FC = () => {
       title: '失败页',
       description: '操作失败的结果页面',
       path: '/src/pages/result/fail',
+      routePath: '/template-reference/result/fail',
       tags: ['结果页', '失败', '错误'],
       icon: <ExceptionOutlined />,
       features: [
@@ -285,6 +327,7 @@ const TemplateReference: React.FC = () => {
       title: '403 权限异常',
       description: '无权限访问页面',
       path: '/src/pages/exception/403',
+      routePath: '/template-reference/exception/403',
       tags: ['异常页', '权限', '403'],
       icon: <ExceptionOutlined />,
       features: [
@@ -298,6 +341,7 @@ const TemplateReference: React.FC = () => {
       title: '404 页面不存在',
       description: '页面未找到',
       path: '/src/pages/exception/404',
+      routePath: '/template-reference/exception/404',
       tags: ['异常页', '404', '未找到'],
       icon: <ExceptionOutlined />,
       features: [
@@ -311,6 +355,7 @@ const TemplateReference: React.FC = () => {
       title: '500 服务器异常',
       description: '服务器错误页面',
       path: '/src/pages/exception/500',
+      routePath: '/template-reference/exception/500',
       tags: ['异常页', '500', '服务器错误'],
       icon: <ExceptionOutlined />,
       features: [
@@ -328,6 +373,7 @@ const TemplateReference: React.FC = () => {
       title: '登录页',
       description: '用户登录页面',
       path: '/src/pages/user/login',
+      routePath: '/template-reference/user/login',
       tags: ['登录', '认证', '用户'],
       icon: <UserOutlined />,
       features: [
@@ -341,6 +387,7 @@ const TemplateReference: React.FC = () => {
       title: '注册页',
       description: '用户注册页面',
       path: '/src/pages/user/register',
+      routePath: '/template-reference/user/register',
       tags: ['注册', '用户', '表单'],
       icon: <UserOutlined />,
       features: [
@@ -358,6 +405,7 @@ const TemplateReference: React.FC = () => {
       title: '个人设置',
       description: '用户个人信息设置页面',
       path: '/src/pages/account/settings',
+      routePath: '/template-reference/account/settings',
       tags: ['设置', '个人信息', '账户'],
       icon: <UserOutlined />,
       features: [
@@ -371,6 +419,7 @@ const TemplateReference: React.FC = () => {
       title: '个人中心',
       description: '用户个人中心页面',
       path: '/src/pages/account/center',
+      routePath: '/template-reference/account/center',
       tags: ['个人中心', '用户', '展示'],
       icon: <UserOutlined />,
       features: [

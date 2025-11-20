@@ -67,6 +67,14 @@ export default defineConfig({
    * @description 一个不错的热更新组件，更新时可以保留 state
    */
   fastRefresh: true,
+  
+  /**
+   * @name CSP 配置
+   * @description 开发环境配置，允许 unsafe-eval 以支持热重载和开发工具
+   */
+  ...(REACT_APP_ENV === 'dev' && {
+    devtool: 'eval-cheap-module-source-map',
+  }),
   //============== 以下都是max的插件配置 ===============
   /**
    * @name 数据流插件
