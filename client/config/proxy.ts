@@ -12,10 +12,10 @@
 export default {
   // 开发环境代理配置 - 指向我们的后端API服务器
   dev: {
-    // localhost:8000/api/** -> http://localhost:6601/api/**
+    // localhost:8000/api/** -> http://localhost:6801/api/**
     '/api/': {
       // 要代理的地址 - 我们的后端API服务器
-      target: 'http://localhost:6601',
+      target: 'http://localhost:6801',
       // 配置了这个可以从 http 代理到 https
       // 依赖 origin 的功能可能需要这个，比如 cookie
       changeOrigin: true,

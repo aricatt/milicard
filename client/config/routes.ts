@@ -64,7 +64,7 @@ export default [
         name: 'base-list',
         icon: 'home',
         path: '/live-base/base-data/bases',
-        component: './Welcome',
+        component: './live-base/base-data/bases',
       },
       // 直播间管理
       {
