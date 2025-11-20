@@ -1,31 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Button, Empty, Spin, Modal, Form, Input, message, Typography } from 'antd';
+import { Table, Button, Empty, Spin, Modal, Form, Input, Typography, Space, Tag, App } from 'antd';
 import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
 import { useBase, BaseInfo, BaseProvider } from '@/contexts/BaseContext';
+import type { ColumnsType } from 'antd/es/table';
 import styles from './BaseSelector.less';
 
 const { Title, Text } = Typography;
 
 const BaseSelectorContent: React.FC = () => {
   const { baseList, loading, setCurrentBase, refreshBaseList } = useBase();
+  const { message } = App.useApp();
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [form] = Form.useForm();
 
-  // 如果没有基地，自动显示创建表单
+  // 只有在没有基地时才自动显示创建表单
   useEffect(() => {
     if (!loading && baseList.length === 0) {
       setCreateModalVisible(true);
     }
-  }, [loading, baseList.length]);
+  }, [loading, baseList]);
 
-  // 选择基地
+  // 选择基地并进入
   const handleSelectBase = (base: BaseInfo) => {
     setCurrentBase(base);
     message.success(`已选择基地：${base.name}`);
-    // 跳转到基地概览页面
-    history.push('/base/overview');
+    // 跳转到直播基地概览页面
+    setTimeout(() => {
+      history.push('/live-base/overview');
+    }, 100);
   };
 
   // 创建基地
@@ -66,68 +70,47 @@ const BaseSelectorContent: React.FC = () => {
     }
   };
 
-  // 渲染基地卡片
-  const renderBaseCard = (base: BaseInfo) => (
-    <Col xs={24} sm={12} md={8} lg={6} key={base.id}>
-      <Card
-        hoverable
-        className={styles.baseCard}
-        onClick={() => handleSelectBase(base)}
-        cover={
-          <div className={styles.cardCover}>
-            <HomeOutlined className={styles.cardIcon} />
-          </div>
-        }
-        actions={[
-          <Button type="primary" onClick={() => handleSelectBase(base)}>
-            进入基地
-          </Button>
-        ]}
-      >
-        <Card.Meta
-          title={<Title level={4}>{base.name}</Title>}
-          description={
-            <div className={styles.cardDescription}>
-              <Text type="secondary" className={styles.baseCode}>
-                编号：{base.code}
-              </Text>
-              {base.description && (
-                <Text className={styles.baseDesc}>{base.description}</Text>
-              )}
-              {base.address && (
-                <div className={styles.baseInfo}>
-                  <EnvironmentOutlined /> {base.address}
-                </div>
-              )}
-              {base.contactPerson && (
-                <div className={styles.baseInfo}>
-                  <PhoneOutlined /> {base.contactPerson}
-                  {base.contactPhone && ` (${base.contactPhone})`}
-                </div>
-              )}
-            </div>
-          }
-        />
-      </Card>
-    </Col>
-  );
-
-  // 渲染创建基地卡片
-  const renderCreateCard = () => (
-    <Col xs={24} sm={12} md={8} lg={6}>
-      <Card
-        hoverable
-        className={`${styles.baseCard} ${styles.createCard}`}
-        onClick={() => setCreateModalVisible(true)}
-      >
-        <div className={styles.createCardContent}>
-          <PlusOutlined className={styles.createIcon} />
-          <Title level={4}>创建新基地</Title>
-          <Text type="secondary">点击创建您的第一个直播基地</Text>
-        </div>
-      </Card>
-    </Col>
-  );
+  // 表格列定义
+  const columns: ColumnsType<BaseInfo> = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 80,
+    },
+    {
+      title: '编号',
+      dataIndex: 'code',
+      key: 'code',
+      width: 150,
+    },
+    {
+      title: '基地名称',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text: string) => <strong>{text}</strong>,
+    },
+    {
+      title: '描述',
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 120,
+      render: (_, record) => (
+        <Button 
+          type="primary" 
+          size="small"
+          onClick={() => handleSelectBase(record)}
+        >
+          进入
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className={styles.baseSelectorContainer}>
@@ -140,21 +123,31 @@ const BaseSelectorContent: React.FC = () => {
 
       <Spin spinning={loading}>
         <div className={styles.content}>
+          <div className={styles.tableHeader}>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setCreateModalVisible(true)}
+              style={{ marginBottom: 16 }}
+            >
+              创建新基地
+            </Button>
+          </div>
+          
           {baseList.length === 0 && !loading ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="暂无基地"
-              className={styles.emptyState}
-            >
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>
-                创建第一个基地
-              </Button>
-            </Empty>
+              description="暂无基地，请创建您的第一个基地"
+            />
           ) : (
-            <Row gutter={[24, 24]}>
-              {baseList.map(renderBaseCard)}
-              {renderCreateCard()}
-            </Row>
+            <Table
+              columns={columns}
+              dataSource={baseList}
+              rowKey="id"
+              pagination={false}
+              size="middle"
+              className={styles.baseTable}
+            />
           )}
         </div>
       </Spin>

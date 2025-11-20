@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dropdown, Space, Typography, Avatar, Modal, message } from 'antd';
+import { Button, Dropdown, Space, Typography, Avatar, Modal, App } from 'antd';
 import { SwapOutlined, HomeOutlined, PlusOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
 import { useBase, BaseInfo } from '@/contexts/BaseContext';
@@ -23,6 +23,8 @@ const BaseSwitcher: React.FC = () => {
     // 如果不在 BaseProvider 中，则不显示基地切换器
     return null;
   }
+  
+  const { message } = App.useApp();
   const [switchModalVisible, setSwitchModalVisible] = useState(false);
 
   // 切换基地
@@ -31,8 +33,8 @@ const BaseSwitcher: React.FC = () => {
     message.success(`已切换到基地：${base.name}`);
     setSwitchModalVisible(false);
     
-    // 切换后跳转到基地概览
-    history.push('/base/overview');
+    // 切换后跳转到直播基地概览
+    history.push('/live-base/overview');
   };
 
   // 创建新基地

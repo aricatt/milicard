@@ -50,20 +50,6 @@ export default [
     component: './BaseSelector',
     layout: false,
   },
-  // 基地概览和管理
-  {
-    path: '/base',
-    name: 'base',
-    icon: 'home',
-    wrappers: ['@/components/BaseGuard'],
-    routes: [
-      {
-        path: '/base/overview',
-        name: 'overview',
-        component: './base/overview',
-      },
-    ],
-  },
   // 直播基地管理系统 - 所有功能都在直播基地下
   {
     path: '/live-base',

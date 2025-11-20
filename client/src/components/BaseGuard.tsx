@@ -35,9 +35,9 @@ const BaseGuard: React.FC<BaseGuardProps> = ({ children }) => {
       }
     }
     
-    // 如果有基地且访问的是 /base 根路径，重定向到概览页面
-    if (!loading && currentBase && currentPath === '/base') {
-      history.push('/base/overview');
+    // 如果有基地且访问的是 /live-base 根路径，重定向到概览页面
+    if (!loading && currentBase && currentPath === '/live-base') {
+      history.push('/live-base/overview');
     }
   }, [currentBase, loading]);
 

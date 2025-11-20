@@ -14,6 +14,7 @@ import {
 import BaseSwitcher from '@/components/BaseSwitcher';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
 import { BaseProvider } from '@/contexts/BaseContext';
+import { App } from 'antd';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import '@ant-design/v5-patch-for-react-19';
@@ -126,22 +127,24 @@ export const layout: RunTimeLayoutConfig = ({
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <BaseProvider>
-          {children}
-          {isDev && (
-            <SettingDrawer
-              disableUrlParams
-              enableDarkTheme
-              settings={initialState?.settings}
-              onSettingChange={(settings) => {
-                setInitialState((preInitialState) => ({
-                  ...preInitialState,
-                  settings,
-                }));
-              }}
-            />
-          )}
-        </BaseProvider>
+        <App>
+          <BaseProvider>
+            {children}
+            {isDev && (
+              <SettingDrawer
+                disableUrlParams
+                enableDarkTheme
+                settings={initialState?.settings}
+                onSettingChange={(settings) => {
+                  setInitialState((preInitialState) => ({
+                    ...preInitialState,
+                    settings,
+                  }));
+                }}
+              />
+            )}
+          </BaseProvider>
+        </App>
       );
     },
     ...initialState?.settings,
