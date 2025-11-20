@@ -129,7 +129,7 @@ export default [
         name: 'inventory',
         icon: 'database',
         path: '/live-base/inventory',
-        component: './Welcome',
+        component: './live-base/inventory',
       },
     ],
   },

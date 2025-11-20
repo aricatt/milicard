@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { InventoryBaseServiceSimple } from '../services/inventoryBaseService.simple';
+import { InventoryBaseService } from '../services/inventoryBaseService';
 import { logger } from '../utils/logger';
 
 /**
@@ -21,7 +21,7 @@ export class InventoryBaseController {
         });
       }
 
-      const result = await InventoryBaseServiceSimple.getBaseInventoryList(baseId, params);
+      const result = await InventoryBaseService.getBaseInventoryList(baseId, params);
       
       res.json(result);
     } catch (error) {
@@ -52,7 +52,7 @@ export class InventoryBaseController {
         });
       }
 
-      const result = await InventoryBaseServiceSimple.getBaseLocations(baseId);
+      const result = await InventoryBaseService.getBaseLocations(baseId);
       
       res.json(result);
     } catch (error) {
@@ -83,7 +83,7 @@ export class InventoryBaseController {
         });
       }
 
-      const result = await InventoryBaseServiceSimple.getBaseInventoryStats(baseId);
+      const result = await InventoryBaseService.getBaseInventoryStats(baseId);
       
       res.json(result);
     } catch (error) {
@@ -130,7 +130,7 @@ export class InventoryBaseController {
         });
       }
 
-      const result = await InventoryBaseServiceSimple.adjustInventory(
+      const result = await InventoryBaseService.adjustInventory(
         baseId, 
         inventoryId, 
         parseInt(newQuantity), 
