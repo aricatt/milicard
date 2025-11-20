@@ -4,7 +4,7 @@
 
 import { Request, Response } from 'express'
 import { logger } from '../utils/logger'
-// import { PurchaseService } from '../services/purchaseService' // 暂时注释掉
+import { PurchaseService } from '../services/purchaseService'
 import { 
   PurchaseOrderQueryParams,
   CreatePurchaseOrderRequest,

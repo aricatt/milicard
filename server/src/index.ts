@@ -43,7 +43,7 @@ import translationRoutes from './routes/translationRoutes'
 import permissionRoutes from './routes/permissionRoutes'
 import goodsRoutes from './routes/goodsRoutes'
 import inventoryRoutes from './routes/inventoryRoutes'
-// import purchaseRoutes from './routes/purchaseRoutes' // 暂时注释掉
+import purchaseRoutes from './routes/purchaseRoutes'
 import salesRoutes from './routes/salesRoutes'
 
 app.use('/api/v1/auth', authRoutes)
@@ -51,7 +51,7 @@ app.use('/api/v1/translations', translationRoutes)
 app.use('/api/v1/permissions', permissionRoutes)
 app.use('/api/v1/goods', goodsRoutes)
 app.use('/api/v1/inventory', inventoryRoutes)
-// app.use('/api/v1/purchase', purchaseRoutes) // 暂时注释掉
+app.use('/api/v1/purchase', purchaseRoutes)
 app.use('/api/v1/sales', salesRoutes)
 
 app.use('/api/v1', (req, res) => {

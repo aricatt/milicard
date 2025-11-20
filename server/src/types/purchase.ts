@@ -92,8 +92,6 @@ export interface PurchaseOrderItemInfo {
 export interface PurchaseOrderInfo {
   id: string
   orderNo: string
-  supplierId: string
-  supplier?: SupplierInfo
   supplierName: string
   targetLocationId: string
   targetLocation?: {
@@ -101,10 +99,7 @@ export interface PurchaseOrderInfo {
     name: string
   }
   purchaseDate: string
-  expectedDeliveryDate?: string
   totalAmount: number
-  receivedAmount?: number
-  status: PurchaseOrderStatus
   notes?: string
   createdBy: string
   createdAt: Date
@@ -305,7 +300,10 @@ export enum PurchaseErrorType {
   ORDER_ALREADY_RECEIVED = 'ORDER_ALREADY_RECEIVED',
   CANNOT_MODIFY_COMPLETED_ORDER = 'CANNOT_MODIFY_COMPLETED_ORDER',
   INVALID_GOODS_QUANTITY = 'INVALID_GOODS_QUANTITY',
-  INVALID_UNIT_PRICE = 'INVALID_UNIT_PRICE'
+  INVALID_UNIT_PRICE = 'INVALID_UNIT_PRICE',
+  INVALID_LOCATION = 'INVALID_LOCATION',
+  INVALID_GOODS = 'INVALID_GOODS',
+  VALIDATION_ERROR = 'VALIDATION_ERROR'
 }
 
 /**

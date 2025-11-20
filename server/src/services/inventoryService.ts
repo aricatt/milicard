@@ -18,7 +18,13 @@ import {
   InventoryError,
   InventoryErrorType,
   InventoryOperationType,
-  TransferOrderStatus
+  TransferOrderStatus,
+  CreateInventoryAdjustmentRequest,
+  BatchInventoryRequest,
+  BatchInventoryResponse,
+  BatchOperationResult,
+  InventoryAlertResponse,
+  InventoryAlert
 } from '../types/inventory'
 import { MultilingualText } from '../types/multilingualData'
 
@@ -725,4 +731,14 @@ export class InventoryService {
     }
     return text || { zh_CN: '' }
   }
+
+  // ================================
+  // 库存高级功能 (TODO: 需要数据库schema支持)
+  // ================================
+  
+  // 注意：以下功能需要在数据库中添加相应的表结构后才能使用
+  // - inventoryAdjustment 表 (库存调整)
+  // - goods 表中的 minStock, maxStock 字段 (库存预警)
+  
+  // 暂时注释掉，等待schema更新后再启用
 }

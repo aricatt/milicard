@@ -12,7 +12,22 @@ export enum InventoryOperationType {
   TRANSFER_OUT = 'transfer_out', // 调拨出库
   STOCK_OUT = 'stock_out',       // 销售出库
   ADJUSTMENT = 'adjustment',     // 库存调整
-  CONSUMPTION = 'consumption'    // 消耗
+  CONSUMPTION = 'consumption',   // 消耗
+  STOCK_TAKE = 'stock_take'      // 盘点
+}
+
+export enum AdjustmentType {
+  INCREASE = 'increase',         // 增加
+  DECREASE = 'decrease'          // 减少
+}
+
+export enum AdjustmentReason {
+  DAMAGED = 'damaged',           // 损坏
+  EXPIRED = 'expired',           // 过期
+  LOST = 'lost',                 // 丢失
+  FOUND = 'found',               // 发现
+  ERROR_CORRECTION = 'error_correction', // 错误更正
+  OTHER = 'other'                // 其他
 }
 
 export enum TransferOrderStatus {
@@ -350,5 +365,116 @@ export class InventoryError extends Error {
     this.name = 'InventoryError'
     this.type = type
     this.details = details
+  }
+}
+
+// ================================
+// 库存调整相关类型
+// ================================
+
+export interface InventoryAdjustmentItem {
+  goodsId: string
+  quantity: number
+  adjustmentType: AdjustmentType
+  adjustmentReason: AdjustmentReason
+  notes?: string
+}
+
+export interface CreateInventoryAdjustmentRequest {
+  locationId: string
+  items: InventoryAdjustmentItem[]
+  notes?: string
+}
+
+export interface InventoryAdjustmentResponse {
+  id: string
+  adjustmentNo: string
+  locationId: string
+  location: {
+    id: string
+    name: string
+  }
+  totalItems: number
+  notes?: string
+  createdBy: string
+  createdAt: Date
+  items: InventoryAdjustmentItemResponse[]
+}
+
+export interface InventoryAdjustmentItemResponse {
+  id: string
+  goodsId: string
+  quantity: number
+  adjustmentType: AdjustmentType
+  adjustmentReason: AdjustmentReason
+  notes?: string
+  goods: {
+    id: string
+    code: string
+    name: MultilingualText
+  }
+}
+
+// ================================
+// 批量操作相关类型
+// ================================
+
+export interface BatchInventoryOperation {
+  goodsId: string
+  locationId: string
+  quantity: number
+  operation: InventoryOperationType
+  notes?: string
+}
+
+export interface BatchInventoryRequest {
+  operations: BatchInventoryOperation[]
+  notes?: string
+}
+
+export interface BatchInventoryResponse {
+  successCount: number
+  failureCount: number
+  totalCount: number
+  results: BatchOperationResult[]
+}
+
+export interface BatchOperationResult {
+  goodsId: string
+  locationId: string
+  success: boolean
+  error?: string
+  message?: string
+}
+
+// ================================
+// 库存预警相关类型
+// ================================
+
+export interface InventoryAlert {
+  id: string
+  goodsId: string
+  locationId: string
+  alertType: 'LOW_STOCK' | 'ZERO_STOCK' | 'OVERSTOCK'
+  currentStock: number
+  threshold: number
+  goods: {
+    id: string
+    code: string
+    name: MultilingualText
+  }
+  location: {
+    id: string
+    name: string
+  }
+}
+
+export interface InventoryAlertResponse {
+  alerts: InventoryAlert[]
+  total: number
+  summary: {
+    lowStock: number
+    zeroStock: number
+    overstock: number
   }
 }
