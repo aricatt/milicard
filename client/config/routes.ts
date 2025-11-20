@@ -258,6 +258,12 @@ export default [
     ],
   },
   {
+    name: 'template-reference',
+    icon: 'fileText',
+    path: '/template-reference',
+    component: './TemplateReference',
+  },
+  {
     path: '/',
     redirect: '/dashboard/analysis',
   },
