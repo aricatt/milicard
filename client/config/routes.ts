@@ -43,6 +43,27 @@ export default [
       },
     ],
   },
+  // 基地选择器 - 登录后的基地选择页面
+  {
+    path: '/base-selector',
+    name: 'base-selector',
+    component: './BaseSelector',
+    layout: false,
+  },
+  // 基地概览和管理
+  {
+    path: '/base',
+    name: 'base',
+    icon: 'home',
+    wrappers: ['@/components/BaseGuard'],
+    routes: [
+      {
+        path: '/base/overview',
+        name: 'overview',
+        component: './base/overview',
+      },
+    ],
+  },
   // 直播基地管理系统 - 所有功能都在直播基地下
   {
     path: '/live-base',
@@ -388,7 +409,7 @@ export default [
   },
   {
     path: '/',
-    redirect: '/live-base/overview',
+    redirect: '/base-selector',
   },
   {
     component: '404',

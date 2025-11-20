@@ -1,0 +1,162 @@
+.baseSelectorContainer {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 24px;
+  
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    
+    h2 {
+      color: white;
+      margin-bottom: 8px;
+      font-size: 32px;
+      font-weight: 600;
+    }
+    
+    .ant-typography {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+    }
+  }
+  
+  .content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .baseCard {
+    height: 320px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    }
+    
+    .cardCover {
+      height: 120px;
+      background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      .cardIcon {
+        font-size: 48px;
+        color: white;
+      }
+    }
+    
+    .cardDescription {
+      .baseCode {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+      
+      .baseDesc {
+        display: block;
+        margin-bottom: 12px;
+        color: rgba(0, 0, 0, 0.65);
+      }
+      
+      .baseInfo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.45);
+        
+        .anticon {
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+  
+  .createCard {
+    border: 2px dashed #d9d9d9;
+    background: rgba(255, 255, 255, 0.9);
+    
+    &:hover {
+      border-color: #1890ff;
+      background: white;
+    }
+    
+    .createCardContent {
+      height: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      
+      .createIcon {
+        font-size: 48px;
+        color: #1890ff;
+        margin-bottom: 16px;
+      }
+      
+      h4 {
+        margin-bottom: 8px;
+        color: #1890ff;
+      }
+      
+      .ant-typography {
+        color: rgba(0, 0, 0, 0.45);
+      }
+    }
+  }
+  
+  .emptyState {
+    background: white;
+    border-radius: 12px;
+    padding: 48px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .baseSelectorContainer {
+    padding: 24px 16px;
+    
+    .header {
+      margin-bottom: 32px;
+      
+      h2 {
+        font-size: 24px;
+      }
+    }
+    
+    .baseCard {
+      height: 280px;
+      
+      .cardCover {
+        height: 100px;
+        
+        .cardIcon {
+          font-size: 36px;
+        }
+      }
+    }
+    
+    .createCard .createCardContent {
+      height: 200px;
+      
+      .createIcon {
+        font-size: 36px;
+      }
+    }
+  }
+}
