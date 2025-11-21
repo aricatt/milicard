@@ -90,6 +90,7 @@ model UserRole {
 
 model Location {
   id                 String             @id @default(uuid())
+  code               String             @unique
   name               String
   type               LocationType
   description        String?
