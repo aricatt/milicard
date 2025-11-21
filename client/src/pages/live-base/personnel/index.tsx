@@ -114,10 +114,15 @@ const PersonnelManagement: React.FC = () => {
     return role === PersonnelRole.ANCHOR ? 'purple' : 'orange';
   };
 
-  // 生成业务编号
-  const generateCode = (role: PersonnelRole) => {
-    const prefix = role === PersonnelRole.ANCHOR ? 'ANCHOR' : 'KEEPER';
-    const randomStr = Math.random().toString(36).substring(2, 13).toUpperCase();
+  // 生成编号（与后端保持一致）
+  const generateCode = (role: string) => {
+    const prefix = role === 'ANCHOR' ? 'ANCHOR' : 'KEEPER';
+    // 使用与后端相同的字符集（去除易混淆字符）
+    const charset = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let randomStr = '';
+    for (let i = 0; i < 11; i++) {
+      randomStr += charset[Math.floor(Math.random() * charset.length)];
+    }
     return `${prefix}-${randomStr}`;
   };
 

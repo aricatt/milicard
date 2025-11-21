@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../utils/logger';
+import { CodeGenerator } from '../utils/codeGenerator';
 
 const prisma = new PrismaClient();
 
@@ -97,7 +98,7 @@ export class PersonnelBaseService {
   static async createPersonnel(baseId: number, personnelData: any, createdBy: string) {
     try {
       // 生成业务编号
-      const code = await this.generatePersonnelCode(personnelData.role);
+      const code = await CodeGenerator.generatePersonnelCode(personnelData.role);
 
       const personnel = await prisma.personnel.create({
         data: {
@@ -306,29 +307,6 @@ export class PersonnelBaseService {
     }
   }
 
-  /**
-   * 生成人员业务编号
-   */
-  private static async generatePersonnelCode(role: string): Promise<string> {
-    const prefix = role === 'ANCHOR' ? 'ANCHOR' : 'KEEPER';
-    let isUnique = false;
-    let code = '';
-
-    while (!isUnique) {
-      const randomStr = Math.random().toString(36).substring(2, 13).toUpperCase();
-      code = `${prefix}-${randomStr}`;
-
-      const existing = await prisma.personnel.findUnique({
-        where: { code }
-      });
-
-      if (!existing) {
-        isUnique = true;
-      }
-    }
-
-    return code;
-  }
 
   /**
    * 获取人员详情
