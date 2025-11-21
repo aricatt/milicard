@@ -52,6 +52,7 @@ import purchaseBaseRoutes from './routes/purchaseBaseRoutes'
 import salesBaseRoutes from './routes/salesBaseRoutes'
 import personnelBaseRoutes from './routes/personnelBaseRoutes'
 import locationBaseRoutes from './routes/locationBaseRoutes'
+import userRoutes from './routes/userRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
@@ -67,6 +68,7 @@ app.use('/api/v1/bases', purchaseBaseRoutes)
 app.use('/api/v1/bases', salesBaseRoutes)
 app.use('/api/v1/bases', personnelBaseRoutes)
 app.use('/api/v1/bases', locationBaseRoutes)
+app.use('/api', userRoutes)
 
 app.use('/api/v1', (req, res) => {
   res.json({ 

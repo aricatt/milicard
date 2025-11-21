@@ -157,6 +157,7 @@ export const layout: RunTimeLayoutConfig = ({
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL: 'https://proapi.azurewebsites.net',
+  // 移除硬编码的baseURL，让代理配置生效
+  // baseURL: 'https://proapi.azurewebsites.net',
   ...errorConfig,
 };
