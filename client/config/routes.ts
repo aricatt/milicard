@@ -104,7 +104,7 @@ export default [
         name: 'suppliers',
         icon: 'shop',
         path: '/live-base/suppliers',
-        component: './Welcome',
+        component: './live-base/suppliers',
       },
       {
         name: 'cooperation',
@@ -112,12 +112,26 @@ export default [
         path: '/live-base/cooperation',
         component: './Welcome',
       },
+      // 采购管理
+      {
+        name: 'procurement',
+        icon: 'shopping-cart',
+        path: '/live-base/procurement',
+        component: './live-base/procurement',
+      },
+      // 销售管理
+      {
+        name: 'sales',
+        icon: 'dollar-circle',
+        path: '/live-base/sales',
+        component: './live-base/sales',
+      },
       // 商品管理
       {
         name: 'products',
         icon: 'gift',
         path: '/live-base/products',
-        component: './Welcome',
+        component: './live-base/products',
       },
       {
         name: 'product-category',

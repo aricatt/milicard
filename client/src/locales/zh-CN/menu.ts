@@ -19,6 +19,8 @@ export default {
   'menu.live-base.warehouse-staff': '仓管人员',
   'menu.live-base.suppliers': '供应商管理',
   'menu.live-base.cooperation': '合作管理',
+  'menu.live-base.procurement': '采购管理',
+  'menu.live-base.sales': '销售管理',
   'menu.live-base.products': '商品管理',
   'menu.live-base.product-category': '商品分类',
   'menu.live-base.inventory': '库存管理',
