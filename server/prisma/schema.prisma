@@ -41,6 +41,8 @@ model User {
   updatedTranslations Translation[]       @relation("TranslationUpdater")
   userLocations       UserLocation[]
   userRoles           UserRole[]
+  createdPersonnel    Personnel[]         @relation("PersonnelCreator")
+  updatedPersonnel    Personnel[]         @relation("PersonnelUpdater")
 
   @@index([username])
   @@index([email])
@@ -612,6 +614,11 @@ enum LocationType {
   LIVE_ROOM
 }
 
+enum PersonnelRole {
+  ANCHOR
+  WAREHOUSE_KEEPER
+}
+
 model Base {
   id            Int      @id @default(autoincrement())
   code          String   @unique
@@ -636,6 +643,7 @@ model Base {
   purchaseOrders      PurchaseOrder[]
   defaultUsers        User[]           @relation("UserDefaultBase")
   customers           Customer[]
+  personnel           Personnel[]
 
   @@index([code])
   @@index([name])
@@ -727,4 +735,31 @@ model SupplierBase {
   @@index([baseId])
   @@index([isActive])
   @@map("supplier_bases")
+}
+
+model Personnel {
+  id        String        @id @default(uuid())
+  code      String        @unique
+  name      String
+  role      PersonnelRole
+  phone     String?
+  email     String?
+  notes     String?
+  baseId    Int           @map("base_id")
+  isActive  Boolean       @default(true) @map("is_active")
+  createdBy String?       @map("created_by")
+  updatedBy String?       @map("updated_by")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  base    Base  @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator User? @relation("PersonnelCreator", fields: [createdBy], references: [id])
+  updater User? @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
+
+  @@index([code])
+  @@index([name])
+  @@index([role])
+  @@index([baseId])
+  @@index([isActive])
+  @@map("personnel")
 }

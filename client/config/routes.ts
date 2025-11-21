@@ -73,31 +73,18 @@ export default [
         path: '/live-base/base-data/bases',
         component: './live-base/base-data/bases',
       },
-      // 直播间管理
       {
-        name: 'livestream-rooms',
-        icon: 'desktop',
-        path: '/live-base/livestream/rooms',
-        component: './Welcome',
-      },
-      {
-        name: 'warehouse',
+        name: 'locations',
         icon: 'database',
-        path: '/live-base/warehouse',
-        component: './Welcome',
+        path: '/live-base/locations',
+        component: './live-base/locations',
       },
       // 人员管理
       {
-        name: 'anchors',
+        name: 'personnel',
         icon: 'user',
-        path: '/live-base/anchors',
-        component: './Welcome',
-      },
-      {
-        name: 'warehouse-staff',
-        icon: 'solution',
-        path: '/live-base/warehouse-staff',
-        component: './Welcome',
+        path: '/live-base/personnel',
+        component: './live-base/personnel',
       },
       // 供应商管理
       {
