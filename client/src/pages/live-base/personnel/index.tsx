@@ -701,9 +701,7 @@ const PersonnelManagement: React.FC = () => {
               <Form.Item
                 label="联系电话"
                 name="phone"
-                rules={[
-                  { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码' }
-                ]}
+                rules={[]}
               >
                 <Input placeholder="请输入联系电话" />
               </Form.Item>
@@ -795,9 +793,7 @@ const PersonnelManagement: React.FC = () => {
               <Form.Item
                 label="联系电话"
                 name="phone"
-                rules={[
-                  { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码' }
-                ]}
+                rules={[]}
               >
                 <Input placeholder="请输入联系电话" />
               </Form.Item>

@@ -294,4 +294,95 @@ export class PurchaseBaseService {
       throw error;
     }
   }
+
+  /**
+   * 创建基地供应商
+   */
+  static async createBaseSupplier(baseId: number, supplierData: any) {
+    try {
+      // 生成供应商编号
+      const code = await this.generateSupplierCode();
+
+      // 创建供应商
+      const supplier = await prisma.supplier.create({
+        data: {
+          code,
+          name: supplierData.name,
+          contactPerson: supplierData.contactPerson,
+          phone: supplierData.phone,
+          email: supplierData.email,
+          address: supplierData.address,
+          notes: supplierData.notes,
+          isActive: true,
+        }
+      });
+
+      // 创建供应商与基地的关联
+      await prisma.supplierBase.create({
+        data: {
+          supplierId: supplier.id,
+          baseId: baseId,
+          paymentTerms: 'NET_30', // 默认付款条件
+          creditLimit: 0,
+          isActive: true,
+        }
+      });
+
+      logger.info('创建基地供应商成功', {
+        service: 'milicard-api',
+        baseId,
+        supplierId: supplier.id,
+        supplierName: supplier.name
+      });
+
+      return {
+        success: true,
+        data: {
+          id: supplier.id,
+          code: supplier.code,
+          name: supplier.name,
+          contactPerson: supplier.contactPerson,
+          phone: supplier.phone,
+          email: supplier.email,
+          address: supplier.address,
+          notes: supplier.notes,
+          isActive: true,
+          createdAt: supplier.createdAt,
+          updatedAt: supplier.updatedAt,
+        }
+      };
+    } catch (error) {
+      logger.error('创建基地供应商失败', { error, baseId, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
+   * 生成供应商编号
+   */
+  private static async generateSupplierCode(): Promise<string> {
+    const prefix = 'SUP';
+    const charset = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let code: string;
+    let isUnique = false;
+
+    while (!isUnique) {
+      let randomStr = '';
+      for (let i = 0; i < 8; i++) {
+        randomStr += charset[Math.floor(Math.random() * charset.length)];
+      }
+      code = `${prefix}-${randomStr}`;
+
+      // 检查编号是否已存在
+      const existing = await prisma.supplier.findUnique({
+        where: { code }
+      });
+
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    return code!;
+  }
 }

@@ -27,4 +27,10 @@ router.get('/:baseId/purchase-orders/stats', PurchaseBaseController.getBasePurch
  */
 router.get('/:baseId/suppliers', PurchaseBaseController.getBaseSuppliers);
 
+/**
+ * 创建基地供应商
+ * POST /api/v1/bases/{baseId}/suppliers
+ */
+router.post('/:baseId/suppliers', PurchaseBaseController.createBaseSupplier);
+
 export default router;

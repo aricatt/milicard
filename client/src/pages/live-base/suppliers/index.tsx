@@ -60,7 +60,7 @@ interface SupplierStats {
 }
 
 /**
- * 供应商管理页面
+ * 供应商页面
  * 基地中心化的供应商管理，显示当前基地的供应商信息
  */
 const SupplierManagement: React.FC = () => {
@@ -355,7 +355,7 @@ const SupplierManagement: React.FC = () => {
 
   return (
     <PageContainer
-      title="供应商管理"
+      title="供应商"
       subTitle={`当前基地：${currentBase.name}`}
       extra={[
         <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
@@ -512,8 +512,7 @@ const SupplierManagement: React.FC = () => {
                 label="联系电话"
                 name="phone"
                 rules={[
-                  { required: true, message: '请输入联系电话' },
-                  { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码' }
+                  { required: true, message: '请输入联系电话' }
                 ]}
               >
                 <Input placeholder="请输入联系电话" />

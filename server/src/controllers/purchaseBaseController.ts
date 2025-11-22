@@ -145,4 +145,35 @@ export class PurchaseBaseController {
       });
     }
   }
+
+  /**
+   * 创建基地供应商
+   */
+  static async createBaseSupplier(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的基地ID'
+        });
+      }
+
+      const result = await PurchaseBaseService.createBaseSupplier(baseId, req.body);
+      
+      res.status(201).json(result);
+    } catch (error) {
+      logger.error('创建基地供应商失败', { 
+        error: (error as Error).message, 
+        baseId: req.params.baseId, 
+        service: 'milicard-api' 
+      });
+      
+      res.status(500).json({
+        success: false,
+        message: '服务器内部错误'
+      });
+    }
+  }
 }
