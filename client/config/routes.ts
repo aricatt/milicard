@@ -93,11 +93,12 @@ export default [
         path: '/live-base/suppliers',
         component: './live-base/suppliers',
       },
+      // 商品管理
       {
-        name: 'cooperation',
-        icon: 'handshake',
-        path: '/live-base/cooperation',
-        component: './Welcome',
+        name: 'products',
+        icon: 'gift',
+        path: '/live-base/products',
+        component: './live-base/products',
       },
       // 采购管理
       {
@@ -106,31 +107,33 @@ export default [
         path: '/live-base/procurement',
         component: './live-base/procurement',
       },
-      // 销售管理
+      // 到货管理
       {
-        name: 'sales',
-        icon: 'dollar-circle',
-        path: '/live-base/sales',
-        component: './live-base/sales',
+        name: 'arrivals',
+        icon: 'inbox',
+        path: '/live-base/arrivals',
+        component: './live-base/arrivals',
       },
-      // 商品管理
+      // 调货管理
       {
-        name: 'products',
-        icon: 'gift',
-        path: '/live-base/products',
-        component: './live-base/products',
+        name: 'transfers',
+        icon: 'swap',
+        path: '/live-base/transfers',
+        component: './live-base/transfers',
       },
+      // 库存和消耗
+      {
+        name: 'inventory-consumption',
+        icon: 'database',
+        path: '/live-base/inventory-consumption',
+        component: './live-base/inventory-consumption',
+      },
+      // 商品分类
       {
         name: 'product-category',
         icon: 'tags',
         path: '/live-base/product-category',
         component: './Welcome',
-      },
-      {
-        name: 'inventory',
-        icon: 'database',
-        path: '/live-base/inventory',
-        component: './live-base/inventory',
       },
     ],
   },
