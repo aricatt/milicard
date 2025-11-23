@@ -109,4 +109,65 @@ export class GoodsBaseController {
       });
     }
   }
+
+  /**
+   * 更新商品信息
+   */
+  static async updateGoods(req: Request, res: Response): Promise<void> {
+    try {
+      const { goodsId } = req.params;
+      const updateData = req.body;
+      
+      const result = await GoodsBaseServiceSimple.updateGoods(goodsId, updateData);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: '商品更新成功'
+      });
+    } catch (error) {
+      logger.error('更新商品失败', { 
+        error: (error as Error).message, 
+        goodsId: req.params.goodsId,
+        service: 'milicard-api' 
+      });
+      
+      const statusCode = (error as Error).message.includes('不存在') ? 404 : 500;
+      
+      res.status(statusCode).json({
+        success: false,
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * 从基地删除商品
+   */
+  static async deleteGoodsFromBase(req: Request, res: Response): Promise<void> {
+    try {
+      const { baseId, goodsId } = req.params;
+      
+      await GoodsBaseServiceSimple.deleteGoodsFromBase(parseInt(baseId), goodsId);
+      
+      res.json({
+        success: true,
+        message: '商品删除成功'
+      });
+    } catch (error) {
+      logger.error('删除商品失败', { 
+        error: (error as Error).message, 
+        baseId: req.params.baseId,
+        goodsId: req.params.goodsId,
+        service: 'milicard-api' 
+      });
+      
+      const statusCode = (error as Error).message.includes('不存在') ? 404 : 500;
+      
+      res.status(statusCode).json({
+        success: false,
+        message: (error as Error).message
+      });
+    }
+  }
 }

@@ -537,13 +537,21 @@ const InventoryConsumptionManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={8}>
-            <Search
-              placeholder="搜索商品名称"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索商品名称"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              >
+                搜索
+              </Button>
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select
@@ -565,8 +573,14 @@ const InventoryConsumptionManagement: React.FC = () => {
 
       {/* 库存和消耗标签页 */}
       <Card>
-        <Tabs defaultActiveKey="inventory" size="large">
-          <TabPane tab="库存状态" key="inventory">
+        <Tabs 
+          defaultActiveKey="inventory" 
+          size="large"
+          items={[
+            {
+              key: 'inventory',
+              label: '库存状态',
+              children: (
             <Table
               columns={inventoryColumns}
               dataSource={inventoryData}
@@ -577,8 +591,12 @@ const InventoryConsumptionManagement: React.FC = () => {
               size="middle"
               className={styles.inventoryTable}
             />
-          </TabPane>
-          <TabPane tab="消耗记录" key="consumption">
+              )
+            },
+            {
+              key: 'consumption',
+              label: '消耗记录',
+              children: (
             <Table
               columns={consumptionColumns}
               dataSource={consumptionData}
@@ -596,8 +614,10 @@ const InventoryConsumptionManagement: React.FC = () => {
               size="middle"
               className={styles.consumptionTable}
             />
-          </TabPane>
-        </Tabs>
+              )
+            }
+          ]}
+        />
       </Card>
 
       {/* 创建消耗记录模态框 */}

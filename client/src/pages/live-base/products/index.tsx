@@ -25,6 +25,7 @@ import {
   CheckCircleOutlined,
   EditOutlined,
   EyeOutlined,
+  DeleteOutlined,
   ShoppingOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -41,16 +42,18 @@ interface Product {
   id: string;
   code: string;
   name: string;
+  alias?: string;
+  manufacturer?: string;
   description: string;
-  category: string;
+  retailPrice: number;    // 零售价(一箱)
+  packPrice?: number;     // 平拆价(一盒)
+  purchasePrice: number;
   boxQuantity: number;
   packPerBox: number;
   piecePerPack: number;
-  baseId: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  baseName: string;
 }
 
 // 商品统计数据类型
@@ -81,87 +84,162 @@ const ProductManagement: React.FC = () => {
   
   // 筛选条件
   const [searchText, setSearchText] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
   });
 
   // 模态框状态
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<Product | null>(null);
   const [form] = Form.useForm();
 
   // 表格列定义
   const columns: ColumnsType<Product> = [
     {
-      title: '商品编号',
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 70,
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+          {text.slice(0, 6)}...
+        </span>
+      ),
+    },
+    {
+      title: '编号',
       dataIndex: 'code',
       key: 'code',
-      width: 120,
-      fixed: 'left',
-      render: (text: string) => <strong>{text}</strong>,
+      width: 100,
+      sorter: true,
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', fontWeight: '500' }}>{text}</span>
+      ),
     },
     {
-      title: '商品名称',
+      title: '名称',
       dataIndex: 'name',
       key: 'name',
-      width: 200,
-      fixed: 'left',
-      render: (text: string) => <strong>{text}</strong>,
-    },
-    {
-      title: '描述',
-      dataIndex: 'description',
-      key: 'description',
-      width: 200,
-      ellipsis: true,
-    },
-    {
-      title: '分类',
-      dataIndex: 'category',
-      key: 'category',
       width: 120,
-      render: (category: string) => (
-        <Tag color="blue">{category || '未分类'}</Tag>
+      sorter: true,
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (text: string) => (
+        <span style={{ fontSize: '13px', fontWeight: '500' }} title={text}>
+          {text}
+        </span>
       ),
     },
     {
-      title: '包装规格',
-      key: 'packaging',
-      width: 150,
-      render: (_, record: Product) => (
-        <div>
-          <div>箱装: {record.boxQuantity}</div>
-          <div>包/箱: {record.packPerBox}</div>
-          <div>件/包: {record.piecePerPack}</div>
-        </div>
+      title: '别名',
+      dataIndex: 'alias',
+      key: 'alias',
+      width: 80,
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', color: '#666' }} title={text}>
+          {text || '-'}
+        </span>
       ),
     },
     {
-      title: '状态',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      width: 100,
-      render: (isActive: boolean) => (
-        <Tag color={isActive ? 'green' : 'red'} icon={<CheckCircleOutlined />}>
-          {isActive ? '启用' : '禁用'}
-        </Tag>
+      title: '厂家',
+      dataIndex: 'manufacturer',
+      key: 'manufacturer',
+      width: 90,
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', color: '#666' }} title={text}>
+          {text || '-'}
+        </span>
+      ),
+    },
+    {
+      title: '零售价',
+      dataIndex: 'retailPrice',
+      key: 'retailPrice',
+      width: 90,
+      sorter: true,
+      render: (price: any) => (
+        <span style={{ fontSize: '12px', fontWeight: '600', color: '#1890ff' }}>
+          ¥{(typeof price === 'number' ? price : parseFloat(price || 0)).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      title: '平拆价',
+      dataIndex: 'packPrice',
+      key: 'packPrice',
+      width: 90,
+      sorter: true,
+      render: (price: any) => (
+        <span style={{ fontSize: '12px', fontWeight: '600', color: '#52c41a' }}>
+          ¥{(typeof price === 'number' ? price : parseFloat(price || 0)).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      title: '箱数',
+      dataIndex: 'boxQuantity',
+      key: 'boxQuantity',
+      width: 60,
+      sorter: true,
+      render: (value: number) => (
+        <span style={{ fontSize: '12px', textAlign: 'center', display: 'block' }}>
+          {value}
+        </span>
+      ),
+    },
+    {
+      title: '盒/箱',
+      dataIndex: 'packPerBox',
+      key: 'packPerBox',
+      width: 60,
+      sorter: true,
+      render: (value: number) => (
+        <span style={{ fontSize: '12px', textAlign: 'center', display: 'block' }}>
+          {value}
+        </span>
+      ),
+    },
+    {
+      title: '包/盒',
+      dataIndex: 'piecePerPack',
+      key: 'piecePerPack',
+      width: 60,
+      sorter: true,
+      render: (value: number) => (
+        <span style={{ fontSize: '12px', textAlign: 'center', display: 'block' }}>
+          {value}
+        </span>
       ),
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 150,
-      render: (value: string) => new Date(value).toLocaleString(),
+      width: 110,
+      sorter: true,
+      render: (value: string) => (
+        <span style={{ fontSize: '11px', color: '#999' }}>
+          {new Date(value).toLocaleDateString()}
+        </span>
+      ),
     },
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: 150,
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
@@ -181,6 +259,15 @@ const ProductManagement: React.FC = () => {
           >
             编辑
           </Button>
+          <Button 
+            type="link" 
+            size="small" 
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
+          >
+            删除
+          </Button>
         </Space>
       ),
     },
@@ -199,7 +286,6 @@ const ProductManagement: React.FC = () => {
         current: pagination.current.toString(),
         pageSize: pagination.pageSize.toString(),
         ...(searchText && { search: searchText }),
-        ...(categoryFilter && { category: categoryFilter }),
         ...(statusFilter && { isActive: statusFilter }),
       });
 
@@ -236,27 +322,101 @@ const ProductManagement: React.FC = () => {
     const totalProducts = data.length;
     const activeProducts = data.filter(p => p.isActive).length;
     const inactiveProducts = totalProducts - activeProducts;
-    const categories = new Set(data.map(p => p.category).filter(Boolean)).size;
+    const manufacturers = new Set(data.map(p => p.manufacturer).filter(Boolean)).size;
     
     setStats({
       totalProducts,
       activeProducts,
       inactiveProducts,
-      categories,
+      categories: manufacturers, // 用厂家数量代替分类数量
     });
   };
 
   // 处理查看
   const handleView = (record: Product) => {
-    message.info(`查看商品: ${record.name}`);
+    Modal.info({
+      title: '商品详情',
+      width: 600,
+      content: (
+        <div>
+          <p><strong>ID:</strong> {record.id}</p>
+          <p><strong>编号:</strong> {record.code}</p>
+          <p><strong>名称:</strong> {record.name}</p>
+          <p><strong>别名:</strong> {record.alias || '-'}</p>
+          <p><strong>厂家:</strong> {record.manufacturer || '-'}</p>
+          <p><strong>描述:</strong> {record.description || '-'}</p>
+          <p><strong>零售价(一箱):</strong> ¥{(typeof record.retailPrice === 'number' ? record.retailPrice : parseFloat(record.retailPrice || '0')).toFixed(2)}</p>
+          <p><strong>平拆价(一盒):</strong> ¥{(typeof record.packPrice === 'number' ? record.packPrice : parseFloat(record.packPrice || '0')).toFixed(2)}</p>
+          <p><strong>箱数量:</strong> {record.boxQuantity}</p>
+          <p><strong>多少盒1箱:</strong> {record.packPerBox}</p>
+          <p><strong>多少包1盒:</strong> {record.piecePerPack}</p>
+          <p><strong>状态:</strong> {record.isActive ? '启用' : '禁用'}</p>
+          <p><strong>创建时间:</strong> {new Date(record.createdAt).toLocaleString()}</p>
+        </div>
+      ),
+    });
   };
 
   // 处理编辑
   const handleEdit = (record: Product) => {
-    message.info(`编辑商品: ${record.name}`);
+    form.setFieldsValue({
+      code: record.code,
+      name: record.name,
+      alias: record.alias,
+      manufacturer: record.manufacturer,
+      description: record.description,
+      retailPrice: typeof record.retailPrice === 'number' ? record.retailPrice : parseFloat(record.retailPrice || '0'),
+      packPrice: typeof record.packPrice === 'number' ? record.packPrice : parseFloat(record.packPrice || '0'),
+      purchasePrice: typeof record.purchasePrice === 'number' ? record.purchasePrice : parseFloat(record.purchasePrice || '0'),
+      boxQuantity: record.boxQuantity,
+      packPerBox: record.packPerBox,
+      piecePerPack: record.piecePerPack,
+    });
+    setEditingRecord(record);
+    setCreateModalVisible(true);
   };
 
-  // 处理添加商品到基地
+  // 处理删除
+  const handleDelete = (record: Product) => {
+    const { modal } = App.useApp();
+    modal.confirm({
+      title: '确认删除',
+      content: `确定要删除商品 "${record.name}" 吗？此操作不可撤销。`,
+      okText: '确定删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        if (!currentBase) {
+          message.warning('请先选择基地');
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/v1/bases/${currentBase.id}/goods/${record.id}`, {
+            method: 'DELETE',
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          
+          if (result.success) {
+            message.success('删除成功');
+            fetchProductData(); // 重新加载数据
+          } else {
+            throw new Error(result.message || '删除失败');
+          }
+        } catch (error) {
+          console.error('删除商品失败:', error);
+          message.error('删除失败，请稍后重试');
+        }
+      },
+    });
+  };
+
+  // 处理添加/编辑商品
   const handleAddProduct = async (values: any) => {
     if (!currentBase) {
       message.warning('请先选择基地');
@@ -265,30 +425,36 @@ const ProductManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/goods`, {
-        method: 'POST',
+      const isEditing = !!editingRecord;
+      const url = isEditing 
+        ? `/api/v1/bases/goods/${editingRecord.id}`
+        : `/api/v1/bases/${currentBase.id}/goods`;
+      
+      const response = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...values,
-          baseId: currentBase.id,
+          ...(isEditing ? {} : { baseId: currentBase.id }),
         }),
       });
 
       const result = await response.json();
       
       if (result.success) {
-        message.success('商品添加成功');
+        message.success(isEditing ? '商品编辑成功' : '商品添加成功');
         setCreateModalVisible(false);
+        setEditingRecord(null);
         form.resetFields();
         fetchProductData();
       } else {
-        throw new Error(result.message || '添加商品失败');
+        throw new Error(result.message || (isEditing ? '编辑商品失败' : '添加商品失败'));
       }
     } catch (error) {
-      console.error('添加商品失败:', error);
-      message.error('添加商品失败，请稍后重试');
+      console.error(editingRecord ? '编辑商品失败:' : '添加商品失败:', error);
+      message.error(editingRecord ? '编辑商品失败，请稍后重试' : '添加商品失败，请稍后重试');
     } finally {
       setCreateLoading(false);
     }
@@ -329,7 +495,7 @@ const ProductManagement: React.FC = () => {
     if (currentBase) {
       fetchProductData();
     }
-  }, [currentBase, pagination.current, pagination.pageSize, searchText, categoryFilter, statusFilter]);
+  }, [currentBase, pagination.current, pagination.pageSize, searchText, statusFilter]);
 
   // 如果没有选择基地
   if (!currentBase) {
@@ -415,24 +581,28 @@ const ProductManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={6}>
-            <Search
-              placeholder="搜索商品名称或编号"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索商品名称或编号"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              >
+                搜索
+              </Button>
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select
-              placeholder="选择分类"
+              placeholder="暂不支持分类筛选"
               allowClear
               style={{ width: '100%' }}
-              value={categoryFilter}
-              onChange={(value) => {
-                setCategoryFilter(value || '');
-                handleFilterChange();
-              }}
+              disabled
             >
               <Option value="">全部分类</Option>
               <Option value="electronics">电子产品</Option>
@@ -457,6 +627,44 @@ const ProductManagement: React.FC = () => {
               <Option value="false">禁用</Option>
             </Select>
           </Col>
+          <Col span={6}>
+            <Space>
+              <span style={{ fontSize: '14px', color: '#666' }}>表格密度:</span>
+              <Select
+                value={tableSize}
+                onChange={setTableSize}
+                style={{ width: 80 }}
+                size="small"
+              >
+                <Option value="small">紧凑</Option>
+                <Option value="middle">默认</Option>
+                <Option value="large">宽松</Option>
+              </Select>
+            </Space>
+          </Col>
+          <Col span={4} style={{ textAlign: 'right' }}>
+            <Space>
+              <Button
+                icon={<ExportOutlined />}
+                onClick={handleExport}
+              >
+                导出
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={handleRefresh}
+              >
+                刷新
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateModalVisible(true)}
+              >
+                添加商品
+              </Button>
+            </Space>
+          </Col>
         </Row>
       </Card>
 
@@ -471,21 +679,26 @@ const ProductManagement: React.FC = () => {
             ...pagination,
             showSizeChanger: true,
             showQuickJumper: true,
+            pageSizeOptions: ['20', '30', '50', '100'],
             showTotal: (total, range) => 
               `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
           }}
           onChange={handleTableChange}
           scroll={{ x: 1400 }}
-          size="middle"
+          size={tableSize}
           className={styles.productTable}
         />
       </Card>
 
       {/* 添加商品模态框 */}
       <Modal
-        title="添加商品到基地"
+        title={editingRecord ? '编辑商品' : '添加商品到基地'}
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
+        onCancel={() => {
+          setCreateModalVisible(false);
+          setEditingRecord(null);
+          form.resetFields();
+        }}
         footer={null}
         width={600}
       >
@@ -517,6 +730,25 @@ const ProductManagement: React.FC = () => {
             <Input placeholder="请输入商品名称" />
           </Form.Item>
 
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="商品别名"
+                name="alias"
+              >
+                <Input placeholder="请输入商品别名" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="厂家名称"
+                name="manufacturer"
+              >
+                <Input placeholder="请输入厂家名称" />
+              </Form.Item>
+            </Col>
+          </Row>
+
           <Form.Item
             label="商品描述"
             name="description"
@@ -529,17 +761,43 @@ const ProductManagement: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item
-            label="商品分类"
-            name="category"
-          >
-            <Select placeholder="请选择商品分类">
-              <Option value="electronics">电子产品</Option>
-              <Option value="clothing">服装</Option>
-              <Option value="food">食品</Option>
-              <Option value="books">图书</Option>
-            </Select>
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="零售价(一箱)"
+                name="retailPrice"
+                rules={[
+                  { required: true, message: '请输入零售价' },
+                  { type: 'number', min: 0, message: '零售价不能为负数' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="零售价"
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="平拆价(一盒)"
+                name="packPrice"
+                rules={[
+                  { type: 'number', min: 0, message: '平拆价不能为负数' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="平拆价"
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Row gutter={16}>
             <Col span={8}>

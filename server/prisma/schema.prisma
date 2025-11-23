@@ -166,8 +166,11 @@ model Goods {
   id                     String                  @id @default(uuid())
   code                   String                  @unique
   name                   String
+  alias                  String?                 // 商品别名
+  manufacturer           String?                 // 厂家名称
   description            String?
-  retailPrice            Decimal                 @default(0) @map("retail_price") @db.Decimal(12, 2)
+  retailPrice            Decimal                 @default(0) @map("retail_price") @db.Decimal(12, 2)  // 零售价(一箱)
+  packPrice              Decimal?                @map("pack_price") @db.Decimal(12, 2)  // 平拆价(一盒)
   purchasePrice          Decimal                 @default(0) @map("purchase_price") @db.Decimal(12, 2)
   boxQuantity            Int                     @default(1) @map("box_quantity")
   packPerBox             Int                     @default(1) @map("pack_per_box")

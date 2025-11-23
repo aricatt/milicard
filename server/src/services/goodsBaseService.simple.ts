@@ -11,7 +11,9 @@ export class GoodsBaseServiceSimple {
   static async getBaseGoodsList(baseId: number, params: any = {}) {
     try {
       const { current = 1, pageSize = 10, name, code } = params;
-      const skip = (current - 1) * pageSize;
+      const currentNum = parseInt(current) || 1;
+      const pageSizeNum = parseInt(pageSize) || 10;
+      const skip = (currentNum - 1) * pageSizeNum;
 
       // 简化查询：获取在该基地配置的商品
       const goodsBaseConfigs = await prisma.goodsBase.findMany({
@@ -39,7 +41,7 @@ export class GoodsBaseServiceSimple {
           goods: true
         },
         skip,
-        take: pageSize,
+        take: pageSizeNum,
         orderBy: {
           createdAt: 'desc'
         }
@@ -58,8 +60,11 @@ export class GoodsBaseServiceSimple {
         id: config.goods.id,
         code: config.goods.code,
         name: config.goods.name,
+        alias: config.goods.alias,
+        manufacturer: config.goods.manufacturer,
         description: config.goods.description,
         retailPrice: config.retailPrice || config.goods.retailPrice,
+        packPrice: config.goods.packPrice,
         purchasePrice: config.purchasePrice || config.goods.purchasePrice,
         boxQuantity: config.goods.boxQuantity,
         packPerBox: config.goods.packPerBox,
@@ -83,8 +88,8 @@ export class GoodsBaseServiceSimple {
         success: true,
         data,
         total,
-        current,
-        pageSize
+        current: currentNum,
+        pageSize: pageSizeNum
       };
     } catch (error) {
       logger.error('获取基地商品列表失败', { error, baseId, params, service: 'milicard-api' });
@@ -164,7 +169,9 @@ export class GoodsBaseServiceSimple {
   static async getAllGoods(params: any = {}) {
     try {
       const { current = 1, pageSize = 10, name, code } = params;
-      const skip = (current - 1) * pageSize;
+      const currentNum = parseInt(current) || 1;
+      const pageSizeNum = parseInt(pageSize) || 10;
+      const skip = (currentNum - 1) * pageSizeNum;
 
       const where: any = {
         isActive: true
@@ -188,7 +195,7 @@ export class GoodsBaseServiceSimple {
         prisma.goods.findMany({
           where,
           skip,
-          take: pageSize,
+          take: pageSizeNum,
           orderBy: {
             createdAt: 'desc'
           }
@@ -200,9 +207,15 @@ export class GoodsBaseServiceSimple {
         id: item.id,
         code: item.code,
         name: item.name,
+        alias: item.alias,
+        manufacturer: item.manufacturer,
         description: item.description,
         retailPrice: item.retailPrice,
+        packPrice: item.packPrice,
         purchasePrice: item.purchasePrice,
+        boxQuantity: item.boxQuantity,
+        packPerBox: item.packPerBox,
+        piecePerPack: item.piecePerPack,
         isActive: item.isActive,
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString()
@@ -212,11 +225,98 @@ export class GoodsBaseServiceSimple {
         success: true,
         data,
         total,
-        current,
-        pageSize
+        current: currentNum,
+        pageSize: pageSizeNum
       };
     } catch (error) {
       logger.error('获取商品列表失败', { error, params, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
+   * 更新商品信息
+   */
+  static async updateGoods(goodsId: string, updateData: any) {
+    try {
+      // 检查商品是否存在
+      const existingGoods = await prisma.goods.findUnique({
+        where: { id: goodsId }
+      });
+
+      if (!existingGoods) {
+        throw new Error('商品不存在');
+      }
+
+      // 使用事务同时更新商品表和基地商品配置表
+      const result = await prisma.$transaction(async (tx) => {
+        // 更新商品基本信息
+        const updatedGoods = await tx.goods.update({
+          where: { id: goodsId },
+          data: {
+            name: updateData.name,
+            alias: updateData.alias,
+            manufacturer: updateData.manufacturer,
+            description: updateData.description,
+            retailPrice: updateData.retailPrice,
+            packPrice: updateData.packPrice,
+            purchasePrice: updateData.purchasePrice,
+            boxQuantity: updateData.boxQuantity,
+            packPerBox: updateData.packPerBox,
+            piecePerPack: updateData.piecePerPack,
+            updatedAt: new Date()
+          }
+        });
+
+        // 更新所有基地的商品配置（如果存在零售价或采购价的话）
+        if (updateData.retailPrice !== undefined || updateData.purchasePrice !== undefined) {
+          await tx.goodsBase.updateMany({
+            where: { goodsId: goodsId },
+            data: {
+              ...(updateData.retailPrice !== undefined && { retailPrice: updateData.retailPrice }),
+              ...(updateData.purchasePrice !== undefined && { purchasePrice: updateData.purchasePrice }),
+              updatedAt: new Date()
+            }
+          });
+        }
+
+        return updatedGoods;
+      });
+
+      return result;
+    } catch (error) {
+      logger.error('更新商品失败', { error, goodsId, updateData, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
+   * 从基地删除商品
+   */
+  static async deleteGoodsFromBase(baseId: number, goodsId: string) {
+    try {
+      // 检查基地商品配置是否存在
+      const goodsBaseConfig = await prisma.goodsBase.findFirst({
+        where: {
+          goodsId: goodsId,
+          baseId: baseId
+        }
+      });
+
+      if (!goodsBaseConfig) {
+        throw new Error('该商品未在此基地配置');
+      }
+
+      // 删除基地商品配置
+      await prisma.goodsBase.delete({
+        where: {
+          id: goodsBaseConfig.id
+        }
+      });
+
+      return { message: '商品已从基地移除' };
+    } catch (error) {
+      logger.error('删除基地商品失败', { error, baseId, goodsId, service: 'milicard-api' });
       throw error;
     }
   }

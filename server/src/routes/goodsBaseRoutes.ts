@@ -21,4 +21,16 @@ router.get('/goods/all', GoodsBaseController.getAllGoods);
  */
 router.post('/:baseId/goods', GoodsBaseController.addGoodsToBase);
 
+/**
+ * 更新商品信息
+ * PUT /api/v1/goods/{goodsId}
+ */
+router.put('/goods/:goodsId', GoodsBaseController.updateGoods);
+
+/**
+ * 删除基地商品
+ * DELETE /api/v1/bases/{baseId}/goods/{goodsId}
+ */
+router.delete('/:baseId/goods/:goodsId', GoodsBaseController.deleteGoodsFromBase);
+
 export default router;
