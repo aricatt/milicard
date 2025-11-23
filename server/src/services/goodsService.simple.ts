@@ -1,10 +1,11 @@
 import { prisma } from '../utils/database'
 import { logger } from '../utils/logger'
 import { MultilingualText } from '../types/multilingualData'
+import { CodeGenerator } from '../utils/codeGenerator'
 
 // 简化的商品类型定义（基于实际schema）
 export interface SimpleGoodsRequest {
-  code: string
+  code?: string  // 改为可选，支持自动生成
   name: MultilingualText
   description?: MultilingualText
   retailPrice?: number
@@ -51,19 +52,22 @@ export class GoodsService {
    */
   static async createGoods(data: SimpleGoodsRequest, userId: string): Promise<SimpleGoodsResponse> {
     try {
+      // 生成或使用提供的商品编码
+      const code = data.code || await CodeGenerator.generateGoodsCode();
+
       // 检查商品编码是否已存在
       const existingGoods = await prisma.goods.findUnique({
-        where: { code: data.code }
+        where: { code }
       })
 
       if (existingGoods) {
-        throw new Error(`商品编码 ${data.code} 已存在`)
+        throw new Error(`商品编码 ${code} 已存在`)
       }
 
       // 创建商品
       const goods = await prisma.goods.create({
         data: {
-          code: data.code,
+          code,
           name: JSON.stringify(data.name),
           description: data.description ? JSON.stringify(data.description) : undefined,
           retailPrice: data.retailPrice || 0,

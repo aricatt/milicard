@@ -711,12 +711,9 @@ const ProductManagement: React.FC = () => {
           <Form.Item
             label="商品编号"
             name="code"
-            rules={[
-              { required: true, message: '请输入商品编号' },
-              { min: 3, max: 50, message: '商品编号长度应在3-50个字符之间' }
-            ]}
+            extra="留空将自动生成编号（格式：GOODS-XXXXXXXXXXX）"
           >
-            <Input placeholder="请输入商品编号" />
+            <Input placeholder="留空自动生成，或手动输入自定义编号" />
           </Form.Item>
 
           <Form.Item

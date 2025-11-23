@@ -486,13 +486,20 @@ const ProcurementManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={6}>
-            <Search
-              placeholder="搜索订单编号"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索订单编号"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button 
+                type="primary" 
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              />
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select
@@ -583,12 +590,9 @@ const ProcurementManagement: React.FC = () => {
           <Form.Item
             label="订单编号"
             name="orderNo"
-            rules={[
-              { required: true, message: '请输入订单编号' },
-              { min: 3, max: 50, message: '订单编号长度应在3-50个字符之间' }
-            ]}
+            extra="留空将自动生成编号（格式：PO-XXXXXXXXXXX）"
           >
-            <Input placeholder="请输入订单编号" />
+            <Input placeholder="留空自动生成，或手动输入自定义编号" />
           </Form.Item>
 
           <Form.Item

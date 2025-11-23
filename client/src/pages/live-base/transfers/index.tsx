@@ -84,9 +84,10 @@ const TransferManagement: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [locationFilter, setLocationFilter] = useState<string>('');
+  const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
   });
 
@@ -121,53 +122,74 @@ const TransferManagement: React.FC = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      width: 80,
-      render: (text: string) => text.slice(-8),
+      width: 70,
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+          {text.slice(-6)}
+        </span>
+      ),
     },
     {
-      title: '日期',
+      title: '调货日期',
       dataIndex: 'transferDate',
       key: 'transferDate',
-      width: 120,
-      render: (value: string) => dayjs(value).format('YYYY-MM-DD'),
+      width: 100,
+      sorter: true,
+      render: (value: string) => (
+        <span style={{ fontSize: '12px' }}>
+          {dayjs(value).format('MM-DD')}
+        </span>
+      ),
     },
     {
-      title: '商品',
+      title: '商品名称',
       dataIndex: 'goodsName',
       key: 'goodsName',
-      width: 200,
-      render: (text: string) => <strong>{text}</strong>,
+      width: 150,
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (text: string) => (
+        <span style={{ fontSize: '13px', fontWeight: '500' }} title={text}>
+          {text}
+        </span>
+      ),
     },
     {
-      title: '调出位置',
+      title: '调出',
       dataIndex: 'fromLocationName',
       key: 'fromLocationName',
-      width: 120,
+      width: 80,
       render: (text: string) => (
-        <Tag color="blue">{text}</Tag>
+        <Tag color="blue" style={{ fontSize: '11px' }}>{text}</Tag>
       ),
     },
     {
       title: '',
       key: 'arrow',
-      width: 40,
+      width: 30,
       align: 'center',
-      render: () => <ArrowRightOutlined style={{ color: '#999' }} />,
+      render: () => <ArrowRightOutlined style={{ color: '#999', fontSize: '12px' }} />,
     },
     {
-      title: '调入位置',
+      title: '调入',
       dataIndex: 'toLocationName',
       key: 'toLocationName',
-      width: 120,
+      width: 80,
       render: (text: string) => (
-        <Tag color="green">{text}</Tag>
+        <Tag color="green" style={{ fontSize: '11px' }}>{text}</Tag>
       ),
     },
     {
       title: '经手人',
       dataIndex: 'handlerName',
       key: 'handlerName',
-      width: 100,
+      width: 80,
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', color: '#666' }}>
+          {text}
+        </span>
+      ),
     },
     {
       title: '调货箱',
@@ -463,13 +485,20 @@ const TransferManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={6}>
-            <Search
-              placeholder="搜索商品名称"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索商品名称"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button 
+                type="primary" 
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              />
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select

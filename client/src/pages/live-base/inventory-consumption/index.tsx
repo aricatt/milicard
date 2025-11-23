@@ -96,9 +96,10 @@ const InventoryConsumptionManagement: React.FC = () => {
   // 筛选条件
   const [searchText, setSearchText] = useState('');
   const [locationFilter, setLocationFilter] = useState<string>('');
+  const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
   });
 
@@ -568,6 +569,44 @@ const InventoryConsumptionManagement: React.FC = () => {
               <Option value="直播间B">直播间B</Option>
             </Select>
           </Col>
+          <Col span={6}>
+            <Space>
+              <span style={{ fontSize: '14px', color: '#666' }}>表格密度:</span>
+              <Select
+                value={tableSize}
+                onChange={setTableSize}
+                style={{ width: 80 }}
+                size="small"
+              >
+                <Option value="small">紧凑</Option>
+                <Option value="middle">默认</Option>
+                <Option value="large">宽松</Option>
+              </Select>
+            </Space>
+          </Col>
+          <Col span={4} style={{ textAlign: 'right' }}>
+            <Space>
+              <Button
+                icon={<ExportOutlined />}
+                onClick={() => message.info('导出功能开发中...')}
+              >
+                导出
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => fetchInventoryData()}
+              >
+                刷新
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateModalVisible(true)}
+              >
+                添加消耗
+              </Button>
+            </Space>
+          </Col>
         </Row>
       </Card>
 
@@ -587,8 +626,8 @@ const InventoryConsumptionManagement: React.FC = () => {
               rowKey="id"
               loading={loading}
               pagination={false}
-              scroll={{ x: 1000 }}
-              size="middle"
+              scroll={{ x: 800 }}
+              size={tableSize}
               className={styles.inventoryTable}
             />
               )
@@ -606,12 +645,13 @@ const InventoryConsumptionManagement: React.FC = () => {
                 ...pagination,
                 showSizeChanger: true,
                 showQuickJumper: true,
+                pageSizeOptions: ['20', '30', '50', '100'],
                 showTotal: (total, range) => 
                   `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
               }}
               onChange={handleTableChange}
-              scroll={{ x: 1200 }}
-              size="middle"
+              scroll={{ x: 1000 }}
+              size={tableSize}
               className={styles.consumptionTable}
             />
               )

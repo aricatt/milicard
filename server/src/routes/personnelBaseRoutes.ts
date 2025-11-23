@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { PersonnelBaseController } from '../controllers/personnelBaseController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// 所有路由都需要认证
+router.use(authenticateToken);
 
 /**
  * 获取基地人员统计

@@ -27,6 +27,8 @@ import {
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
+import { get, post } from '@/utils/request';
+import { isAuthenticated, createMockToken, setToken, getDevToken } from '@/utils/auth';
 import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
 
@@ -241,21 +243,15 @@ const PersonnelManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         current: pagination.current.toString(),
         pageSize: pagination.pageSize.toString(),
         ...(searchText && { name: searchText }),
         ...(roleFilter && { role: roleFilter }),
         ...(statusFilter && { isActive: statusFilter }),
-      });
+      };
 
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/personnel?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await get(`/api/v1/bases/${currentBase.id}/personnel`, params);
       
       if (result.success) {
         setPersonnelData(result.data || []);
@@ -401,23 +397,14 @@ const PersonnelManagement: React.FC = () => {
     setCreateLoading(true);
     try {
       // 尝试调用后端API
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/personnel`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          message.success('人员创建成功');
-          setCreateModalVisible(false);
-          form.resetFields();
-          fetchPersonnelData();
-          return;
-        }
+      const result = await post(`/api/v1/bases/${currentBase.id}/personnel`, values);
+      
+      if (result.success) {
+        message.success('人员创建成功');
+        setCreateModalVisible(false);
+        form.resetFields();
+        fetchPersonnelData();
+        return;
       }
       
       // 如果API调用失败，使用模拟数据
@@ -499,11 +486,32 @@ const PersonnelManagement: React.FC = () => {
     setPagination(prev => ({ ...prev, current: 1 }));
   };
 
-  // 页面加载时获取数据
+  // 页面加载时检查认证并获取数据
   useEffect(() => {
-    if (currentBase) {
-      fetchPersonnelData();
-    }
+    const initAuth = async () => {
+      // 检查认证状态
+      if (!isAuthenticated()) {
+        console.warn('用户未认证，尝试获取开发token');
+        
+        // 先尝试从后端获取开发token
+        const devToken = await getDevToken();
+        if (devToken) {
+          setToken(devToken);
+          message.success('已获取开发环境认证token');
+        } else {
+          // 如果无法获取开发token，使用模拟token
+          const mockToken = createMockToken();
+          setToken(mockToken);
+          message.warning('使用模拟token，API请求可能失败');
+        }
+      }
+      
+      if (currentBase) {
+        fetchPersonnelData();
+      }
+    };
+    
+    initAuth();
   }, [currentBase, pagination.current, pagination.pageSize, searchText, roleFilter, statusFilter]);
 
   // 如果没有选择基地
@@ -592,13 +600,20 @@ const PersonnelManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={6}>
-            <Search
-              placeholder="搜索姓名或编号"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索姓名或编号"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button 
+                type="primary" 
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              />
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select

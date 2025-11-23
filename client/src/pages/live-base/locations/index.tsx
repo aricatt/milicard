@@ -86,9 +86,10 @@ const LocationManagement: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
   });
 
@@ -582,13 +583,20 @@ const LocationManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={6}>
-            <Search
-              placeholder="搜索位置名称"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索位置名称"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button 
+                type="primary" 
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              />
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select
@@ -636,12 +644,13 @@ const LocationManagement: React.FC = () => {
             ...pagination,
             showSizeChanger: true,
             showQuickJumper: true,
+            pageSizeOptions: ['20', '30', '50', '100'],
             showTotal: (total, range) => 
               `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
           }}
           onChange={handleTableChange}
           scroll={{ x: 1400 }}
-          size="middle"
+          size={tableSize}
           className={styles.locationTable}
         />
       </Card>

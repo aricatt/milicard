@@ -1,5 +1,6 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
+import { CodeGenerator } from '../utils/codeGenerator';
 
 /**
  * 基地感知的采购服务类
@@ -140,7 +141,7 @@ export class PurchaseBaseService {
       }
 
       // 生成采购订单号
-      const orderNo = `PO${Date.now()}`;
+      const orderNo = await CodeGenerator.generatePurchaseOrderCode();
 
       // 计算总金额
       let totalAmount = 0;

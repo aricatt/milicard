@@ -82,9 +82,10 @@ const ArrivalManagement: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [warehouseFilter, setWarehouseFilter] = useState<string>('');
   const [purchaseOrderFilter, setPurchaseOrderFilter] = useState<string>('');
+  const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
   });
 
@@ -99,36 +100,60 @@ const ArrivalManagement: React.FC = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      width: 80,
-      render: (text: string) => text.slice(-8),
+      width: 70,
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+          {text.slice(-6)}
+        </span>
+      ),
     },
     {
-      title: '日期',
+      title: '到货日期',
       dataIndex: 'arrivalDate',
       key: 'arrivalDate',
-      width: 120,
-      render: (value: string) => dayjs(value).format('YYYY-MM-DD'),
+      width: 100,
+      sorter: true,
+      render: (value: string) => (
+        <span style={{ fontSize: '12px' }}>
+          {dayjs(value).format('MM-DD')}
+        </span>
+      ),
     },
     {
-      title: '采购单',
+      title: '采购单号',
       dataIndex: 'purchaseOrderNo',
       key: 'purchaseOrderNo',
-      width: 150,
-      render: (text: string) => <strong>{text}</strong>,
+      width: 120,
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', fontWeight: '500', color: '#1890ff' }} title={text}>
+          {text}
+        </span>
+      ),
     },
     {
-      title: '商品',
+      title: '商品名称',
       dataIndex: 'goodsName',
       key: 'goodsName',
-      width: 200,
+      width: 150,
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (text: string) => (
+        <span style={{ fontSize: '13px', fontWeight: '500' }} title={text}>
+          {text}
+        </span>
+      ),
     },
     {
       title: '仓库',
       dataIndex: 'warehouseName',
       key: 'warehouseName',
-      width: 120,
+      width: 80,
       render: (text: string) => (
-        <Tag color="blue" icon={<InboxOutlined />}>
+        <Tag color="blue" icon={<InboxOutlined />} style={{ fontSize: '12px' }}>
           {text}
         </Tag>
       ),
@@ -137,38 +162,60 @@ const ArrivalManagement: React.FC = () => {
       title: '经手人',
       dataIndex: 'handlerName',
       key: 'handlerName',
-      width: 100,
+      width: 80,
+      render: (text: string) => (
+        <span style={{ fontSize: '12px', color: '#666' }}>
+          {text}
+        </span>
+      ),
     },
     {
-      title: '到货箱',
+      title: '箱数',
       dataIndex: 'boxQuantity',
       key: 'boxQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => value > 0 ? `${value}箱` : '-',
+      width: 60,
+      align: 'center',
+      render: (value: number) => (
+        <span style={{ fontSize: '12px', fontWeight: '600', color: '#52c41a' }}>
+          {value > 0 ? `${value}` : '-'}
+        </span>
+      ),
     },
     {
-      title: '到货包',
+      title: '包数',
       dataIndex: 'packQuantity',
       key: 'packQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => value > 0 ? `${value}包` : '-',
+      width: 60,
+      align: 'center',
+      render: (value: number) => (
+        <span style={{ fontSize: '12px', fontWeight: '600', color: '#1890ff' }}>
+          {value > 0 ? `${value}` : '-'}
+        </span>
+      ),
     },
     {
-      title: '到货盒',
+      title: '盒数',
       dataIndex: 'pieceQuantity',
       key: 'pieceQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => value > 0 ? `${value}盒` : '-',
+      width: 60,
+      align: 'center',
+      render: (value: number) => (
+        <span style={{ fontSize: '12px', fontWeight: '600', color: '#722ed1' }}>
+          {value > 0 ? `${value}` : '-'}
+        </span>
+      ),
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 150,
-      render: (value: string) => dayjs(value).format('YYYY-MM-DD HH:mm'),
+      width: 110,
+      sorter: true,
+      render: (value: string) => (
+        <span style={{ fontSize: '11px', color: '#999' }}>
+          {dayjs(value).format('MM-DD HH:mm')}
+        </span>
+      ),
     },
     {
       title: '操作',
@@ -426,13 +473,20 @@ const ArrivalManagement: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={6}>
-            <Search
-              placeholder="搜索商品名称或采购单号"
-              allowClear
-              enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
-              onChange={(e) => !e.target.value && setSearchText('')}
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                placeholder="搜索商品名称或采购单号"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText)}
+              />
+              <Button 
+                type="primary" 
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchText)}
+              />
+            </Space.Compact>
           </Col>
           <Col span={4}>
             <Select
@@ -460,6 +514,44 @@ const ArrivalManagement: React.FC = () => {
               <Option value="PO-2024-002">PO-2024-002</Option>
             </Select>
           </Col>
+          <Col span={6}>
+            <Space>
+              <span style={{ fontSize: '14px', color: '#666' }}>表格密度:</span>
+              <Select
+                value={tableSize}
+                onChange={setTableSize}
+                style={{ width: 80 }}
+                size="small"
+              >
+                <Option value="small">紧凑</Option>
+                <Option value="middle">默认</Option>
+                <Option value="large">宽松</Option>
+              </Select>
+            </Space>
+          </Col>
+          <Col span={4} style={{ textAlign: 'right' }}>
+            <Space>
+              <Button
+                icon={<ExportOutlined />}
+                onClick={() => message.info('导出功能开发中...')}
+              >
+                导出
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => fetchArrivalData()}
+              >
+                刷新
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateModalVisible(true)}
+              >
+                添加到货
+              </Button>
+            </Space>
+          </Col>
         </Row>
       </Card>
 
@@ -474,12 +566,13 @@ const ArrivalManagement: React.FC = () => {
             ...pagination,
             showSizeChanger: true,
             showQuickJumper: true,
+            pageSizeOptions: ['20', '30', '50', '100'],
             showTotal: (total, range) => 
               `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
           }}
           onChange={handleTableChange}
-          scroll={{ x: 1200 }}
-          size="middle"
+          scroll={{ x: 1000 }}
+          size={tableSize}
           className={styles.arrivalTable}
         />
       </Card>
