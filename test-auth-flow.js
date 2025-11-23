@@ -2,7 +2,8 @@
  * 测试认证流程
  */
 
-const fetch = require('node-fetch');
+// 使用内置的fetch (Node.js 18+)
+const fetch = globalThis.fetch;
 
 async function testAuthFlow() {
   console.log('🔐 测试认证流程...\n');

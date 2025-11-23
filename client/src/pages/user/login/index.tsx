@@ -134,26 +134,35 @@ const Login: React.FC = () => {
     try {
       // 登录
       const msg = await login({ ...values, type });
-      if (msg.status === 'ok') {
+      console.log('登录响应:', msg);
+      
+      // 适配后端响应格式：success: true 表示成功
+      if (msg.success === true) {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
+        
+        // 保存token到localStorage
+        if (msg.data?.token) {
+          localStorage.setItem('token', msg.data.token);
+        }
+        
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         window.location.href = urlParams.get('redirect') || '/';
         return;
       }
-      console.log(msg);
+      console.log('登录失败:', msg);
       // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
+      setUserLoginState({ status: 'error', type });
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',
         defaultMessage: '登录失败，请重试！',
       });
-      console.log(error);
+      console.log('登录异常:', error);
       message.error(defaultLoginFailureMessage);
     }
   };

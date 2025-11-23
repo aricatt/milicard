@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { JwtService } from '../services/jwtService';
 import { logger } from '../utils/logger';
+import { prisma } from '../utils/database';
 
 const router = Router();
 
@@ -24,15 +25,81 @@ router.post('/token', async (req: Request, res: Response) => {
     }
 
     const { username = 'developer' } = req.body;
+    const devUserId = 'dev-user-001';
 
-    // 创建开发用户的payload
+    // 确保开发用户在数据库中存在
+    let devUser = await prisma.user.findUnique({
+      where: { id: devUserId },
+      include: {
+        userRoles: {
+          include: {
+            role: true
+          }
+        }
+      }
+    });
+
+    if (!devUser) {
+      // 创建开发用户
+      logger.info('创建开发环境用户');
+      
+      // 首先确保ADMIN角色存在
+      let adminRole = await prisma.role.findUnique({
+        where: { name: 'ADMIN' }
+      });
+
+      if (!adminRole) {
+        adminRole = await prisma.role.create({
+          data: {
+            name: 'ADMIN',
+            description: '管理员角色',
+            permissions: {},
+            isSystem: false
+          }
+        });
+      }
+
+      // 创建开发用户
+      devUser = await prisma.user.create({
+        data: {
+          id: devUserId,
+          username: username,
+          email: 'dev@example.com',
+          passwordHash: 'dev-password-hash', // 开发环境不需要真实密码
+          name: 'Developer',
+          isActive: true,
+          userRoles: {
+            create: {
+              roleId: adminRole.id,
+              assignedBy: devUserId // 自己分配给自己
+            }
+          }
+        },
+        include: {
+          userRoles: {
+            include: {
+              role: true
+            }
+          }
+        }
+      });
+
+      logger.info('开发环境用户创建成功', { userId: devUserId });
+    }
+
+    // 确保devUser存在（TypeScript类型检查）
+    if (!devUser) {
+      throw new Error('开发用户创建失败');
+    }
+
+    // 创建token payload
     const payload = {
-      userId: 'dev-user-001',
-      username: username,
-      email: 'dev@example.com',
-      displayName: 'Developer',
-      roles: ['ADMIN', 'USER'],
-      isActive: true
+      userId: devUser.id,
+      username: devUser.username,
+      email: devUser.email || 'dev@example.com',
+      displayName: devUser.name,
+      roles: devUser.userRoles.map(ur => ur.role.name),
+      isActive: devUser.isActive
     };
 
     // 生成真正的JWT token
@@ -56,7 +123,8 @@ router.post('/token', async (req: Request, res: Response) => {
     logger.error('生成开发环境token失败', { error });
     res.status(500).json({
       success: false,
-      message: '生成token失败'
+      message: '生成token失败',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 });

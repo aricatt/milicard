@@ -33,6 +33,7 @@ export async function request(url: string, options: RequestOptions = {}): Promis
 
   // 获取认证token
   const token = localStorage.getItem('token');
+  console.log('API请求 - URL:', finalUrl, 'Token存在:', !!token);
   
   // 设置默认headers
   const headers: Record<string, string> = {
@@ -47,6 +48,9 @@ export async function request(url: string, options: RequestOptions = {}): Promis
   // 添加认证头
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    console.log('已添加认证头');
+  } else {
+    console.warn('没有找到认证token');
   }
 
   // 发送请求

@@ -486,9 +486,14 @@ const PersonnelManagement: React.FC = () => {
     setPagination(prev => ({ ...prev, current: 1 }));
   };
 
-  // 页面加载时检查认证并获取数据
+  // 认证状态
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  // 页面加载时检查认证
   useEffect(() => {
     const initAuth = async () => {
+      console.log('开始初始化认证...');
+      
       // 检查认证状态
       if (!isAuthenticated()) {
         console.warn('用户未认证，尝试获取开发token');
@@ -498,21 +503,34 @@ const PersonnelManagement: React.FC = () => {
         if (devToken) {
           setToken(devToken);
           message.success('已获取开发环境认证token');
+          console.log('开发token设置成功');
         } else {
           // 如果无法获取开发token，使用模拟token
           const mockToken = createMockToken();
           setToken(mockToken);
           message.warning('使用模拟token，API请求可能失败');
+          console.log('使用模拟token');
         }
+      } else {
+        console.log('用户已认证');
       }
       
-      if (currentBase) {
-        fetchPersonnelData();
-      }
+      setAuthInitialized(true);
+      console.log('认证初始化完成');
     };
     
     initAuth();
-  }, [currentBase, pagination.current, pagination.pageSize, searchText, roleFilter, statusFilter]);
+  }, []); // 只在组件挂载时执行一次
+
+  // 数据获取逻辑 - 等待认证初始化完成
+  useEffect(() => {
+    if (authInitialized && currentBase && isAuthenticated()) {
+      console.log('条件满足，开始获取数据');
+      fetchPersonnelData();
+    } else {
+      console.log('等待条件满足:', { authInitialized, currentBase: !!currentBase, authenticated: isAuthenticated() });
+    }
+  }, [authInitialized, currentBase, pagination.current, pagination.pageSize, searchText, roleFilter, statusFilter]);
 
   // 如果没有选择基地
   if (!currentBase) {

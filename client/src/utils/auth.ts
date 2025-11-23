@@ -33,24 +33,39 @@ export function removeToken(): void {
 }
 
 /**
- * 检查是否已登录（有有效token）
+ * 检查用户是否已认证
  */
 export function isAuthenticated(): boolean {
   const token = getToken();
-  if (!token) return false;
+  console.log('检查认证状态, token存在:', !!token);
   
+  if (!token) {
+    return false;
+  }
+
   try {
-    // 简单检查token格式（JWT通常有3个部分）
+    // 简单检查token格式（JWT应该有三个部分）
     const parts = token.split('.');
-    if (parts.length !== 3) return false;
-    
-    // 检查token是否过期（如果能解析的话）
+    if (parts.length !== 3) {
+      console.warn('Token格式无效');
+      return false;
+    }
+
+    // 检查token是否过期
     const payload = JSON.parse(atob(parts[1]));
     const now = Math.floor(Date.now() / 1000);
     
-    return payload.exp > now;
+    if (payload.exp && payload.exp < now) {
+      console.warn('Token已过期');
+      removeToken();
+      return false;
+    }
+
+    console.log('认证检查通过, 用户:', payload.username || payload.displayName);
+    return true;
   } catch (error) {
-    console.warn('Token validation failed:', error);
+    console.warn('Token验证失败:', error);
+    removeToken();
     return false;
   }
 }

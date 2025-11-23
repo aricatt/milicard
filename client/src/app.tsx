@@ -34,11 +34,21 @@ export async function getInitialState(): Promise<{
 }> {
   const fetchUserInfo = async () => {
     try {
+      // 检查是否有token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('没有找到token，跳转到登录页');
+        history.push(loginPath);
+        return undefined;
+      }
+
       const msg = await queryCurrentUser({
         skipErrorHandler: true,
       });
       return msg.data;
     } catch (_error) {
+      console.log('获取用户信息失败，清除token并跳转到登录页');
+      localStorage.removeItem('token');
       history.push(loginPath);
     }
     return undefined;

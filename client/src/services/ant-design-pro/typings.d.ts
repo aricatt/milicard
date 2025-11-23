@@ -24,6 +24,20 @@ declare namespace API {
   };
 
   type LoginResult = {
+    success?: boolean;
+    message?: string;
+    data?: {
+      user?: {
+        id?: string;
+        username?: string;
+        email?: string;
+        displayName?: string;
+        roles?: string[];
+      };
+      token?: string;
+      expiresIn?: number;
+    };
+    // 保留原有字段以兼容Mock数据
     status?: string;
     type?: string;
     currentAuthority?: string;
