@@ -64,7 +64,7 @@ export class LocationBaseController {
   static async getLocationById(req: Request, res: Response) {
     try {
       const baseId = parseInt(req.params.baseId);
-      const locationId = req.params.locationId;
+      const locationId = parseInt(req.params.locationId);
       
       if (!baseId || !locationId) {
         return res.status(400).json({
@@ -142,7 +142,7 @@ export class LocationBaseController {
   static async updateLocation(req: Request, res: Response) {
     try {
       const baseId = parseInt(req.params.baseId);
-      const locationId = req.params.locationId;
+      const locationId = parseInt(req.params.locationId);
       const locationData = req.body;
       
       if (!baseId || !locationId) {
@@ -186,7 +186,7 @@ export class LocationBaseController {
   static async deleteLocation(req: Request, res: Response) {
     try {
       const baseId = parseInt(req.params.baseId);
-      const locationId = req.params.locationId;
+      const locationId = parseInt(req.params.locationId);
       
       if (!baseId || !locationId) {
         return res.status(400).json({

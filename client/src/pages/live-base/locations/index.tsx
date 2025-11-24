@@ -42,7 +42,7 @@ enum LocationType {
 
 // 位置数据类型定义
 interface Location {
-  id: string;
+  id: number;  // 从UUID改为整数
   name: string;
   type: LocationType;
   description?: string;
@@ -135,7 +135,7 @@ const LocationManagement: React.FC = () => {
       dataIndex: 'id',
       key: 'id',
       width: 80,
-      render: (id: string) => id.slice(-8),
+      render: (id: number) => id,
     },
     {
       title: '名称',
@@ -250,7 +250,13 @@ const LocationManagement: React.FC = () => {
         ...(statusFilter && { isActive: statusFilter }),
       });
 
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/locations?${params}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/v1/bases/${currentBase.id}/locations?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -272,64 +278,15 @@ const LocationManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('获取位置数据失败:', error);
-      // 临时使用模拟数据
-      const mockData = generateMockData();
-      setLocationData(mockData);
-      setPagination(prev => ({ ...prev, total: mockData.length }));
-      calculateStats(mockData);
-      message.warning('使用模拟数据，请检查后端API连接');
+      message.error('获取位置数据失败，请检查后端API连接');
+      setLocationData([]);
+      setPagination(prev => ({ ...prev, total: 0 }));
+      calculateStats([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 生成模拟数据
-  const generateMockData = (): Location[] => {
-    return [
-      {
-        id: '1',
-        name: '主仓库',
-        type: LocationType.WAREHOUSE,
-        description: '主要存储仓库',
-        address: '北京市朝阳区xxx路123号',
-        contactPerson: '张三',
-        phone: '13800138001',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-      {
-        id: '2',
-        name: '直播间A',
-        type: LocationType.LIVE_ROOM,
-        description: '美妆直播间',
-        address: '北京市朝阳区xxx路456号',
-        contactPerson: '李四',
-        phone: '13800138002',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-      {
-        id: '3',
-        name: '直播间B',
-        type: LocationType.LIVE_ROOM,
-        description: '服装直播间',
-        address: '北京市朝阳区xxx路789号',
-        contactPerson: '王五',
-        phone: '13800138003',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-    ];
-  };
 
   // 计算统计数据
   const calculateStats = (data: Location[]) => {
@@ -389,9 +346,11 @@ const LocationManagement: React.FC = () => {
     setCreateLoading(true);
     try {
       // 调用创建位置API
+      const token = localStorage.getItem('token');
       const response = await fetch(`/api/v1/bases/${currentBase.id}/locations`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
@@ -413,31 +372,7 @@ const LocationManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('创建位置失败:', error);
-      
-      // 如果API调用失败，使用模拟数据作为降级方案
-      const newLocation = {
-        id: Date.now().toString(),
-        code: generateCode(values.type),
-        name: values.name,
-        type: values.type,
-        description: values.description || '',
-        address: values.address || '',
-        contactPerson: values.contactPerson || '',
-        contactPhone: values.contactPhone || '',
-        baseId: currentBase.id,
-        baseName: currentBase.name,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      setLocationData(prev => [newLocation, ...prev]);
-      setPagination(prev => ({ ...prev, total: prev.total + 1 }));
-      calculateStats([newLocation, ...locationData]);
-      
-      message.success('位置创建成功（使用模拟数据）');
-      setCreateModalVisible(false);
-      form.resetFields();
+      message.error('创建位置失败，请检查后端API连接');
     } finally {
       setCreateLoading(false);
     }

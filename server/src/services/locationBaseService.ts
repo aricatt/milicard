@@ -129,7 +129,14 @@ export class LocationBaseService {
         data: formattedData,
       };
     } catch (error) {
-      logger.error('创建位置失败', { error, baseId, locationData, service: 'milicard-api' });
+      logger.error('创建位置失败', { 
+        error, 
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        baseId, 
+        locationData, 
+        service: 'milicard-api' 
+      });
       throw error;
     }
   }
@@ -137,7 +144,7 @@ export class LocationBaseService {
   /**
    * 更新位置
    */
-  static async updateLocation(baseId: number, locationId: string, locationData: any, updatedBy: string = 'system') {
+  static async updateLocation(baseId: number, locationId: number, locationData: any, updatedBy: string = 'system') {
     try {
       const location = await prisma.location.update({
         where: {
@@ -195,7 +202,7 @@ export class LocationBaseService {
   /**
    * 删除位置
    */
-  static async deleteLocation(baseId: number, locationId: string) {
+  static async deleteLocation(baseId: number, locationId: number) {
     try {
       await prisma.location.delete({
         where: {
@@ -256,7 +263,7 @@ export class LocationBaseService {
   /**
    * 获取位置详情
    */
-  static async getLocationById(baseId: number, locationId: string) {
+  static async getLocationById(baseId: number, locationId: number) {
     try {
       const location = await prisma.location.findFirst({
         where: {
