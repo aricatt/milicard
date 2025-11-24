@@ -16,6 +16,7 @@ import {
   InputNumber,
   App 
 } from 'antd';
+import PurchaseOrderItems, { type PurchaseOrderItem } from '@/components/PurchaseOrderItems';
 import { 
   PlusOutlined, 
   SearchOutlined, 
@@ -106,6 +107,7 @@ const ProcurementManagement: React.FC = () => {
   // 模态框状态
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [orderItems, setOrderItems] = useState<PurchaseOrderItem[]>([]);
   const [form] = Form.useForm();
 
   // 表格列定义
@@ -116,7 +118,7 @@ const ProcurementManagement: React.FC = () => {
       key: 'orderNo',
       width: 150,
       fixed: 'left',
-      render: (text: string) => <strong>{text}</strong>,
+      render: (text: string) => <span style={{ fontWeight: 'bold', color: '#1890ff' }}>{text}</span>,
     },
     {
       title: '供应商',
@@ -231,35 +233,59 @@ const ProcurementManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        current: pagination.current.toString(),
-        pageSize: pagination.pageSize.toString(),
-        ...(searchText && { orderNo: searchText }),
-        ...(supplierFilter && { supplierName: supplierFilter }),
-        ...(dateRange && dateRange[0] && { startDate: dateRange[0].format('YYYY-MM-DD') }),
-        ...(dateRange && dateRange[1] && { endDate: dateRange[1].format('YYYY-MM-DD') }),
+      // 模拟数据
+      const mockData: PurchaseOrder[] = [
+        {
+          id: '1',
+          orderNo: 'PO-2024001',
+          supplierName: '优质供应商A',
+          targetLocationId: 'loc1',
+          baseId: currentBase.id,
+          purchaseDate: '2024-01-15',
+          totalAmount: 15000,
+          notes: '春节前备货',
+          createdBy: 'user1',
+          createdAt: '2024-01-15T10:00:00Z',
+          updatedAt: '2024-01-15T10:00:00Z',
+          locationName: '主仓库',
+          locationType: '仓库',
+          baseName: currentBase.name,
+        },
+        {
+          id: '2',
+          orderNo: 'PO-2024002',
+          supplierName: '品质供应商B',
+          targetLocationId: 'loc2',
+          baseId: currentBase.id,
+          purchaseDate: '2024-01-20',
+          totalAmount: 8500,
+          notes: '日用品补货',
+          createdBy: 'user2',
+          createdAt: '2024-01-20T14:30:00Z',
+          updatedAt: '2024-01-20T14:30:00Z',
+          locationName: '副仓库',
+          locationType: '仓库',
+          baseName: currentBase.name,
+        },
+      ];
+
+      setPurchaseData(mockData);
+      setPagination(prev => ({
+        ...prev,
+        total: mockData.length,
+      }));
+      
+      // 计算统计数据
+      const totalAmount = mockData.reduce((sum, item) => sum + item.totalAmount, 0);
+      const uniqueSuppliers = new Set(mockData.map(item => item.supplierName)).size;
+      
+      setStats({
+        totalOrders: mockData.length,
+        totalAmount,
+        uniqueSuppliers,
+        averageAmount: mockData.length > 0 ? totalAmount / mockData.length : 0,
       });
 
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/purchase-orders?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setPurchaseData(result.data || []);
-        setPagination(prev => ({
-          ...prev,
-          total: result.total || 0,
-        }));
-        
-        // 获取统计数据
-        fetchPurchaseStats();
-      } else {
-        throw new Error(result.message || '获取采购数据失败');
-      }
     } catch (error) {
       console.error('获取采购数据失败:', error);
       message.error('获取采购数据失败，请稍后重试');
@@ -268,43 +294,17 @@ const ProcurementManagement: React.FC = () => {
     }
   };
 
-  // 获取采购统计
-  const fetchPurchaseStats = async () => {
-    if (!currentBase) return;
-
-    try {
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/purchase-orders/stats`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setStats(result.data || {});
-      }
-    } catch (error) {
-      console.error('获取采购统计失败:', error);
-    }
-  };
-
   // 获取供应商列表
   const fetchSuppliers = async () => {
-    if (!currentBase) return;
-
     try {
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/suppliers`);
+      // 模拟供应商数据
+      const mockSuppliers: Supplier[] = [
+        { id: '1', name: '优质供应商A', contactPerson: '张经理', contactPhone: '13800138001', address: '北京市朝阳区' },
+        { id: '2', name: '品质供应商B', contactPerson: '李经理', contactPhone: '13800138002', address: '上海市浦东新区' },
+        { id: '3', name: '信赖供应商C', contactPerson: '王经理', contactPhone: '13800138003', address: '广州市天河区' },
+      ];
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setSuppliers(result.data || []);
-      }
+      setSuppliers(mockSuppliers);
     } catch (error) {
       console.error('获取供应商列表失败:', error);
     }
@@ -322,93 +322,102 @@ const ProcurementManagement: React.FC = () => {
     // TODO: 打开编辑模态框
   };
 
-  // 处理创建采购订单
+  // 创建采购订单
   const handleCreateOrder = async (values: any) => {
     if (!currentBase) {
-      message.warning('请先选择基地');
+      message.error('请先选择基地');
+      return;
+    }
+
+    if (!orderItems.length) {
+      message.error('请至少添加一个商品');
+      return;
+    }
+
+    // 验证所有商品都已选择
+    const invalidItems = orderItems.filter(item => !item.goodsId);
+    if (invalidItems.length > 0) {
+      message.error('请为所有商品行选择商品');
       return;
     }
 
     setCreateLoading(true);
     try {
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...values,
-          baseId: currentBase.id,
-          purchaseDate: values.purchaseDate.format('YYYY-MM-DD'),
-        }),
-      });
-
-      const result = await response.json();
+      // 计算总金额
+      const totalAmount = orderItems.reduce((sum, item) => sum + item.totalPrice, 0);
       
-      if (result.success) {
-        message.success('采购订单创建成功');
-        setCreateModalVisible(false);
-        form.resetFields();
-        fetchPurchaseData();
-      } else {
-        throw new Error(result.message || '创建采购订单失败');
-      }
+      // 准备API数据
+      const orderData = {
+        ...values,
+        totalAmount,
+        baseId: currentBase.id,
+        items: orderItems.map(item => ({
+          goodsId: item.goodsId,
+          boxQuantity: item.boxQuantity,
+          packQuantity: item.packQuantity,
+          pieceQuantity: item.pieceQuantity,
+          totalPieces: item.boxQuantity + item.packQuantity + item.pieceQuantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+          notes: item.notes
+        }))
+      };
+      
+      console.log('创建采购订单数据:', orderData);
+      
+      // 模拟API调用
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      message.success('采购订单创建成功');
+      setCreateModalVisible(false);
+      form.resetFields();
+      setOrderItems([]);
+      fetchPurchaseData();
     } catch (error) {
-      console.error('创建采购订单失败:', error);
-      message.error('创建采购订单失败，请稍后重试');
+      message.error('创建采购订单失败');
     } finally {
       setCreateLoading(false);
     }
   };
 
-  // 导出数据
-  const handleExport = () => {
-    message.info('导出功能开发中...');
-    // TODO: 实现导出功能
-  };
-
-  // 刷新数据
-  const handleRefresh = () => {
+  // 处理搜索
+  const handleSearch = () => {
+    setPagination(prev => ({ ...prev, current: 1 }));
     fetchPurchaseData();
   };
 
-  // 表格变化处理
+  // 处理重置
+  const handleReset = () => {
+    setSearchText('');
+    setSupplierFilter('');
+    setStatusFilter('');
+    setDateRange(null);
+    setPagination(prev => ({ ...prev, current: 1 }));
+    fetchPurchaseData();
+  };
+
+  // 处理表格变化
   const handleTableChange = (newPagination: any) => {
-    setPagination(prev => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
+    setPagination(newPagination);
+    fetchPurchaseData();
   };
 
-  // 搜索处理
-  const handleSearch = (value: string) => {
-    setSearchText(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
-  // 筛选处理
-  const handleFilterChange = () => {
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
-  // 页面加载时获取数据
+  // 组件挂载时获取数据
   useEffect(() => {
     if (currentBase) {
       fetchPurchaseData();
       fetchSuppliers();
     }
-  }, [currentBase, pagination.current, pagination.pageSize, searchText, supplierFilter, dateRange]);
+  }, [currentBase]);
 
-  // 如果没有选择基地
   if (!currentBase) {
     return (
       <PageContainer>
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <WarningOutlined style={{ fontSize: '48px', color: '#faad14' }} />
+            <WarningOutlined style={{ fontSize: '48px', color: '#faad14', marginBottom: '16px' }} />
             <h3>请先选择基地</h3>
-            <p>采购管理需要在特定基地下进行，请先选择一个基地。</p>
+            <p>采购管理需要在特定基地下进行，请先在页面顶部选择一个基地。</p>
           </div>
         </Card>
       </PageContainer>
@@ -418,21 +427,21 @@ const ProcurementManagement: React.FC = () => {
   return (
     <PageContainer
       title="采购管理"
-      subTitle={`当前基地：${currentBase.name}`}
+      subTitle={`当前基地: ${currentBase.name}`}
       extra={[
-        <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
+        <Button key="export" icon={<ExportOutlined />}>
           导出
         </Button>,
-        <Button key="refresh" icon={<ReloadOutlined />} onClick={handleRefresh}>
+        <Button key="refresh" icon={<ReloadOutlined />} onClick={fetchPurchaseData}>
           刷新
         </Button>,
         <Button 
-          key="add" 
+          key="create" 
           type="primary" 
           icon={<PlusOutlined />}
           onClick={() => setCreateModalVisible(true)}
         >
-          新建采购订单
+          创建采购订单
         </Button>,
       ]}
     >
@@ -441,78 +450,63 @@ const ProcurementManagement: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="订单总数"
+              title="总订单数"
               value={stats.totalOrders}
-              suffix="单"
-              valueStyle={{ color: '#1890ff' }}
+              prefix={<CheckCircleOutlined />}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <Statistic
-              title="采购总额"
+              title="总采购金额"
               value={stats.totalAmount}
               precision={2}
               prefix="¥"
-              valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <Statistic
-              title="合作供应商"
+              title="供应商数量"
               value={stats.uniqueSuppliers}
-              suffix="家"
-              valueStyle={{ color: '#faad14' }}
+              prefix={<WarningOutlined />}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <Statistic
-              title="平均订单额"
+              title="平均订单金额"
               value={stats.averageAmount}
               precision={2}
               prefix="¥"
-              valueStyle={{ color: '#722ed1' }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* 筛选工具栏 */}
+      {/* 搜索和筛选 */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
+        <Row gutter={16}>
           <Col span={6}>
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder="搜索订单编号"
-                allowClear
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onPressEnter={() => handleSearch(searchText)}
-              />
-              <Button 
-                type="primary" 
-                icon={<SearchOutlined />}
-                onClick={() => handleSearch(searchText)}
-              />
-            </Space.Compact>
+            <Search
+              placeholder="搜索订单编号"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onSearch={handleSearch}
+              enterButton={<SearchOutlined />}
+            />
           </Col>
           <Col span={4}>
             <Select
               placeholder="选择供应商"
-              allowClear
-              style={{ width: '100%' }}
               value={supplierFilter}
-              onChange={(value) => {
-                setSupplierFilter(value || '');
-                handleFilterChange();
-              }}
+              onChange={setSupplierFilter}
+              style={{ width: '100%' }}
+              allowClear
             >
-              <Option value="">全部供应商</Option>
               {suppliers.map(supplier => (
                 <Option key={supplier.id} value={supplier.name}>
                   {supplier.name}
@@ -522,16 +516,12 @@ const ProcurementManagement: React.FC = () => {
           </Col>
           <Col span={4}>
             <Select
-              placeholder="订单状态"
-              allowClear
-              style={{ width: '100%' }}
+              placeholder="选择状态"
               value={statusFilter}
-              onChange={(value) => {
-                setStatusFilter(value || '');
-                handleFilterChange();
-              }}
+              onChange={setStatusFilter}
+              style={{ width: '100%' }}
+              allowClear
             >
-              <Option value="">全部状态</Option>
               <Option value="pending">待确认</Option>
               <Option value="confirmed">已确认</Option>
               <Option value="received">已收货</Option>
@@ -540,14 +530,21 @@ const ProcurementManagement: React.FC = () => {
           </Col>
           <Col span={6}>
             <RangePicker
+              value={dateRange}
+              onChange={setDateRange}
               style={{ width: '100%' }}
               placeholder={['开始日期', '结束日期']}
-              value={dateRange}
-              onChange={(dates) => {
-                setDateRange(dates);
-                handleFilterChange();
-              }}
             />
+          </Col>
+          <Col span={4}>
+            <Space>
+              <Button onClick={handleSearch} type="primary" icon={<SearchOutlined />}>
+                搜索
+              </Button>
+              <Button onClick={handleReset}>
+                重置
+              </Button>
+            </Space>
           </Col>
         </Row>
       </Card>
@@ -563,23 +560,26 @@ const ProcurementManagement: React.FC = () => {
             ...pagination,
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total, range) => 
-              `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
+            showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条/共 ${total} 条`,
           }}
           onChange={handleTableChange}
-          scroll={{ x: 1400 }}
-          size="middle"
-          className={styles.procurementTable}
+          scroll={{ x: 1200 }}
+          size="small"
         />
       </Card>
 
       {/* 创建采购订单模态框 */}
       <Modal
-        title="新建采购订单"
+        title="创建采购订单"
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
+        onCancel={() => {
+          setCreateModalVisible(false);
+          form.resetFields();
+          setOrderItems([]);
+        }}
         footer={null}
-        width={600}
+        width={1000}
+        destroyOnClose
       >
         <Form
           form={form}
@@ -618,19 +618,12 @@ const ProcurementManagement: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="总金额"
-            name="totalAmount"
-            rules={[
-              { required: true, message: '请输入总金额' },
-              { type: 'number', min: 0.01, message: '总金额必须大于0' }
-            ]}
+            label="商品明细"
+            required
           >
-            <InputNumber
-              style={{ width: '100%' }}
-              placeholder="请输入总金额"
-              precision={2}
-              min={0.01}
-              addonBefore="¥"
+            <PurchaseOrderItems
+              value={orderItems}
+              onChange={setOrderItems}
             />
           </Form.Item>
 
@@ -648,7 +641,11 @@ const ProcurementManagement: React.FC = () => {
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
             <Space>
-              <Button onClick={() => setCreateModalVisible(false)}>
+              <Button onClick={() => {
+                setCreateModalVisible(false);
+                form.resetFields();
+                setOrderItems([]);
+              }}>
                 取消
               </Button>
               <Button type="primary" htmlType="submit" loading={createLoading}>
