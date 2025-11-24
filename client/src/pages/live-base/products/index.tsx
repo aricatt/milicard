@@ -37,36 +37,44 @@ const { Search } = Input;
 const { Option } = Select;
 const { TextArea } = Input;
 
-// 商品数据类型定义
+// 基地商品数据类型定义
 interface Product {
   id: string;
-  code: string;
-  name: string;
-  alias?: string;
-  manufacturer?: string;
-  description: string;
-  retailPrice: number;    // 零售价(一箱)
-  packPrice?: number;     // 平拆价(一盒)
-  purchasePrice: number;
-  boxQuantity: number;
-  packPerBox: number;
-  piecePerPack: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  code: string;                // 自动生成的商品编号 (GOODS-XXXXXXXXXXX)
+  name: string;                // 商品名称 (必填)
+  alias?: string;              // 商品别名
+  manufacturer: string;        // 厂家名称 (必填)
+  description?: string;        // 商品描述
+  retailPrice: number;         // 零售价(一箱) (必填)
+  packPrice?: number;          // 平拆价(一盒)
+  purchasePrice?: number;      // 采购价
+  boxQuantity: number;         // 箱装数量 (固定为1)
+  packPerBox: number;          // 包/箱 (必填)
+  piecePerPack: number;        // 件/包 (必填)
+  imageUrl?: string;           // 图片URL
+  notes?: string;              // 商品备注
+  isActive: boolean;           // 是否启用
+  createdAt: string;           // 创建时间
+  updatedAt: string;           // 更新时间
 }
 
-// 商品统计数据类型
+// 基地商品统计数据类型
 interface ProductStats {
-  totalProducts: number;
-  activeProducts: number;
-  inactiveProducts: number;
-  categories: number;
+  totalGoods: number;          // 总商品数
+  activeGoods: number;         // 活跃商品数
+  inactiveGoods: number;       // 非活跃商品数
+  totalManufacturers: number;  // 厂家数量
 }
 
 /**
- * 商品管理页面
- * 基地中心化的商品管理，显示当前基地的商品信息
+ * 基地商品管理页面
+ * 
+ * 重要特性：
+ * - 基地级数据管理：所有商品数据都与当前选择的基地关联
+ * - 数据隔离：不同基地之间的商品数据完全隔离
+ * - 自动编号：商品编号由系统自动生成
+ * - 厂家必填：厂家名称为必填字段
+ * - 箱装固定：箱装数量固定为1，不可修改
  */
 const ProductManagement: React.FC = () => {
   const { currentBase } = useBase();
@@ -76,10 +84,10 @@ const ProductManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [productData, setProductData] = useState<Product[]>([]);
   const [stats, setStats] = useState<ProductStats>({
-    totalProducts: 0,
-    activeProducts: 0,
-    inactiveProducts: 0,
-    categories: 0,
+    totalGoods: 0,
+    activeGoods: 0,
+    inactiveGoods: 0,
+    totalManufacturers: 0,
   });
   
   // 筛选条件
@@ -283,13 +291,17 @@ const ProductManagement: React.FC = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        current: pagination.current.toString(),
+        page: pagination.current.toString(),
         pageSize: pagination.pageSize.toString(),
         ...(searchText && { search: searchText }),
         ...(statusFilter && { isActive: statusFilter }),
       });
 
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/goods?${params}`);
+      const response = await fetch(`/api/v1/bases/${currentBase.id}/goods?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -301,7 +313,7 @@ const ProductManagement: React.FC = () => {
         setProductData(result.data || []);
         setPagination(prev => ({
           ...prev,
-          total: result.total || 0,
+          total: result.pagination?.total || 0,
         }));
         
         // 计算统计数据
@@ -319,16 +331,16 @@ const ProductManagement: React.FC = () => {
 
   // 计算统计数据
   const calculateStats = (data: Product[]) => {
-    const totalProducts = data.length;
-    const activeProducts = data.filter(p => p.isActive).length;
-    const inactiveProducts = totalProducts - activeProducts;
-    const manufacturers = new Set(data.map(p => p.manufacturer).filter(Boolean)).size;
+    const totalGoods = data.length;
+    const activeGoods = data.filter(p => p.isActive).length;
+    const inactiveGoods = totalGoods - activeGoods;
+    const totalManufacturers = new Set(data.map(p => p.manufacturer).filter(Boolean)).size;
     
     setStats({
-      totalProducts,
-      activeProducts,
-      inactiveProducts,
-      categories: manufacturers, // 用厂家数量代替分类数量
+      totalGoods,
+      activeGoods,
+      inactiveGoods,
+      totalManufacturers,
     });
   };
 
@@ -394,6 +406,9 @@ const ProductManagement: React.FC = () => {
         try {
           const response = await fetch(`/api/v1/bases/${currentBase.id}/goods/${record.id}`, {
             method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
           });
 
           if (!response.ok) {
@@ -427,18 +442,16 @@ const ProductManagement: React.FC = () => {
     try {
       const isEditing = !!editingRecord;
       const url = isEditing 
-        ? `/api/v1/bases/goods/${editingRecord.id}`
+        ? `/api/v1/bases/${currentBase.id}/goods/${editingRecord.id}`
         : `/api/v1/bases/${currentBase.id}/goods`;
       
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          ...values,
-          ...(isEditing ? {} : { baseId: currentBase.id }),
-        }),
+        body: JSON.stringify(values),
       });
 
       const result = await response.json();
@@ -539,7 +552,7 @@ const ProductManagement: React.FC = () => {
           <Card>
             <Statistic
               title="商品总数"
-              value={stats.totalProducts}
+              value={stats.totalGoods}
               suffix="个"
               valueStyle={{ color: '#1890ff' }}
             />
@@ -549,7 +562,7 @@ const ProductManagement: React.FC = () => {
           <Card>
             <Statistic
               title="启用商品"
-              value={stats.activeProducts}
+              value={stats.activeGoods}
               suffix="个"
               valueStyle={{ color: '#52c41a' }}
             />
@@ -559,7 +572,7 @@ const ProductManagement: React.FC = () => {
           <Card>
             <Statistic
               title="禁用商品"
-              value={stats.inactiveProducts}
+              value={stats.inactiveGoods}
               suffix="个"
               valueStyle={{ color: '#ff4d4f' }}
             />
@@ -568,8 +581,8 @@ const ProductManagement: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="商品分类"
-              value={stats.categories}
+              title="厂家数量"
+              value={stats.totalManufacturers}
               suffix="个"
               valueStyle={{ color: '#722ed1' }}
             />
@@ -709,14 +722,6 @@ const ProductManagement: React.FC = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="商品编号"
-            name="code"
-            extra="留空将自动生成编号（格式：GOODS-XXXXXXXXXXX）"
-          >
-            <Input placeholder="留空自动生成，或手动输入自定义编号" />
-          </Form.Item>
-
-          <Form.Item
             label="商品名称"
             name="name"
             rules={[
@@ -740,6 +745,10 @@ const ProductManagement: React.FC = () => {
               <Form.Item
                 label="厂家名称"
                 name="manufacturer"
+                rules={[
+                  { required: true, message: '请输入厂家名称' },
+                  { min: 2, max: 50, message: '厂家名称长度应在2-50个字符之间' }
+                ]}
               >
                 <Input placeholder="请输入厂家名称" />
               </Form.Item>
@@ -801,14 +810,13 @@ const ProductManagement: React.FC = () => {
               <Form.Item
                 label="箱装数量"
                 name="boxQuantity"
-                rules={[
-                  { required: true, message: '请输入箱装数量' },
-                  { type: 'number', min: 1, message: '箱装数量必须大于0' }
-                ]}
+                initialValue={1}
+                extra="固定为1，不可修改"
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="箱装数量"
+                  value={1}
+                  disabled
                   min={1}
                 />
               </Form.Item>

@@ -1,5 +1,6 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
+import { CodeGenerator } from '../utils/codeGenerator';
 import type {
   BaseItem,
   BaseQueryParams,
@@ -100,20 +101,25 @@ export class BaseService {
    */
   static async createBase(data: CreateBaseRequest, userId: string): Promise<BaseResponse> {
     try {
-      const { code, name } = data;
+      let { code, name } = data;
 
       // 验证输入
-      if (!code || !name) {
-        throw new BaseError('基地编号和名称不能为空', BaseErrorType.VALIDATION_ERROR);
+      if (!name) {
+        throw new BaseError('基地名称不能为空', BaseErrorType.VALIDATION_ERROR);
       }
 
-      // 检查编号是否已存在
-      const existingBase = await prisma.base.findUnique({
-        where: { code },
-      });
+      // 如果没有提供编号，自动生成
+      if (!code) {
+        code = await CodeGenerator.generateBaseCode();
+      } else {
+        // 如果提供了编号，检查是否已存在
+        const existingBase = await prisma.base.findUnique({
+          where: { code },
+        });
 
-      if (existingBase) {
-        throw new BaseError('基地编号已存在', BaseErrorType.BASE_CODE_EXISTS);
+        if (existingBase) {
+          throw new BaseError('基地编号已存在', BaseErrorType.BASE_CODE_EXISTS);
+        }
       }
 
       // 创建基地

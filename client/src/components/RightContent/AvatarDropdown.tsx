@@ -10,6 +10,7 @@ import { createStyles } from 'antd-style';
 import React from 'react';
 import { flushSync } from 'react-dom';
 import { outLogin } from '@/services/ant-design-pro/api';
+import { useBaseOptional } from '@/contexts/BaseContext';
 import HeaderDropdown from '../HeaderDropdown';
 
 export type GlobalHeaderRightProps = {
@@ -45,11 +46,21 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   menu,
   children,
 }) => {
+  // 安全地获取基地上下文，如果不在BaseProvider中则返回null
+  const baseContext = useBaseOptional();
+  
   /**
    * 退出登录，并且将当前的 url 保存
    */
   const loginOut = async () => {
     await outLogin();
+    
+    // 清除基地上下文（包括localStorage中的选中基地）
+    // 如果在BaseProvider中才执行清除
+    if (baseContext?.clearBaseContext) {
+      baseContext.clearBaseContext();
+    }
+    
     const { search, pathname } = window.location;
     const urlParams = new URL(window.location.href).searchParams;
     const searchParams = new URLSearchParams({

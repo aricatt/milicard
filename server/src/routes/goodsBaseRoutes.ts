@@ -1,36 +1,48 @@
 import { Router } from 'express';
-import { GoodsBaseController } from '../controllers/goodsBaseController';
+import { GoodsController } from '../controllers/goodsController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
 /**
- * 获取基地的商品列表
- * GET /api/v1/bases/{baseId}/goods
+ * 基地商品路由 - 阿米巴模式
+ * 所有路由都需要认证
  */
-router.get('/:baseId/goods', GoodsBaseController.getBaseGoodsList);
 
 /**
- * 获取所有商品（用于添加到基地）
- * GET /api/v1/goods/all
+ * 获取基地商品统计
+ * GET /api/v1/bases/:baseId/goods/stats
  */
-router.get('/goods/all', GoodsBaseController.getAllGoods);
+router.get('/:baseId/goods/stats', authenticateToken, GoodsController.getGoodsStats);
 
 /**
- * 将商品添加到基地
- * POST /api/v1/bases/{baseId}/goods
+ * 获取基地商品列表
+ * GET /api/v1/bases/:baseId/goods
  */
-router.post('/:baseId/goods', GoodsBaseController.addGoodsToBase);
+router.get('/:baseId/goods', authenticateToken, GoodsController.getBaseGoods);
 
 /**
- * 更新商品信息
- * PUT /api/v1/goods/{goodsId}
+ * 获取商品详情
+ * GET /api/v1/bases/:baseId/goods/:goodsId
  */
-router.put('/goods/:goodsId', GoodsBaseController.updateGoods);
+router.get('/:baseId/goods/:goodsId', authenticateToken, GoodsController.getGoodsById);
 
 /**
- * 删除基地商品
- * DELETE /api/v1/bases/{baseId}/goods/{goodsId}
+ * 创建基地商品
+ * POST /api/v1/bases/:baseId/goods
  */
-router.delete('/:baseId/goods/:goodsId', GoodsBaseController.deleteGoodsFromBase);
+router.post('/:baseId/goods', authenticateToken, GoodsController.createGoods);
+
+/**
+ * 更新商品
+ * PUT /api/v1/bases/:baseId/goods/:goodsId
+ */
+router.put('/:baseId/goods/:goodsId', authenticateToken, GoodsController.updateGoods);
+
+/**
+ * 删除商品
+ * DELETE /api/v1/bases/:baseId/goods/:goodsId
+ */
+router.delete('/:baseId/goods/:goodsId', authenticateToken, GoodsController.deleteGoods);
 
 export default router;

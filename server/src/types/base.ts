@@ -35,7 +35,7 @@ export interface BaseListResponse {
  * 创建基地请求参数
  */
 export interface CreateBaseRequest {
-  code: string;
+  code?: string; // 可选，留空时自动生成
   name: string;
 }
 
@@ -67,6 +67,11 @@ export enum BaseErrorType {
   INVALID_BASE_CODE = 'INVALID_BASE_CODE',
   INVALID_BASE_NAME = 'INVALID_BASE_NAME',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
+  DATABASE_ERROR = 'DATABASE_ERROR',
+  RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
+  GOODS_NOT_FOUND = 'GOODS_NOT_FOUND',
+  GOODS_CODE_EXISTS = 'GOODS_CODE_EXISTS',
+  PURCHASE_ORDER_NOT_FOUND = 'PURCHASE_ORDER_NOT_FOUND'
 }
 
 /**

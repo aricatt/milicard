@@ -51,29 +51,65 @@
 
 ## 3. 数据模型
 
-```typescript
-// file: src/models/goods.ts
+### 3.1 基地商品数据结构
 
-export interface Goods {
-  id: number;
-  code: string;
-  name: string;
-  alias?: string;
-  manufacturer?: string;
-  retailPrice: number;
-  purchasePrice: number;
-  boxGauge: number; // 箱规量
-  unitConversion1: number; // 多少盒1程
-  unitConversion2: number; // 多少包1盒
-  createdAt: string; // ISO 8601 format
+```typescript
+// 基地商品响应数据
+export interface GoodsBaseResponse {
+  id: string;                      // 商品唯一标识符
+  code: string;                    // 商品编号 (自动生成，格式: GOODS-XXXXXXXXXXX)
+  name: string;                    // 商品名称 (必填)
+  alias?: string;                  // 商品别名
+  manufacturer: string;            // 厂家名称 (必填)
+  description?: string;            // 商品描述
+  retailPrice: number;             // 零售价(一箱) (必填)
+  packPrice?: number;              // 平拆价(一盒)
+  purchasePrice?: number;          // 采购价
+  boxQuantity: number;             // 箱装数量 (固定为1)
+  packPerBox: number;              // 包/箱 (必填)
+  piecePerPack: number;            // 件/包 (必填)
+  imageUrl?: string;               // 图片URL
+  notes?: string;                  // 商品备注
+  isActive: boolean;               // 是否启用
+  createdAt: string;               // 创建时间 (ISO 8601 format)
+  updatedAt: string;               // 更新时间 (ISO 8601 format)
+}
+
+// 基地商品创建请求
+export interface CreateGoodsBaseRequest {
+  name: string;                    // 商品名称 (必填)
+  alias?: string;                  // 商品别名
+  manufacturer: string;            // 厂家名称 (必填)
+  description?: string;            // 商品描述
+  retailPrice: number;             // 零售价(一箱) (必填)
+  packPrice?: number;              // 平拆价(一盒)
+  purchasePrice?: number;          // 采购价
+  packPerBox: number;              // 包/箱 (必填)
+  piecePerPack: number;            // 件/包 (必填)
+  imageUrl?: string;               // 图片URL
+  notes?: string;                  // 商品备注
+  baseNotes?: string;              // 基地级别备注
 }
 ```
+
+### 3.2 基地级数据管理
+
+**重要说明**: 本系统采用**基地级数据管理**模式：
+
+- 所有商品数据都与特定基地关联
+- 用户在前端选择当前基地后，所有操作都基于该基地
+- 数据库通过 `GoodsBase` 关联表管理商品与基地的关系
+- 确保数据隔离，不同基地之间的商品数据互不干扰
 
 ---
 
 ## 4. 已确认的业务规则
 
-1.  **单位换算**: “零售价”和“采购价”均以“箱”为单位。因此，“箱数量”应固定为1。“盒数量”指1箱内包含的盒数，“包数量”指1盒内包含的包数。字段名已在数据模型中更新。
-2.  **价格体系**: 目前系统只涉及一级价格，字段中的“(一级)”可忽略。
-3.  **导入/导出格式**: 统一使用 Excel 格式。
-4.  **命名建议**: 对于多语言环境，建议商品名称使用“本地语言+中文”的格式，方便各方人员识别。
+1.  **基地级管理**: 所有商品数据都必须与基地关联，确保数据隔离和安全性。
+2.  **自动编号生成**: 商品编号由系统自动生成，格式为 `GOODS-XXXXXXXXXXX`。
+3.  **厂家名称必填**: 厂家名称为必填字段，长度限制2-50个字符。
+4.  **单位换算**: "零售价"和"采购价"均以"箱"为单位。因此，"箱数量"固定为1。"包/箱"指1箱内包含的包数，"件/包"指1包内包含的件数。
+5.  **价格体系**: 目前系统只涉及一级价格，字段中的"(一级)"可忽略。
+6.  **导入/导出格式**: 统一使用 Excel 格式。
+7.  **命名建议**: 对于多语言环境，建议商品名称使用"本地语言+中文"的格式，方便各方人员识别。
+8.  **数据验证**: 所有数值字段都有合理的范围限制，确保数据质量。

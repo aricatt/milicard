@@ -1,0 +1,69 @@
+/**
+ * 到货管理相关类型定义
+ */
+
+export interface CreateArrivalRequest {
+  arrivalDate: string; // YYYY-MM-DD
+  purchaseOrderId: string;
+  goodsId: string;
+  locationId: string;
+  handlerId: string;
+  boxQuantity?: number;
+  packQuantity?: number;
+  pieceQuantity?: number;
+  notes?: string;
+}
+
+export interface UpdateArrivalRequest {
+  arrivalDate?: string;
+  purchaseOrderId?: string;
+  goodsId?: string;
+  locationId?: string;
+  handlerId?: string;
+  boxQuantity?: number;
+  packQuantity?: number;
+  pieceQuantity?: number;
+  notes?: string;
+}
+
+export interface ArrivalQueryParams {
+  current?: number;
+  pageSize?: number;
+  warehouseId?: string;
+  purchaseOrderId?: string;
+  goodsId?: string;
+  handlerId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ArrivalResponse {
+  id: string;
+  arrivalDate: string;
+  purchaseOrderId: string;
+  purchaseOrderNo: string;
+  goodsId: string;
+  goodsName: string;
+  locationId: string;
+  locationName: string;
+  handlerId: string;
+  handlerName: string;
+  baseId: number;
+  baseName: string;
+  boxQuantity: number;
+  packQuantity: number;
+  pieceQuantity: number;
+  notes?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArrivalListResponse {
+  success: boolean;
+  data: ArrivalResponse[];
+  total: number;
+  current: number;
+  pageSize: number;
+  message?: string;
+}

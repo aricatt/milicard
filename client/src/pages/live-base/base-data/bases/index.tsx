@@ -3,7 +3,7 @@ import { ProFormText } from '@ant-design/pro-components';
 import React from 'react';
 import ListPageTemplate from '@/components/PageTemplates/ListPageTemplate';
 import type { BaseItem } from './data.d';
-import { addBase, removeBase, queryBaseList, updateBase } from './service';
+import { addBase, queryBaseList, updateBase } from './service';
 
 const BaseList: React.FC = () => {
   const columns: ProColumns<BaseItem>[] = [
@@ -35,7 +35,24 @@ const BaseList: React.FC = () => {
     },
   ];
 
-  const formFields = (
+  const addFormFields = (
+    <>
+      <ProFormText
+        rules={[
+          {
+            required: true,
+            message: '基地名称为必填项',
+          },
+        ]}
+        label="基地名称"
+        name="name"
+        placeholder="请输入基地名称，如：杭州基地"
+        extra="基地编号将自动生成（格式：BASE-XXXXXXXXXXX）"
+      />
+    </>
+  );
+
+  const updateFormFields = (
     <>
       <ProFormText
         rules={[
@@ -47,6 +64,8 @@ const BaseList: React.FC = () => {
         label="基地编号"
         name="code"
         placeholder="请输入基地编号，如：BASE-83Q6731DP7J"
+        disabled
+        extra="编号创建后不可修改"
       />
       <ProFormText
         rules={[
@@ -89,12 +108,8 @@ const BaseList: React.FC = () => {
         await updateBase(fields.id, fields);
         return true;
       }}
-      onDelete={async (id) => {
-        await removeBase(id as number);
-        return true;
-      }}
-      addFormFields={formFields}
-      updateFormFields={formFields}
+      addFormFields={addFormFields}
+      updateFormFields={updateFormFields}
       rowKey="id"
     />
   );

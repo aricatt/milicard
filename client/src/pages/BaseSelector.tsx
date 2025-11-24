@@ -15,13 +15,6 @@ const BaseSelectorContent: React.FC = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [form] = Form.useForm();
 
-  // 只有在没有基地时才自动显示创建表单
-  useEffect(() => {
-    if (!loading && baseList.length === 0) {
-      setCreateModalVisible(true);
-    }
-  }, [loading, baseList]);
-
   // 选择基地并进入
   const handleSelectBase = (base: BaseInfo) => {
     setCurrentBase(base);
@@ -54,11 +47,6 @@ const BaseSelectorContent: React.FC = () => {
         setCreateModalVisible(false);
         form.resetFields();
         await refreshBaseList();
-        
-        // 如果这是第一个基地，自动选择它
-        if (baseList.length === 0) {
-          handleSelectBase(result.data);
-        }
       } else {
         throw new Error(result.message || '创建基地失败');
       }
@@ -156,15 +144,9 @@ const BaseSelectorContent: React.FC = () => {
       <Modal
         title="创建新基地"
         open={createModalVisible}
-        onCancel={() => {
-          if (baseList.length > 0) {
-            setCreateModalVisible(false);
-          }
-        }}
-        closable={baseList.length > 0}
-        maskClosable={baseList.length > 0}
+        onCancel={() => setCreateModalVisible(false)}
         footer={null}
-        width={600}
+        width={500}
       >
         <Form
           form={form}
@@ -179,60 +161,19 @@ const BaseSelectorContent: React.FC = () => {
               { required: true, message: '请输入基地名称' },
               { min: 2, max: 50, message: '基地名称长度应在2-50个字符之间' }
             ]}
+            extra="基地编号将自动生成（格式：BASE-XXXXXXXXXXX）"
           >
-            <Input placeholder="请输入基地名称，如：北京总部基地" />
-          </Form.Item>
-
-          <Form.Item
-            label="基地编号"
-            name="code"
-            rules={[
-              { required: true, message: '请输入基地编号' },
-              { pattern: /^[A-Z0-9_-]+$/, message: '基地编号只能包含大写字母、数字、下划线和横线' }
-            ]}
-          >
-            <Input placeholder="请输入基地编号，如：BJ_HQ_001" />
-          </Form.Item>
-
-          <Form.Item
-            label="基地描述"
-            name="description"
-          >
-            <Input.TextArea 
-              placeholder="请输入基地描述（可选）" 
-              rows={3}
-              maxLength={200}
+            <Input 
+              placeholder="请输入基地名称，如：北京总部基地" 
+              autoFocus
             />
-          </Form.Item>
-
-          <Form.Item
-            label="基地地址"
-            name="address"
-          >
-            <Input placeholder="请输入基地地址（可选）" />
-          </Form.Item>
-
-          <Form.Item
-            label="联系人"
-            name="contactPerson"
-          >
-            <Input placeholder="请输入联系人姓名（可选）" />
-          </Form.Item>
-
-          <Form.Item
-            label="联系电话"
-            name="contactPhone"
-          >
-            <Input placeholder="请输入联系电话（可选）" />
           </Form.Item>
 
           <Form.Item>
             <div className={styles.modalFooter}>
-              {baseList.length > 0 && (
-                <Button onClick={() => setCreateModalVisible(false)}>
-                  取消
-                </Button>
-              )}
+              <Button onClick={() => setCreateModalVisible(false)}>
+                取消
+              </Button>
               <Button type="primary" htmlType="submit" loading={createLoading}>
                 创建基地
               </Button>

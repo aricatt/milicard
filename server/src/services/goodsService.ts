@@ -1,280 +1,191 @@
 import { prisma } from '../utils/database'
 import { logger } from '../utils/logger'
+import { CodeGenerator } from '../utils/codeGenerator'
 import {
   CreateGoodsRequest,
   UpdateGoodsRequest,
   GoodsQueryParams,
   GoodsResponse,
   GoodsListResponse,
-  GoodsStockInfo,
   GoodsError,
-  GoodsErrorType,
-  GoodsStatus
+  GoodsErrorType
 } from '../types/goods'
-import { MultilingualText } from '../types/multilingualData'
 
+/**
+ * 商品服务 - 阿米巴模式 (每个基地独立管理商品)
+ */
 export class GoodsService {
   /**
-   * 创建商品
+   * 创建商品 (基地级别)
    */
-  static async createGoods(data: CreateGoodsRequest, userId: string): Promise<GoodsResponse> {
+  static async createGoods(baseId: number, data: CreateGoodsRequest, userId: string): Promise<GoodsResponse> {
     try {
-      // 检查商品编码是否已存在
-      const existingGoods = await prisma.goods.findUnique({
-        where: { code: data.code }
+      // 验证基地是否存在
+      const base = await prisma.base.findUnique({
+        where: { id: baseId }
+      })
+      
+      if (!base) {
+        throw new GoodsError(
+          GoodsErrorType.NOT_FOUND,
+          `基地 ${baseId} 不存在`
+        )
+      }
+
+      // 自动生成商品编号 (如果未提供)
+      let goodsCode = data.code
+      if (!goodsCode) {
+        goodsCode = await CodeGenerator.generateGoodsCode()
+      }
+
+      // 检查商品编码在该基地是否已存在 (阿米巴模式下基地级唯一)
+      const existingGoods = await prisma.goods.findFirst({
+        where: { 
+          code: goodsCode,
+          baseId: baseId
+        }
       })
 
       if (existingGoods) {
         throw new GoodsError(
           GoodsErrorType.DUPLICATE_CODE,
-          `商品编码 ${data.code} 已存在`,
-          400
+          `商品编码 ${goodsCode} 在基地 ${base.name} 中已存在`
         )
-      }
-
-      // 验证分类是否存在
-      if (data.categoryId) {
-        const category = await prisma.goodsCategory.findUnique({
-          where: { id: data.categoryId }
-        })
-        if (!category) {
-          throw new GoodsError(
-            GoodsErrorType.INVALID_CATEGORY,
-            '指定的商品分类不存在',
-            400
-          )
-        }
-      }
-
-      // 验证供应商是否存在
-      if (data.supplierId) {
-        const supplier = await prisma.supplier.findUnique({
-          where: { id: data.supplierId }
-        })
-        if (!supplier) {
-          throw new GoodsError(
-            GoodsErrorType.INVALID_SUPPLIER,
-            '指定的供应商不存在',
-            400
-          )
-        }
       }
 
       // 创建商品
       const goods = await prisma.goods.create({
         data: {
-          code: data.code,
-          name: data.name as any,
-          description: data.description as any,
-          categoryId: data.categoryId,
-          supplierId: data.supplierId,
-          unit: data.unit,
-          costPrice: data.costPrice,
-          sellingPrice: data.sellingPrice,
-          minStock: data.minStock,
-          maxStock: data.maxStock,
-          barcode: data.barcode,
-          images: data.images || [],
-          tags: data.tags || [],
-          specifications: data.specifications || {},
-          status: data.status || GoodsStatus.ACTIVE,
+          code: goodsCode,
+          name: data.name,
+          manufacturer: data.manufacturer,
+          description: data.description,
+          retailPrice: data.retailPrice,
+          packPrice: data.packPrice,
+          purchasePrice: data.purchasePrice,
+          boxQuantity: 1, // 固定为1
+          packPerBox: data.packPerBox,
+          piecePerPack: data.piecePerPack,
+          imageUrl: data.imageUrl,
+          notes: data.notes,
+          baseId: baseId,
+          isActive: true,
           createdBy: userId,
           updatedBy: userId
-        },
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          supplier: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
         }
       })
-
-      // 记录价格历史
-      if (data.costPrice || data.sellingPrice) {
-        await this.recordPriceHistory(goods.id, data.costPrice, data.sellingPrice, userId)
-      }
 
       logger.info('商品创建成功', {
         goodsId: goods.id,
         code: goods.code,
+        name: goods.name,
+        baseId: baseId,
+        baseName: base.name,
         userId
       })
 
-      return this.formatGoodsResponse(goods)
+      // 重新查询以获取关联数据
+      const goodsWithRelations = await prisma.goods.findUnique({
+        where: { id: goods.id },
+        include: {
+          base: true
+        }
+      })
+
+      return this.formatGoodsResponse(goodsWithRelations!)
     } catch (error) {
       if (error instanceof GoodsError) {
         throw error
       }
-
+      
       logger.error('创建商品失败', {
         error: error instanceof Error ? error.message : String(error),
         data,
+        baseId,
         userId
       })
-
+      
       throw new GoodsError(
-        GoodsErrorType.GOODS_NOT_FOUND,
-        '创建商品失败',
-        500
+        GoodsErrorType.INTERNAL_ERROR,
+        '创建商品失败，请稍后重试'
       )
     }
   }
 
   /**
-   * 获取商品列表
+   * 获取基地商品列表
    */
-  static async getGoodsList(params: GoodsQueryParams, userId: string): Promise<GoodsListResponse> {
+  static async getBaseGoods(baseId: number, params: GoodsQueryParams = {}): Promise<GoodsListResponse> {
     try {
       const {
         page = 1,
-        limit = 20,
+        pageSize = 20,
         search,
-        categoryId,
-        supplierId,
-        status,
-        unit,
-        minPrice,
-        maxPrice,
-        hasStock,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
-        language = 'zh-CN'
+        isActive,
+        manufacturer
       } = params
 
+      const skip = (page - 1) * pageSize
+      
       // 构建查询条件
-      const where: any = {}
+      const where: any = {
+        baseId: baseId
+      }
 
       if (search) {
         where.OR = [
           { code: { contains: search, mode: 'insensitive' } },
-          { barcode: { contains: search, mode: 'insensitive' } },
-          // 多语言名称搜索需要特殊处理
-          {
-            name: {
-              path: [language],
-              string_contains: search
-            }
-          }
+          { name: { contains: search, mode: 'insensitive' } },
+          { alias: { contains: search, mode: 'insensitive' } }
         ]
       }
 
-      if (categoryId) {
-        where.categoryId = categoryId
+      if (typeof isActive === 'boolean') {
+        where.isActive = isActive
       }
 
-      if (supplierId) {
-        where.supplierId = supplierId
+      if (manufacturer) {
+        where.manufacturer = { contains: manufacturer, mode: 'insensitive' }
       }
 
-      if (status) {
-        where.status = status
-      }
-
-      if (unit) {
-        where.unit = unit
-      }
-
-      if (minPrice || maxPrice) {
-        where.sellingPrice = {}
-        if (minPrice) where.sellingPrice.gte = minPrice
-        if (maxPrice) where.sellingPrice.lte = maxPrice
-      }
-
-      // 库存筛选需要关联查询
-      if (hasStock !== undefined) {
-        if (hasStock) {
-          where.inventories = {
-            some: {
-              quantity: {
-                gt: 0
-              }
-            }
-          }
-        } else {
-          where.inventories = {
-            none: {
-              quantity: {
-                gt: 0
-              }
-            }
-          }
-        }
-      }
-
-      // 排序处理
-      const orderBy: any = {}
-      if (sortBy === 'name') {
-        orderBy.name = { path: [language], sort: sortOrder }
-      } else if (sortBy === 'price') {
-        orderBy.sellingPrice = sortOrder
-      } else {
-        orderBy[sortBy] = sortOrder
-      }
-
-      // 查询商品
+      // 查询商品列表
       const [goods, total] = await Promise.all([
         prisma.goods.findMany({
           where,
           include: {
-            category: {
-              select: {
-                id: true,
-                name: true
-              }
-            },
-            supplier: {
-              select: {
-                id: true,
-                name: true
-              }
-            },
-            inventories: {
-              select: {
-                quantity: true
-              }
-            }
+            base: true,
+            creator: true,
+            updater: true
           },
-          orderBy,
-          skip: (page - 1) * limit,
-          take: limit
+          orderBy: [
+            { isActive: 'desc' },
+            { createdAt: 'desc' }
+          ],
+          skip,
+          take: pageSize
         }),
         prisma.goods.count({ where })
       ])
 
-      // 获取筛选器数据
-      const filters = await this.getFiltersData(where)
-
-      const result: GoodsListResponse = {
-        goods: goods.map(item => this.formatGoodsResponse(item)),
+      return {
+        data: goods.map(item => this.formatGoodsResponse(item)),
         pagination: {
           page,
-          limit,
+          pageSize,
           total,
-          totalPages: Math.ceil(total / limit)
-        },
-        filters
+          totalPages: Math.ceil(total / pageSize)
+        }
       }
-
-      return result
     } catch (error) {
-      logger.error('获取商品列表失败', {
+      logger.error('获取基地商品列表失败', {
         error: error instanceof Error ? error.message : String(error),
-        params,
-        userId
+        baseId,
+        params
       })
-
+      
       throw new GoodsError(
-        GoodsErrorType.GOODS_NOT_FOUND,
-        '获取商品列表失败',
-        500
+        GoodsErrorType.INTERNAL_ERROR,
+        '获取商品列表失败，请稍后重试'
       )
     }
   }
@@ -282,42 +193,26 @@ export class GoodsService {
   /**
    * 获取商品详情
    */
-  static async getGoodsById(id: string, userId: string): Promise<GoodsResponse> {
+  static async getGoodsById(goodsId: string, baseId?: number): Promise<GoodsResponse> {
     try {
-      const goods = await prisma.goods.findUnique({
-        where: { id },
+      const where: any = { id: goodsId }
+      if (baseId) {
+        where.baseId = baseId
+      }
+
+      const goods = await prisma.goods.findFirst({
+        where,
         include: {
-          category: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          supplier: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          inventories: {
-            select: {
-              quantity: true,
-              location: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              }
-            }
-          }
+          base: true,
+          creator: true,
+          updater: true
         }
       })
 
       if (!goods) {
         throw new GoodsError(
-          GoodsErrorType.GOODS_NOT_FOUND,
-          '商品不存在',
-          404
+          GoodsErrorType.NOT_FOUND,
+          '商品不存在'
         )
       }
 
@@ -326,17 +221,16 @@ export class GoodsService {
       if (error instanceof GoodsError) {
         throw error
       }
-
+      
       logger.error('获取商品详情失败', {
         error: error instanceof Error ? error.message : String(error),
-        goodsId: id,
-        userId
+        goodsId,
+        baseId
       })
-
+      
       throw new GoodsError(
-        GoodsErrorType.GOODS_NOT_FOUND,
-        '获取商品详情失败',
-        500
+        GoodsErrorType.INTERNAL_ERROR,
+        '获取商品详情失败，请稍后重试'
       )
     }
   }
@@ -344,285 +238,182 @@ export class GoodsService {
   /**
    * 更新商品
    */
-  static async updateGoods(id: string, data: UpdateGoodsRequest, userId: string): Promise<GoodsResponse> {
+  static async updateGoods(goodsId: string, baseId: number, data: UpdateGoodsRequest, userId: string): Promise<GoodsResponse> {
     try {
-      // 检查商品是否存在
-      const existingGoods = await prisma.goods.findUnique({
-        where: { id }
+      // 检查商品是否存在且属于该基地
+      const existingGoods = await prisma.goods.findFirst({
+        where: {
+          id: goodsId,
+          baseId: baseId
+        }
       })
 
       if (!existingGoods) {
         throw new GoodsError(
-          GoodsErrorType.GOODS_NOT_FOUND,
-          '商品不存在',
-          404
+          GoodsErrorType.NOT_FOUND,
+          '商品不存在或不属于该基地'
         )
       }
 
-      // 验证分类
-      if (data.categoryId) {
-        const category = await prisma.goodsCategory.findUnique({
-          where: { id: data.categoryId }
+      // 如果更新编码，检查是否重复
+      if (data.code && data.code !== existingGoods.code) {
+        const duplicateGoods = await prisma.goods.findFirst({
+          where: {
+            code: data.code,
+            baseId: baseId,
+            id: { not: goodsId }
+          }
         })
-        if (!category) {
+
+        if (duplicateGoods) {
           throw new GoodsError(
-            GoodsErrorType.INVALID_CATEGORY,
-            '指定的商品分类不存在',
-            400
+            GoodsErrorType.DUPLICATE_CODE,
+            `商品编码 ${data.code} 已存在`
           )
         }
-      }
-
-      // 验证供应商
-      if (data.supplierId) {
-        const supplier = await prisma.supplier.findUnique({
-          where: { id: data.supplierId }
-        })
-        if (!supplier) {
-          throw new GoodsError(
-            GoodsErrorType.INVALID_SUPPLIER,
-            '指定的供应商不存在',
-            400
-          )
-        }
-      }
-
-      // 记录价格变更历史
-      if (data.costPrice !== undefined || data.sellingPrice !== undefined) {
-        await this.recordPriceHistory(
-          id,
-          data.costPrice,
-          data.sellingPrice,
-          userId,
-          existingGoods.costPrice,
-          existingGoods.sellingPrice
-        )
       }
 
       // 更新商品
-      const updatedGoods = await prisma.goods.update({
-        where: { id },
+      const goods = await prisma.goods.update({
+        where: { id: goodsId },
         data: {
-          ...data,
-          updatedBy: userId,
-          updatedAt: new Date()
+          ...(data.code && { code: data.code }),
+          ...(data.name && { name: data.name }),
+          ...(data.alias !== undefined && { alias: data.alias }),
+          ...(data.manufacturer && { manufacturer: data.manufacturer }),
+          ...(data.description !== undefined && { description: data.description }),
+          ...(data.retailPrice && { retailPrice: data.retailPrice }),
+          ...(data.packPrice !== undefined && { packPrice: data.packPrice }),
+          ...(data.purchasePrice !== undefined && { purchasePrice: data.purchasePrice }),
+          ...(data.packPerBox && { packPerBox: data.packPerBox }),
+          ...(data.piecePerPack && { piecePerPack: data.piecePerPack }),
+          ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
+          ...(data.notes !== undefined && { notes: data.notes }),
+          ...(typeof data.isActive === 'boolean' && { isActive: data.isActive }),
+          updatedBy: userId
         },
         include: {
-          category: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          supplier: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
+          base: true,
+          creator: true,
+          updater: true
         }
       })
 
       logger.info('商品更新成功', {
-        goodsId: id,
+        goodsId,
+        baseId,
         userId,
         changes: Object.keys(data)
       })
 
-      return this.formatGoodsResponse(updatedGoods)
+      return this.formatGoodsResponse(goods)
     } catch (error) {
       if (error instanceof GoodsError) {
         throw error
       }
-
+      
       logger.error('更新商品失败', {
         error: error instanceof Error ? error.message : String(error),
-        goodsId: id,
+        goodsId,
+        baseId,
         data,
         userId
       })
-
+      
       throw new GoodsError(
-        GoodsErrorType.GOODS_NOT_FOUND,
-        '更新商品失败',
-        500
+        GoodsErrorType.INTERNAL_ERROR,
+        '更新商品失败，请稍后重试'
       )
     }
   }
 
   /**
-   * 删除商品
+   * 删除商品 (软删除 - 设为不活跃)
    */
-  static async deleteGoods(id: string, userId: string): Promise<void> {
+  static async deleteGoods(goodsId: string, baseId: number, userId: string): Promise<void> {
     try {
-      // 检查商品是否存在
-      const goods = await prisma.goods.findUnique({
-        where: { id },
-        include: {
-          inventories: true,
-          purchaseOrderItems: true,
-          distributionOrderItems: true
+      const goods = await prisma.goods.findFirst({
+        where: {
+          id: goodsId,
+          baseId: baseId
         }
       })
 
       if (!goods) {
         throw new GoodsError(
-          GoodsErrorType.GOODS_NOT_FOUND,
-          '商品不存在',
-          404
+          GoodsErrorType.NOT_FOUND,
+          '商品不存在或不属于该基地'
         )
       }
 
-      // 检查是否有库存
-      const hasStock = goods.inventories.some(inv => inv.quantity > 0)
-      if (hasStock) {
-        throw new GoodsError(
-          GoodsErrorType.GOODS_IN_USE,
-          '商品仍有库存，无法删除',
-          400
-        )
-      }
-
-      // 检查是否有关联的订单
-      const hasOrders = goods.purchaseOrderItems.length > 0 || goods.distributionOrderItems.length > 0
-      if (hasOrders) {
-        throw new GoodsError(
-          GoodsErrorType.GOODS_IN_USE,
-          '商品存在关联订单，无法删除',
-          400
-        )
-      }
-
-      // 软删除商品
       await prisma.goods.update({
-        where: { id },
+        where: { id: goodsId },
         data: {
-          status: GoodsStatus.DISCONTINUED,
-          updatedBy: userId,
-          updatedAt: new Date()
+          isActive: false,
+          updatedBy: userId
         }
       })
 
       logger.info('商品删除成功', {
-        goodsId: id,
+        goodsId,
+        baseId,
         userId
       })
     } catch (error) {
       if (error instanceof GoodsError) {
         throw error
       }
-
+      
       logger.error('删除商品失败', {
         error: error instanceof Error ? error.message : String(error),
-        goodsId: id,
+        goodsId,
+        baseId,
         userId
       })
-
+      
       throw new GoodsError(
-        GoodsErrorType.GOODS_NOT_FOUND,
-        '删除商品失败',
-        500
+        GoodsErrorType.INTERNAL_ERROR,
+        '删除商品失败，请稍后重试'
       )
     }
   }
 
   /**
-   * 获取商品库存信息
+   * 获取基地商品统计
    */
-  static async getGoodsStock(id: string): Promise<GoodsStockInfo> {
+  static async getBaseGoodsStats(baseId: number) {
     try {
-      const inventories = await prisma.inventory.findMany({
-        where: { goodsId: id },
-        include: {
-          location: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      })
-
-      const totalStock = inventories.reduce((sum, inv) => sum + inv.quantity, 0)
-      const reservedStock = inventories.reduce((sum, inv) => sum + (inv.reservedQuantity || 0), 0)
+      const [totalGoods, activeGoods, manufacturers] = await Promise.all([
+        prisma.goods.count({
+          where: { baseId }
+        }),
+        prisma.goods.count({
+          where: { baseId, isActive: true }
+        }),
+        prisma.goods.groupBy({
+          by: ['manufacturer'],
+          where: { baseId, isActive: true },
+          _count: { manufacturer: true }
+        })
+      ])
 
       return {
-        goodsId: id,
-        totalStock,
-        availableStock: totalStock - reservedStock,
-        reservedStock,
-        locations: inventories.map(inv => ({
-          locationId: inv.locationId,
-          locationName: inv.location.name as any,
-          stock: inv.quantity
-        })),
-        lastStockUpdate: inventories.length > 0 
-          ? new Date(Math.max(...inventories.map(inv => inv.updatedAt.getTime())))
-          : new Date()
+        totalGoods,
+        activeGoods,
+        inactiveGoods: totalGoods - activeGoods,
+        totalManufacturers: manufacturers.length
       }
     } catch (error) {
-      logger.error('获取商品库存失败', {
+      logger.error('获取基地商品统计失败', {
         error: error instanceof Error ? error.message : String(error),
-        goodsId: id
+        baseId
       })
-
+      
       throw new GoodsError(
-        GoodsErrorType.GOODS_NOT_FOUND,
-        '获取商品库存失败',
-        500
+        GoodsErrorType.INTERNAL_ERROR,
+        '获取商品统计失败，请稍后重试'
       )
     }
-  }
-
-  /**
-   * 记录价格历史
-   */
-  private static async recordPriceHistory(
-    goodsId: string,
-    newCostPrice?: number,
-    newSellingPrice?: number,
-    userId: string,
-    oldCostPrice?: number,
-    oldSellingPrice?: number
-  ): Promise<void> {
-    const priceHistories: any[] = []
-
-    if (newCostPrice !== undefined && newCostPrice !== oldCostPrice) {
-      priceHistories.push({
-        goodsId,
-        priceType: 'COST',
-        oldPrice: oldCostPrice || 0,
-        newPrice: newCostPrice,
-        changedBy: userId,
-        changedAt: new Date()
-      })
-    }
-
-    if (newSellingPrice !== undefined && newSellingPrice !== oldSellingPrice) {
-      priceHistories.push({
-        goodsId,
-        priceType: 'SELLING',
-        oldPrice: oldSellingPrice || 0,
-        newPrice: newSellingPrice,
-        changedBy: userId,
-        changedAt: new Date()
-      })
-    }
-
-    if (priceHistories.length > 0) {
-      await prisma.goodsPriceHistory.createMany({
-        data: priceHistories
-      })
-    }
-  }
-
-  /**
-   * 获取筛选器数据
-   */
-  private static async getFiltersData(baseWhere: any) {
-    // 这里可以根据需要实现筛选器数据的获取
-    // 暂时返回空对象
-    return undefined
   }
 
   /**
@@ -632,25 +423,25 @@ export class GoodsService {
     return {
       id: goods.id,
       code: goods.code,
-      name: goods.name as MultilingualText,
-      description: goods.description as MultilingualText,
-      category: goods.category,
-      supplier: goods.supplier,
-      unit: goods.unit,
-      costPrice: goods.costPrice,
-      sellingPrice: goods.sellingPrice,
-      minStock: goods.minStock,
-      maxStock: goods.maxStock,
-      currentStock: goods.inventories?.reduce((sum: number, inv: any) => sum + inv.quantity, 0) || 0,
-      barcode: goods.barcode,
-      images: goods.images || [],
-      tags: goods.tags || [],
-      specifications: goods.specifications || {},
-      status: goods.status,
-      createdAt: goods.createdAt,
-      updatedAt: goods.updatedAt,
+      name: goods.name,
+      alias: goods.alias,
+      manufacturer: goods.manufacturer,
+      description: goods.description,
+      retailPrice: Number(goods.retailPrice),
+      packPrice: goods.packPrice ? Number(goods.packPrice) : null,
+      purchasePrice: goods.purchasePrice ? Number(goods.purchasePrice) : null,
+      boxQuantity: goods.boxQuantity,
+      packPerBox: goods.packPerBox,
+      piecePerPack: goods.piecePerPack,
+      imageUrl: goods.imageUrl,
+      notes: goods.notes,
+      baseId: goods.baseId,
+      baseName: goods.base?.name,
+      isActive: goods.isActive,
       createdBy: goods.createdBy,
-      updatedBy: goods.updatedBy
+      updatedBy: goods.updatedBy,
+      createdAt: goods.createdAt,
+      updatedAt: goods.updatedAt
     }
   }
 }

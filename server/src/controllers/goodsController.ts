@@ -1,14 +1,15 @@
-import { Request, Response } from 'express'
-import { GoodsService, SimpleGoodsRequest, GoodsQueryParams } from '../services/goodsService.simple'
+﻿import { Request, Response } from 'express'
+import { GoodsService } from '../services/goodsService'
 import { logger } from '../utils/logger'
 
 export class GoodsController {
   /**
-   * 创建商品
+   * 创建基地商品
+   * POST /api/v1/bases/:baseId/goods
    */
   static async createGoods(req: Request, res: Response): Promise<void> {
     try {
-      const goodsData: SimpleGoodsRequest = req.body
+      const baseId = parseInt(req.params.baseId)
       const userId = req.user?.id
 
       if (!userId) {
@@ -19,98 +20,98 @@ export class GoodsController {
         return
       }
 
-      const goods = await GoodsService.createGoods(goodsData, userId)
+      const goods = await GoodsService.createGoods(baseId, req.body, userId)
 
       res.status(201).json({
         success: true,
         message: '商品创建成功',
         data: goods
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('创建商品失败', {
-        error: error instanceof Error ? error.message : String(error),
-        body: req.body,
+        error: error.message,
+        baseId: req.params.baseId,
         userId: req.user?.id
       })
 
-      res.status(400).json({
+      res.status(error.statusCode || 400).json({
         success: false,
-        message: error instanceof Error ? error.message : '创建商品失败'
+        message: error.message || '创建商品失败'
       })
     }
   }
 
   /**
-   * 获取商品列表
+   * 获取基地商品列表
+   * GET /api/v1/bases/:baseId/goods
    */
-  static async getGoodsList(req: Request, res: Response): Promise<void> {
+  static async getBaseGoods(req: Request, res: Response): Promise<void> {
     try {
-      const queryParams: GoodsQueryParams = {
+      const baseId = parseInt(req.params.baseId)
+      const queryParams = {
         page: req.query.page ? parseInt(req.query.page as string) : 1,
-        limit: req.query.limit ? parseInt(req.query.limit as string) : 20,
+        pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 20,
         search: req.query.search as string,
-        isActive: req.query.isActive ? req.query.isActive === 'true' : undefined,
-        sortBy: req.query.sortBy as any,
-        sortOrder: req.query.sortOrder as any,
-        language: req.query.language as string
+        isActive: req.query.isActive === 'true' ? true : req.query.isActive === 'false' ? false : undefined,
+        manufacturer: req.query.manufacturer as string
       }
 
-      const result = await GoodsService.getGoodsList(queryParams)
+      const result = await GoodsService.getBaseGoods(baseId, queryParams)
 
       res.json({
         success: true,
-        data: result.goods,
+        data: result.data,
         pagination: result.pagination
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('获取商品列表失败', {
-        error: error instanceof Error ? error.message : String(error),
-        query: req.query,
-        userId: req.user?.id
+        error: error.message,
+        baseId: req.params.baseId
       })
 
-      res.status(500).json({
+      res.status(error.statusCode || 500).json({
         success: false,
-        message: '获取商品列表失败'
+        message: error.message || '获取商品列表失败'
       })
     }
   }
 
   /**
    * 获取商品详情
+   * GET /api/v1/bases/:baseId/goods/:goodsId
    */
   static async getGoodsById(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params
+      const baseId = parseInt(req.params.baseId)
+      const goodsId = req.params.goodsId
 
-      const goods = await GoodsService.getGoodsById(id)
+      const goods = await GoodsService.getGoodsById(goodsId, baseId)
 
       res.json({
         success: true,
         data: goods
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('获取商品详情失败', {
-        error: error instanceof Error ? error.message : String(error),
-        goodsId: req.params.id,
-        userId: req.user?.id
+        error: error.message,
+        goodsId: req.params.goodsId
       })
 
-      const statusCode = error instanceof Error && error.message === '商品不存在' ? 404 : 500
-      res.status(statusCode).json({
+      res.status(error.statusCode || 404).json({
         success: false,
-        message: error instanceof Error ? error.message : '获取商品详情失败'
+        message: error.message || '商品不存在'
       })
     }
   }
 
   /**
    * 更新商品
+   * PUT /api/v1/bases/:baseId/goods/:goodsId
    */
   static async updateGoods(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params
-      const updateData: Partial<SimpleGoodsRequest> = req.body
+      const baseId = parseInt(req.params.baseId)
+      const goodsId = req.params.goodsId
       const userId = req.user?.id
 
       if (!userId) {
@@ -121,35 +122,35 @@ export class GoodsController {
         return
       }
 
-      const goods = await GoodsService.updateGoods(id, updateData, userId)
+      const goods = await GoodsService.updateGoods(goodsId, baseId, req.body, userId)
 
       res.json({
         success: true,
         message: '商品更新成功',
         data: goods
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('更新商品失败', {
-        error: error instanceof Error ? error.message : String(error),
-        goodsId: req.params.id,
-        body: req.body,
+        error: error.message,
+        goodsId: req.params.goodsId,
         userId: req.user?.id
       })
 
-      const statusCode = error instanceof Error && error.message === '商品不存在' ? 404 : 400
-      res.status(statusCode).json({
+      res.status(error.statusCode || 400).json({
         success: false,
-        message: error instanceof Error ? error.message : '更新商品失败'
+        message: error.message || '更新商品失败'
       })
     }
   }
 
   /**
    * 删除商品
+   * DELETE /api/v1/bases/:baseId/goods/:goodsId
    */
   static async deleteGoods(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params
+      const baseId = parseInt(req.params.baseId)
+      const goodsId = req.params.goodsId
       const userId = req.user?.id
 
       if (!userId) {
@@ -160,156 +161,48 @@ export class GoodsController {
         return
       }
 
-      await GoodsService.deleteGoods(id, userId)
+      await GoodsService.deleteGoods(goodsId, baseId, userId)
 
       res.json({
         success: true,
         message: '商品删除成功'
       })
-    } catch (error) {
+    } catch (error: any) {
       logger.error('删除商品失败', {
-        error: error instanceof Error ? error.message : String(error),
-        goodsId: req.params.id,
+        error: error.message,
+        goodsId: req.params.goodsId,
         userId: req.user?.id
       })
 
-      const statusCode = error instanceof Error && error.message === '商品不存在' ? 404 : 400
-      res.status(statusCode).json({
+      res.status(error.statusCode || 400).json({
         success: false,
-        message: error instanceof Error ? error.message : '删除商品失败'
+        message: error.message || '删除商品失败'
       })
     }
   }
 
   /**
-   * 获取商品库存信息
+   * 获取基地商品统计
+   * GET /api/v1/bases/:baseId/goods/stats
    */
-  static async getGoodsStock(req: Request, res: Response): Promise<void> {
+  static async getGoodsStats(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params
-
-      const stockInfo = await GoodsService.getGoodsStock(id)
+      const baseId = parseInt(req.params.baseId)
+      const stats = await GoodsService.getBaseGoodsStats(baseId)
 
       res.json({
         success: true,
-        data: stockInfo
+        data: stats
       })
-    } catch (error) {
-      logger.error('获取商品库存失败', {
-        error: error instanceof Error ? error.message : String(error),
-        goodsId: req.params.id,
-        userId: req.user?.id
+    } catch (error: any) {
+      logger.error('获取商品统计失败', {
+        error: error.message,
+        baseId: req.params.baseId
       })
 
-      res.status(500).json({
+      res.status(error.statusCode || 500).json({
         success: false,
-        message: '获取商品库存失败'
-      })
-    }
-  }
-
-  /**
-   * 批量更新商品状态
-   */
-  static async batchUpdateStatus(req: Request, res: Response): Promise<void> {
-    try {
-      const { goodsIds, isActive } = req.body
-      const userId = req.user?.id
-
-      if (!userId) {
-        res.status(401).json({
-          success: false,
-          message: '用户未认证'
-        })
-        return
-      }
-
-      if (!Array.isArray(goodsIds) || goodsIds.length === 0) {
-        res.status(400).json({
-          success: false,
-          message: '请选择要更新的商品'
-        })
-        return
-      }
-
-      if (typeof isActive !== 'boolean') {
-        res.status(400).json({
-          success: false,
-          message: '请指定商品状态'
-        })
-        return
-      }
-
-      // 批量更新商品状态
-      const updatePromises = goodsIds.map((id: string) =>
-        GoodsService.updateGoods(id, { isActive }, userId)
-      )
-
-      await Promise.all(updatePromises)
-
-      res.json({
-        success: true,
-        message: `成功更新 ${goodsIds.length} 个商品的状态`
-      })
-    } catch (error) {
-      logger.error('批量更新商品状态失败', {
-        error: error instanceof Error ? error.message : String(error),
-        body: req.body,
-        userId: req.user?.id
-      })
-
-      res.status(500).json({
-        success: false,
-        message: '批量更新商品状态失败'
-      })
-    }
-  }
-
-  /**
-   * 搜索商品（用于选择器等场景）
-   */
-  static async searchGoods(req: Request, res: Response): Promise<void> {
-    try {
-      const { q, limit = 10 } = req.query
-
-      if (!q || typeof q !== 'string') {
-        res.status(400).json({
-          success: false,
-          message: '请提供搜索关键词'
-        })
-        return
-      }
-
-      const result = await GoodsService.getGoodsList({
-        search: q,
-        limit: parseInt(limit as string),
-        isActive: true
-      })
-
-      // 简化返回数据，只包含必要字段
-      const simplifiedGoods = result.goods.map(goods => ({
-        id: goods.id,
-        code: goods.code,
-        name: goods.name,
-        retailPrice: goods.retailPrice,
-        currentStock: goods.currentStock,
-        imageUrl: goods.imageUrl
-      }))
-
-      res.json({
-        success: true,
-        data: simplifiedGoods
-      })
-    } catch (error) {
-      logger.error('搜索商品失败', {
-        error: error instanceof Error ? error.message : String(error),
-        query: req.query,
-        userId: req.user?.id
-      })
-
-      res.status(500).json({
-        success: false,
-        message: '搜索商品失败'
+        message: error.message || '获取商品统计失败'
       })
     }
   }

@@ -41,7 +41,7 @@ app.get('/health', (req, res) => {
 import authRoutes from './routes/authRoutes'
 import translationRoutes from './routes/translationRoutes'
 import permissionRoutes from './routes/permissionRoutes'
-import goodsRoutes from './routes/goodsRoutes'
+// import goodsRoutes from './routes/goodsRoutes' // 已废弃，使用goodsBaseRoutes（阿米巴模式）
 import inventoryRoutes from './routes/inventoryRoutes'
 import purchaseRoutes from './routes/purchaseRoutes'
 import salesRoutes from './routes/salesRoutes'
@@ -52,13 +52,15 @@ import purchaseBaseRoutes from './routes/purchaseBaseRoutes'
 import salesBaseRoutes from './routes/salesBaseRoutes'
 import personnelBaseRoutes from './routes/personnelBaseRoutes'
 import locationBaseRoutes from './routes/locationBaseRoutes'
+import arrivalRoutes from './routes/arrivalRoutes'
+import transferRoutes from './routes/transferRoutes'
 import userRoutes from './routes/userRoutes'
 import devRoutes from './routes/devRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
 app.use('/api/v1/permissions', permissionRoutes)
-app.use('/api/v1/goods', goodsRoutes)
+// app.use('/api/v1/goods', goodsRoutes) // 已废弃，使用goodsBaseRoutes（阿米巴模式）
 app.use('/api/v1/inventory', inventoryRoutes)
 app.use('/api/v1/purchase', purchaseRoutes)
 app.use('/api/v1/sales', salesRoutes)
@@ -69,6 +71,8 @@ app.use('/api/v1/bases', purchaseBaseRoutes)
 app.use('/api/v1/bases', salesBaseRoutes)
 app.use('/api/v1/bases', personnelBaseRoutes)
 app.use('/api/v1/bases', locationBaseRoutes)
+app.use('/api/v1/bases', arrivalRoutes)
+app.use('/api/v1/bases', transferRoutes)
 app.use('/api', userRoutes)
 
 // 开发环境路由（仅在开发环境下启用）

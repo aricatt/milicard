@@ -31,7 +31,7 @@ export interface BaseListResponse {
  * 添加基地请求参数
  */
 export interface AddBaseRequest {
-  code: string;
+  code?: string; // 可选，留空时自动生成
   name: string;
 }
 

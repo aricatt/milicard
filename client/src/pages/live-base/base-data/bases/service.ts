@@ -5,7 +5,7 @@ import type {
   BaseListResponse, 
   AddBaseRequest, 
   UpdateBaseRequest 
-} from './data';
+} from './data.d';
 
 /**
  * 查询基地列表

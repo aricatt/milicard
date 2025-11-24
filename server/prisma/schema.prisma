@@ -43,6 +43,14 @@ model User {
   userRoles           UserRole[]
   createdPersonnel    Personnel[]         @relation("PersonnelCreator")
   updatedPersonnel    Personnel[]         @relation("PersonnelUpdater")
+  createdArrivals     ArrivalRecord[]     @relation("ArrivalCreator")
+  updatedArrivals     ArrivalRecord[]     @relation("ArrivalUpdater")
+  createdTransfers    TransferRecord[]    @relation("TransferCreator")
+  updatedTransfers    TransferRecord[]    @relation("TransferUpdater")
+  createdLedgers      InventoryLedger[]   @relation("InventoryLedgerCreator")
+  updatedLedgers      InventoryLedger[]   @relation("InventoryLedgerUpdater")
+  createdGoods        Goods[]             @relation("GoodsCreator")
+  updatedGoods        Goods[]             @relation("GoodsUpdater")
 
   @@index([username])
   @@index([email])
@@ -115,6 +123,10 @@ model Location {
   transferOrdersFrom TransferOrder[]    @relation("TransferOrderFrom")
   transferOrdersTo   TransferOrder[]    @relation("TransferOrderTo")
   userLocations      UserLocation[]
+  arrivalRecords     ArrivalRecord[]
+  transferSources    TransferRecord[]   @relation("TransferSource")
+  transferDestinations TransferRecord[] @relation("TransferDestination")
+  inventoryLedgers   InventoryLedger[]  @relation("InventoryLedgerLocation")
 
   @@index([name])
   @@index([type])
@@ -167,22 +179,27 @@ model Goods {
   code                   String                  @unique
   name                   String
   alias                  String?                 // 商品别名
-  manufacturer           String?                 // 厂家名称
+  manufacturer           String                  // 厂家名称 (必填)
   description            String?
-  retailPrice            Decimal                 @default(0) @map("retail_price") @db.Decimal(12, 2)  // 零售价(一箱)
+  retailPrice            Decimal                 @map("retail_price") @db.Decimal(12, 2)  // 零售价(一箱) (必填)
   packPrice              Decimal?                @map("pack_price") @db.Decimal(12, 2)  // 平拆价(一盒)
-  purchasePrice          Decimal                 @default(0) @map("purchase_price") @db.Decimal(12, 2)
-  boxQuantity            Int                     @default(1) @map("box_quantity")
-  packPerBox             Int                     @default(1) @map("pack_per_box")
-  piecePerPack           Int                     @default(1) @map("piece_per_pack")
+  purchasePrice          Decimal?                @map("purchase_price") @db.Decimal(12, 2)  // 采购价
+  boxQuantity            Int                     @default(1) @map("box_quantity")  // 固定为1
+  packPerBox             Int                     @map("pack_per_box")  // 包/箱 (必填)
+  piecePerPack           Int                     @map("piece_per_pack")  // 件/包 (必填)
   imageUrl               String?                 @map("image_url")
   notes                  String?
+  baseId                 Int                     @map("base_id")  // 所属基地ID (阿米巴独立经营)
   isActive               Boolean                 @default(true) @map("is_active")
+  createdBy              String?                 @map("created_by")
+  updatedBy              String?                 @map("updated_by")
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @updatedAt @map("updated_at")
   
-  // 基地相关关系
-  goodsBases             GoodsBase[]
+  // 基地关系 (阿米巴模式 - 每个商品只属于一个基地)
+  base                   Base                    @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator                User?                   @relation("GoodsCreator", fields: [createdBy], references: [id])
+  updater                User?                   @relation("GoodsUpdater", fields: [updatedBy], references: [id])
   
   // 原有关系
   arrivalOrderItems      ArrivalOrderItem[]
@@ -192,10 +209,15 @@ model Goods {
   stockConsumptions      StockConsumption[]
   stockOutOrderItems     StockOutOrderItem[]
   transferOrderItems     TransferOrderItem[]
+  arrivalRecords         ArrivalRecord[]
+  transferRecords        TransferRecord[]
+  inventoryLedgers       InventoryLedger[]
 
   @@index([code])
   @@index([name])
+  @@index([baseId])
   @@index([isActive])
+  @@index([baseId, isActive])  // 复合索引 - 基地级查询优化
   @@map("goods")
 }
 
@@ -228,6 +250,7 @@ model PurchaseOrder {
   baseId           Int                 @map("base_id")
   purchaseDate     DateTime            @map("purchase_date") @db.Date
   totalAmount      Decimal             @default(0) @map("total_amount") @db.Decimal(12, 2)
+  actualAmount     Decimal?            @map("actual_amount") @db.Decimal(12, 2)  // 实付金额
   notes            String?
   createdBy        String              @map("created_by")
   createdAt        DateTime            @default(now()) @map("created_at")
@@ -240,6 +263,7 @@ model PurchaseOrder {
   items            PurchaseOrderItem[]
   creator          User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
   targetLocation   Location            @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
+  arrivalRecords   ArrivalRecord[]
 
   @@index([orderNo])
   @@index([supplierName])
@@ -638,9 +662,9 @@ model Base {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  // 关联关系 (先实现核心模块)
+  // 关联关系 (阿米巴模式 - 直接关联)
   userBases           UserBase[]
-  goodsBases          GoodsBase[]
+  goods               Goods[]          // 直接关联商品 (阿米巴独立经营)
   supplierBases       SupplierBase[]
   locations           Location[]
   inventory           Inventory[]
@@ -648,6 +672,9 @@ model Base {
   defaultUsers        User[]           @relation("UserDefaultBase")
   customers           Customer[]
   personnel           Personnel[]
+  arrivalRecords      ArrivalRecord[]
+  transferRecords     TransferRecord[]
+  inventoryLedgers    InventoryLedger[]
 
   @@index([code])
   @@index([name])
@@ -674,26 +701,8 @@ model UserBase {
   @@map("user_bases")
 }
 
-model GoodsBase {
-  id            String   @id @default(uuid())
-  goodsId       String   @map("goods_id")
-  baseId        Int      @map("base_id")
-  isActive      Boolean  @default(true) @map("is_active")
-  retailPrice   Decimal? @map("retail_price") @db.Decimal(12, 2)
-  purchasePrice Decimal? @map("purchase_price") @db.Decimal(12, 2)
-  notes         String?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  goods Goods @relation(fields: [goodsId], references: [id], onDelete: Cascade)
-  base  Base  @relation(fields: [baseId], references: [id], onDelete: Cascade)
-
-  @@unique([goodsId, baseId])
-  @@index([goodsId])
-  @@index([baseId])
-  @@index([isActive])
-  @@map("goods_bases")
-}
+// GoodsBase模型已移除 - 阿米巴模式下商品直接属于基地
+// 原来的多对多关系改为一对多关系 (Goods.baseId -> Base.id)
 
 model Supplier {
   id          String   @id @default(uuid())
@@ -759,6 +768,9 @@ model Personnel {
   base    Base  @relation(fields: [baseId], references: [id], onDelete: Cascade)
   creator User? @relation("PersonnelCreator", fields: [createdBy], references: [id])
   updater User? @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
+  arrivalRecords   ArrivalRecord[]   @relation("ArrivalHandler")
+  transferRecords  TransferRecord[]  @relation("TransferHandler")
+  inventoryLedgers InventoryLedger[] @relation("InventoryLedgerHandler")
 
   @@index([code])
   @@index([name])
@@ -766,4 +778,154 @@ model Personnel {
   @@index([baseId])
   @@index([isActive])
   @@map("personnel")
+}
+
+// 到货记录表
+model ArrivalRecord {
+  id              String   @id @default(uuid())
+  arrivalDate     DateTime @map("arrival_date") @db.Date
+  purchaseOrderId String   @map("purchase_order_id")
+  goodsId         String   @map("goods_id")
+  locationId      String   @map("location_id")
+  handlerId       String   @map("handler_id")
+  baseId          Int      @map("base_id")
+  
+  // 到货数量
+  boxQuantity     Int      @default(0) @map("box_quantity")
+  packQuantity    Int      @default(0) @map("pack_quantity")
+  pieceQuantity   Int      @default(0) @map("piece_quantity")
+  
+  notes           String?
+  createdBy       String?  @map("created_by")
+  updatedBy       String?  @map("updated_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  goods           Goods         @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  location        Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  handler         Personnel     @relation("ArrivalHandler", fields: [handlerId], references: [id], onDelete: Cascade)
+  base            Base          @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator         User?         @relation("ArrivalCreator", fields: [createdBy], references: [id])
+  updater         User?         @relation("ArrivalUpdater", fields: [updatedBy], references: [id])
+
+  @@index([arrivalDate])
+  @@index([purchaseOrderId])
+  @@index([goodsId])
+  @@index([locationId])
+  @@index([handlerId])
+  @@index([baseId])
+  @@index([createdAt])
+  @@map("arrival_records")
+}
+
+// 调货记录表
+model TransferRecord {
+  id                    String        @id @default(uuid())
+  transferDate          DateTime      @map("transfer_date") @db.Date
+  goodsId               String        @map("goods_id")
+  sourceLocationId      String        @map("source_location_id")
+  destinationLocationId String        @map("destination_location_id")
+  handlerId             String        @map("handler_id")
+  baseId                Int           @map("base_id")
+  
+  // 调货数量
+  boxQuantity           Int           @default(0) @map("box_quantity")
+  packQuantity          Int           @default(0) @map("pack_quantity")
+  pieceQuantity         Int           @default(0) @map("piece_quantity")
+  
+  status                TransferStatus @default(PENDING)
+  notes                 String?
+  createdBy             String?       @map("created_by")
+  updatedBy             String?       @map("updated_by")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  // 关联关系
+  goods             Goods     @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  sourceLocation    Location  @relation("TransferSource", fields: [sourceLocationId], references: [id], onDelete: Cascade)
+  destinationLocation Location @relation("TransferDestination", fields: [destinationLocationId], references: [id], onDelete: Cascade)
+  handler           Personnel @relation("TransferHandler", fields: [handlerId], references: [id], onDelete: Cascade)
+  base              Base      @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator           User?     @relation("TransferCreator", fields: [createdBy], references: [id])
+  updater           User?     @relation("TransferUpdater", fields: [updatedBy], references: [id])
+
+  @@index([transferDate])
+  @@index([goodsId])
+  @@index([sourceLocationId])
+  @@index([destinationLocationId])
+  @@index([handlerId])
+  @@index([baseId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transfer_records")
+}
+
+// 库存消耗记录表
+model InventoryLedger {
+  id                    String   @id @default(uuid())
+  date                  DateTime @db.Date
+  goodsId               String   @map("goods_id")
+  locationId            String   @map("location_id")
+  handlerId             String   @map("handler_id")
+  baseId                Int      @map("base_id")
+  
+  // 期初库存
+  openingStockBox       Int      @default(0) @map("opening_stock_box")
+  openingStockPack      Int      @default(0) @map("opening_stock_pack")
+  openingStockPiece     Int      @default(0) @map("opening_stock_piece")
+  
+  // 期末库存
+  closingStockBox       Int      @default(0) @map("closing_stock_box")
+  closingStockPack      Int      @default(0) @map("closing_stock_pack")
+  closingStockPiece     Int      @default(0) @map("closing_stock_piece")
+  
+  // 计算字段（由系统自动计算）
+  arrivalBox            Int      @default(0) @map("arrival_box")
+  arrivalPack           Int      @default(0) @map("arrival_pack")
+  arrivalPiece          Int      @default(0) @map("arrival_piece")
+  
+  transferInBox         Int      @default(0) @map("transfer_in_box")
+  transferInPack        Int      @default(0) @map("transfer_in_pack")
+  transferInPiece       Int      @default(0) @map("transfer_in_piece")
+  
+  transferOutBox        Int      @default(0) @map("transfer_out_box")
+  transferOutPack       Int      @default(0) @map("transfer_out_pack")
+  transferOutPiece      Int      @default(0) @map("transfer_out_piece")
+  
+  consumptionBox        Int      @default(0) @map("consumption_box")
+  consumptionPack       Int      @default(0) @map("consumption_pack")
+  consumptionPiece      Int      @default(0) @map("consumption_piece")
+  
+  consumptionValue      Decimal  @default(0) @map("consumption_value") @db.Decimal(12, 2)
+  
+  notes                 String?
+  createdBy             String?  @map("created_by")
+  updatedBy             String?  @map("updated_by")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  goods     Goods     @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  location  Location  @relation("InventoryLedgerLocation", fields: [locationId], references: [id], onDelete: Cascade)
+  handler   Personnel @relation("InventoryLedgerHandler", fields: [handlerId], references: [id], onDelete: Cascade)
+  base      Base      @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator   User?     @relation("InventoryLedgerCreator", fields: [createdBy], references: [id])
+  updater   User?     @relation("InventoryLedgerUpdater", fields: [updatedBy], references: [id])
+
+  @@unique([date, goodsId, locationId, handlerId])
+  @@index([date])
+  @@index([goodsId])
+  @@index([locationId])
+  @@index([handlerId])
+  @@index([baseId])
+  @@index([createdAt])
+  @@map("inventory_ledger")
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
 }

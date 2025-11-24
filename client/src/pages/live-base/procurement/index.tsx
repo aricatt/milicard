@@ -16,6 +16,7 @@ import {
   InputNumber,
   App 
 } from 'antd';
+import { request } from '@umijs/max';
 import PurchaseOrderItems, { type PurchaseOrderItem } from '@/components/PurchaseOrderItems';
 import { 
   PlusOutlined, 
@@ -233,80 +234,88 @@ const ProcurementManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      // 模拟数据
-      const mockData: PurchaseOrder[] = [
-        {
-          id: '1',
-          orderNo: 'PO-2024001',
-          supplierName: '优质供应商A',
-          targetLocationId: 'loc1',
-          baseId: currentBase.id,
-          purchaseDate: '2024-01-15',
-          totalAmount: 15000,
-          notes: '春节前备货',
-          createdBy: 'user1',
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-01-15T10:00:00Z',
-          locationName: '主仓库',
-          locationType: '仓库',
-          baseName: currentBase.name,
-        },
-        {
-          id: '2',
-          orderNo: 'PO-2024002',
-          supplierName: '品质供应商B',
-          targetLocationId: 'loc2',
-          baseId: currentBase.id,
-          purchaseDate: '2024-01-20',
-          totalAmount: 8500,
-          notes: '日用品补货',
-          createdBy: 'user2',
-          createdAt: '2024-01-20T14:30:00Z',
-          updatedAt: '2024-01-20T14:30:00Z',
-          locationName: '副仓库',
-          locationType: '仓库',
-          baseName: currentBase.name,
-        },
-      ];
-
-      setPurchaseData(mockData);
-      setPagination(prev => ({
-        ...prev,
-        total: mockData.length,
-      }));
-      
-      // 计算统计数据
-      const totalAmount = mockData.reduce((sum, item) => sum + item.totalAmount, 0);
-      const uniqueSuppliers = new Set(mockData.map(item => item.supplierName)).size;
-      
-      setStats({
-        totalOrders: mockData.length,
-        totalAmount,
-        uniqueSuppliers,
-        averageAmount: mockData.length > 0 ? totalAmount / mockData.length : 0,
+      const params = new URLSearchParams({
+        current: pagination.current.toString(),
+        pageSize: pagination.pageSize.toString(),
+        ...(searchText && { orderNo: searchText }),
+        ...(supplierFilter && { supplierName: supplierFilter }),
+        ...(dateRange && dateRange[0] && { startDate: dateRange[0].format('YYYY-MM-DD') }),
+        ...(dateRange && dateRange[1] && { endDate: dateRange[1].format('YYYY-MM-DD') }),
       });
 
+      const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
+        method: 'GET',
+        params: Object.fromEntries(params),
+      });
+      
+      if (result.success) {
+        setPurchaseData(result.data || []);
+        setPagination(prev => ({
+          ...prev,
+          total: result.total || 0,
+        }));
+        
+        // 获取统计数据
+        fetchPurchaseStats();
+      } else {
+        throw new Error(result.message || '获取采购数据失败');
+      }
     } catch (error) {
       console.error('获取采购数据失败:', error);
       message.error('获取采购数据失败，请稍后重试');
+      // 设置空数据
+      setPurchaseData([]);
+      setPagination(prev => ({ ...prev, total: 0 }));
     } finally {
       setLoading(false);
     }
   };
 
+  // 获取采购统计
+  const fetchPurchaseStats = async () => {
+    if (!currentBase) return;
+
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders/stats`, {
+        method: 'GET',
+      });
+      
+      if (result.success) {
+        setStats(result.data || {
+          totalOrders: 0,
+          totalAmount: 0,
+          uniqueSuppliers: 0,
+          averageAmount: 0,
+        });
+      }
+    } catch (error) {
+      console.error('获取采购统计失败:', error);
+      // 设置默认统计数据
+      setStats({
+        totalOrders: 0,
+        totalAmount: 0,
+        uniqueSuppliers: 0,
+        averageAmount: 0,
+      });
+    }
+  };
+
   // 获取供应商列表
   const fetchSuppliers = async () => {
+    if (!currentBase) return;
+
     try {
-      // 模拟供应商数据
-      const mockSuppliers: Supplier[] = [
-        { id: '1', name: '优质供应商A', contactPerson: '张经理', contactPhone: '13800138001', address: '北京市朝阳区' },
-        { id: '2', name: '品质供应商B', contactPerson: '李经理', contactPhone: '13800138002', address: '上海市浦东新区' },
-        { id: '3', name: '信赖供应商C', contactPerson: '王经理', contactPhone: '13800138003', address: '广州市天河区' },
-      ];
+      const result = await request(`/api/v1/bases/${currentBase.id}/suppliers`, {
+        method: 'GET',
+      });
       
-      setSuppliers(mockSuppliers);
+      if (result.success) {
+        setSuppliers(result.data || []);
+      }
     } catch (error) {
       console.error('获取供应商列表失败:', error);
+      // 设置空供应商列表
+      setSuppliers([]);
     }
   };
 
@@ -365,14 +374,21 @@ const ProcurementManagement: React.FC = () => {
       
       console.log('创建采购订单数据:', orderData);
       
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 调用创建采购订单API
+      const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
+        method: 'POST',
+        data: orderData,
+      });
       
-      message.success('采购订单创建成功');
-      setCreateModalVisible(false);
-      form.resetFields();
-      setOrderItems([]);
-      fetchPurchaseData();
+      if (result.success) {
+        message.success('采购订单创建成功');
+        setCreateModalVisible(false);
+        form.resetFields();
+        setOrderItems([]);
+        fetchPurchaseData();
+      } else {
+        throw new Error(result.message || '创建采购订单失败');
+      }
     } catch (error) {
       message.error('创建采购订单失败');
     } finally {
@@ -588,14 +604,6 @@ const ProcurementManagement: React.FC = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="订单编号"
-            name="orderNo"
-            extra="留空将自动生成编号（格式：PO-XXXXXXXXXXX）"
-          >
-            <Input placeholder="留空自动生成，或手动输入自定义编号" />
-          </Form.Item>
-
-          <Form.Item
             label="供应商"
             name="supplierName"
             rules={[{ required: true, message: '请选择供应商' }]}
@@ -624,6 +632,23 @@ const ProcurementManagement: React.FC = () => {
             <PurchaseOrderItems
               value={orderItems}
               onChange={setOrderItems}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="实付金额"
+            name="actualAmount"
+            extra="实际支付的金额，可能与订单总金额不同"
+            rules={[
+              { type: 'number', min: 0, message: '实付金额不能为负数' }
+            ]}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              placeholder="请输入实付金额"
+              min={0}
+              precision={2}
+              addonBefore="¥"
             />
           </Form.Item>
 

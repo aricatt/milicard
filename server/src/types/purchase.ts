@@ -198,6 +198,7 @@ export interface CreatePurchaseOrderRequest {
   supplierName: string
   targetLocationId: string
   purchaseDate: string
+  actualAmount?: number  // 实付金额
   notes?: string
   items: PurchaseOrderItemRequest[]
 }
@@ -209,6 +210,7 @@ export interface UpdatePurchaseOrderRequest {
   supplierName?: string
   targetLocationId?: string
   purchaseDate?: string
+  actualAmount?: number  // 实付金额
   notes?: string
   items?: PurchaseOrderItemRequest[]
 }

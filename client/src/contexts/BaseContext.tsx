@@ -123,6 +123,12 @@ export const useBase = (): BaseContextType => {
   return context;
 };
 
+// 可选的基地上下文Hook（如果不在Provider中返回null）
+export const useBaseOptional = (): BaseContextType | null => {
+  const context = useContext(BaseContext);
+  return context || null;
+};
+
 // 检查是否有基地上下文的Hook
 export const useRequireBase = (): BaseInfo => {
   const { currentBase } = useBase();

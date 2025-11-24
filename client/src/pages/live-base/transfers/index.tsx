@@ -31,6 +31,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { request } from '@umijs/max';
 import styles from './index.less';
 
 const { Search } = Input;
@@ -83,6 +84,8 @@ const TransferManagement: React.FC = () => {
   // 筛选条件
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [fromLocationFilter, setFromLocationFilter] = useState<string>('');
+  const [toLocationFilter, setToLocationFilter] = useState<string>('');
   const [locationFilter, setLocationFilter] = useState<string>('');
   const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
@@ -261,53 +264,73 @@ const TransferManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      // 模拟数据
-      const mockData: TransferRecord[] = [
-        {
-          id: '1',
-          transferDate: '2024-01-15',
-          goodsName: '苹果手机壳',
-          fromLocationName: '主仓库',
-          toLocationName: '直播间A',
-          handlerName: '张三',
-          boxQuantity: 2,
-          packQuantity: 0,
-          pieceQuantity: 50,
-          status: 'COMPLETED',
-          notes: '直播需要',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
-        },
-        {
-          id: '2',
-          transferDate: '2024-01-14',
-          goodsName: '数据线',
-          fromLocationName: '副仓库',
-          toLocationName: '直播间B',
-          handlerName: '李四',
-          boxQuantity: 0,
-          packQuantity: 5,
-          pieceQuantity: 0,
-          status: 'PENDING',
-          notes: '待处理',
-          createdAt: '2024-01-14T14:20:00Z',
-          updatedAt: '2024-01-14T14:20:00Z',
-        },
-      ];
-
-      setTransferData(mockData);
-      setPagination(prev => ({
-        ...prev,
-        total: mockData.length,
-      }));
+      // 构建查询参数
+      const params = new URLSearchParams();
+      params.append('current', pagination.current.toString());
+      params.append('pageSize', pagination.pageSize.toString());
       
-      // 计算统计数据
-      calculateStats(mockData);
+      if (searchText) {
+        params.append('search', searchText);
+      }
+      if (fromLocationFilter) {
+        params.append('sourceLocationId', fromLocationFilter);
+      }
+      if (toLocationFilter) {
+        params.append('destinationLocationId', toLocationFilter);
+      }
+      if (statusFilter) {
+        params.append('status', statusFilter);
+      }
+
+      const result = await request(`/api/v1/bases/${currentBase.id}/transfers`, {
+        method: 'GET',
+        params: Object.fromEntries(params),
+      });
+
+      if (result.success) {
+        setTransferData(result.data || []);
+        setPagination(prev => ({
+          ...prev,
+          total: result.total || 0,
+          current: result.current || 1,
+          pageSize: result.pageSize || 10,
+        }));
+        
+        // 获取统计数据
+        fetchTransferStats();
+      } else {
+        throw new Error(result.message || '获取调货数据失败');
+      }
     } catch (error) {
       console.error('获取调货数据失败:', error);
       message.error('获取调货数据失败，请稍后重试');
+      setTransferData([]);
+      setPagination(prev => ({ ...prev, total: 0 }));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取调货统计数据
+  const fetchTransferStats = async () => {
+    if (!currentBase) return;
+    
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/transfers/stats`, {
+        method: 'GET',
+      });
+
+      if (result.success) {
+        setStats({
+          totalTransfers: result.data.totalRecords || 0,
+          pendingTransfers: result.data.pendingRecords || 0,
+          completedTransfers: result.data.completedRecords || 0,
+          todayTransfers: result.data.cancelledRecords || 0, // 暂时用取消数据代替今日数据
+        });
+      }
+    } catch (error) {
+      console.error('获取调货统计失败:', error);
+      // 静默失败，不显示错误消息
     }
   };
 
@@ -338,9 +361,24 @@ const TransferManagement: React.FC = () => {
       content: `确定要删除调货记录 ${record.goodsName} 吗？`,
       okText: '确定',
       cancelText: '取消',
-      onOk: () => {
-        message.success('删除成功');
-        fetchTransferData();
+      onOk: async () => {
+        if (!currentBase) return;
+        
+        try {
+          const result = await request(`/api/v1/bases/${currentBase.id}/transfers/${record.id}`, {
+            method: 'DELETE',
+          });
+
+          if (result.success) {
+            message.success('删除成功');
+            fetchTransferData();
+          } else {
+            throw new Error(result.message || '删除失败');
+          }
+        } catch (error) {
+          console.error('删除调货记录失败:', error);
+          message.error('删除失败，请稍后重试');
+        }
       },
     });
   };
@@ -354,13 +392,33 @@ const TransferManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
-      // 这里应该调用后端API
-      console.log('创建调货记录:', values);
-      
-      message.success('调货记录创建成功');
-      setCreateModalVisible(false);
-      form.resetFields();
-      fetchTransferData();
+      // 准备请求数据
+      const transferData = {
+        transferDate: values.transferDate.format('YYYY-MM-DD'),
+        goodsId: values.goodsId,
+        sourceLocationId: values.sourceLocationId,
+        destinationLocationId: values.destinationLocationId,
+        handlerId: values.handlerId,
+        boxQuantity: values.boxQuantity || 0,
+        packQuantity: values.packQuantity || 0,
+        pieceQuantity: values.pieceQuantity || 0,
+        status: values.status || 'PENDING',
+        notes: values.notes,
+      };
+
+      const result = await request(`/api/v1/bases/${currentBase.id}/transfers`, {
+        method: 'POST',
+        data: transferData,
+      });
+
+      if (result.success) {
+        message.success('调货记录创建成功');
+        setCreateModalVisible(false);
+        form.resetFields();
+        fetchTransferData();
+      } else {
+        throw new Error(result.message || '创建失败');
+      }
     } catch (error) {
       console.error('创建调货记录失败:', error);
       message.error('创建调货记录失败，请稍后重试');

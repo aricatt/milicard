@@ -30,6 +30,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { request } from '@umijs/max';
 import styles from './index.less';
 
 const { Search } = Input;
@@ -82,6 +83,13 @@ const ArrivalManagement: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [warehouseFilter, setWarehouseFilter] = useState<string>('');
   const [purchaseOrderFilter, setPurchaseOrderFilter] = useState<string>('');
+  const [filters, setFilters] = useState({
+    warehouse: '',
+    purchaseOrder: '',
+    goods: '',
+    handler: '',
+    dateRange: [] as string[],
+  });
   const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
   const [pagination, setPagination] = useState({
     current: 1,
@@ -245,51 +253,70 @@ const ArrivalManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      // 模拟数据
-      const mockData: ArrivalRecord[] = [
-        {
-          id: '1',
-          arrivalDate: '2024-01-15',
-          purchaseOrderNo: 'PO-2024-001',
-          goodsName: '苹果手机壳',
-          warehouseName: '主仓库',
-          handlerName: '张三',
-          boxQuantity: 5,
-          packQuantity: 0,
-          pieceQuantity: 100,
-          notes: '质量良好',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
-        },
-        {
-          id: '2',
-          arrivalDate: '2024-01-14',
-          purchaseOrderNo: 'PO-2024-002',
-          goodsName: '数据线',
-          warehouseName: '副仓库',
-          handlerName: '李四',
-          boxQuantity: 0,
-          packQuantity: 10,
-          pieceQuantity: 0,
-          notes: '包装完好',
-          createdAt: '2024-01-14T14:20:00Z',
-          updatedAt: '2024-01-14T14:20:00Z',
-        },
-      ];
-
-      setArrivalData(mockData);
-      setPagination(prev => ({
-        ...prev,
-        total: mockData.length,
-      }));
+      // 构建查询参数
+      const params = new URLSearchParams();
+      params.append('current', pagination.current.toString());
+      params.append('pageSize', pagination.pageSize.toString());
       
-      // 计算统计数据
-      calculateStats(mockData);
+      if (searchText) {
+        params.append('search', searchText);
+      }
+      if (warehouseFilter) {
+        params.append('warehouseId', warehouseFilter);
+      }
+      if (purchaseOrderFilter) {
+        params.append('purchaseOrderId', purchaseOrderFilter);
+      }
+
+      const result = await request(`/api/v1/bases/${currentBase.id}/arrivals`, {
+        method: 'GET',
+        params: Object.fromEntries(params),
+      });
+
+      if (result.success) {
+        setArrivalData(result.data || []);
+        setPagination(prev => ({
+          ...prev,
+          total: result.total || 0,
+          current: result.current || 1,
+          pageSize: result.pageSize || 10,
+        }));
+        
+        // 获取统计数据
+        fetchArrivalStats();
+      } else {
+        throw new Error(result.message || '获取到货数据失败');
+      }
     } catch (error) {
       console.error('获取到货数据失败:', error);
       message.error('获取到货数据失败，请稍后重试');
+      setArrivalData([]);
+      setPagination(prev => ({ ...prev, total: 0 }));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取到货统计数据
+  const fetchArrivalStats = async () => {
+    if (!currentBase) return;
+    
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/arrivals/stats`, {
+        method: 'GET',
+      });
+
+      if (result.success) {
+        setStats({
+          totalArrivals: result.data.totalRecords || 0,
+          todayArrivals: result.data.todayRecords || 0,
+          weekArrivals: result.data.thisMonthRecords || 0, // 暂时用月度数据代替周数据
+          monthArrivals: result.data.thisMonthRecords || 0,
+        });
+      }
+    } catch (error) {
+      console.error('获取到货统计失败:', error);
+      // 静默失败，不显示错误消息
     }
   };
 
@@ -326,9 +353,24 @@ const ArrivalManagement: React.FC = () => {
       content: `确定要删除到货记录 ${record.purchaseOrderNo} 吗？`,
       okText: '确定',
       cancelText: '取消',
-      onOk: () => {
-        message.success('删除成功');
-        fetchArrivalData();
+      onOk: async () => {
+        if (!currentBase) return;
+        
+        try {
+          const result = await request(`/api/v1/bases/${currentBase.id}/arrivals/${record.id}`, {
+            method: 'DELETE',
+          });
+
+          if (result.success) {
+            message.success('删除成功');
+            fetchArrivalData();
+          } else {
+            throw new Error(result.message || '删除失败');
+          }
+        } catch (error) {
+          console.error('删除到货记录失败:', error);
+          message.error('删除失败，请稍后重试');
+        }
       },
     });
   };
@@ -342,13 +384,32 @@ const ArrivalManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
-      // 这里应该调用后端API
-      console.log('创建到货记录:', values);
-      
-      message.success('到货记录创建成功');
-      setCreateModalVisible(false);
-      form.resetFields();
-      fetchArrivalData();
+      // 准备请求数据
+      const arrivalData = {
+        arrivalDate: values.arrivalDate.format('YYYY-MM-DD'),
+        purchaseOrderId: values.purchaseOrderId,
+        goodsId: values.goodsId,
+        locationId: values.locationId,
+        handlerId: values.handlerId,
+        boxQuantity: values.boxQuantity || 0,
+        packQuantity: values.packQuantity || 0,
+        pieceQuantity: values.pieceQuantity || 0,
+        notes: values.notes,
+      };
+
+      const result = await request(`/api/v1/bases/${currentBase.id}/arrivals`, {
+        method: 'POST',
+        data: arrivalData,
+      });
+
+      if (result.success) {
+        message.success('到货记录创建成功');
+        setCreateModalVisible(false);
+        form.resetFields();
+        fetchArrivalData();
+      } else {
+        throw new Error(result.message || '创建失败');
+      }
     } catch (error) {
       console.error('创建到货记录失败:', error);
       message.error('创建到货记录失败，请稍后重试');
