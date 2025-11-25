@@ -1,49 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
-  Table, 
-  Card, 
-  Button, 
   Space, 
   Tag, 
-  Statistic, 
-  Row, 
-  Col, 
-  Input, 
-  Select, 
   Modal,
   Form,
-  App 
+  Input,
+  App,
+  Button,
+  Popconfirm,
+  Popover,
+  Descriptions,
+  Row,
+  Col
 } from 'antd';
 import { 
   PlusOutlined, 
-  SearchOutlined, 
-  ExportOutlined, 
-  ReloadOutlined,
-  WarningOutlined,
-  CheckCircleOutlined,
   EditOutlined,
-  EyeOutlined,
+  DeleteOutlined,
   PhoneOutlined,
-  MailOutlined
+  MailOutlined,
+  EnvironmentOutlined,
+  ExclamationCircleOutlined,
+  InfoCircleOutlined,
+  CheckCircleOutlined,
+  ShopOutlined
 } from '@ant-design/icons';
-import { PageContainer } from '@ant-design/pro-components';
+import { ProTable, PageContainer } from '@ant-design/pro-components';
+import type { ProColumns, ActionType } from '@ant-design/pro-components';
+import { request } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
-import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
 
-const { Search } = Input;
-const { Option } = Select;
 const { TextArea } = Input;
 
 // 供应商数据类型定义
 interface Supplier {
   id: string;
+  code: string;
   name: string;
   contactPerson: string;
   phone: string;
-  email: string;
+  email?: string;
   address: string;
-  notes: string;
+  notes?: string;
   baseId: number;
   isActive: boolean;
   createdAt: string;
@@ -60,16 +59,15 @@ interface SupplierStats {
 }
 
 /**
- * 供应商页面
- * 基地中心化的供应商管理，显示当前基地的供应商信息
+ * 供应商管理页面 - ProTable 版本
+ * 基地中心化的供应商管理，统一管理供应商信息
  */
 const SupplierManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const actionRef = useRef<ActionType>();
   
   // 状态管理
-  const [loading, setLoading] = useState(false);
-  const [supplierData, setSupplierData] = useState<Supplier[]>([]);
   const [stats, setStats] = useState<SupplierStats>({
     totalSuppliers: 0,
     activeSuppliers: 0,
@@ -77,28 +75,233 @@ const SupplierManagement: React.FC = () => {
     recentlyAdded: 0,
   });
   
-  // 筛选条件
-  const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 20,
-    total: 0,
-  });
-
   // 模态框状态
   const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
-  const [form] = Form.useForm();
+  const [editLoading, setEditLoading] = useState(false);
+  
+  // 表单实例
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
 
-  // 表格列定义
-  const columns: ColumnsType<Supplier> = [
+  /**
+   * 获取供应商数据
+   */
+  const fetchSupplierData = async (params: any) => {
+    if (!currentBase) {
+      return {
+        data: [],
+        success: true,
+        total: 0,
+      };
+    }
+
+    try {
+      const { current = 1, pageSize = 20, name, isActive } = params;
+      
+      // 构建查询参数
+      const queryParams: any = {
+        current,
+        pageSize,
+      };
+      
+      if (name) queryParams.name = name;
+      if (isActive !== undefined) queryParams.isActive = isActive;
+
+      const result = await request(`/api/v1/bases/${currentBase.id}/suppliers`, {
+        method: 'GET',
+        params: queryParams,
+      });
+      
+      if (result.success) {
+        // 计算统计数据
+        calculateStats(result.data || []);
+        
+        return {
+          data: result.data || [],
+          success: true,
+          total: result.total || 0,
+        };
+      } else {
+        message.error(result.message || '获取供应商数据失败');
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
+      }
+    } catch (error) {
+      console.error('获取供应商数据失败:', error);
+      message.error('获取供应商数据失败');
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
+    }
+  };
+
+  /**
+   * 计算统计数据
+   */
+  const calculateStats = (data: Supplier[]) => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const newStats: SupplierStats = {
+      totalSuppliers: data.length,
+      activeSuppliers: data.filter(s => s.isActive).length,
+      inactiveSuppliers: data.filter(s => !s.isActive).length,
+      recentlyAdded: data.filter(s => new Date(s.createdAt) > sevenDaysAgo).length,
+    };
+    setStats(newStats);
+  };
+
+  /**
+   * 创建供应商
+   */
+  const handleCreate = async (values: any) => {
+    if (!currentBase) {
+      message.error('请先选择基地');
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/suppliers`, {
+        method: 'POST',
+        data: values,
+      });
+
+      if (result.success) {
+        message.success('创建成功');
+        setCreateModalVisible(false);
+        createForm.resetFields();
+        actionRef.current?.reload();
+      } else {
+        message.error(result.message || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建供应商失败:', error);
+      message.error('创建供应商失败');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  /**
+   * 更新供应商
+   */
+  const handleUpdate = async (values: any) => {
+    if (!currentBase || !editingSupplier) {
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      const result = await request(
+        `/api/v1/bases/${currentBase.id}/suppliers/${editingSupplier.id}`,
+        {
+          method: 'PUT',
+          data: values,
+        }
+      );
+
+      if (result.success) {
+        message.success('更新成功');
+        setEditModalVisible(false);
+        editForm.resetFields();
+        setEditingSupplier(null);
+        actionRef.current?.reload();
+      } else {
+        message.error(result.message || '更新失败');
+      }
+    } catch (error) {
+      console.error('更新供应商失败:', error);
+      message.error('更新供应商失败');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  /**
+   * 删除供应商
+   */
+  const handleDelete = async (record: Supplier) => {
+    if (!currentBase) {
+      return;
+    }
+
+    try {
+      const result = await request(
+        `/api/v1/bases/${currentBase.id}/suppliers/${record.id}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (result.success) {
+        message.success('删除成功');
+        actionRef.current?.reload();
+      } else {
+        message.error(result.message || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除供应商失败:', error);
+      message.error('删除供应商失败');
+    }
+  };
+
+  /**
+   * 打开编辑模态框
+   */
+  const handleEdit = (record: Supplier) => {
+    setEditingSupplier(record);
+    editForm.setFieldsValue({
+      name: record.name,
+      contactPerson: record.contactPerson,
+      phone: record.phone,
+      email: record.email,
+      address: record.address,
+      notes: record.notes,
+    });
+    setEditModalVisible(true);
+  };
+
+  /**
+   * 列定义
+   */
+  const columns: ProColumns<Supplier>[] = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 80,
+      hideInSearch: true,
+      hideInTable: false,
+      render: (id: any) => String(id).slice(-8),
+    },
+    {
+      title: '编号',
+      dataIndex: 'code',
+      key: 'code',
+      width: 180,
+      fixed: 'left',
+      copyable: true,
+      hideInSetting: true,
+      hideInSearch: true,
+      render: (text: string) => <code>{text}</code>,
+    },
     {
       title: '供应商名称',
       dataIndex: 'name',
       key: 'name',
       width: 200,
       fixed: 'left',
+      hideInSetting: true,
+      hideInSearch: false,
       render: (text: string) => <strong>{text}</strong>,
     },
     {
@@ -106,15 +309,17 @@ const SupplierManagement: React.FC = () => {
       dataIndex: 'contactPerson',
       key: 'contactPerson',
       width: 120,
+      hideInSearch: true,
     },
     {
       title: '联系电话',
       dataIndex: 'phone',
       key: 'phone',
-      width: 130,
+      width: 140,
+      hideInSearch: true,
       render: (phone: string) => (
         <Space>
-          <PhoneOutlined />
+          <PhoneOutlined style={{ color: '#1890ff' }} />
           {phone}
         </Space>
       ),
@@ -123,10 +328,13 @@ const SupplierManagement: React.FC = () => {
       title: '邮箱',
       dataIndex: 'email',
       key: 'email',
-      width: 180,
+      width: 200,
+      ellipsis: true,
+      hideInSearch: true,
+      hideInTable: false,
       render: (email: string) => email ? (
         <Space>
-          <MailOutlined />
+          <MailOutlined style={{ color: '#52c41a' }} />
           {email}
         </Space>
       ) : '-',
@@ -135,19 +343,16 @@ const SupplierManagement: React.FC = () => {
       title: '地址',
       dataIndex: 'address',
       key: 'address',
-      width: 200,
+      width: 250,
       ellipsis: true,
-    },
-    {
-      title: '状态',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      width: 100,
-      render: (isActive: boolean) => (
-        <Tag color={isActive ? 'green' : 'red'} icon={<CheckCircleOutlined />}>
-          {isActive ? '启用' : '禁用'}
-        </Tag>
-      ),
+      hideInSearch: true,
+      hideInTable: false,
+      render: (address: string) => address ? (
+        <Space>
+          <EnvironmentOutlined style={{ color: '#fa8c16' }} />
+          {address}
+        </Space>
+      ) : '-',
     },
     {
       title: '备注',
@@ -155,341 +360,278 @@ const SupplierManagement: React.FC = () => {
       key: 'notes',
       width: 200,
       ellipsis: true,
+      hideInSearch: true,
+      hideInTable: false,
+      render: (text: string) => text || '-',
+    },
+    {
+      title: '状态',
+      dataIndex: 'isActive',
+      key: 'isActive',
+      width: 80,
+      valueType: 'select',
+      valueEnum: {
+        true: { text: '启用', status: 'Success' },
+        false: { text: '禁用', status: 'Error' },
+      },
+      render: (_, record) => (
+        <Tag color={record.isActive ? 'green' : 'red'}>
+          {record.isActive ? '启用' : '禁用'}
+        </Tag>
+      ),
+      hideInSearch: false,
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 150,
-      render: (value: string) => new Date(value).toLocaleString(),
+      width: 170,
+      valueType: 'dateTime',
+      hideInSearch: true,
+      sorter: true,
+      render: (_, record) => {
+        if (!record.createdAt) return '-';
+        try {
+          const date = new Date(record.createdAt);
+          if (isNaN(date.getTime())) return '-';
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+        } catch (error) {
+          return '-';
+        }
+      },
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      width: 170,
+      valueType: 'dateTime',
+      hideInSearch: true,
+      hideInTable: false,
+      render: (_, record) => {
+        if (!record.updatedAt) return '-';
+        try {
+          const date = new Date(record.updatedAt);
+          if (isNaN(date.getTime())) return '-';
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+        } catch (error) {
+          return '-';
+        }
+      },
     },
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: 150,
       fixed: 'right',
-      render: (_, record) => (
-        <Space size="small">
-          <Button 
-            type="link" 
-            size="small" 
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
+      valueType: 'option',
+      hideInSetting: true,
+      render: (_, record) => [
+        <Button
+          key="edit"
+          type="link"
+          size="small"
+          icon={<EditOutlined />}
+          onClick={() => handleEdit(record)}
+        >
+          编辑
+        </Button>,
+        <Popconfirm
+          key="delete"
+          title="确认删除"
+          description={`确定要删除供应商"${record.name}"吗？`}
+          onConfirm={() => handleDelete(record)}
+          okText="确定"
+          cancelText="取消"
+          icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+        >
+          <Button
+            type="link"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
           >
-            查看
+            删除
           </Button>
-          <Button 
-            type="link" 
-            size="small" 
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-        </Space>
-      ),
+        </Popconfirm>,
+      ],
     },
   ];
 
-  // 获取供应商数据
-  const fetchSupplierData = async () => {
-    if (!currentBase) {
-      message.warning('请先选择基地');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        current: pagination.current.toString(),
-        pageSize: pagination.pageSize.toString(),
-        ...(searchText && { name: searchText }),
-        ...(statusFilter && { isActive: statusFilter }),
-      });
-
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/suppliers?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setSupplierData(result.data || []);
-        setPagination(prev => ({
-          ...prev,
-          total: result.total || 0,
-        }));
-        
-        // 计算统计数据
-        calculateStats(result.data || []);
-      } else {
-        throw new Error(result.message || '获取供应商数据失败');
-      }
-    } catch (error) {
-      console.error('获取供应商数据失败:', error);
-      message.error('获取供应商数据失败，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 计算统计数据
-  const calculateStats = (data: Supplier[]) => {
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    
-    const totalSuppliers = data.length;
-    const activeSuppliers = data.filter(s => s.isActive).length;
-    const inactiveSuppliers = totalSuppliers - activeSuppliers;
-    const recentlyAdded = data.filter(s => new Date(s.createdAt) > sevenDaysAgo).length;
-    
-    setStats({
-      totalSuppliers,
-      activeSuppliers,
-      inactiveSuppliers,
-      recentlyAdded,
-    });
-  };
-
-  // 处理查看
-  const handleView = (record: Supplier) => {
-    message.info(`查看供应商: ${record.name}`);
-  };
-
-  // 处理编辑
-  const handleEdit = (record: Supplier) => {
-    message.info(`编辑供应商: ${record.name}`);
-  };
-
-  // 处理创建供应商
-  const handleCreateSupplier = async (values: any) => {
-    if (!currentBase) {
-      message.warning('请先选择基地');
-      return;
-    }
-
-    setCreateLoading(true);
-    try {
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/suppliers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...values,
-          baseId: currentBase.id,
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        message.success('供应商创建成功');
-        setCreateModalVisible(false);
-        form.resetFields();
-        fetchSupplierData();
-      } else {
-        throw new Error(result.message || '创建供应商失败');
-      }
-    } catch (error) {
-      console.error('创建供应商失败:', error);
-      message.error('创建供应商失败，请稍后重试');
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
-  // 导出数据
-  const handleExport = () => {
-    message.info('导出功能开发中...');
-  };
-
-  // 刷新数据
-  const handleRefresh = () => {
-    fetchSupplierData();
-  };
-
-  // 表格变化处理
-  const handleTableChange = (newPagination: any) => {
-    setPagination(prev => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
-  };
-
-  // 搜索处理
-  const handleSearch = (value: string) => {
-    setSearchText(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
-  // 筛选处理
-  const handleFilterChange = () => {
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
-  // 页面加载时获取数据
-  useEffect(() => {
-    if (currentBase) {
-      fetchSupplierData();
-    }
-  }, [currentBase, pagination.current, pagination.pageSize, searchText, statusFilter]);
-
-  // 如果没有选择基地
   if (!currentBase) {
     return (
       <PageContainer>
-        <Card>
-          <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <WarningOutlined style={{ fontSize: '48px', color: '#faad14' }} />
-            <h3>请先选择基地</h3>
-            <p>供应商管理需要在特定基地下进行，请先选择一个基地。</p>
-          </div>
-        </Card>
+        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+          <p>请先选择一个基地</p>
+        </div>
       </PageContainer>
     );
   }
 
+  // 统计详情弹出内容
+  const statsContent = (
+    <div style={{ width: 300 }}>
+      <Descriptions column={1} size="small" bordered>
+        <Descriptions.Item label="供应商总数">
+          <Space>
+            <ShopOutlined />
+            <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalSuppliers}</span>
+            <span style={{ color: '#999' }}>家</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="启用供应商">
+          <Space>
+            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+            <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeSuppliers}</span>
+            <span style={{ color: '#999' }}>({stats.totalSuppliers > 0 ? ((stats.activeSuppliers / stats.totalSuppliers) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="禁用供应商">
+          <Space>
+            <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.inactiveSuppliers}</span>
+            <span style={{ color: '#999' }}>({stats.totalSuppliers > 0 ? ((stats.inactiveSuppliers / stats.totalSuppliers) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="近7天新增">
+          <Space>
+            <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{stats.recentlyAdded}</span>
+            <span style={{ color: '#999' }}>家</span>
+          </Space>
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
+
   return (
     <PageContainer
-      title="供应商"
-      subTitle={`当前基地：${currentBase.name}`}
-      extra={[
-        <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
-          导出
-        </Button>,
-        <Button key="refresh" icon={<ReloadOutlined />} onClick={handleRefresh}>
-          刷新
-        </Button>,
-        <Button 
-          key="add" 
-          type="primary" 
-          icon={<PlusOutlined />}
-          onClick={() => setCreateModalVisible(true)}
-        >
-          新增供应商
-        </Button>,
-      ]}
+      header={{
+        title: '供应商管理',
+        subTitle: `当前基地：${currentBase.name}`,
+      }}
     >
-      {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="供应商总数"
-              value={stats.totalSuppliers}
-              suffix="家"
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="启用供应商"
-              value={stats.activeSuppliers}
-              suffix="家"
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="禁用供应商"
-              value={stats.inactiveSuppliers}
-              suffix="家"
-              valueStyle={{ color: '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="近7天新增"
-              value={stats.recentlyAdded}
-              suffix="家"
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 筛选工具栏 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
-          <Col span={8}>
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder="搜索供应商名称"
-                allowClear
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onPressEnter={() => handleSearch(searchText)}
-              />
-              <Button 
-                type="primary" 
-                icon={<SearchOutlined />}
-                onClick={() => handleSearch(searchText)}
-              />
-            </Space.Compact>
-          </Col>
-          <Col span={4}>
-            <Select
-              placeholder="供应商状态"
-              allowClear
-              style={{ width: '100%' }}
-              value={statusFilter}
-              onChange={(value) => {
-                setStatusFilter(value || '');
-                handleFilterChange();
-              }}
+      {/* ProTable */}
+      <ProTable<Supplier>
+        columns={columns}
+        actionRef={actionRef}
+        request={fetchSupplierData}
+        rowKey="id"
+        
+        // 列状态配置 - 持久化到 localStorage
+        columnsState={{
+          persistenceKey: 'supplier-table-columns',
+          persistenceType: 'localStorage',
+          defaultValue: {
+            // 默认隐藏的列
+            id: { show: false },
+            email: { show: false },
+            address: { show: false },
+            notes: { show: false },
+            updatedAt: { show: false },
+          },
+        }}
+        
+        // 搜索表单配置
+        search={{
+          labelWidth: 'auto',
+          defaultCollapsed: false,
+          optionRender: (searchConfig, formProps, dom) => [
+            ...dom.reverse(),
+          ],
+        }}
+        
+        // 工具栏配置
+        options={{
+          setting: {
+            listsHeight: 400,
+            draggable: true,
+          },
+          reload: () => {
+            actionRef.current?.reload();
+          },
+          density: true,
+          fullScreen: true,
+        }}
+        
+        // 表格配置
+        scroll={{ x: 1600 }}
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          pageSizeOptions: ['10', '20', '30', '50', '100'],
+        }}
+        
+        // 工具栏按钮
+        toolBarRender={() => [
+          <Button
+            key="create"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateModalVisible(true)}
+          >
+            新增供应商
+          </Button>,
+        ]}
+        
+        // 表格属性
+        dateFormatter="string"
+        headerTitle={
+          <Space>
+            <span>供应商列表</span>
+            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
+              (共 {stats.totalSuppliers} 家)
+            </span>
+            <Popover
+              content={statsContent}
+              title="统计详情"
+              trigger="click"
+              placement="bottomLeft"
             >
-              <Option value="">全部状态</Option>
-              <Option value="true">启用</Option>
-              <Option value="false">禁用</Option>
-            </Select>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* 供应商表格 */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={supplierData}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 1400 }}
-          size="middle"
-          className={styles.supplierTable}
-        />
-      </Card>
+              <Button
+                type="text"
+                size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
+              >
+                详情
+              </Button>
+            </Popover>
+          </Space>
+        }
+      />
 
       {/* 创建供应商模态框 */}
       <Modal
         title="新增供应商"
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        footer={null}
+        onOk={() => createForm.submit()}
+        onCancel={() => {
+          setCreateModalVisible(false);
+          createForm.resetFields();
+        }}
+        confirmLoading={createLoading}
         width={600}
       >
         <Form
-          form={form}
+          form={createForm}
           layout="vertical"
-          onFinish={handleCreateSupplier}
-          autoComplete="off"
+          onFinish={handleCreate}
         >
           <Form.Item
             label="供应商名称"
@@ -554,22 +696,101 @@ const SupplierManagement: React.FC = () => {
             name="notes"
           >
             <TextArea
-              rows={4}
+              rows={3}
               placeholder="请输入备注信息"
               maxLength={500}
               showCount
             />
           </Form.Item>
+        </Form>
+      </Modal>
 
-          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-            <Space>
-              <Button onClick={() => setCreateModalVisible(false)}>
-                取消
-              </Button>
-              <Button type="primary" htmlType="submit" loading={createLoading}>
-                创建
-              </Button>
-            </Space>
+      {/* 编辑供应商模态框 */}
+      <Modal
+        title="编辑供应商"
+        open={editModalVisible}
+        onOk={() => editForm.submit()}
+        onCancel={() => {
+          setEditModalVisible(false);
+          editForm.resetFields();
+          setEditingSupplier(null);
+        }}
+        confirmLoading={editLoading}
+        width={600}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={handleUpdate}
+        >
+          <Form.Item
+            label="供应商名称"
+            name="name"
+            rules={[
+              { required: true, message: '请输入供应商名称' },
+              { min: 2, max: 100, message: '供应商名称长度应在2-100个字符之间' }
+            ]}
+          >
+            <Input placeholder="请输入供应商名称" />
+          </Form.Item>
+
+          <Form.Item
+            label="联系人"
+            name="contactPerson"
+            rules={[
+              { required: true, message: '请输入联系人' },
+              { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
+            ]}
+          >
+            <Input placeholder="请输入联系人" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="联系电话"
+                name="phone"
+                rules={[
+                  { required: true, message: '请输入联系电话' }
+                ]}
+              >
+                <Input placeholder="请输入联系电话" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="邮箱"
+                name="email"
+                rules={[
+                  { type: 'email', message: '请输入正确的邮箱地址' }
+                ]}
+              >
+                <Input placeholder="请输入邮箱" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            label="地址"
+            name="address"
+            rules={[
+              { required: true, message: '请输入地址' },
+              { max: 200, message: '地址长度不能超过200个字符' }
+            ]}
+          >
+            <Input placeholder="请输入地址" />
+          </Form.Item>
+
+          <Form.Item
+            label="备注"
+            name="notes"
+          >
+            <TextArea
+              rows={3}
+              placeholder="请输入备注信息"
+              maxLength={500}
+              showCount
+            />
           </Form.Item>
         </Form>
       </Modal>

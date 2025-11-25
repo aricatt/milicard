@@ -25,6 +25,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
+import { request } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
 
@@ -104,29 +105,19 @@ const PersonnelManagement: React.FC = () => {
       const { current = 1, pageSize = 20, name, role, isActive } = params;
       
       // 构建查询参数
-      const queryParams = new URLSearchParams({
-        current: String(current),
-        pageSize: String(pageSize),
-      });
+      const queryParams: any = {
+        current,
+        pageSize,
+      };
       
-      if (name) queryParams.append('name', name);
-      if (role) queryParams.append('role', role);
-      if (isActive !== undefined) queryParams.append('isActive', String(isActive));
+      if (name) queryParams.name = name;
+      if (role) queryParams.role = role;
+      if (isActive !== undefined) queryParams.isActive = isActive;
 
-      const response = await fetch(
-        `/api/v1/bases/${currentBase.id}/personnel?${queryParams.toString()}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
+        method: 'GET',
+        params: queryParams,
+      });
       
       if (result.success) {
         // 计算统计数据
@@ -180,16 +171,10 @@ const PersonnelManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
-      const response = await fetch(`/api/v1/bases/${currentBase.id}/personnel`, {
+      const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(values),
+        data: values,
       });
-
-      const result = await response.json();
 
       if (result.success) {
         message.success('创建成功');
@@ -217,19 +202,13 @@ const PersonnelManagement: React.FC = () => {
 
     setEditLoading(true);
     try {
-      const response = await fetch(
+      const result = await request(
         `/api/v1/bases/${currentBase.id}/personnel/${editingPersonnel.id}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(values),
+          data: values,
         }
       );
-
-      const result = await response.json();
 
       if (result.success) {
         message.success('更新成功');
@@ -257,17 +236,12 @@ const PersonnelManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(
+      const result = await request(
         `/api/v1/bases/${currentBase.id}/personnel/${record.id}`,
         {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
         }
       );
-
-      const result = await response.json();
 
       if (result.success) {
         message.success('删除成功');
