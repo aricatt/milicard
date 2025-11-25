@@ -11,7 +11,9 @@ import {
   Popover,
   Descriptions,
   Row,
-  Col
+  Col,
+  Image,
+  InputNumber
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -690,9 +692,9 @@ const ProductManagement: React.FC = () => {
         }
       />
 
-      {/* 创建供应商模态框 */}
+      {/* 创建商品模态框 */}
       <Modal
-        title="新增供应商"
+        title="新增商品"
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -708,56 +710,144 @@ const ProductManagement: React.FC = () => {
           onFinish={handleCreate}
         >
           <Form.Item
-            label="供应商名称"
+            label="商品名称"
             name="name"
             rules={[
-              { required: true, message: '请输入供应商名称' },
-              { min: 2, max: 100, message: '供应商名称长度应在2-100个字符之间' }
+              { required: true, message: '请输入商品名称' },
+              { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
             ]}
           >
-            <Input placeholder="请输入供应商名称" />
-          </Form.Item>
-
-          <Form.Item
-            label="联系人"
-            name="contactPerson"
-            rules={[
-              { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
-            ]}
-          >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder="请输入商品名称" />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="联系电话"
-                name="phone"
+                label="商品别名"
+                name="alias"
               >
-                <Input placeholder="请输入联系电话" />
+                <Input placeholder="请输入商品别名" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="邮箱"
-                name="email"
+                label="厂家名称"
+                name="manufacturer"
                 rules={[
-                  { type: 'email', message: '请输入正确的邮箱地址' }
+                  { required: true, message: '请输入厂家名称' },
+                  { min: 2, max: 50, message: '厂家名称长度应在2-50个字符之间' }
                 ]}
               >
-                <Input placeholder="请输入邮箱" />
+                <Input placeholder="请输入厂家名称" />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="地址"
-            name="address"
-            rules={[
-              { max: 200, message: '地址长度不能超过200个字符' }
-            ]}
+            label="商品描述"
+            name="description"
           >
-            <Input placeholder="请输入地址" />
+            <TextArea
+              rows={3}
+              placeholder="请输入商品描述"
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="零售价(一箱)"
+                name="retailPrice"
+                rules={[
+                  { required: true, message: '请输入零售价' },
+                  { type: 'number', min: 0, message: '零售价不能为负数' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="零售价"
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="平拆价(一盒)"
+                name="packPrice"
+                rules={[
+                  { type: 'number', min: 0, message: '平拆价不能为负数' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="平拆价"
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label="箱装数量"
+                name="boxQuantity"
+                initialValue={1}
+                extra="固定为1，不可修改"
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  value={1}
+                  disabled
+                  min={1}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="盒/箱"
+                name="packPerBox"
+                rules={[
+                  { required: true, message: '请输入盒/箱数量' },
+                  { type: 'number', min: 1, message: '盒/箱数量必须大于0' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="盒/箱"
+                  min={1}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="包/盒"
+                name="piecePerPack"
+                rules={[
+                  { required: true, message: '请输入包/盒数量' },
+                  { type: 'number', min: 1, message: '包/盒数量必须大于0' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="包/盒"
+                  min={1}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            label="图片URL"
+            name="imageUrl"
+          >
+            <Input placeholder="请输入商品图片URL（选填）" />
           </Form.Item>
 
           <Form.Item
@@ -774,15 +864,15 @@ const ProductManagement: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* 编辑供应商模态框 */}
+      {/* 编辑商品模态框 */}
       <Modal
-        title="编辑供应商"
+        title="编辑商品"
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
           setEditModalVisible(false);
           editForm.resetFields();
-          setEditingSupplier(null);
+          setEditingProduct(null);
         }}
         confirmLoading={editLoading}
         width={600}
@@ -793,56 +883,129 @@ const ProductManagement: React.FC = () => {
           onFinish={handleUpdate}
         >
           <Form.Item
-            label="供应商名称"
+            label="商品名称"
             name="name"
             rules={[
-              { required: true, message: '请输入供应商名称' },
-              { min: 2, max: 100, message: '供应商名称长度应在2-100个字符之间' }
+              { required: true, message: '请输入商品名称' },
+              { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
             ]}
           >
-            <Input placeholder="请输入供应商名称" />
-          </Form.Item>
-
-          <Form.Item
-            label="联系人"
-            name="contactPerson"
-            rules={[
-              { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
-            ]}
-          >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder="请输入商品名称" />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="联系电话"
-                name="phone"
+                label="商品别名"
+                name="alias"
               >
-                <Input placeholder="请输入联系电话" />
+                <Input placeholder="请输入商品别名" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="邮箱"
-                name="email"
+                label="厂家名称"
+                name="manufacturer"
                 rules={[
-                  { type: 'email', message: '请输入正确的邮箱地址' }
+                  { required: true, message: '请输入厂家名称' },
+                  { min: 2, max: 50, message: '厂家名称长度应在2-50个字符之间' }
                 ]}
               >
-                <Input placeholder="请输入邮箱" />
+                <Input placeholder="请输入厂家名称" />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="地址"
-            name="address"
-            rules={[
-              { max: 200, message: '地址长度不能超过200个字符' }
-            ]}
+            label="商品描述"
+            name="description"
           >
-            <Input placeholder="请输入地址" />
+            <TextArea
+              rows={3}
+              placeholder="请输入商品描述"
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="零售价(一箱)"
+                name="retailPrice"
+                rules={[
+                  { required: true, message: '请输入零售价' },
+                  { type: 'number', min: 0, message: '零售价不能为负数' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="零售价"
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="平拆价(一盒)"
+                name="packPrice"
+                rules={[
+                  { type: 'number', min: 0, message: '平拆价不能为负数' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="平拆价"
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="盒/箱"
+                name="packPerBox"
+                rules={[
+                  { required: true, message: '请输入盒/箱数量' },
+                  { type: 'number', min: 1, message: '盒/箱数量必须大于0' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="盒/箱"
+                  min={1}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="包/盒"
+                name="piecePerPack"
+                rules={[
+                  { required: true, message: '请输入包/盒数量' },
+                  { type: 'number', min: 1, message: '包/盒数量必须大于0' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="包/盒"
+                  min={1}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            label="图片URL"
+            name="imageUrl"
+          >
+            <Input placeholder="请输入商品图片URL（选填）" />
           </Form.Item>
 
           <Form.Item
