@@ -1,38 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
-  Table, 
   Card, 
-  Button, 
   Space, 
   Tag, 
-  Statistic, 
-  Row, 
-  Col, 
-  Input, 
-  Select, 
   Modal,
   Form,
-  App 
+  Input,
+  Select,
+  App,
+  Button,
+  Popconfirm,
+  Popover,
+  Descriptions
 } from 'antd';
 import { 
   PlusOutlined, 
-  SearchOutlined, 
-  ExportOutlined, 
-  ReloadOutlined,
-  WarningOutlined,
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
-  TeamOutlined
+  TeamOutlined,
+  ExclamationCircleOutlined,
+  InfoCircleOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
-import { PageContainer } from '@ant-design/pro-components';
+import { ProTable, PageContainer } from '@ant-design/pro-components';
+import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
-import { get, post } from '@/utils/request';
-import { isAuthenticated, createMockToken, setToken, getDevToken } from '@/utils/auth';
-import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
 
-const { Search } = Input;
 const { Option } = Select;
 
 // 人员角色枚举
@@ -66,16 +61,15 @@ interface PersonnelStats {
 }
 
 /**
- * 主播/仓管管理页面
+ * 主播/仓管管理页面 - ProTable 版本
  * 基地中心化的人员管理，统一管理主播和仓管人员
  */
 const PersonnelManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const actionRef = useRef<ActionType>();
   
   // 状态管理
-  const [loading, setLoading] = useState(false);
-  const [personnelData, setPersonnelData] = useState<Personnel[]>([]);
   const [stats, setStats] = useState<PersonnelStats>({
     totalPersonnel: 0,
     anchors: 0,
@@ -83,279 +77,213 @@ const PersonnelManagement: React.FC = () => {
     activePersonnel: 0,
   });
   
-  // 筛选条件
-  const [searchText, setSearchText] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 20,
-    total: 0,
-  });
-
   // 模态框状态
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingPersonnel, setEditingPersonnel] = useState<Personnel | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
-  const [form] = Form.useForm();
+  const [editLoading, setEditLoading] = useState(false);
+  
+  // 表单实例
+  const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
 
-  // 获取角色显示文本
-  const getRoleText = (role: PersonnelRole) => {
-    return role === PersonnelRole.ANCHOR ? '主播' : '仓管';
-  };
-
-  // 获取角色图标
-  const getRoleIcon = (role: PersonnelRole) => {
-    return role === PersonnelRole.ANCHOR ? <UserOutlined /> : <TeamOutlined />;
-  };
-
-  // 获取角色颜色
-  const getRoleColor = (role: PersonnelRole) => {
-    return role === PersonnelRole.ANCHOR ? 'purple' : 'orange';
-  };
-
-  // 生成编号（与后端保持一致）
-  const generateCode = (role: string) => {
-    const prefix = role === 'ANCHOR' ? 'ANCHOR' : 'KEEPER';
-    // 使用与后端相同的字符集（去除易混淆字符）
-    const charset = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    let randomStr = '';
-    for (let i = 0; i < 11; i++) {
-      randomStr += charset[Math.floor(Math.random() * charset.length)];
-    }
-    return `${prefix}-${randomStr}`;
-  };
-
-  // 表格列定义
-  const columns: ColumnsType<Personnel> = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      render: (id: string) => id.slice(-8),
-    },
-    {
-      title: '编号',
-      dataIndex: 'code',
-      key: 'code',
-      width: 180,
-      fixed: 'left',
-      render: (text: string) => <code>{text}</code>,
-    },
-    {
-      title: '姓名',
-      dataIndex: 'name',
-      key: 'name',
-      width: 150,
-      fixed: 'left',
-      render: (text: string) => <strong>{text}</strong>,
-    },
-    {
-      title: '角色',
-      dataIndex: 'role',
-      key: 'role',
-      width: 100,
-      render: (role: PersonnelRole) => (
-        <Tag color={getRoleColor(role)} icon={getRoleIcon(role)}>
-          {getRoleText(role)}
-        </Tag>
-      ),
-    },
-    {
-      title: '联系电话',
-      dataIndex: 'phone',
-      key: 'phone',
-      width: 130,
-      render: (text: string) => text || '-',
-    },
-    {
-      title: '邮箱',
-      dataIndex: 'email',
-      key: 'email',
-      width: 180,
-      ellipsis: true,
-      render: (text: string) => text || '-',
-    },
-    {
-      title: '备注',
-      dataIndex: 'notes',
-      key: 'notes',
-      width: 200,
-      ellipsis: true,
-      render: (text: string) => text || '-',
-    },
-    {
-      title: '状态',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      width: 80,
-      render: (isActive: boolean) => (
-        <Tag color={isActive ? 'green' : 'red'}>
-          {isActive ? '启用' : '禁用'}
-        </Tag>
-      ),
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 150,
-      render: (value: string) => new Date(value).toLocaleString(),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      width: 120,
-      fixed: 'right',
-      render: (_, record) => (
-        <Space size="small">
-          <Button 
-            type="link" 
-            size="small" 
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-          <Button 
-            type="link" 
-            size="small" 
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record)}
-          >
-            删除
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  // 获取人员数据
-  const fetchPersonnelData = async () => {
+  /**
+   * 获取人员数据
+   */
+  const fetchPersonnelData = async (params: any) => {
     if (!currentBase) {
-      message.warning('请先选择基地');
-      return;
+      return {
+        data: [],
+        success: true,
+        total: 0,
+      };
     }
 
-    setLoading(true);
     try {
-      const params = {
-        current: pagination.current.toString(),
-        pageSize: pagination.pageSize.toString(),
-        ...(searchText && { name: searchText }),
-        ...(roleFilter && { role: roleFilter }),
-        ...(statusFilter && { isActive: statusFilter }),
-      };
+      const { current = 1, pageSize = 20, name, role, isActive } = params;
+      
+      // 构建查询参数
+      const queryParams = new URLSearchParams({
+        current: String(current),
+        pageSize: String(pageSize),
+      });
+      
+      if (name) queryParams.append('name', name);
+      if (role) queryParams.append('role', role);
+      if (isActive !== undefined) queryParams.append('isActive', String(isActive));
 
-      const result = await get(`/api/v1/bases/${currentBase.id}/personnel`, params);
+      const response = await fetch(
+        `/api/v1/bases/${currentBase.id}/personnel?${queryParams.toString()}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
       
       if (result.success) {
-        setPersonnelData(result.data || []);
-        setPagination(prev => ({
-          ...prev,
-          total: result.total || 0,
-        }));
-        
         // 计算统计数据
         calculateStats(result.data || []);
+        
+        return {
+          data: result.data || [],
+          success: true,
+          total: result.total || 0,
+        };
       } else {
-        throw new Error(result.message || '获取人员数据失败');
+        message.error(result.message || '获取人员数据失败');
+        return {
+          data: [],
+          success: false,
+          total: 0,
+        };
       }
     } catch (error) {
       console.error('获取人员数据失败:', error);
-      // 临时使用模拟数据
-      const mockData = generateMockData();
-      setPersonnelData(mockData);
-      setPagination(prev => ({ ...prev, total: mockData.length }));
-      calculateStats(mockData);
-      message.warning('使用模拟数据，请检查后端API连接');
-    } finally {
-      setLoading(false);
+      message.error('获取人员数据失败');
+      return {
+        data: [],
+        success: false,
+        total: 0,
+      };
     }
   };
 
-  // 生成模拟数据
-  const generateMockData = (): Personnel[] => {
-    return [
-      {
-        id: '1',
-        code: 'ANCHOR-9ZPSBQ99T7S',
-        name: '小美',
-        role: PersonnelRole.ANCHOR,
-        phone: '13800138001',
-        email: 'xiaomei@example.com',
-        notes: '美妆主播，擅长护肤品推荐',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-      {
-        id: '2',
-        code: 'ANCHOR-K8MXNQ45P2R',
-        name: '小丽',
-        role: PersonnelRole.ANCHOR,
-        phone: '13800138002',
-        email: 'xiaoli@example.com',
-        notes: '服装主播，时尚搭配专家',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-      {
-        id: '3',
-        code: 'KEEPER-L7NWQR88X3T',
-        name: '张师傅',
-        role: PersonnelRole.WAREHOUSE_KEEPER,
-        phone: '13800138003',
-        email: 'zhangsifu@example.com',
-        notes: '主仓库管理员，负责库存调配',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-      {
-        id: '4',
-        code: 'KEEPER-M9PXST66Y4U',
-        name: '李阿姨',
-        role: PersonnelRole.WAREHOUSE_KEEPER,
-        phone: '13800138004',
-        email: 'liayi@example.com',
-        notes: '直播间仓管，负责商品整理',
-        baseId: currentBase?.id || 1,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase?.name || '默认基地',
-      },
-    ];
-  };
-
-  // 计算统计数据
+  /**
+   * 计算统计数据
+   */
   const calculateStats = (data: Personnel[]) => {
-    const totalPersonnel = data.length;
-    const anchors = data.filter(p => p.role === PersonnelRole.ANCHOR).length;
-    const warehouseKeepers = data.filter(p => p.role === PersonnelRole.WAREHOUSE_KEEPER).length;
-    const activePersonnel = data.filter(p => p.isActive).length;
-    
-    setStats({
-      totalPersonnel,
-      anchors,
-      warehouseKeepers,
-      activePersonnel,
-    });
+    const newStats: PersonnelStats = {
+      totalPersonnel: data.length,
+      anchors: data.filter(p => p.role === PersonnelRole.ANCHOR).length,
+      warehouseKeepers: data.filter(p => p.role === PersonnelRole.WAREHOUSE_KEEPER).length,
+      activePersonnel: data.filter(p => p.isActive).length,
+    };
+    setStats(newStats);
   };
 
-  // 处理编辑
+  /**
+   * 创建人员
+   */
+  const handleCreate = async (values: any) => {
+    if (!currentBase) {
+      message.error('请先选择基地');
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const response = await fetch(`/api/v1/bases/${currentBase.id}/personnel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success('创建成功');
+        setCreateModalVisible(false);
+        createForm.resetFields();
+        actionRef.current?.reload();
+      } else {
+        message.error(result.message || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建人员失败:', error);
+      message.error('创建人员失败');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  /**
+   * 更新人员
+   */
+  const handleUpdate = async (values: any) => {
+    if (!currentBase || !editingPersonnel) {
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      const response = await fetch(
+        `/api/v1/bases/${currentBase.id}/personnel/${editingPersonnel.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify(values),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success('更新成功');
+        setEditModalVisible(false);
+        editForm.resetFields();
+        setEditingPersonnel(null);
+        actionRef.current?.reload();
+      } else {
+        message.error(result.message || '更新失败');
+      }
+    } catch (error) {
+      console.error('更新人员失败:', error);
+      message.error('更新人员失败');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  /**
+   * 删除人员
+   */
+  const handleDelete = async (record: Personnel) => {
+    if (!currentBase) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/v1/bases/${currentBase.id}/personnel/${record.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success('删除成功');
+        actionRef.current?.reload();
+      } else {
+        message.error(result.message || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除人员失败:', error);
+      message.error('删除人员失败');
+    }
+  };
+
+  /**
+   * 打开编辑模态框
+   */
   const handleEdit = (record: Personnel) => {
     setEditingPersonnel(record);
     editForm.setFieldsValue({
@@ -368,340 +296,364 @@ const PersonnelManagement: React.FC = () => {
     setEditModalVisible(true);
   };
 
-  // 处理删除
-  const handleDelete = (record: Personnel) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除 "${record.name}" 吗？此操作不可恢复。`,
-      okText: '确认',
-      cancelText: '取消',
-      onOk: async () => {
+  /**
+   * 列定义
+   */
+  const columns: ProColumns<Personnel>[] = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 80,
+      hideInSearch: true,
+      hideInTable: false,
+      render: (id: any) => String(id).slice(-8),
+    },
+    {
+      title: '编号',
+      dataIndex: 'code',
+      key: 'code',
+      width: 180,
+      fixed: 'left',
+      copyable: true,
+      hideInSetting: true,
+      hideInSearch: true,
+      render: (text: string) => <code>{text}</code>,
+    },
+    {
+      title: '姓名',
+      dataIndex: 'name',
+      key: 'name',
+      width: 150,
+      fixed: 'left',
+      hideInSetting: true,
+      hideInSearch: false,
+      render: (text: string) => <strong>{text}</strong>,
+    },
+    {
+      title: '角色',
+      dataIndex: 'role',
+      key: 'role',
+      width: 100,
+      valueType: 'select',
+      valueEnum: {
+        ANCHOR: { text: '主播', status: 'Processing' },
+        WAREHOUSE_KEEPER: { text: '仓管', status: 'Default' },
+      },
+      render: (_, record) => (
+        <Tag 
+          color={record.role === PersonnelRole.ANCHOR ? 'purple' : 'orange'}
+          icon={record.role === PersonnelRole.ANCHOR ? <UserOutlined /> : <TeamOutlined />}
+        >
+          {record.role === PersonnelRole.ANCHOR ? '主播' : '仓管'}
+        </Tag>
+      ),
+      hideInSearch: false,
+    },
+    {
+      title: '联系电话',
+      dataIndex: 'phone',
+      key: 'phone',
+      width: 130,
+      hideInSearch: true,
+      render: (text: string) => text || '-',
+    },
+    {
+      title: '邮箱',
+      dataIndex: 'email',
+      key: 'email',
+      width: 180,
+      ellipsis: true,
+      hideInSearch: true,
+      hideInTable: false,
+      render: (text: string) => text || '-',
+    },
+    {
+      title: '备注',
+      dataIndex: 'notes',
+      key: 'notes',
+      width: 200,
+      ellipsis: true,
+      hideInSearch: true,
+      hideInTable: false,
+      render: (text: string) => text || '-',
+    },
+    {
+      title: '状态',
+      dataIndex: 'isActive',
+      key: 'isActive',
+      width: 80,
+      valueType: 'select',
+      valueEnum: {
+        true: { text: '在职', status: 'Success' },
+        false: { text: '离职', status: 'Error' },
+      },
+      render: (_, record) => (
+        <Tag color={record.isActive ? 'green' : 'red'}>
+          {record.isActive ? '在职' : '离职'}
+        </Tag>
+      ),
+      hideInSearch: false,
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 170,
+      valueType: 'dateTime',
+      hideInSearch: true,
+      sorter: true,
+      render: (_, record) => {
+        if (!record.createdAt) return '-';
         try {
-          // 这里应该调用删除API
-          message.success('删除成功');
-          fetchPersonnelData();
+          const date = new Date(record.createdAt);
+          if (isNaN(date.getTime())) return '-';
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
         } catch (error) {
-          message.error('删除失败');
+          return '-';
         }
       },
-    });
-  };
-
-  // 处理创建人员
-  const handleCreatePersonnel = async (values: any) => {
-    if (!currentBase) {
-      message.warning('请先选择基地');
-      return;
-    }
-
-    setCreateLoading(true);
-    try {
-      // 尝试调用后端API
-      const result = await post(`/api/v1/bases/${currentBase.id}/personnel`, values);
-      
-      if (result.success) {
-        message.success('人员创建成功');
-        setCreateModalVisible(false);
-        form.resetFields();
-        fetchPersonnelData();
-        return;
-      }
-      
-      // 如果API调用失败，使用模拟数据
-      const newPersonnel = {
-        id: Date.now().toString(),
-        code: generateCode(values.role),
-        name: values.name,
-        role: values.role,
-        phone: values.phone,
-        email: values.email,
-        notes: values.notes,
-        baseId: currentBase.id,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        baseName: currentBase.name,
-      };
-
-      // 添加到当前数据中
-      setPersonnelData(prev => [newPersonnel, ...prev]);
-      setPagination(prev => ({ ...prev, total: prev.total + 1 }));
-      calculateStats([newPersonnel, ...personnelData]);
-      
-      message.success('人员创建成功（使用模拟数据）');
-      setCreateModalVisible(false);
-      form.resetFields();
-    } catch (error) {
-      console.error('创建人员失败:', error);
-      message.error('创建人员失败，请稍后重试');
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
-  // 处理更新人员
-  const handleUpdatePersonnel = async (values: any) => {
-    if (!editingPersonnel) return;
-
-    try {
-      // 这里应该调用更新API
-      message.success('人员更新成功');
-      setEditModalVisible(false);
-      setEditingPersonnel(null);
-      editForm.resetFields();
-      fetchPersonnelData();
-    } catch (error) {
-      console.error('更新人员失败:', error);
-      message.error('更新人员失败，请稍后重试');
-    }
-  };
-
-  // 导出数据
-  const handleExport = () => {
-    message.info('导出功能开发中...');
-  };
-
-  // 刷新数据
-  const handleRefresh = () => {
-    fetchPersonnelData();
-  };
-
-  // 表格变化处理
-  const handleTableChange = (newPagination: any) => {
-    setPagination(prev => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
-  };
-
-  // 搜索处理
-  const handleSearch = (value: string) => {
-    setSearchText(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
-  // 筛选处理
-  const handleFilterChange = () => {
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
-  // 认证状态
-  const [authInitialized, setAuthInitialized] = useState(false);
-
-  // 页面加载时检查认证
-  useEffect(() => {
-    const initAuth = async () => {
-      console.log('开始初始化认证...');
-      
-      // 检查认证状态
-      if (!isAuthenticated()) {
-        console.warn('用户未认证，尝试获取开发token');
-        
-        // 先尝试从后端获取开发token
-        const devToken = await getDevToken();
-        if (devToken) {
-          setToken(devToken);
-          message.success('已获取开发环境认证token');
-          console.log('开发token设置成功');
-        } else {
-          // 如果无法获取开发token，使用模拟token
-          const mockToken = createMockToken();
-          setToken(mockToken);
-          message.warning('使用模拟token，API请求可能失败');
-          console.log('使用模拟token');
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      width: 170,
+      valueType: 'dateTime',
+      hideInSearch: true,
+      hideInTable: false,
+      render: (_, record) => {
+        if (!record.updatedAt) return '-';
+        try {
+          const date = new Date(record.updatedAt);
+          if (isNaN(date.getTime())) return '-';
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+        } catch (error) {
+          return '-';
         }
-      } else {
-        console.log('用户已认证');
-      }
-      
-      setAuthInitialized(true);
-      console.log('认证初始化完成');
-    };
-    
-    initAuth();
-  }, []); // 只在组件挂载时执行一次
+      },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 150,
+      fixed: 'right',
+      valueType: 'option',
+      hideInSetting: true,
+      render: (_, record) => [
+        <Button
+          key="edit"
+          type="link"
+          size="small"
+          icon={<EditOutlined />}
+          onClick={() => handleEdit(record)}
+        >
+          编辑
+        </Button>,
+        <Popconfirm
+          key="delete"
+          title="确认删除"
+          description={`确定要删除"${record.name}"吗？`}
+          onConfirm={() => handleDelete(record)}
+          okText="确定"
+          cancelText="取消"
+          icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+        >
+          <Button
+            type="link"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
+          >
+            删除
+          </Button>
+        </Popconfirm>,
+      ],
+    },
+  ];
 
-  // 数据获取逻辑 - 等待认证初始化完成
-  useEffect(() => {
-    if (authInitialized && currentBase && isAuthenticated()) {
-      console.log('条件满足，开始获取数据');
-      fetchPersonnelData();
-    } else {
-      console.log('等待条件满足:', { authInitialized, currentBase: !!currentBase, authenticated: isAuthenticated() });
-    }
-  }, [authInitialized, currentBase, pagination.current, pagination.pageSize, searchText, roleFilter, statusFilter]);
-
-  // 如果没有选择基地
   if (!currentBase) {
     return (
       <PageContainer>
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <WarningOutlined style={{ fontSize: '48px', color: '#faad14' }} />
-            <h3>请先选择基地</h3>
-            <p>主播/仓管管理需要在特定基地下进行，请先选择一个基地。</p>
+            <p>请先选择一个基地</p>
           </div>
         </Card>
       </PageContainer>
     );
   }
 
+  // 统计详情弹出内容
+  const statsContent = (
+    <div style={{ width: 300 }}>
+      <Descriptions column={1} size="small" bordered>
+        <Descriptions.Item label="人员总数">
+          <Space>
+            <TeamOutlined />
+            <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalPersonnel}</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="主播">
+          <Space>
+            <UserOutlined style={{ color: '#722ed1' }} />
+            <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{stats.anchors}</span>
+            <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? ((stats.anchors / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="仓管">
+          <Space>
+            <TeamOutlined style={{ color: '#fa8c16' }} />
+            <span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{stats.warehouseKeepers}</span>
+            <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? ((stats.warehouseKeepers / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="在职人员">
+          <Space>
+            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+            <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activePersonnel}</span>
+            <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? ((stats.activePersonnel / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="离职人员">
+          <Space>
+            <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.totalPersonnel - stats.activePersonnel}</span>
+            <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? (((stats.totalPersonnel - stats.activePersonnel) / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
+
   return (
     <PageContainer
-      title="主播/仓管管理"
-      subTitle={`当前基地：${currentBase.name}`}
-      extra={[
-        <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
-          导出
-        </Button>,
-        <Button key="refresh" icon={<ReloadOutlined />} onClick={handleRefresh}>
-          刷新
-        </Button>,
-        <Button 
-          key="add" 
-          type="primary" 
-          icon={<PlusOutlined />}
-          onClick={() => setCreateModalVisible(true)}
-        >
-          添加
-        </Button>,
-      ]}
+      header={{
+        title: '主播/仓管管理',
+        subTitle: `当前基地：${currentBase.name}`,
+      }}
     >
-      {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="人员总数"
-              value={stats.totalPersonnel}
-              suffix="人"
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="主播数量"
-              value={stats.anchors}
-              suffix="人"
-              valueStyle={{ color: '#722ed1' }}
-              prefix={<UserOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="仓管数量"
-              value={stats.warehouseKeepers}
-              suffix="人"
-              valueStyle={{ color: '#fa8c16' }}
-              prefix={<TeamOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="在职人员"
-              value={stats.activePersonnel}
-              suffix="人"
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* 筛选工具栏 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
-          <Col span={6}>
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder="搜索姓名或编号"
-                allowClear
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onPressEnter={() => handleSearch(searchText)}
-              />
-              <Button 
-                type="primary" 
-                icon={<SearchOutlined />}
-                onClick={() => handleSearch(searchText)}
-              />
-            </Space.Compact>
-          </Col>
-          <Col span={4}>
-            <Select
-              placeholder="人员角色"
-              allowClear
-              style={{ width: '100%' }}
-              value={roleFilter}
-              onChange={(value) => {
-                setRoleFilter(value || '');
-                handleFilterChange();
-              }}
+      {/* ProTable */}
+      <ProTable<Personnel>
+        columns={columns}
+        actionRef={actionRef}
+        request={fetchPersonnelData}
+        rowKey="id"
+        
+        // 列状态配置 - 持久化到 localStorage
+        columnsState={{
+          persistenceKey: 'personnel-table-columns',
+          persistenceType: 'localStorage',
+          defaultValue: {
+            // 默认隐藏的列
+            id: { show: false },
+            email: { show: false },
+            notes: { show: false },
+            updatedAt: { show: false },
+          },
+        }}
+        
+        // 搜索表单配置
+        search={{
+          labelWidth: 'auto',
+          defaultCollapsed: false,
+          optionRender: (searchConfig, formProps, dom) => [
+            ...dom.reverse(),
+          ],
+        }}
+        
+        // 工具栏配置
+        options={{
+          setting: {
+            listsHeight: 400,
+            draggable: true,
+          },
+          reload: () => {
+            actionRef.current?.reload();
+          },
+          density: true,
+          fullScreen: true,
+        }}
+        
+        // 表格配置
+        scroll={{ x: 1400 }}
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          pageSizeOptions: ['10', '20', '30', '50', '100'],
+        }}
+        
+        // 工具栏按钮
+        toolBarRender={() => [
+          <Button
+            key="create"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateModalVisible(true)}
+          >
+            添加人员
+          </Button>,
+        ]}
+        
+        // 表格属性
+        dateFormatter="string"
+        headerTitle={
+          <Space>
+            <span>人员列表</span>
+            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
+              (共 {stats.totalPersonnel} 人)
+            </span>
+            <Popover
+              content={statsContent}
+              title="统计详情"
+              trigger="click"
+              placement="bottomLeft"
             >
-              <Option value="">全部角色</Option>
-              <Option value={PersonnelRole.ANCHOR}>主播</Option>
-              <Option value={PersonnelRole.WAREHOUSE_KEEPER}>仓管</Option>
-            </Select>
-          </Col>
-          <Col span={4}>
-            <Select
-              placeholder="状态"
-              allowClear
-              style={{ width: '100%' }}
-              value={statusFilter}
-              onChange={(value) => {
-                setStatusFilter(value || '');
-                handleFilterChange();
-              }}
-            >
-              <Option value="">全部状态</Option>
-              <Option value="true">在职</Option>
-              <Option value="false">离职</Option>
-            </Select>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* 人员表格 */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={personnelData}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
-          }}
-          onChange={handleTableChange}
-          scroll={{ x: 1400 }}
-          size="middle"
-          className={styles.personnelTable}
-        />
-      </Card>
+              <Button
+                type="text"
+                size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
+              >
+                详情
+              </Button>
+            </Popover>
+          </Space>
+        }
+      />
 
       {/* 创建人员模态框 */}
       <Modal
         title="添加人员"
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        footer={null}
+        onOk={() => createForm.submit()}
+        onCancel={() => {
+          setCreateModalVisible(false);
+          createForm.resetFields();
+        }}
+        confirmLoading={createLoading}
         width={600}
       >
         <Form
-          form={form}
+          form={createForm}
           layout="vertical"
-          onFinish={handleCreatePersonnel}
-          autoComplete="off"
+          onFinish={handleCreate}
         >
           <Form.Item
             label="姓名"
@@ -729,28 +681,22 @@ const PersonnelManagement: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="联系电话"
-                name="phone"
-                rules={[]}
-              >
-                <Input placeholder="请输入联系电话" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="邮箱"
-                name="email"
-                rules={[
-                  { type: 'email', message: '请输入正确的邮箱地址' }
-                ]}
-              >
-                <Input placeholder="请输入邮箱" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item
+            label="联系电话"
+            name="phone"
+          >
+            <Input placeholder="请输入联系电话" />
+          </Form.Item>
+
+          <Form.Item
+            label="邮箱"
+            name="email"
+            rules={[
+              { type: 'email', message: '请输入正确的邮箱地址' }
+            ]}
+          >
+            <Input placeholder="请输入邮箱" />
+          </Form.Item>
 
           <Form.Item
             label="备注"
@@ -762,17 +708,6 @@ const PersonnelManagement: React.FC = () => {
               maxLength={200}
               showCount
             />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-            <Space>
-              <Button onClick={() => setCreateModalVisible(false)}>
-                取消
-              </Button>
-              <Button type="primary" htmlType="submit" loading={createLoading}>
-                创建
-              </Button>
-            </Space>
           </Form.Item>
         </Form>
       </Modal>
@@ -781,19 +716,19 @@ const PersonnelManagement: React.FC = () => {
       <Modal
         title="编辑人员"
         open={editModalVisible}
+        onOk={() => editForm.submit()}
         onCancel={() => {
           setEditModalVisible(false);
-          setEditingPersonnel(null);
           editForm.resetFields();
+          setEditingPersonnel(null);
         }}
-        footer={null}
+        confirmLoading={editLoading}
         width={600}
       >
         <Form
           form={editForm}
           layout="vertical"
-          onFinish={handleUpdatePersonnel}
-          autoComplete="off"
+          onFinish={handleUpdate}
         >
           <Form.Item
             label="姓名"
@@ -821,28 +756,22 @@ const PersonnelManagement: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="联系电话"
-                name="phone"
-                rules={[]}
-              >
-                <Input placeholder="请输入联系电话" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label="邮箱"
-                name="email"
-                rules={[
-                  { type: 'email', message: '请输入正确的邮箱地址' }
-                ]}
-              >
-                <Input placeholder="请输入邮箱" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item
+            label="联系电话"
+            name="phone"
+          >
+            <Input placeholder="请输入联系电话" />
+          </Form.Item>
+
+          <Form.Item
+            label="邮箱"
+            name="email"
+            rules={[
+              { type: 'email', message: '请输入正确的邮箱地址' }
+            ]}
+          >
+            <Input placeholder="请输入邮箱" />
+          </Form.Item>
 
           <Form.Item
             label="备注"
@@ -854,21 +783,6 @@ const PersonnelManagement: React.FC = () => {
               maxLength={200}
               showCount
             />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-            <Space>
-              <Button onClick={() => {
-                setEditModalVisible(false);
-                setEditingPersonnel(null);
-                editForm.resetFields();
-              }}>
-                取消
-              </Button>
-              <Button type="primary" htmlType="submit">
-                更新
-              </Button>
-            </Space>
           </Form.Item>
         </Form>
       </Modal>

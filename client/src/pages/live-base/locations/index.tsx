@@ -4,15 +4,15 @@ import {
   Space, 
   Tag, 
   Statistic, 
-  Row, 
-  Col, 
   Modal,
   Form,
   Input,
   Select,
   App,
   Button,
-  Popconfirm
+  Popconfirm,
+  Popover,
+  Descriptions
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -20,7 +20,8 @@ import {
   DeleteOutlined,
   DatabaseOutlined,
   DesktopOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
@@ -514,6 +515,46 @@ const LocationManagement: React.FC = () => {
     );
   }
 
+  // 统计详情弹出内容
+  const statsContent = (
+    <div style={{ width: 300 }}>
+      <Descriptions column={1} size="small" bordered>
+        <Descriptions.Item label="总位置数">
+          <Space>
+            <DatabaseOutlined />
+            <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalLocations}</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="仓库">
+          <Space>
+            <DatabaseOutlined style={{ color: '#1890ff' }} />
+            <span style={{ color: '#1890ff', fontWeight: 'bold' }}>{stats.warehouses}</span>
+            <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.warehouses / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="直播间">
+          <Space>
+            <DesktopOutlined style={{ color: '#52c41a' }} />
+            <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.liveRooms}</span>
+            <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.liveRooms / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="启用中">
+          <Space>
+            <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeLocations}</span>
+            <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.activeLocations / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="禁用">
+          <Space>
+            <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.totalLocations - stats.activeLocations}</span>
+            <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? (((stats.totalLocations - stats.activeLocations) / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
+
   return (
     <PageContainer
       header={{
@@ -521,49 +562,6 @@ const LocationManagement: React.FC = () => {
         subTitle: `当前基地：${currentBase.name}`,
       }}
     >
-      {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="总位置数"
-              value={stats.totalLocations}
-              prefix={<DatabaseOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="仓库"
-              value={stats.warehouses}
-              prefix={<DatabaseOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="直播间"
-              value={stats.liveRooms}
-              prefix={<DesktopOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="启用中"
-              value={stats.activeLocations}
-              prefix={<DatabaseOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
       {/* ProTable */}
       <ProTable<Location>
         columns={columns}
@@ -628,7 +626,29 @@ const LocationManagement: React.FC = () => {
         
         // 表格属性
         dateFormatter="string"
-        headerTitle="位置列表"
+        headerTitle={
+          <Space>
+            <span>位置列表</span>
+            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
+              (共 {stats.totalLocations} 个)
+            </span>
+            <Popover
+              content={statsContent}
+              title="统计详情"
+              trigger="click"
+              placement="bottomLeft"
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
+              >
+                详情
+              </Button>
+            </Popover>
+          </Space>
+        }
       />
 
       {/* 创建位置模态框 */}

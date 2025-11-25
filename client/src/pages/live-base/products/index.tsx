@@ -6,15 +6,17 @@ import {
   Space, 
   Tag, 
   Statistic, 
-  Row, 
-  Col, 
+  Row,
+  Col,
   Input, 
   Select, 
   Modal,
   Form,
   InputNumber,
   App,
-  Image 
+  Image,
+  Popover,
+  Descriptions
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -26,7 +28,8 @@ import {
   EditOutlined,
   EyeOutlined,
   DeleteOutlined,
-  ShoppingOutlined
+  ShoppingOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
@@ -546,52 +549,64 @@ const ProductManagement: React.FC = () => {
         </Button>,
       ]}
     >
-      {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="商品总数"
-              value={stats.totalGoods}
-              suffix="个"
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="启用商品"
-              value={stats.activeGoods}
-              suffix="个"
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="禁用商品"
-              value={stats.inactiveGoods}
-              suffix="个"
-              valueStyle={{ color: '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="厂家数量"
-              value={stats.totalManufacturers}
-              suffix="个"
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
       {/* 筛选工具栏 */}
-      <Card style={{ marginBottom: 16 }}>
+      <Card 
+        style={{ marginBottom: 16 }}
+        title={
+          <Space>
+            <span>商品列表</span>
+            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
+              (共 {stats.totalGoods} 个)
+            </span>
+            <Popover
+              content={
+                <div style={{ width: 300 }}>
+                  <Descriptions column={1} size="small" bordered>
+                    <Descriptions.Item label="商品总数">
+                      <Space>
+                        <ShoppingOutlined style={{ color: '#1890ff' }} />
+                        <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalGoods}</span>
+                      </Space>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="启用商品">
+                      <Space>
+                        <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                        <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeGoods}</span>
+                        <span style={{ color: '#999' }}>({stats.totalGoods > 0 ? ((stats.activeGoods / stats.totalGoods) * 100).toFixed(1) : 0}%)</span>
+                      </Space>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="禁用商品">
+                      <Space>
+                        <WarningOutlined style={{ color: '#ff4d4f' }} />
+                        <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.inactiveGoods}</span>
+                        <span style={{ color: '#999' }}>({stats.totalGoods > 0 ? ((stats.inactiveGoods / stats.totalGoods) * 100).toFixed(1) : 0}%)</span>
+                      </Space>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="厂家数量">
+                      <Space>
+                        <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{stats.totalManufacturers}</span>
+                        <span style={{ color: '#999' }}>个</span>
+                      </Space>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+              }
+              title="统计详情"
+              trigger="click"
+              placement="bottomLeft"
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
+              >
+                详情
+              </Button>
+            </Popover>
+          </Space>
+        }
+      >
         <Row gutter={16} align="middle">
           <Col span={6}>
             <Space.Compact style={{ width: '100%' }}>
