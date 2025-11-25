@@ -13,8 +13,13 @@ import {
   Row,
   Col,
   Image,
-  InputNumber
+  InputNumber,
+  Upload,
+  Progress,
+  Alert,
+  Spin
 } from 'antd';
+import type { UploadProps } from 'antd';
 import { 
   PlusOutlined, 
   ExclamationCircleOutlined,
@@ -24,13 +29,18 @@ import {
   ShoppingOutlined,
   InfoCircleOutlined,
   CloseCircleOutlined,
-  ShopOutlined
+  ShopOutlined,
+  ExportOutlined,
+  ImportOutlined,
+  DownloadOutlined,
+  InboxOutlined
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
+import { useProductExcel } from './useProductExcel';
 
 const { TextArea } = Input;
 
@@ -91,6 +101,21 @@ const ProductManagement: React.FC = () => {
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useProductExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => actionRef.current?.reload(),
+  });
 
   /**
    * 获取商品数据
@@ -262,7 +287,7 @@ const ProductManagement: React.FC = () => {
   };
 
   /**
-   * 打开编辑模态框
+   * 编辑商品
    */
   const handleEdit = (record: Product) => {
     setEditingProduct(record);
@@ -656,6 +681,20 @@ const ProductManagement: React.FC = () => {
         // 工具栏按钮
         toolBarRender={() => [
           <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出Excel
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入Excel
+          </Button>,
+          <Button
             key="create"
             type="primary"
             icon={<PlusOutlined />}
@@ -1020,6 +1059,80 @@ const ProductManagement: React.FC = () => {
             />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 导入商品模态框 */}
+      <Modal
+        title="导入商品数据"
+        open={importModalVisible}
+        onCancel={() => {
+          if (!importLoading) {
+            setImportModalVisible(false);
+          }
+        }}
+        footer={null}
+        width={600}
+        closable={!importLoading}
+        maskClosable={!importLoading}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Alert
+            message="导入说明"
+            description={
+              <div>
+                <p>1. 请使用提供的模板文件，保持列名不变</p>
+                <p>2. ID、商品编号、创建时间由系统自动生成，导入时会被忽略</p>
+                <p>3. 商品名称、厂家名称、零售价、盒/箱、包/盒为必填项</p>
+                <p>4. 箱数量固定为1，无需填写</p>
+                <p>5. 支持批量导入，建议每次不超过500条</p>
+              </div>
+            }
+            type="info"
+            showIcon
+          />
+        </div>
+
+        {importLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 16 }}>
+              正在导入数据，请稍候...
+            </div>
+            {importProgress > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <Progress percent={importProgress} status="active" />
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <Upload.Dragger
+              name="file"
+              accept=".xlsx,.xls"
+              customRequest={handleImport}
+              showUploadList={false}
+              disabled={importLoading}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ fontSize: 48, color: '#1890ff' }} />
+              </p>
+              <p className="ant-upload-text">点击或拖拽Excel文件到此区域上传</p>
+              <p className="ant-upload-hint">
+                支持 .xlsx 和 .xls 格式，请按照模板格式填写数据
+              </p>
+            </Upload.Dragger>
+
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
+              <Button
+                type="link"
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadTemplate}
+              >
+                下载导入模板
+              </Button>
+            </div>
+          </>
+        )}
       </Modal>
     </PageContainer>
   );
