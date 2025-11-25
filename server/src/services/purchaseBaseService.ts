@@ -270,6 +270,11 @@ export class PurchaseBaseService {
           s.contact_person as "contactPerson",
           s.phone,
           s.email,
+          s.address,
+          s.notes,
+          s.is_active as "isActive",
+          s.created_at as "createdAt",
+          s.updated_at as "updatedAt",
           sb.payment_terms as "paymentTerms",
           sb.credit_limit as "creditLimit"
         FROM suppliers s
@@ -288,7 +293,8 @@ export class PurchaseBaseService {
 
       return {
         success: true,
-        data: suppliers
+        data: suppliers,
+        total: (suppliers as any[]).length
       };
     } catch (error) {
       logger.error('获取基地供应商列表失败', { error, baseId, service: 'milicard-api' });
@@ -354,6 +360,112 @@ export class PurchaseBaseService {
       };
     } catch (error) {
       logger.error('创建基地供应商失败', { error, baseId, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
+   * 更新基地供应商
+   */
+  static async updateBaseSupplier(baseId: number, supplierId: string, supplierData: any) {
+    try {
+      // 验证供应商是否属于该基地
+      const supplierBase = await prisma.supplierBase.findFirst({
+        where: {
+          supplierId,
+          baseId,
+          isActive: true
+        }
+      });
+
+      if (!supplierBase) {
+        return {
+          success: false,
+          message: '供应商不存在或不属于该基地'
+        };
+      }
+
+      // 更新供应商信息
+      const supplier = await prisma.supplier.update({
+        where: { id: supplierId },
+        data: {
+          name: supplierData.name,
+          contactPerson: supplierData.contactPerson,
+          phone: supplierData.phone,
+          email: supplierData.email,
+          address: supplierData.address,
+          notes: supplierData.notes,
+        }
+      });
+
+      logger.info('更新基地供应商成功', {
+        service: 'milicard-api',
+        baseId,
+        supplierId,
+        supplierName: supplier.name
+      });
+
+      return {
+        success: true,
+        data: {
+          id: supplier.id,
+          code: supplier.code,
+          name: supplier.name,
+          contactPerson: supplier.contactPerson,
+          phone: supplier.phone,
+          email: supplier.email,
+          address: supplier.address,
+          notes: supplier.notes,
+          isActive: supplier.isActive,
+          createdAt: supplier.createdAt,
+          updatedAt: supplier.updatedAt,
+        }
+      };
+    } catch (error) {
+      logger.error('更新基地供应商失败', { error, baseId, supplierId, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
+   * 删除基地供应商（软删除：禁用关联关系）
+   */
+  static async deleteBaseSupplier(baseId: number, supplierId: string) {
+    try {
+      // 验证供应商是否属于该基地
+      const supplierBase = await prisma.supplierBase.findFirst({
+        where: {
+          supplierId,
+          baseId,
+          isActive: true
+        }
+      });
+
+      if (!supplierBase) {
+        return {
+          success: false,
+          message: '供应商不存在或不属于该基地'
+        };
+      }
+
+      // 软删除：禁用供应商与基地的关联
+      await prisma.supplierBase.update({
+        where: { id: supplierBase.id },
+        data: { isActive: false }
+      });
+
+      logger.info('删除基地供应商成功', {
+        service: 'milicard-api',
+        baseId,
+        supplierId
+      });
+
+      return {
+        success: true,
+        message: '供应商已删除'
+      };
+    } catch (error) {
+      logger.error('删除基地供应商失败', { error, baseId, supplierId, service: 'milicard-api' });
       throw error;
     }
   }

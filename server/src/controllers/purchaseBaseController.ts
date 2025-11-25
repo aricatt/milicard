@@ -176,4 +176,70 @@ export class PurchaseBaseController {
       });
     }
   }
+
+  /**
+   * 更新基地供应商
+   */
+  static async updateBaseSupplier(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      const supplierId = req.params.supplierId;
+
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的基地ID'
+        });
+      }
+
+      const result = await PurchaseBaseService.updateBaseSupplier(baseId, supplierId, req.body);
+      
+      res.json(result);
+    } catch (error) {
+      logger.error('更新基地供应商失败', { 
+        error: (error as Error).message, 
+        baseId: req.params.baseId,
+        supplierId: req.params.supplierId,
+        service: 'milicard-api' 
+      });
+      
+      res.status(500).json({
+        success: false,
+        message: '服务器内部错误'
+      });
+    }
+  }
+
+  /**
+   * 删除基地供应商
+   */
+  static async deleteBaseSupplier(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      const supplierId = req.params.supplierId;
+
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的基地ID'
+        });
+      }
+
+      const result = await PurchaseBaseService.deleteBaseSupplier(baseId, supplierId);
+      
+      res.json(result);
+    } catch (error) {
+      logger.error('删除基地供应商失败', { 
+        error: (error as Error).message, 
+        baseId: req.params.baseId,
+        supplierId: req.params.supplierId,
+        service: 'milicard-api' 
+      });
+      
+      res.status(500).json({
+        success: false,
+        message: '服务器内部错误'
+      });
+    }
+  }
 }

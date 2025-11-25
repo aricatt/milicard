@@ -33,4 +33,16 @@ router.get('/:baseId/suppliers', PurchaseBaseController.getBaseSuppliers);
  */
 router.post('/:baseId/suppliers', PurchaseBaseController.createBaseSupplier);
 
+/**
+ * 更新基地供应商
+ * PUT /api/v1/bases/{baseId}/suppliers/:supplierId
+ */
+router.put('/:baseId/suppliers/:supplierId', PurchaseBaseController.updateBaseSupplier);
+
+/**
+ * 删除基地供应商
+ * DELETE /api/v1/bases/{baseId}/suppliers/:supplierId
+ */
+router.delete('/:baseId/suppliers/:supplierId', PurchaseBaseController.deleteBaseSupplier);
+
 export default router;

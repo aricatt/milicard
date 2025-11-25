@@ -44,7 +44,7 @@ interface Supplier {
   address: string;
   notes?: string;
   baseId: number;
-  isActive: boolean;
+  isActive: boolean | string | number; // 支持多种类型以兼容后端返回
   createdAt: string;
   updatedAt: string;
   baseName: string;
@@ -152,9 +152,16 @@ const SupplierManagement: React.FC = () => {
     
     const newStats: SupplierStats = {
       totalSuppliers: data.length,
-      activeSuppliers: data.filter(s => s.isActive).length,
-      inactiveSuppliers: data.filter(s => !s.isActive).length,
-      recentlyAdded: data.filter(s => new Date(s.createdAt) > sevenDaysAgo).length,
+      activeSuppliers: data.filter(s => s.isActive === true || s.isActive === 'true' || s.isActive === 1).length,
+      inactiveSuppliers: data.filter(s => !(s.isActive === true || s.isActive === 'true' || s.isActive === 1)).length,
+      recentlyAdded: data.filter(s => {
+        if (!s.createdAt) return false;
+        try {
+          return new Date(s.createdAt) > sevenDaysAgo;
+        } catch {
+          return false;
+        }
+      }).length,
     };
     setStats(newStats);
   };
@@ -374,11 +381,15 @@ const SupplierManagement: React.FC = () => {
         true: { text: '启用', status: 'Success' },
         false: { text: '禁用', status: 'Error' },
       },
-      render: (_, record) => (
-        <Tag color={record.isActive ? 'green' : 'red'}>
-          {record.isActive ? '启用' : '禁用'}
-        </Tag>
-      ),
+      render: (_, record) => {
+        // 处理字符串 "true"/"false" 和布尔值
+        const isActive = record.isActive === true || record.isActive === 'true' || record.isActive === 1;
+        return (
+          <Tag color={isActive ? 'green' : 'red'}>
+            {isActive ? '启用' : '禁用'}
+          </Tag>
+        );
+      },
       hideInSearch: false,
     },
     {
@@ -648,7 +659,6 @@ const SupplierManagement: React.FC = () => {
             label="联系人"
             name="contactPerson"
             rules={[
-              { required: true, message: '请输入联系人' },
               { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
             ]}
           >
@@ -660,9 +670,6 @@ const SupplierManagement: React.FC = () => {
               <Form.Item
                 label="联系电话"
                 name="phone"
-                rules={[
-                  { required: true, message: '请输入联系电话' }
-                ]}
               >
                 <Input placeholder="请输入联系电话" />
               </Form.Item>
@@ -684,7 +691,6 @@ const SupplierManagement: React.FC = () => {
             label="地址"
             name="address"
             rules={[
-              { required: true, message: '请输入地址' },
               { max: 200, message: '地址长度不能超过200个字符' }
             ]}
           >
@@ -738,7 +744,6 @@ const SupplierManagement: React.FC = () => {
             label="联系人"
             name="contactPerson"
             rules={[
-              { required: true, message: '请输入联系人' },
               { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
             ]}
           >
@@ -750,9 +755,6 @@ const SupplierManagement: React.FC = () => {
               <Form.Item
                 label="联系电话"
                 name="phone"
-                rules={[
-                  { required: true, message: '请输入联系电话' }
-                ]}
               >
                 <Input placeholder="请输入联系电话" />
               </Form.Item>
@@ -774,7 +776,6 @@ const SupplierManagement: React.FC = () => {
             label="地址"
             name="address"
             rules={[
-              { required: true, message: '请输入地址' },
               { max: 200, message: '地址长度不能超过200个字符' }
             ]}
           >
