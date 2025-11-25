@@ -48,7 +48,7 @@ interface Location {
   description?: string;
   address?: string;
   contactPerson?: string;
-  phone?: string;
+  contactPhone?: string;
   baseId: number;
   isActive: boolean;
   createdAt: string;
@@ -181,8 +181,8 @@ const LocationManagement: React.FC = () => {
     },
     {
       title: '联系电话',
-      dataIndex: 'phone',
-      key: 'phone',
+      dataIndex: 'contactPhone',
+      key: 'contactPhone',
       width: 130,
       render: (text: string) => text || '-',
     },
@@ -191,18 +191,44 @@ const LocationManagement: React.FC = () => {
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
-      render: (isActive: boolean) => (
-        <Tag color={isActive ? 'green' : 'red'}>
-          {isActive ? '启用' : '禁用'}
-        </Tag>
-      ),
+      render: (isActive: any, record: Location) => {
+        // 调试：查看 isActive 的实际值和类型
+        console.log(`🔍 Location ${record.name} - isActive:`, isActive, 'type:', typeof isActive);
+        
+        // 处理各种可能的类型
+        const isActiveValue = isActive === true || isActive === 'true' || isActive === 1;
+        
+        return (
+          <Tag color={isActiveValue ? 'green' : 'red'}>
+            {isActiveValue ? '启用' : '禁用'}
+          </Tag>
+        );
+      },
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 150,
-      render: (value: string) => new Date(value).toLocaleString(),
+      render: (value: string) => {
+        if (!value) return '-';
+        try {
+          const date = new Date(value);
+          if (isNaN(date.getTime())) return '-';
+          return date.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+        } catch (error) {
+          console.error('日期格式化错误:', error, value);
+          return '-';
+        }
+      },
     },
     {
       title: '操作',
@@ -264,6 +290,19 @@ const LocationManagement: React.FC = () => {
 
       const result = await response.json();
       
+      // 调试：查看后端返回的数据
+      console.log('📊 Location API 返回数据:', result);
+      if (result.data && result.data.length > 0) {
+        console.log('📋 第一条数据详情:', result.data[0]);
+        console.log('  - isActive 类型:', typeof result.data[0].isActive);
+        console.log('  - isActive 值:', result.data[0].isActive);
+        console.log('  - isActive === true:', result.data[0].isActive === true);
+        console.log('  - isActive === false:', result.data[0].isActive === false);
+        console.log('  - createdAt 类型:', typeof result.data[0].createdAt);
+        console.log('  - createdAt 值:', result.data[0].createdAt);
+        console.log('  - createdAt 是否为 null/undefined:', result.data[0].createdAt == null);
+      }
+      
       if (result.success) {
         setLocationData(result.data || []);
         setPagination(prev => ({
@@ -312,7 +351,7 @@ const LocationManagement: React.FC = () => {
       description: record.description,
       address: record.address,
       contactPerson: record.contactPerson,
-      phone: record.phone,
+      contactPhone: record.contactPhone,
     });
     setEditModalVisible(true);
   };
@@ -661,7 +700,7 @@ const LocationManagement: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 label="联系电话"
-                name="phone"
+                name="contactPhone"
                 rules={[]}
               >
                 <Input placeholder="请输入联系电话" />
@@ -757,7 +796,7 @@ const LocationManagement: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 label="联系电话"
-                name="phone"
+                name="contactPhone"
                 rules={[]}
               >
                 <Input placeholder="请输入联系电话" />

@@ -11,7 +11,11 @@ export class LocationBaseService {
   static async getBaseLocationList(baseId: number, params: any = {}) {
     try {
       const { current = 1, pageSize = 10, name, type, isActive } = params;
-      const skip = (current - 1) * pageSize;
+      
+      // 确保分页参数是整数
+      const currentPage = parseInt(String(current)) || 1;
+      const pageSizeNum = parseInt(String(pageSize)) || 10;
+      const skip = (currentPage - 1) * pageSizeNum;
 
       // 构建查询条件
       const where: any = { baseId };
@@ -36,7 +40,7 @@ export class LocationBaseService {
         prisma.location.findMany({
           where,
           skip,
-          take: pageSize,
+          take: pageSizeNum,
           include: {
             base: { select: { id: true, name: true } },
           },
@@ -46,6 +50,16 @@ export class LocationBaseService {
         }),
         prisma.location.count({ where }),
       ]);
+
+      // 调试：查看 Prisma 返回的原始数据
+      if (locations.length > 0) {
+        logger.info('📊 Prisma 查询返回的第一条数据', {
+          raw: locations[0],
+          isActive: locations[0].isActive,
+          createdAt: locations[0].createdAt,
+          service: 'milicard-api'
+        });
+      }
 
       // 格式化数据
       const formattedData = locations.map((item: any) => ({
