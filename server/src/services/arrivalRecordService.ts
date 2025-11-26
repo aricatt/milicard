@@ -432,4 +432,204 @@ export class ArrivalRecordService {
       throw new BaseError('获取到货统计失败', BaseErrorType.DATABASE_ERROR);
     }
   }
+
+  /**
+   * 导入到货记录（通过名称匹配）
+   */
+  static async importArrivalRecord(
+    baseId: number,
+    data: {
+      arrivalDate: string;
+      purchaseOrderNo: string;
+      locationName: string;
+      handlerName: string;
+      boxQuantity?: number;
+      packQuantity?: number;
+      pieceQuantity?: number;
+    },
+    userId: string
+  ): Promise<any> {
+    try {
+      // 验证必填字段
+      if (!data.arrivalDate || !data.purchaseOrderNo || !data.locationName || !data.handlerName) {
+        throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
+      }
+
+      // 根据采购编号查找采购订单
+      const purchaseOrder = await prisma.purchaseOrder.findFirst({
+        where: {
+          code: data.purchaseOrderNo,
+          baseId: baseId
+        },
+        include: {
+          items: {
+            include: {
+              goods: {
+                select: {
+                  id: true,
+                  packPerBox: true,
+                  piecePerPack: true
+                }
+              }
+            },
+            take: 1
+          }
+        }
+      });
+
+      if (!purchaseOrder) {
+        throw new BaseError(`采购订单不存在: ${data.purchaseOrderNo}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      const purchaseItem = purchaseOrder.items[0];
+      if (!purchaseItem) {
+        throw new BaseError(`采购订单没有关联商品: ${data.purchaseOrderNo}`, BaseErrorType.VALIDATION_ERROR);
+      }
+
+      const goodsId = purchaseItem.goodsId;
+      const goods = purchaseItem.goods;
+      const packPerBox = goods.packPerBox || 1;
+      const piecePerPack = goods.piecePerPack || 1;
+
+      // 根据位置名称查找位置
+      const location = await prisma.location.findFirst({
+        where: {
+          name: data.locationName,
+          baseId: baseId
+        }
+      });
+
+      if (!location) {
+        throw new BaseError(`直播间/仓库不存在: ${data.locationName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 根据人员名称查找人员
+      const handler = await prisma.personnel.findFirst({
+        where: {
+          name: data.handlerName,
+          baseId: baseId
+        }
+      });
+
+      if (!handler) {
+        throw new BaseError(`主播/仓管不存在: ${data.handlerName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 计算采购数量（换算成最小单位：包）
+      const purchasedPieces = 
+        (purchaseItem.boxQuantity * packPerBox * piecePerPack) +
+        (purchaseItem.packQuantity * piecePerPack) +
+        purchaseItem.pieceQuantity;
+
+      // 获取该采购单已有的所有到货记录的数量总和
+      const existingArrivals = await prisma.arrivalRecord.aggregate({
+        where: {
+          purchaseOrderId: purchaseOrder.id
+        },
+        _sum: {
+          boxQuantity: true,
+          packQuantity: true,
+          pieceQuantity: true
+        }
+      });
+
+      const arrivedBoxes = existingArrivals._sum.boxQuantity || 0;
+      const arrivedPacks = existingArrivals._sum.packQuantity || 0;
+      const arrivedPieces = existingArrivals._sum.pieceQuantity || 0;
+
+      // 计算已到货数量（换算成最小单位：包）
+      const totalArrivedPieces = 
+        (arrivedBoxes * packPerBox * piecePerPack) +
+        (arrivedPacks * piecePerPack) +
+        arrivedPieces;
+
+      // 计算本次录入数量
+      const newBoxQty = data.boxQuantity || 0;
+      const newPackQty = data.packQuantity || 0;
+      const newPieceQty = data.pieceQuantity || 0;
+      const newArrivalPieces = 
+        (newBoxQty * packPerBox * piecePerPack) +
+        (newPackQty * piecePerPack) +
+        newPieceQty;
+
+      // 校验：总到货数量 ≤ 采购数量
+      const totalAfterArrival = totalArrivedPieces + newArrivalPieces;
+      if (totalAfterArrival > purchasedPieces) {
+        const remainingPieces = purchasedPieces - totalArrivedPieces;
+        const remainingBoxes = Math.floor(remainingPieces / (packPerBox * piecePerPack));
+        const remainingAfterBoxes = remainingPieces % (packPerBox * piecePerPack);
+        const remainingPacks = Math.floor(remainingAfterBoxes / piecePerPack);
+        const remainingPiecesOnly = remainingAfterBoxes % piecePerPack;
+        
+        throw new BaseError(
+          `到货数量超出采购数量！\n` +
+          `采购数量: ${purchaseItem.boxQuantity}箱${purchaseItem.packQuantity}盒${purchaseItem.pieceQuantity}包\n` +
+          `本次录入: ${newBoxQty}箱${newPackQty}盒${newPieceQty}包\n` +
+          (arrivedBoxes > 0 || arrivedPacks > 0 || arrivedPieces > 0 
+            ? `已到货: ${arrivedBoxes}箱${arrivedPacks}盒${arrivedPieces}包\n` 
+            : '') +
+          `剩余可到货: ${remainingBoxes}箱${remainingPacks}盒${remainingPiecesOnly}包`,
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
+
+      // 创建到货记录
+      const record = await prisma.arrivalRecord.create({
+        data: {
+          arrivalDate: new Date(data.arrivalDate),
+          purchaseOrderId: purchaseOrder.id,
+          goodsId: goodsId,
+          locationId: location.id,
+          handlerId: handler.id,
+          baseId: baseId,
+          boxQuantity: newBoxQty,
+          packQuantity: newPackQty,
+          pieceQuantity: newPieceQty,
+          createdBy: userId,
+          updatedBy: userId
+        },
+        include: {
+          purchaseOrder: true,
+          goods: true,
+          location: true,
+          handler: true,
+          base: true
+        }
+      });
+
+      logger.info('到货记录导入成功', {
+        recordId: record.id,
+        purchaseOrderNo: data.purchaseOrderNo,
+        baseId,
+        userId,
+        service: 'milicard-api'
+      });
+
+      return {
+        id: record.id,
+        arrivalDate: record.arrivalDate.toISOString().split('T')[0],
+        purchaseOrderId: record.purchaseOrderId,
+        purchaseOrderNo: record.purchaseOrder?.code || '',
+        goodsId: record.goodsId,
+        goodsName: record.goods?.name || '',
+        locationId: record.locationId,
+        locationName: record.location?.name || '',
+        handlerId: record.handlerId,
+        handlerName: record.handler?.name || '',
+        boxQuantity: record.boxQuantity,
+        packQuantity: record.packQuantity,
+        pieceQuantity: record.pieceQuantity,
+      };
+
+    } catch (error) {
+      logger.error('导入到货记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId,
+        data,
+        userId,
+        service: 'milicard-api'
+      });
+      throw error;
+    }
+  }
 }

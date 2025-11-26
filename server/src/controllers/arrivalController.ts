@@ -203,4 +203,57 @@ export class ArrivalController {
       }
     }
   }
+
+  /**
+   * 导入到货记录（通过名称匹配）
+   */
+  static async importArrivalRecord(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '基地ID无效'
+        });
+      }
+
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '用户未认证'
+        });
+      }
+
+      const data = req.body;
+      const result = await ArrivalRecordService.importArrivalRecord(baseId, data, userId);
+
+      res.status(201).json({
+        success: true,
+        data: result,
+        message: '到货记录导入成功'
+      });
+
+    } catch (error) {
+      logger.error('导入到货记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId: req.params.baseId,
+        body: req.body,
+        userId: req.user?.id,
+        controller: 'ArrivalController'
+      });
+
+      if (error instanceof BaseError) {
+        res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: '服务器内部错误'
+        });
+      }
+    }
+  }
 }

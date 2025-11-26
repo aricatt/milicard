@@ -21,7 +21,10 @@ router.post('/:baseId/arrivals', ArrivalController.createArrivalRecord);
 // 删除到货记录
 router.delete('/:baseId/arrivals/:recordId', ArrivalController.deleteArrivalRecord);
 
-// 获取到货统计
+// 获取到货统计（放在 :recordId 路由之前避免冲突）
 router.get('/:baseId/arrivals/stats', ArrivalController.getArrivalStats);
+
+// 导入到货记录
+router.post('/:baseId/arrivals/import', ArrivalController.importArrivalRecord);
 
 export default router;

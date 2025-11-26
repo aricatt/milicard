@@ -10,10 +10,14 @@ import {
   App,
   Popover,
   Descriptions,
+  Upload,
+  Progress,
 } from 'antd';
 import { 
   PlusOutlined, 
   ExportOutlined, 
+  ImportOutlined,
+  DownloadOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -22,6 +26,7 @@ import { useBase } from '@/contexts/BaseContext';
 import { request } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
+import { useArrivalExcel } from './useArrivalExcel';
 import type { ArrivalRecord, ArrivalStats, ArrivalFormValues } from './types';
 
 /**
@@ -32,6 +37,24 @@ const ArrivalManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useArrivalExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+      loadStats();
+    },
+  });
   
   // 状态管理
   const [stats, setStats] = useState<ArrivalStats>({
@@ -266,13 +289,6 @@ const ArrivalManagement: React.FC = () => {
   };
 
   /**
-   * 导出数据
-   */
-  const handleExport = () => {
-    message.info('导出功能开发中...');
-  };
-
-  /**
    * 统计信息内容
    */
   const statsContent = (
@@ -362,6 +378,13 @@ const ArrivalManagement: React.FC = () => {
             onClick={handleExport}
           >
             导出Excel
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入Excel
           </Button>,
           <Button
             key="create"
@@ -505,6 +528,54 @@ const ArrivalManagement: React.FC = () => {
             <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 导入模态框 */}
+      <Modal
+        title="导入到货记录"
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        footer={null}
+        width={500}
+      >
+        <div style={{ padding: '20px 0' }}>
+          <p style={{ marginBottom: 16 }}>
+            请先下载导入模板，按模板格式填写数据后上传Excel文件。
+          </p>
+          <p style={{ marginBottom: 16, color: '#666' }}>
+            必填字段：到货日期、采购编号、直播间、主播、到货数量（箱/盒/包）
+          </p>
+          
+          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={handleDownloadTemplate}
+              block
+            >
+              下载导入模板
+            </Button>
+            
+            <Upload
+              accept=".xlsx,.xls"
+              showUploadList={false}
+              customRequest={handleImport}
+              disabled={importLoading}
+            >
+              <Button
+                type="primary"
+                icon={<ImportOutlined />}
+                loading={importLoading}
+                block
+              >
+                {importLoading ? '导入中...' : '选择文件并导入'}
+              </Button>
+            </Upload>
+            
+            {importLoading && (
+              <Progress percent={importProgress} status="active" />
+            )}
+          </Space>
+        </div>
       </Modal>
     </PageContainer>
   );
