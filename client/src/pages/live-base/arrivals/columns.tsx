@@ -1,8 +1,16 @@
 import React from 'react';
 import { Space, Button, Popconfirm, Tag } from 'antd';
-import { DeleteOutlined, InboxOutlined } from '@ant-design/icons';
+import { DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { ArrivalRecord } from './types';
+
+/**
+ * 生成采购名称：采购日期 + 商品名称
+ */
+const getPurchaseName = (purchaseDate: string, goodsName: string): string => {
+  if (!purchaseDate || !goodsName) return '-';
+  return `${purchaseDate}${goodsName}`;
+};
 
 /**
  * 获取ProTable列定义
@@ -28,7 +36,7 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
-    title: '采购单号',
+    title: '采购编号',
     dataIndex: 'purchaseOrderNo',
     key: 'purchaseOrderNo',
     width: 180,
@@ -42,7 +50,15 @@ export const getColumns = (
     ),
   },
   {
-    title: '商品名称',
+    title: '采购名称',
+    key: 'purchaseName',
+    width: 280,
+    ellipsis: true,
+    hideInSearch: true,
+    render: (_, record) => getPurchaseName(record.purchaseDate, record.goodsName),
+  },
+  {
+    title: '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 200,
@@ -50,10 +66,10 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
-    title: '到货仓库',
+    title: '直播间',
     dataIndex: 'locationName',
     key: 'locationName',
-    width: 120,
+    width: 140,
     hideInSearch: true,
     render: (_, record) => (
       <Tag color="blue" icon={<InboxOutlined />}>
@@ -62,12 +78,17 @@ export const getColumns = (
     ),
   },
   {
-    title: '经手人',
+    title: '主播',
     dataIndex: 'handlerName',
     key: 'handlerName',
     width: 100,
     hideInSearch: true,
-    render: (_, record) => record.handlerName || '-',
+    render: (_, record) => (
+      <Space size={4}>
+        <UserOutlined style={{ color: '#1890ff' }} />
+        <span>{record.handlerName || '-'}</span>
+      </Space>
+    ),
   },
   {
     title: '到货箱',
@@ -107,15 +128,6 @@ export const getColumns = (
         {record.pieceQuantity > 0 ? record.pieceQuantity : '-'}
       </span>
     ),
-  },
-  {
-    title: '备注',
-    dataIndex: 'notes',
-    key: 'notes',
-    width: 150,
-    hideInSearch: true,
-    ellipsis: true,
-    render: (_, record) => record.notes || '-',
   },
   {
     title: '创建时间',

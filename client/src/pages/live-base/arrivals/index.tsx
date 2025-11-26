@@ -7,7 +7,6 @@ import {
   DatePicker,
   InputNumber,
   Select,
-  Input,
   App,
   Popover,
   Descriptions,
@@ -15,8 +14,6 @@ import {
 import { 
   PlusOutlined, 
   ExportOutlined, 
-  DownloadOutlined,
-  ImportOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -26,8 +23,6 @@ import { request } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
 import type { ArrivalRecord, ArrivalStats, ArrivalFormValues } from './types';
-
-const { TextArea } = Input;
 
 /**
  * 到货管理页面
@@ -56,9 +51,11 @@ const ArrivalManagement: React.FC = () => {
 
   // 下拉选项
   const [purchaseOrders, setPurchaseOrders] = useState<any[]>([]);
-  const [locations, setLocations] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);  // 直播间和仓库
+  const [handlers, setHandlers] = useState<any[]>([]);    // 主播和仓管
   const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
   const [locationsLoading, setLocationsLoading] = useState(false);
+  const [handlersLoading, setHandlersLoading] = useState(false);
 
   /**
    * 加载统计数据
@@ -97,18 +94,25 @@ const ArrivalManagement: React.FC = () => {
     try {
       const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
         method: 'GET',
-        params: { pageSize: 100 },
+        params: { pageSize: 500 },
       });
       
       if (result.success && result.data) {
-        // 去重，按采购单号分组
+        // 去重，按采购单号分组，并保存采购日期和商品名称用于生成采购名称
         const orderMap = new Map();
         result.data.forEach((item: any) => {
           if (!orderMap.has(item.orderNo)) {
+            // 格式化采购日期为 YYYY-MM-DD
+            const dateStr = item.purchaseDate 
+              ? item.purchaseDate.split('T')[0] 
+              : '';
             orderMap.set(item.orderNo, {
               orderNo: item.orderNo,
+              purchaseDate: dateStr,
               goodsName: item.goodsName,
               supplierName: item.supplierName,
+              // 生成采购名称：采购日期 + 商品名称
+              purchaseName: `${dateStr}${item.goodsName || ''}`,
             });
           }
         });
@@ -122,25 +126,48 @@ const ArrivalManagement: React.FC = () => {
   };
 
   /**
-   * 加载仓库列表
+   * 加载直播间和仓库列表
    */
   const loadLocations = async () => {
     if (!currentBase) return;
     
     setLocationsLoading(true);
     try {
+      // 加载所有类型的位置（直播间和仓库）
       const result = await request(`/api/v1/bases/${currentBase.id}/locations`, {
         method: 'GET',
-        params: { type: 'WAREHOUSE' },
       });
       
       if (result.success && result.data) {
         setLocations(result.data);
       }
     } catch (error) {
-      console.error('加载仓库列表失败:', error);
+      console.error('加载位置列表失败:', error);
     } finally {
       setLocationsLoading(false);
+    }
+  };
+
+  /**
+   * 加载主播和仓管列表
+   */
+  const loadHandlers = async () => {
+    if (!currentBase) return;
+    
+    setHandlersLoading(true);
+    try {
+      // 加载主播和仓管
+      const result = await request(`/api/v1/bases/${currentBase.id}/staff`, {
+        method: 'GET',
+      });
+      
+      if (result.success && result.data) {
+        setHandlers(result.data);
+      }
+    } catch (error) {
+      console.error('加载人员列表失败:', error);
+    } finally {
+      setHandlersLoading(false);
     }
   };
 
@@ -152,6 +179,7 @@ const ArrivalManagement: React.FC = () => {
       loadStats();
       loadPurchaseOrders();
       loadLocations();
+      loadHandlers();
     }
   }, [currentBase]);
 
@@ -164,9 +192,10 @@ const ArrivalManagement: React.FC = () => {
     setCreateLoading(true);
     try {
       const requestData = {
-        purchaseOrderNo: values.purchaseOrderId, // 使用采购单号
+        purchaseOrderNo: values.purchaseOrderNo,
         arrivalDate: values.arrivalDate?.format('YYYY-MM-DD'),
         locationId: values.locationId,
+        handlerId: values.handlerId,
         boxQuantity: values.boxQuantity || 0,
         packQuantity: values.packQuantity || 0,
         pieceQuantity: values.pieceQuantity || 0,
@@ -377,84 +406,86 @@ const ArrivalManagement: React.FC = () => {
           }}
         >
           <Form.Item
-            label="采购单号"
-            name="purchaseOrderId"
-            rules={[{ required: true, message: '请选择采购单' }]}
-          >
-            <Select
-              placeholder="请选择采购单"
-              loading={purchaseOrdersLoading}
-              showSearch
-              optionFilterProp="children"
-            >
-              {purchaseOrders.map((order) => (
-                <Select.Option key={order.orderNo} value={order.orderNo}>
-                  {order.orderNo} - {order.goodsName}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="到货日期"
+            label="日期"
             name="arrivalDate"
             rules={[{ required: true, message: '请选择到货日期' }]}
           >
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: '100%' }} placeholder="选择日期" />
           </Form.Item>
 
           <Form.Item
-            label="到货仓库"
-            name="locationId"
-            rules={[{ required: true, message: '请选择到货仓库' }]}
+            label="采购"
+            name="purchaseOrderNo"
+            rules={[{ required: true, message: '请选择采购单' }]}
           >
             <Select
-              placeholder="请选择到货仓库"
-              loading={locationsLoading}
-            >
-              {locations.map((loc) => (
-                <Select.Option key={loc.id} value={loc.id}>
-                  {loc.name}
-                </Select.Option>
-              ))}
-            </Select>
+              placeholder="请选择"
+              loading={purchaseOrdersLoading}
+              showSearch
+              optionFilterProp="label"
+              options={purchaseOrders.map((order) => ({
+                value: order.orderNo,
+                label: order.purchaseName || `${order.purchaseDate}${order.goodsName}`,
+              }))}
+            />
           </Form.Item>
 
-          <Space size="large" style={{ width: '100%' }}>
-            <Form.Item
-              label="到货箱数"
-              name="boxQuantity"
-              style={{ marginBottom: 0 }}
-            >
-              <InputNumber min={0} style={{ width: 120 }} />
-            </Form.Item>
-            <Form.Item
-              label="到货盒数"
-              name="packQuantity"
-              style={{ marginBottom: 0 }}
-            >
-              <InputNumber min={0} style={{ width: 120 }} />
-            </Form.Item>
-            <Form.Item
-              label="到货包数"
-              name="pieceQuantity"
-              style={{ marginBottom: 0 }}
-            >
-              <InputNumber min={0} style={{ width: 120 }} />
-            </Form.Item>
-          </Space>
+          <Form.Item
+            label="仓库"
+            name="locationId"
+            rules={[{ required: true, message: '请选择仓库' }]}
+          >
+            <Select
+              placeholder="请选择"
+              loading={locationsLoading}
+              showSearch
+              optionFilterProp="label"
+              options={locations.map((loc) => ({
+                value: loc.id,
+                label: loc.name,
+              }))}
+            />
+          </Form.Item>
 
           <Form.Item
-            label="备注"
-            name="notes"
-            style={{ marginTop: 16 }}
+            label="主播"
+            name="handlerId"
           >
-            <TextArea
-              rows={3}
-              placeholder="请输入备注信息"
-              maxLength={500}
-              showCount
+            <Select
+              placeholder="请选择"
+              loading={handlersLoading}
+              showSearch
+              optionFilterProp="label"
+              allowClear
+              options={handlers.map((h) => ({
+                value: h.id,
+                label: `${h.role === 'ANCHOR' ? '🎤 ' : '👷 '}${h.name}`,
+              }))}
             />
+          </Form.Item>
+
+          <Form.Item
+            label="到货箱"
+            name="boxQuantity"
+            rules={[{ required: true, message: '请输入' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
+          </Form.Item>
+
+          <Form.Item
+            label="到货盒"
+            name="packQuantity"
+            rules={[{ required: true, message: '请输入' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
+          </Form.Item>
+
+          <Form.Item
+            label="到货包"
+            name="pieceQuantity"
+            rules={[{ required: true, message: '请输入' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
           </Form.Item>
         </Form>
       </Modal>

@@ -70,51 +70,24 @@ export class ArrivalRecordService {
           take: pageSize,
           orderBy: { arrivalDate: 'desc' },
           include: {
-            purchaseOrder: {
-              select: {
-                id: true,
-                orderNo: true,
-                supplierName: true
-              }
-            },
-            goods: {
-              select: {
-                id: true,
-                code: true,
-                name: true
-              }
-            },
-            location: {
-              select: {
-                id: true,
-                name: true,
-                type: true
-              }
-            },
-            handler: {
-              select: {
-                id: true,
-                name: true,
-                role: true
-              }
-            },
-            base: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
+            purchaseOrder: true,
+            goods: true,
+            location: true,
+            handler: true,
+            base: true
           }
         }),
         prisma.arrivalRecord.count({ where })
       ]);
 
-      const data: ArrivalResponse[] = records.map(record => ({
+      const data = records.map(record => ({
         id: record.id,
         arrivalDate: record.arrivalDate.toISOString().split('T')[0],
         purchaseOrderId: record.purchaseOrderId,
-        purchaseOrderNo: record.purchaseOrder?.orderNo || '',
+        purchaseOrderNo: record.purchaseOrder?.code || '',
+        purchaseDate: record.purchaseOrder?.purchaseDate?.toISOString().split('T')[0] || '',
         goodsId: record.goodsId,
+        goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         locationId: record.locationId,
         locationName: record.location?.name || '',
@@ -173,8 +146,7 @@ export class ArrivalRecordService {
         },
         select: {
           id: true,
-          orderNo: true,
-          supplierName: true
+          code: true
         }
       });
 
@@ -186,11 +158,7 @@ export class ArrivalRecordService {
       const goods = await prisma.goods.findFirst({
         where: {
           id: data.goodsId,
-          goodsBases: {
-            some: {
-              baseId: baseId
-            }
-          }
+          baseId: baseId
         },
         select: {
           id: true,
@@ -254,40 +222,11 @@ export class ArrivalRecordService {
           updatedBy: userId
         },
         include: {
-          purchaseOrder: {
-            select: {
-              id: true,
-              orderNo: true,
-              supplierName: true
-            }
-          },
-          goods: {
-            select: {
-              id: true,
-              code: true,
-              name: true
-            }
-          },
-          location: {
-            select: {
-              id: true,
-              name: true,
-              type: true
-            }
-          },
-          handler: {
-            select: {
-              id: true,
-              name: true,
-              role: true
-            }
-          },
-          base: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
+          purchaseOrder: true,
+          goods: true,
+          location: true,
+          handler: true,
+          base: true
         }
       });
 
@@ -302,8 +241,10 @@ export class ArrivalRecordService {
         id: record.id,
         arrivalDate: record.arrivalDate.toISOString().split('T')[0],
         purchaseOrderId: record.purchaseOrderId,
-        purchaseOrderNo: record.purchaseOrder?.orderNo || '',
+        purchaseOrderNo: record.purchaseOrder?.code || '',
+        purchaseDate: record.purchaseOrder?.purchaseDate?.toISOString().split('T')[0] || '',
         goodsId: record.goodsId,
+        goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         locationId: record.locationId,
         locationName: record.location?.name || '',

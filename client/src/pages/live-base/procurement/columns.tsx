@@ -45,6 +45,21 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
+    title: '采购名称',
+    key: 'purchaseName',
+    width: 280,
+    ellipsis: true,
+    hideInSearch: true,
+    render: (_, record) => {
+      // 动态生成：采购日期 + 商品名称
+      const date = record.purchaseDate 
+        ? record.purchaseDate.split('T')[0] 
+        : '';
+      const goodsName = record.goodsName || '';
+      return date && goodsName ? `${date}${goodsName}` : '-';
+    },
+  },
+  {
     title: '商品名称',
     dataIndex: 'goodsName',
     key: 'goodsName',

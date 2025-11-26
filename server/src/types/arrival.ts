@@ -6,7 +6,7 @@ export interface CreateArrivalRequest {
   arrivalDate: string; // YYYY-MM-DD
   purchaseOrderId: string;
   goodsId: string;
-  locationId: string;
+  locationId: number;
   handlerId: string;
   boxQuantity?: number;
   packQuantity?: number;
@@ -18,7 +18,7 @@ export interface UpdateArrivalRequest {
   arrivalDate?: string;
   purchaseOrderId?: string;
   goodsId?: string;
-  locationId?: string;
+  locationId?: number;
   handlerId?: string;
   boxQuantity?: number;
   packQuantity?: number;
@@ -42,9 +42,11 @@ export interface ArrivalResponse {
   arrivalDate: string;
   purchaseOrderId: string;
   purchaseOrderNo: string;
+  purchaseDate: string;           // 采购日期（用于生成采购名称）
   goodsId: string;
+  goodsCode: string;
   goodsName: string;
-  locationId: string;
+  locationId: number;             // 修正类型为number
   locationName: string;
   handlerId: string;
   handlerName: string;
