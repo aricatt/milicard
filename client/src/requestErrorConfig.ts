@@ -1,6 +1,7 @@
 ﻿import type { RequestOptions } from '@@/plugin-request/request';
 import type { RequestConfig } from '@umijs/max';
 import { message, notification } from 'antd';
+import { history } from '@umijs/max';
 
 // 错误处理方案： 错误类型
 enum ErrorShowType {
@@ -18,6 +19,57 @@ interface ResponseStructure {
   errorMessage?: string;
   showType?: ErrorShowType;
 }
+
+// 刷新令牌状态管理
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+// 订阅令牌刷新
+const subscribeTokenRefresh = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+// 通知所有订阅者新令牌
+const onTokenRefreshed = (token: string) => {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+};
+
+// 刷新令牌
+const refreshToken = async (): Promise<string | null> => {
+  try {
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    if (!storedRefreshToken) {
+      return null;
+    }
+
+    const response = await fetch('/api/v1/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken: storedRefreshToken }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result = await response.json();
+    if (result.success && result.data?.token) {
+      // 保存新令牌
+      localStorage.setItem('token', result.data.token);
+      if (result.data.refreshToken) {
+        localStorage.setItem('refreshToken', result.data.refreshToken);
+      }
+      return result.data.token;
+    }
+    return null;
+  } catch (error) {
+    console.error('刷新令牌失败:', error);
+    return null;
+  }
+};
 
 /**
  * @name 错误处理
@@ -39,8 +91,63 @@ export const errorConfig: RequestConfig = {
       }
     },
     // 错误接收及处理
-    errorHandler: (error: any, opts: any) => {
+    errorHandler: async (error: any, opts: any) => {
       if (opts?.skipErrorHandler) throw error;
+      
+      // 处理401错误 - 尝试刷新令牌
+      if (error.response?.status === 401) {
+        const requestUrl = error.request?.url || error.config?.url || '';
+        
+        // 避免刷新令牌请求本身触发循环
+        if (requestUrl.includes('/auth/refresh') || requestUrl.includes('/auth/login')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          history.push('/user/login');
+          return;
+        }
+
+        // 如果正在刷新，等待刷新完成
+        if (isRefreshing) {
+          return new Promise<void>((resolve) => {
+            subscribeTokenRefresh(() => {
+              // 刷新成功后，提示用户重试
+              message.info('令牌已刷新，请重试操作');
+              resolve();
+            });
+          });
+        }
+
+        isRefreshing = true;
+
+        try {
+          const newToken = await refreshToken();
+          
+          if (newToken) {
+            console.log('令牌刷新成功');
+            isRefreshing = false;
+            onTokenRefreshed(newToken);
+            message.info('令牌已刷新，请重试操作');
+            return;
+          } else {
+            console.log('令牌刷新失败，跳转登录页');
+            isRefreshing = false;
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            message.error('登录已过期，请重新登录');
+            history.push('/user/login');
+            return;
+          }
+        } catch (refreshError) {
+          console.error('刷新令牌出错:', refreshError);
+          isRefreshing = false;
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          message.error('登录已过期，请重新登录');
+          history.push('/user/login');
+          return;
+        }
+      }
+      
       // 我们的 errorThrower 抛出的错误。
       if (error.name === 'BizError') {
         const errorInfo: ResponseStructure | undefined = error.info;
@@ -72,7 +179,9 @@ export const errorConfig: RequestConfig = {
       } else if (error.response) {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-        message.error(`Response status:${error.response.status}`);
+        if (error.response.status !== 401) {
+          message.error(`Response status:${error.response.status}`);
+        }
       } else if (error.request) {
         // 请求已经成功发起，但没有收到响应
         // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
@@ -102,7 +211,7 @@ export const errorConfig: RequestConfig = {
 
   // 响应拦截器
   responseInterceptors: [
-    (response) => {
+    (response: any) => {
       // 拦截响应数据，进行个性化处理
       const { data } = response as unknown as ResponseStructure;
 

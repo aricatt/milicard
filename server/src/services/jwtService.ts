@@ -3,7 +3,7 @@ import { JwtPayload, AuthError, AuthErrorType } from '../types/auth'
 import { logger } from '../utils/logger'
 
 export class JwtService {
-  private static readonly ACCESS_TOKEN_EXPIRES_IN = '15m'  // 15分钟
+  private static readonly ACCESS_TOKEN_EXPIRES_IN = '2h'  // 2小时
   private static readonly REFRESH_TOKEN_EXPIRES_IN = '7d'  // 7天
   
   private static get jwtSecret(): string {

@@ -35,6 +35,7 @@ declare namespace API {
         roles?: string[];
       };
       token?: string;
+      refreshToken?: string;
       expiresIn?: number;
     };
     // 保留原有字段以兼容Mock数据

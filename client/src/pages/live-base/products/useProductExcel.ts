@@ -108,6 +108,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       // 转换数据格式
       const importData = jsonData.map((row: any) => ({
+        code: String(row['商品编号'] || '').trim() || undefined, // 保留源编号，空则自动生成
         name: String(row['商品名称'] || '').trim(),
         alias: String(row['商品别名'] || '').trim() || undefined,
         manufacturer: String(row['厂家名称'] || '').trim(),
@@ -147,11 +148,15 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       });
       message.destroy();
 
-      // 构建去重Map: "商品名称" -> 商品ID（基地内唯一）
-      const existingMap = new Map<string, string>();
+      // 构建去重Map: 商品名称和商品编号都需要检查（基地内唯一）
+      const existingNameMap = new Map<string, string>();
+      const existingCodeMap = new Map<string, string>();
       if (existingGoods.success && existingGoods.data) {
         existingGoods.data.forEach((goods: any) => {
-          existingMap.set(goods.name, goods.id);
+          existingNameMap.set(goods.name, goods.id);
+          if (goods.code) {
+            existingCodeMap.set(goods.code, goods.id);
+          }
         });
       }
 
@@ -166,11 +171,15 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
         const item = importData[i];
         setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
-        // 检查是否重复（仅商品名称，基地内唯一）
-        if (existingMap.has(item.name)) {
-          // 跳过重复数据
+        // 检查是否重复（商品名称或编号，基地内唯一）
+        if (existingNameMap.has(item.name)) {
           skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.name}`);
+          skippedItems.push(`第${i + 2}行：${item.name}（名称已存在）`);
+          continue;
+        }
+        if (item.code && existingCodeMap.has(item.code)) {
+          skipCount++;
+          skippedItems.push(`第${i + 2}行：${item.code}（编号已存在）`);
           continue;
         }
 
@@ -183,7 +192,10 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
           if (result.success) {
             successCount++;
             // 添加到去重Map，避免同一批次内的重复
-            existingMap.set(item.name, result.data?.id || '');
+            existingNameMap.set(item.name, result.data?.id || '');
+            if (item.code) {
+              existingCodeMap.set(item.code, result.data?.id || '');
+            }
           } else {
             failCount++;
             failedItems.push(`第${i + 2}行：${item.name} - ${result.message || '创建失败'}`);

@@ -144,9 +144,12 @@ const Login: React.FC = () => {
         });
         message.success(defaultLoginSuccessMessage);
         
-        // 保存token到localStorage
+        // 保存token和refreshToken到localStorage
         if (msg.data?.token) {
           localStorage.setItem('token', msg.data.token);
+        }
+        if (msg.data?.refreshToken) {
+          localStorage.setItem('refreshToken', msg.data.refreshToken);
         }
         
         await fetchUserInfo();
