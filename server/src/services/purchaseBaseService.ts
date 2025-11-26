@@ -302,6 +302,59 @@ export class PurchaseBaseService {
   }
 
   /**
+   * 删除采购订单
+   */
+  static async deletePurchaseOrder(baseId: number, orderId: string) {
+    try {
+      // 先尝试通过订单ID查找
+      let checkSql = `
+        SELECT id FROM purchase_orders 
+        WHERE id = '${orderId}' AND base_id = ${baseId}
+      `;
+      let checkResult = await prisma.$queryRawUnsafe(checkSql);
+      let realOrderId = orderId;
+
+      // 如果找不到，尝试通过明细ID查找对应的订单ID
+      if ((checkResult as any[]).length === 0) {
+        const itemCheckSql = `
+          SELECT po.id 
+          FROM purchase_orders po
+          JOIN purchase_order_items poi ON po.id = poi.purchase_order_id
+          WHERE poi.id = '${orderId}' AND po.base_id = ${baseId}
+        `;
+        const itemCheckResult = await prisma.$queryRawUnsafe(itemCheckSql);
+        
+        if ((itemCheckResult as any[]).length === 0) {
+          throw new Error('采购订单不存在或不属于该基地');
+        }
+        
+        realOrderId = (itemCheckResult as any[])[0].id;
+      }
+
+      // 删除订单（由于设置了 onDelete: Cascade，订单明细会自动删除）
+      const deleteSql = `
+        DELETE FROM purchase_orders 
+        WHERE id = '${realOrderId}' AND base_id = ${baseId}
+      `;
+      await prisma.$queryRawUnsafe(deleteSql);
+
+      logger.info('删除采购订单成功', {
+        service: 'milicard-api',
+        baseId,
+        orderId
+      });
+
+      return {
+        success: true,
+        message: '删除成功'
+      };
+    } catch (error) {
+      logger.error('删除采购订单失败', { error, baseId, orderId, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
    * 获取基地的供应商列表
    */
   static async getBaseSuppliers(baseId: number) {

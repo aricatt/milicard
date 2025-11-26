@@ -28,7 +28,7 @@ export class CodeGenerator {
     BASE: 'BASE',               // 基地
     
     // 订单管理
-    PURCHASE_ORDER: 'PO',       // 采购订单
+    PURCHASE_ORDER: 'PUSH',     // 采购订单
     DISTRIBUTION_ORDER: 'DO',   // 销售订单
     TRANSFER_ORDER: 'TO',       // 调拨订单
     ARRIVAL_ORDER: 'AO',        // 到货单
