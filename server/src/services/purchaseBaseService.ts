@@ -268,6 +268,145 @@ export class PurchaseBaseService {
   }
 
   /**
+   * 导入采购订单（支持通过商品名称关联）
+   */
+  static async importPurchaseOrder(baseId: number, orderData: any, userId: string) {
+    try {
+      const { orderNo, supplierName, purchaseDate, notes, actualAmount = 0, items = [] } = orderData;
+
+      // 检查是否已存在相同编号的订单（用于更新）
+      let existingOrderId = null;
+      if (orderNo && orderNo.trim() && !orderNo.includes('留空')) {
+        const checkSql = `
+          SELECT id FROM purchase_orders 
+          WHERE code = '${orderNo}' AND base_id = ${baseId}
+        `;
+        const checkResult = await prisma.$queryRawUnsafe(checkSql);
+        if ((checkResult as any[]).length > 0) {
+          existingOrderId = (checkResult as any)[0].id;
+        }
+      }
+
+      // 如果存在则先删除旧订单
+      if (existingOrderId) {
+        await prisma.$queryRawUnsafe(`DELETE FROM purchase_order_items WHERE purchase_order_id = '${existingOrderId}'`);
+        await prisma.$queryRawUnsafe(`DELETE FROM purchase_orders WHERE id = '${existingOrderId}'`);
+      }
+
+      // 生成采购订单号（如果没有提供有效的编号）
+      const finalOrderNo = (orderNo && orderNo.trim() && !orderNo.includes('留空')) 
+        ? orderNo 
+        : await CodeGenerator.generatePurchaseOrderCode();
+
+      // 先创建订单，totalAmount 后面更新
+      let totalAmount = 0;
+
+      // 创建采购订单
+      const createSql = `
+        INSERT INTO purchase_orders (
+          id, code, supplier_name, base_id, 
+          purchase_date, total_amount, actual_amount, notes, created_by, created_at, updated_at
+        ) VALUES (
+          gen_random_uuid(), '${finalOrderNo}', '${supplierName}', ${baseId},
+          '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
+        ) RETURNING *
+      `;
+
+      const result = await prisma.$queryRawUnsafe(createSql);
+      const purchaseOrder = (result as any)[0];
+
+      // 创建采购订单项目
+      for (const item of items) {
+        const boxQty = item.boxQuantity || 0;
+        const packQty = item.packQuantity || 0;
+        const pieceQty = item.pieceQuantity || 0;
+
+        // 通过商品名称查找商品
+        const goodsName = item.goodsName || '';
+        const goodsSql = `
+          SELECT id, code, pack_per_box, piece_per_pack 
+          FROM goods 
+          WHERE name = '${goodsName.replace(/'/g, "''")}'
+          LIMIT 1
+        `;
+        const goodsResult = await prisma.$queryRawUnsafe(goodsSql);
+        
+        if ((goodsResult as any[]).length === 0) {
+          throw new Error(`商品不存在: ${goodsName}`);
+        }
+        
+        const goods = (goodsResult as any)[0];
+        const goodsRealId = goods.id;
+        const packPerBox = goods.pack_per_box || 1;
+        const piecePerPack = goods.piece_per_pack || 1;
+        
+        // 计算总件数
+        const totalPieces = (boxQty * packPerBox * piecePerPack) + (packQty * piecePerPack) + pieceQty;
+        
+        // 计算各级单价（unitPrice是箱单价）
+        const unitPriceBox = item.unitPrice || 0;
+        const unitPricePack = unitPriceBox / packPerBox;
+        const unitPricePiece = unitPricePack / piecePerPack;
+        
+        // 计算总价 = 箱数*箱单价 + 盒数*盒单价 + 包数*包单价
+        const totalPrice = (boxQty * unitPriceBox) + (packQty * unitPricePack) + (pieceQty * unitPricePiece);
+        
+        const itemSql = `
+          INSERT INTO purchase_order_items (
+            id, purchase_order_id, goods_id, box_quantity, pack_quantity, 
+            piece_quantity, total_pieces, unit_price, total_price, notes
+          ) VALUES (
+            gen_random_uuid(), '${purchaseOrder.id}', '${goodsRealId}', 
+            ${boxQty}, ${packQty}, ${pieceQty}, ${totalPieces},
+            ${item.unitPrice || 0}, ${totalPrice}, 
+            ${item.notes ? `'${item.notes}'` : 'NULL'}
+          )
+        `;
+        await prisma.$queryRawUnsafe(itemSql);
+        
+        // 累加总金额
+        totalAmount += totalPrice;
+      }
+
+      // 更新主表的总金额
+      const updateTotalSql = `
+        UPDATE purchase_orders 
+        SET total_amount = ${totalAmount}
+        WHERE id = '${purchaseOrder.id}'
+      `;
+      await prisma.$queryRawUnsafe(updateTotalSql);
+
+      logger.info('导入采购订单成功', {
+        service: 'milicard-api',
+        baseId,
+        orderId: purchaseOrder.id,
+        orderNo: finalOrderNo,
+        totalAmount,
+        isUpdate: !!existingOrderId
+      });
+
+      return {
+        success: true,
+        data: {
+          id: purchaseOrder.id,
+          orderNo: finalOrderNo,
+          supplierName,
+          baseId,
+          purchaseDate,
+          totalAmount,
+          actualAmount,
+          notes,
+          itemCount: items.length,
+          isUpdate: !!existingOrderId
+        }
+      };
+    } catch (error) {
+      logger.error('导入采购订单失败', { error, baseId, orderData, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
    * 获取基地的采购统计
    */
   static async getBasePurchaseStats(baseId: number, params: any = {}) {

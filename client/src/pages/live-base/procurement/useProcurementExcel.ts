@@ -8,34 +8,6 @@ import type { UploadProps } from 'antd';
 import { request } from '@umijs/max';
 import { exportToExcel, readExcelFile, downloadTemplate, validateImportData, formatDateTime } from '@/utils/excelUtils';
 
-interface PurchaseOrder {
-  id: string;
-  orderNo: string;
-  purchaseDate: string;
-  purchaseName: string;
-  goodsName: string;
-  retailPrice: number;
-  discount: number;
-  supplierName: string;
-  purchaseBoxes: number;
-  purchasePacks: number;
-  purchasePieces: number;
-  arrivedBoxes: number;
-  arrivedPacks: number;
-  arrivedPieces: number;
-  diffBoxes: number;
-  diffPacks: number;
-  diffPieces: number;
-  unitPriceBox: number;
-  unitPricePack: number;
-  unitPricePiece: number;
-  amountBox: number;
-  amountPack: number;
-  amountPiece: number;
-  totalAmount: number;
-  createdAt: string;
-}
-
 interface UseProcurementExcelProps {
   baseId: number;
   baseName: string;
@@ -47,7 +19,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
 
-  // Excel列配置
+  // Excel列配置（导出用，包含所有字段）
   const excelColumns = [
     { header: 'ID', key: 'id', width: 8 },
     { header: '采购日期', key: 'purchaseDate', width: 12 },
@@ -55,17 +27,17 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
     { header: '采购名称', key: 'purchaseName', width: 35 },
     { header: '商品名称', key: 'goodsName', width: 35 },
     { header: '零售价', key: 'retailPrice', width: 12 },
-    { header: '折扣', key: 'discount', width: 10 },
+    { header: '折扣%', key: 'discount', width: 10 },
     { header: '供应商', key: 'supplierName', width: 15 },
-    { header: '采购箱', key: 'purchaseBoxes', width: 10 },
-    { header: '采购盒', key: 'purchasePacks', width: 10 },
-    { header: '采购包', key: 'purchasePieces', width: 10 },
-    { header: '到货箱', key: 'arrivedBoxes', width: 10 },
-    { header: '到货盒', key: 'arrivedPacks', width: 10 },
-    { header: '到货包', key: 'arrivedPieces', width: 10 },
-    { header: '相差箱', key: 'diffBoxes', width: 10 },
-    { header: '相差盒', key: 'diffPacks', width: 10 },
-    { header: '相差包', key: 'diffPieces', width: 10 },
+    { header: '采购箱', key: 'purchaseBoxQty', width: 10 },
+    { header: '采购盒', key: 'purchasePackQty', width: 10 },
+    { header: '采购包', key: 'purchasePieceQty', width: 10 },
+    { header: '到货箱', key: 'arrivedBoxQty', width: 10 },
+    { header: '到货盒', key: 'arrivedPackQty', width: 10 },
+    { header: '到货包', key: 'arrivedPieceQty', width: 10 },
+    { header: '相差箱', key: 'diffBoxQty', width: 10 },
+    { header: '相差盒', key: 'diffPackQty', width: 10 },
+    { header: '相差包', key: 'diffPieceQty', width: 10 },
     { header: '拿货单价箱', key: 'unitPriceBox', width: 12 },
     { header: '拿货单价盒', key: 'unitPricePack', width: 12 },
     { header: '拿货单价包', key: 'unitPricePiece', width: 12 },
@@ -73,6 +45,8 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
     { header: '应付金额盒', key: 'amountPack', width: 12 },
     { header: '应付金额包', key: 'amountPiece', width: 12 },
     { header: '应付总金额', key: 'totalAmount', width: 12 },
+    { header: '实付金额', key: 'actualAmount', width: 12 },
+    { header: '未支付金额', key: 'unpaidAmount', width: 12 },
     { header: '创建时间', key: 'createdAt', width: 20 },
   ];
 
@@ -93,34 +67,59 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
         return;
       }
 
-      // 转换数据格式
-      const exportData = result.data.map((item: PurchaseOrder) => ({
-        id: item.id,
-        purchaseDate: item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN') : '',
-        orderNo: item.orderNo,
-        purchaseName: item.purchaseName || '',
-        goodsName: item.goodsName || '',
-        retailPrice: item.retailPrice || 0,
-        discount: item.discount || 0,
-        supplierName: item.supplierName,
-        purchaseBoxes: item.purchaseBoxes || 0,
-        purchasePacks: item.purchasePacks || 0,
-        purchasePieces: item.purchasePieces || 0,
-        arrivedBoxes: item.arrivedBoxes || 0,
-        arrivedPacks: item.arrivedPacks || 0,
-        arrivedPieces: item.arrivedPieces || 0,
-        diffBoxes: item.diffBoxes || 0,
-        diffPacks: item.diffPacks || 0,
-        diffPieces: item.diffPieces || 0,
-        unitPriceBox: item.unitPriceBox || 0,
-        unitPricePack: item.unitPricePack || 0,
-        unitPricePiece: item.unitPricePiece || 0,
-        amountBox: item.amountBox || 0,
-        amountPack: item.amountPack || 0,
-        amountPiece: item.amountPiece || 0,
-        totalAmount: item.totalAmount || 0,
-        createdAt: formatDateTime(item.createdAt),
-      }));
+      // 转换数据格式 - 动态计算字段
+      const exportData = result.data.map((item: any) => {
+        const retailPrice = item.retailPrice || 0;
+        const unitPriceBox = item.unitPriceBox || 0;
+        const unitPricePack = item.unitPricePack || 0;
+        const unitPricePiece = item.unitPricePiece || 0;
+        const purchaseBoxQty = item.purchaseBoxQty || 0;
+        const purchasePackQty = item.purchasePackQty || 0;
+        const purchasePieceQty = item.purchasePieceQty || 0;
+        const totalAmount = item.totalAmount || 0;
+        const actualAmount = item.actualAmount || 0;
+        
+        // 动态计算折扣
+        const discount = retailPrice > 0 ? (unitPriceBox / retailPrice * 100) : 0;
+        
+        // 动态计算应付金额
+        const amountBox = purchaseBoxQty * unitPriceBox;
+        const amountPack = purchasePackQty * unitPricePack;
+        const amountPiece = purchasePieceQty * unitPricePiece;
+        
+        // 动态计算未支付金额
+        const unpaidAmount = totalAmount - actualAmount;
+        
+        return {
+          id: item.id,
+          purchaseDate: item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN') : '',
+          orderNo: item.orderNo,
+          purchaseName: `${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN').replace(/\//g, '-') : ''}${item.goodsName || ''}`,
+          goodsName: item.goodsName || '',
+          retailPrice,
+          discount: discount.toFixed(2),
+          supplierName: item.supplierName,
+          purchaseBoxQty,
+          purchasePackQty,
+          purchasePieceQty,
+          arrivedBoxQty: item.arrivedBoxQty || 0,
+          arrivedPackQty: item.arrivedPackQty || 0,
+          arrivedPieceQty: item.arrivedPieceQty || 0,
+          diffBoxQty: purchaseBoxQty - (item.arrivedBoxQty || 0),
+          diffPackQty: purchasePackQty - (item.arrivedPackQty || 0),
+          diffPieceQty: purchasePieceQty - (item.arrivedPieceQty || 0),
+          unitPriceBox,
+          unitPricePack,
+          unitPricePiece,
+          amountBox,
+          amountPack,
+          amountPiece,
+          totalAmount,
+          actualAmount,
+          unpaidAmount,
+          createdAt: formatDateTime(item.createdAt),
+        };
+      });
 
       exportToExcel(exportData, excelColumns, '采购列表', `采购列表_${baseName}`);
     } catch (error) {
@@ -147,28 +146,27 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
 
       message.loading(`准备导入 ${jsonData.length} 条数据...`, 0);
 
-      // 转换数据格式
+      // 转换数据格式 - 只导入必要字段，跳过动态计算字段
+      // 需要导入：采购日期、采购编号、商品名称、供应商、采购箱/盒/包、拿货单价箱、实付金额
+      // 跳过：ID、采购名称、零售价、折扣、到货数量、相差数量、拿货单价盒/包、应付金额、应付总金额、未支付金额、创建时间
       const importData = jsonData.map((row: any) => ({
+        orderNo: String(row['采购编号'] || '').trim(),  // 用于判断更新还是新增
         purchaseDate: row['采购日期'] ? String(row['采购日期']).trim() : '',
-        purchaseName: String(row['采购名称'] || '').trim(),
         goodsName: String(row['商品名称'] || '').trim(),
         supplierName: String(row['供应商'] || '').trim(),
-        retailPrice: parseFloat(row['零售价'] || '0'),
-        discount: parseFloat(row['折扣'] || '0'),
-        purchaseBoxes: parseInt(row['采购箱'] || '0'),
-        purchasePacks: parseInt(row['采购盒'] || '0'),
-        purchasePieces: parseInt(row['采购包'] || '0'),
-        unitPriceBox: parseFloat(row['拿货单价箱'] || '0'),
-        unitPricePack: parseFloat(row['拿货单价盒'] || '0'),
-        unitPricePiece: parseFloat(row['拿货单价包'] || '0'),
+        purchaseBoxQty: parseInt(row['采购箱'] || '0') || 0,
+        purchasePackQty: parseInt(row['采购盒'] || '0') || 0,
+        purchasePieceQty: parseInt(row['采购包'] || '0') || 0,
+        unitPriceBox: parseFloat(row['拿货单价箱'] || '0') || 0,
+        actualAmount: parseFloat(row['实付金额'] || '0') || 0,
       }));
 
-      // 数据验证
+      // 数据验证 - 只验证必要字段
       const errors = validateImportData(importData, [
         { field: 'purchaseDate', required: true, message: '采购日期不能为空' },
         { field: 'supplierName', required: true, message: '供应商不能为空' },
         { field: 'goodsName', required: true, message: '商品名称不能为空' },
-        { field: 'retailPrice', required: true, type: 'number', min: 0, message: '零售价必须大于等于0' },
+        { field: 'unitPriceBox', required: true, type: 'number', min: 0, message: '拿货单价箱必须大于等于0' },
       ]);
 
       if (errors.length > 0) {
@@ -194,9 +192,26 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
         setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
         try {
-          const result = await request(`/api/v1/bases/${baseId}/purchase-orders`, {
+          // 构造后端API期望的数据格式
+          const requestData = {
+            orderNo: item.orderNo || undefined,  // 如果有采购编号则用于更新
+            supplierName: item.supplierName,
+            purchaseDate: item.purchaseDate,
+            actualAmount: item.actualAmount,
+            items: [
+              {
+                goodsName: item.goodsName,  // 通过商品名称关联
+                boxQuantity: item.purchaseBoxQty,
+                packQuantity: item.purchasePackQty,
+                pieceQuantity: item.purchasePieceQty,
+                unitPrice: item.unitPriceBox,
+              }
+            ]
+          };
+
+          const result = await request(`/api/v1/bases/${baseId}/purchase-orders/import`, {
             method: 'POST',
-            data: item,
+            data: requestData,
           });
 
           if (result.success) {
@@ -238,66 +253,47 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
     }
   };
 
+  // 导入模板列配置（只包含需要导入的字段）
+  const importTemplateColumns = [
+    { header: '采购日期', key: 'purchaseDate', width: 12 },
+    { header: '采购编号', key: 'orderNo', width: 20 },
+    { header: '商品名称', key: 'goodsName', width: 35 },
+    { header: '供应商', key: 'supplierName', width: 15 },
+    { header: '采购箱', key: 'purchaseBoxQty', width: 10 },
+    { header: '采购盒', key: 'purchasePackQty', width: 10 },
+    { header: '采购包', key: 'purchasePieceQty', width: 10 },
+    { header: '拿货单价箱', key: 'unitPriceBox', width: 12 },
+    { header: '实付金额', key: 'actualAmount', width: 12 },
+  ];
+
   // 下载导入模板
   const handleDownloadTemplate = () => {
     const templateData = [
       {
-        id: '（导入时此列会被忽略）',
         purchaseDate: '2025-11-17',
-        orderNo: '（系统自动生成）',
-        purchaseName: '2025-11-17名侦探柯南挂件-星绽版-第1弹',
+        orderNo: '（留空则自动生成）',
         goodsName: '名侦探柯南挂件-星绽版-第1弹',
-        retailPrice: 19440,
-        discount: 49.88,
         supplierName: '咸鱼',
-        purchaseBoxes: 0,
-        purchasePacks: 17,
-        purchasePieces: 0,
-        arrivedBoxes: 0,
-        arrivedPacks: 0,
-        arrivedPieces: 0,
-        diffBoxes: 0,
-        diffPacks: 17,
-        diffPieces: 0,
+        purchaseBoxQty: 0,
+        purchasePackQty: 17,
+        purchasePieceQty: 0,
         unitPriceBox: 9697.5,
-        unitPricePack: 269.37,
-        unitPricePiece: 22.44,
-        amountBox: 0,
-        amountPack: 4579.29,
-        amountPiece: 0,
-        totalAmount: 4579.29,
-        createdAt: '（系统自动生成）',
+        actualAmount: 4995,
       },
       {
-        id: '',
         purchaseDate: '2025-11-17',
         orderNo: '',
-        purchaseName: '2025-11-17卡游柯南揭秘包1元包',
         goodsName: '卡游柯南揭秘包1元包',
-        retailPrice: 8208,
-        discount: 122.12,
         supplierName: '江西小精灵',
-        purchaseBoxes: 1,
-        purchasePacks: 0,
-        purchasePieces: 0,
-        arrivedBoxes: 0,
-        arrivedPacks: 0,
-        arrivedPieces: 0,
-        diffBoxes: 1,
-        diffPacks: 0,
-        diffPieces: 0,
+        purchaseBoxQty: 1,
+        purchasePackQty: 0,
+        purchasePieceQty: 0,
         unitPriceBox: 10023.21,
-        unitPricePack: 208.81,
-        unitPricePiece: 5.8,
-        amountBox: 10023.21,
-        amountPack: 0,
-        amountPiece: 0,
-        totalAmount: 10023.21,
-        createdAt: '',
+        actualAmount: 10023.21,
       },
     ];
 
-    downloadTemplate(templateData, excelColumns, '采购导入模板', '采购导入模板');
+    downloadTemplate(templateData, importTemplateColumns, '采购导入模板', '采购导入模板');
   };
 
   return {

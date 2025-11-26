@@ -7,13 +7,18 @@ import {
   Button,
   Popover,
   Descriptions,
+  Upload,
+  Alert,
+  Spin,
+  Progress,
 } from 'antd';
 import { 
   PlusOutlined, 
   InfoCircleOutlined,
   ExportOutlined,
   ImportOutlined,
-  DownloadOutlined
+  DownloadOutlined,
+  InboxOutlined,
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
@@ -74,9 +79,13 @@ const ProcurementManagement: React.FC = () => {
     handleExport,
     handleImport,
     handleDownloadTemplate,
-  } = useProcurementExcel(currentBase?.id || 0, () => {
-    actionRef.current?.reload();
-    loadStats();
+  } = useProcurementExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+      loadStats();
+    }
   });
 
   /**
@@ -508,6 +517,81 @@ const ProcurementManagement: React.FC = () => {
           supplierLoading={supplierLoading}
           onFinish={handleUpdate}
         />
+      </Modal>
+
+      {/* 导入Excel模态框 */}
+      <Modal
+        title="导入采购数据"
+        open={importModalVisible}
+        onCancel={() => {
+          if (!importLoading) {
+            setImportModalVisible(false);
+          }
+        }}
+        footer={null}
+        width={600}
+        closable={!importLoading}
+        maskClosable={!importLoading}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Alert
+            message="导入说明"
+            description={
+              <div>
+                <p>1. 请使用提供的模板文件，保持列名不变</p>
+                <p>2. 采购日期、商品名称、供应商、拿货单价箱为必填项</p>
+                <p>3. 商品名称需与系统中商品名称完全匹配</p>
+                <p>4. 采购编号留空则自动生成，填写已存在的编号则会更新该订单</p>
+                <p>5. 零售价、折扣、应付金额等字段由系统自动计算，导入时会被忽略</p>
+                <p>6. 支持批量导入，建议每次不超过500条</p>
+              </div>
+            }
+            type="info"
+            showIcon
+          />
+        </div>
+
+        {importLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 16 }}>
+              正在导入数据，请稍候...
+            </div>
+            {importProgress > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <Progress percent={importProgress} status="active" />
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            <Upload.Dragger
+              name="file"
+              accept=".xlsx,.xls"
+              customRequest={handleImport}
+              showUploadList={false}
+              disabled={importLoading}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ fontSize: 48, color: '#1890ff' }} />
+              </p>
+              <p className="ant-upload-text">点击或拖拽Excel文件到此区域上传</p>
+              <p className="ant-upload-hint">
+                支持 .xlsx 和 .xls 格式，请按照模板格式填写数据
+              </p>
+            </Upload.Dragger>
+
+            <div style={{ marginTop: 16, textAlign: 'center' }}>
+              <Button
+                type="link"
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadTemplate}
+              >
+                下载导入模板
+              </Button>
+            </div>
+          </>
+        )}
       </Modal>
     </PageContainer>
   );

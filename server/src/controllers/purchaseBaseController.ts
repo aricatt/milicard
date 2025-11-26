@@ -126,6 +126,61 @@ export class PurchaseBaseController {
   }
 
   /**
+   * 导入采购订单（支持通过商品名称关联）
+   */
+  static async importPurchaseOrder(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      const orderData = req.body;
+
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的基地ID'
+        });
+      }
+
+      const { supplierName, purchaseDate, items } = orderData;
+
+      if (!supplierName || !purchaseDate) {
+        return res.status(400).json({
+          success: false,
+          message: '供应商和采购日期不能为空'
+        });
+      }
+
+      if (!items || items.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: '采购明细不能为空'
+        });
+      }
+
+      // 获取用户ID
+      const userId = (req as any).user?.id || 'system';
+
+      const result = await PurchaseBaseService.importPurchaseOrder(baseId, orderData, userId);
+      
+      res.json(result);
+    } catch (error) {
+      logger.error('导入采购订单失败', { 
+        error: (error as Error).message, 
+        baseId: req.params.baseId,
+        body: req.body,
+        service: 'milicard-api' 
+      });
+      
+      const statusCode = (error as Error).message.includes('不存在') ? 404 : 
+                        (error as Error).message.includes('不属于') ? 403 : 500;
+      
+      res.status(statusCode).json({
+        success: false,
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
    * 获取基地采购统计
    */
   static async getBasePurchaseStats(req: Request, res: Response) {
