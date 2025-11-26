@@ -97,7 +97,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
           purchaseName: `${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN').replace(/\//g, '-') : ''}${item.goodsName || ''}`,
           goodsName: item.goodsName || '',
           retailPrice,
-          discount: discount.toFixed(2),
+          discount: (Math.floor(discount * 100) / 100).toFixed(2),
           supplierName: item.supplierName,
           purchaseBoxQty,
           purchasePackQty,

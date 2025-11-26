@@ -339,12 +339,17 @@ const ProcurementManagement: React.FC = () => {
   /**
    * 统计信息内容
    */
+  // 向下取整到2位小数
+  const floorTo2 = (value: number): string => {
+    return (Math.floor(value * 100) / 100).toFixed(2);
+  };
+
   const statsContent = (
     <Descriptions column={1} size="small">
       <Descriptions.Item label="总订单数">{stats.totalOrders} 单</Descriptions.Item>
-      <Descriptions.Item label="总金额">¥{stats.totalAmount.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总金额">¥{floorTo2(stats.totalAmount)}</Descriptions.Item>
       <Descriptions.Item label="供应商数">{stats.uniqueSuppliers} 家</Descriptions.Item>
-      <Descriptions.Item label="平均订单金额">¥{stats.averageAmount.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="平均订单金额">¥{floorTo2(stats.averageAmount)}</Descriptions.Item>
     </Descriptions>
   );
 

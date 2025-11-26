@@ -5,6 +5,13 @@ import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
 
 /**
+ * 向下取整到2位小数
+ */
+const floorTo2 = (value: number): string => {
+  return (Math.floor(value * 100) / 100).toFixed(2);
+};
+
+/**
  * 获取ProTable列定义
  */
 export const getColumns = (
@@ -58,7 +65,7 @@ export const getColumns = (
     key: 'retailPrice',
     width: 100,
     hideInSearch: true,
-    render: (_, record) => record.retailPrice ? `¥${record.retailPrice.toFixed(2)}` : '-',
+    render: (_, record) => record.retailPrice ? `¥${floorTo2(record.retailPrice)}` : '-',
   },
   {
     title: '折扣%',
@@ -69,7 +76,7 @@ export const getColumns = (
       // 折扣 = 拿货单价/箱 / 零售价 * 100
       if (record.retailPrice && record.retailPrice > 0 && record.unitPriceBox) {
         const discount = (record.unitPriceBox / record.retailPrice) * 100;
-        return `${discount.toFixed(2)}%`;
+        return `${floorTo2(discount)}%`;
       }
       return '-';
     },
@@ -104,7 +111,7 @@ export const getColumns = (
     key: 'unitPriceBox',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPriceBox ? `¥${record.unitPriceBox.toFixed(2)}` : '-',
+    render: (_, record) => record.unitPriceBox ? `¥${floorTo2(record.unitPriceBox)}` : '-',
   },
   {
     title: '拿货单价/盒',
@@ -112,7 +119,7 @@ export const getColumns = (
     key: 'unitPricePack',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPricePack ? `¥${record.unitPricePack.toFixed(2)}` : '-',
+    render: (_, record) => record.unitPricePack ? `¥${floorTo2(record.unitPricePack)}` : '-',
   },
   {
     title: '拿货单价/包',
@@ -120,7 +127,7 @@ export const getColumns = (
     key: 'unitPricePiece',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPricePiece ? `¥${record.unitPricePiece.toFixed(2)}` : '-',
+    render: (_, record) => record.unitPricePiece ? `¥${floorTo2(record.unitPricePiece)}` : '-',
   },
   {
     title: '应付金额/箱',
@@ -129,7 +136,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchaseBoxQty || 0) * (record.unitPriceBox || 0);
-      return `¥${amount.toFixed(2)}`;
+      return `¥${floorTo2(amount)}`;
     },
   },
   {
@@ -139,7 +146,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchasePackQty || 0) * (record.unitPricePack || 0);
-      return `¥${amount.toFixed(2)}`;
+      return `¥${floorTo2(amount)}`;
     },
   },
   {
@@ -149,7 +156,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchasePieceQty || 0) * (record.unitPricePiece || 0);
-      return `¥${amount.toFixed(2)}`;
+      return `¥${floorTo2(amount)}`;
     },
   },
   {
@@ -161,7 +168,7 @@ export const getColumns = (
     hideInSetting: true,
     render: (_, record) => (
       <span style={{ color: '#1890ff', fontWeight: 'bold' }}>
-        ¥{record.totalAmount.toFixed(2)}
+        ¥{floorTo2(record.totalAmount)}
       </span>
     ),
   },
@@ -173,7 +180,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => (
       <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
-        ¥{(record.actualAmount || 0).toFixed(2)}
+        ¥{floorTo2(record.actualAmount || 0)}
       </span>
     ),
   },
@@ -186,7 +193,7 @@ export const getColumns = (
       const unpaid = (record.totalAmount || 0) - (record.actualAmount || 0);
       return (
         <span style={{ color: unpaid > 0 ? '#f5222d' : '#52c41a', fontWeight: 'bold' }}>
-          ¥{unpaid.toFixed(2)}
+          ¥{floorTo2(unpaid)}
         </span>
       );
     },
