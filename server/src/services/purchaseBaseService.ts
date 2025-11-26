@@ -162,11 +162,9 @@ export class PurchaseBaseService {
       // 生成采购订单号
       const orderNo = await CodeGenerator.generatePurchaseOrderCode();
 
-      // 计算总金额
+      // 注意：totalAmount 会在创建订单项目时重新计算，这里先设为0
+      // 因为需要查询商品的拆分比例才能正确计算
       let totalAmount = 0;
-      for (const item of items) {
-        totalAmount += (item.quantity || 0) * (item.unitPrice || 0);
-      }
 
       // 创建采购订单
       const createSql = `
@@ -208,8 +206,13 @@ export class PurchaseBaseService {
         // 计算总件数
         const totalPieces = (boxQty * packPerBox * piecePerPack) + (packQty * piecePerPack) + pieceQty;
         
-        // 计算总价
-        const totalPrice = (boxQty + packQty + pieceQty) * (item.unitPrice || 0);
+        // 计算各级单价（unitPrice是箱单价）
+        const unitPriceBox = item.unitPrice || 0;
+        const unitPricePack = unitPriceBox / packPerBox;
+        const unitPricePiece = unitPricePack / piecePerPack;
+        
+        // 计算总价 = 箱数*箱单价 + 盒数*盒单价 + 包数*包单价
+        const totalPrice = (boxQty * unitPriceBox) + (packQty * unitPricePack) + (pieceQty * unitPricePiece);
         
         const itemSql = `
           INSERT INTO purchase_order_items (
@@ -223,7 +226,18 @@ export class PurchaseBaseService {
           )
         `;
         await prisma.$queryRawUnsafe(itemSql);
+        
+        // 累加总金额
+        totalAmount += totalPrice;
       }
+
+      // 更新主表的总金额
+      const updateTotalSql = `
+        UPDATE purchase_orders 
+        SET total_amount = ${totalAmount}
+        WHERE id = '${purchaseOrder.id}'
+      `;
+      await prisma.$queryRawUnsafe(updateTotalSql);
 
       logger.info('创建采购订单成功', {
         service: 'milicard-api',

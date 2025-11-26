@@ -61,12 +61,18 @@ export const getColumns = (
     render: (_, record) => record.retailPrice ? `¥${record.retailPrice.toFixed(2)}` : '-',
   },
   {
-    title: '折扣',
-    dataIndex: 'discount',
+    title: '折扣%',
     key: 'discount',
     width: 80,
     hideInSearch: true,
-    render: (_, record) => record.discount ? `${record.discount}%` : '-',
+    render: (_, record) => {
+      // 折扣 = 拿货单价/箱 / 零售价 * 100
+      if (record.retailPrice && record.retailPrice > 0 && record.unitPriceBox) {
+        const discount = (record.unitPriceBox / record.retailPrice) * 100;
+        return `${discount.toFixed(2)}%`;
+      }
+      return '-';
+    },
   },
   {
     title: '采购箱',
