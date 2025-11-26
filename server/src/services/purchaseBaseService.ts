@@ -559,8 +559,8 @@ export class PurchaseBaseService {
    */
   static async createBaseSupplier(baseId: number, supplierData: any) {
     try {
-      // 生成供应商编号
-      const code = await this.generateSupplierCode();
+      // 生成供应商编号（使用统一的CodeGenerator）
+      const code = await CodeGenerator.generateSupplierCode();
 
       // 创建供应商
       const supplier = await prisma.supplier.create({
@@ -722,32 +722,4 @@ export class PurchaseBaseService {
     }
   }
 
-  /**
-   * 生成供应商编号
-   */
-  private static async generateSupplierCode(): Promise<string> {
-    const prefix = 'SUP';
-    const charset = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    let code: string;
-    let isUnique = false;
-
-    while (!isUnique) {
-      let randomStr = '';
-      for (let i = 0; i < 8; i++) {
-        randomStr += charset[Math.floor(Math.random() * charset.length)];
-      }
-      code = `${prefix}-${randomStr}`;
-
-      // 检查编号是否已存在
-      const existing = await prisma.supplier.findUnique({
-        where: { code }
-      });
-
-      if (!existing) {
-        isUnique = true;
-      }
-    }
-
-    return code!;
-  }
 }

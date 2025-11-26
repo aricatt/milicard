@@ -182,14 +182,17 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
         return;
       }
 
-      // 批量导入
+      // 批量导入 - 从最后一行开始导入（按时间从旧到新）
+      // 这样最新的数据最后插入，查询时按创建时间倒序排列就能正确显示
       let successCount = 0;
       let failCount = 0;
       const failedItems: string[] = [];
+      const reversedData = [...importData].reverse();
 
-      for (let i = 0; i < importData.length; i++) {
-        const item = importData[i];
-        setImportProgress(Math.round(((i + 1) / importData.length) * 100));
+      for (let i = 0; i < reversedData.length; i++) {
+        const item = reversedData[i];
+        const originalIndex = importData.length - 1 - i; // 原始行号（用于错误提示）
+        setImportProgress(Math.round(((i + 1) / reversedData.length) * 100));
 
         try {
           // 构造后端API期望的数据格式
@@ -218,11 +221,11 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
             successCount++;
           } else {
             failCount++;
-            failedItems.push(`第${i + 2}行：${item.goodsName} - ${result.message || '创建失败'}`);
+            failedItems.push(`第${originalIndex + 2}行：${item.goodsName} - ${result.message || '创建失败'}`);
           }
         } catch (error: any) {
           failCount++;
-          failedItems.push(`第${i + 2}行：${item.goodsName} - ${error.message || '网络错误'}`);
+          failedItems.push(`第${originalIndex + 2}行：${item.goodsName} - ${error.message || '网络错误'}`);
         }
       }
 
