@@ -226,9 +226,15 @@ const ArrivalManagement: React.FC = () => {
       } else {
         message.error(result.message || '创建失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('创建到货记录失败:', error);
-      message.error('创建到货记录失败');
+      // 显示后端返回的详细错误信息
+      const errorMsg = error?.response?.data?.message || error?.message || '创建到货记录失败';
+      Modal.error({
+        title: '录入失败',
+        content: <div style={{ whiteSpace: 'pre-line' }}>{errorMsg}</div>,
+        okText: '知道了',
+      });
     } finally {
       setCreateLoading(false);
     }
