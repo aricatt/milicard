@@ -227,7 +227,7 @@ model Inventory {
 model PurchaseOrder {
   id               String              @id @default(uuid())
   code             String              @unique
-  supplierName     String              @map("supplier_name")
+  supplierId       String              @map("supplier_id")
   targetLocationId Int?                @map("target_location_id")
   baseId           Int                 @map("base_id")
   purchaseDate     DateTime            @map("purchase_date") @db.Date
@@ -244,9 +244,10 @@ model PurchaseOrder {
   base             Base                @relation(fields: [baseId], references: [id])
   creator          User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
   targetLocation   Location?           @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
+  supplier         Supplier            @relation(fields: [supplierId], references: [id])
 
   @@index([code])
-  @@index([supplierName])
+  @@index([supplierId])
   @@index([targetLocationId])
   @@index([baseId])
   @@index([purchaseDate])
@@ -669,21 +670,22 @@ model UserBase {
 }
 
 model Supplier {
-  id            String         @id @default(uuid())
-  code          String         @unique
-  name          String
-  contactPerson String?        @map("contact_person")
-  phone         String?
-  email         String?
-  address       String?
-  taxNumber     String?        @map("tax_number")
-  bankAccount   String?        @map("bank_account")
-  bankName      String?        @map("bank_name")
-  notes         String?
-  isActive      Boolean        @default(true) @map("is_active")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  supplierBases SupplierBase[]
+  id             String          @id @default(uuid())
+  code           String          @unique
+  name           String
+  contactPerson  String?         @map("contact_person")
+  phone          String?
+  email          String?
+  address        String?
+  taxNumber      String?         @map("tax_number")
+  bankAccount    String?         @map("bank_account")
+  bankName       String?         @map("bank_name")
+  notes          String?
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  supplierBases  SupplierBase[]
+  purchaseOrders PurchaseOrder[]
 
   @@index([code])
   @@index([name])

@@ -15,12 +15,13 @@ export class PurchaseBaseService {
       const { current = 1, pageSize = 10, orderNo, supplierName, startDate, endDate } = params;
       const skip = (current - 1) * pageSize;
 
-      // 构建查询SQL - 关联订单明细和商品信息
+      // 构建查询SQL - 关联订单明细、商品信息和供应商信息
       let sql = `
         SELECT 
           poi.id,
           po.code as "orderNo",
-          po.supplier_name as "supplierName",
+          s.name as "supplierName",
+          po.supplier_id as "supplierId",
           po.base_id as "baseId",
           po.purchase_date as "purchaseDate",
           po.actual_amount as "actualAmount",
@@ -40,6 +41,7 @@ export class PurchaseBaseService {
         FROM purchase_order_items poi
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
         JOIN goods g ON poi.goods_id = g.id
+        JOIN suppliers s ON po.supplier_id = s.id
         WHERE po.base_id = ${baseId}
       `;
 
@@ -48,7 +50,7 @@ export class PurchaseBaseService {
         sql += ` AND po.code ILIKE '%${orderNo}%'`;
       }
       if (supplierName) {
-        sql += ` AND po.supplier_name ILIKE '%${supplierName}%'`;
+        sql += ` AND s.name ILIKE '%${supplierName}%'`;
       }
       if (startDate) {
         sql += ` AND po.purchase_date >= '${startDate}'`;
@@ -67,6 +69,7 @@ export class PurchaseBaseService {
         SELECT COUNT(*) as count
         FROM purchase_order_items poi
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
+        JOIN suppliers s ON po.supplier_id = s.id
         WHERE po.base_id = ${baseId}
       `;
 
@@ -74,7 +77,7 @@ export class PurchaseBaseService {
         countSql += ` AND po.code ILIKE '%${orderNo}%'`;
       }
       if (supplierName) {
-        countSql += ` AND po.supplier_name ILIKE '%${supplierName}%'`;
+        countSql += ` AND s.name ILIKE '%${supplierName}%'`;
       }
       if (startDate) {
         countSql += ` AND po.purchase_date >= '${startDate}'`;
@@ -146,6 +149,25 @@ export class PurchaseBaseService {
     try {
       const { supplierName, targetLocationId, purchaseDate, notes, actualAmount = 0, items = [] } = orderData;
 
+      // 通过供应商名称查找供应商（需要是该基地的供应商）
+      const supplierSql = `
+        SELECT s.id, s.name 
+        FROM suppliers s
+        INNER JOIN supplier_bases sb ON s.id = sb.supplier_id
+        WHERE s.name = '${supplierName.replace(/'/g, "''")}' 
+          AND sb.base_id = ${baseId}
+          AND s.is_active = true
+        LIMIT 1
+      `;
+      const supplierResult = await prisma.$queryRawUnsafe(supplierSql);
+      
+      if ((supplierResult as any[]).length === 0) {
+        throw new Error(`供应商不存在或不属于当前基地: ${supplierName}`);
+      }
+      
+      const supplier = (supplierResult as any)[0];
+      const supplierId = supplier.id;
+
       // 如果指定了目标位置，检查是否属于该基地
       if (targetLocationId) {
         const locationSql = `
@@ -169,10 +191,10 @@ export class PurchaseBaseService {
       // 创建采购订单
       const createSql = `
         INSERT INTO purchase_orders (
-          id, code, supplier_name, target_location_id, base_id, 
+          id, code, supplier_id, target_location_id, base_id, 
           purchase_date, total_amount, actual_amount, notes, created_by, created_at, updated_at
         ) VALUES (
-          gen_random_uuid(), '${orderNo}', '${supplierName}', ${targetLocationId ? `${targetLocationId}` : 'NULL'}, ${baseId},
+          gen_random_uuid(), '${orderNo}', '${supplierId}', ${targetLocationId ? `${targetLocationId}` : 'NULL'}, ${baseId},
           '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
         ) RETURNING *
       `;
@@ -268,11 +290,30 @@ export class PurchaseBaseService {
   }
 
   /**
-   * 导入采购订单（支持通过商品名称关联）
+   * 导入采购订单（支持通过商品名称和供应商名称关联）
    */
   static async importPurchaseOrder(baseId: number, orderData: any, userId: string) {
     try {
       const { orderNo, supplierName, purchaseDate, notes, actualAmount = 0, items = [] } = orderData;
+
+      // 通过供应商名称查找供应商（需要是该基地的供应商）
+      const supplierSql = `
+        SELECT s.id, s.name 
+        FROM suppliers s
+        INNER JOIN supplier_bases sb ON s.id = sb.supplier_id
+        WHERE s.name = '${supplierName.replace(/'/g, "''")}' 
+          AND sb.base_id = ${baseId}
+          AND s.is_active = true
+        LIMIT 1
+      `;
+      const supplierResult = await prisma.$queryRawUnsafe(supplierSql);
+      
+      if ((supplierResult as any[]).length === 0) {
+        throw new Error(`供应商不存在或不属于当前基地: ${supplierName}`);
+      }
+      
+      const supplier = (supplierResult as any)[0];
+      const supplierId = supplier.id;
 
       // 检查是否已存在相同编号的订单（用于更新）
       let existingOrderId = null;
@@ -304,10 +345,10 @@ export class PurchaseBaseService {
       // 创建采购订单
       const createSql = `
         INSERT INTO purchase_orders (
-          id, code, supplier_name, base_id, 
+          id, code, supplier_id, base_id, 
           purchase_date, total_amount, actual_amount, notes, created_by, created_at, updated_at
         ) VALUES (
-          gen_random_uuid(), '${finalOrderNo}', '${supplierName}', ${baseId},
+          gen_random_uuid(), '${finalOrderNo}', '${supplierId}', ${baseId},
           '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
         ) RETURNING *
       `;
@@ -417,7 +458,7 @@ export class PurchaseBaseService {
         SELECT 
           COUNT(*) as "totalOrders",
           SUM(total_amount) as "totalAmount",
-          COUNT(DISTINCT supplier_name) as "uniqueSuppliers",
+          COUNT(DISTINCT supplier_id) as "uniqueSuppliers",
           AVG(total_amount) as "averageAmount"
         FROM purchase_orders
         WHERE base_id = ${baseId}
