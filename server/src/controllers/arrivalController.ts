@@ -23,7 +23,9 @@ export class ArrivalController {
         pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 10,
         warehouseId: req.query.warehouseId as string,
         purchaseOrderId: req.query.purchaseOrderId as string,
+        purchaseOrderNo: req.query.purchaseOrderNo as string,  // 采购编号搜索
         goodsId: req.query.goodsId as string,
+        goodsName: req.query.goodsName as string,              // 商品名称搜索
         handlerId: req.query.handlerId as string,
         startDate: req.query.startDate as string,
         endDate: req.query.endDate as string

@@ -23,7 +23,9 @@ export class ArrivalRecordService {
         pageSize = 10,
         warehouseId,
         purchaseOrderId,
+        purchaseOrderNo,
         goodsId,
+        goodsName,
         handlerId,
         startDate,
         endDate
@@ -44,8 +46,28 @@ export class ArrivalRecordService {
         where.purchaseOrderId = purchaseOrderId;
       }
 
+      // 采购编号模糊搜索
+      if (purchaseOrderNo) {
+        where.purchaseOrder = {
+          code: {
+            contains: purchaseOrderNo,
+            mode: 'insensitive'
+          }
+        };
+      }
+
       if (goodsId) {
         where.goodsId = goodsId;
+      }
+
+      // 商品名称模糊搜索
+      if (goodsName) {
+        where.goods = {
+          name: {
+            contains: goodsName,
+            mode: 'insensitive'
+          }
+        };
       }
 
       if (handlerId) {

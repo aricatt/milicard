@@ -31,7 +31,9 @@ export interface ArrivalQueryParams {
   pageSize?: number;
   warehouseId?: string;
   purchaseOrderId?: string;
+  purchaseOrderNo?: string;  // 采购编号（模糊搜索）
   goodsId?: string;
+  goodsName?: string;        // 商品名称（模糊搜索）
   handlerId?: string;
   startDate?: string;
   endDate?: string;

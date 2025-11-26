@@ -12,7 +12,7 @@ export class PurchaseBaseService {
    */
   static async getBasePurchaseOrderList(baseId: number, params: any = {}) {
     try {
-      const { current = 1, pageSize = 10, orderNo, supplierName, startDate, endDate } = params;
+      const { current = 1, pageSize = 10, orderNo, supplierName, goodsName, startDate, endDate } = params;
       const skip = (current - 1) * pageSize;
 
       // 构建查询SQL - 关联订单明细、商品信息和供应商信息
@@ -54,6 +54,9 @@ export class PurchaseBaseService {
       if (supplierName) {
         sql += ` AND s.name ILIKE '%${supplierName}%'`;
       }
+      if (goodsName) {
+        sql += ` AND g.name ILIKE '%${goodsName}%'`;
+      }
       if (startDate) {
         sql += ` AND po.purchase_date >= '${startDate}'`;
       }
@@ -71,6 +74,7 @@ export class PurchaseBaseService {
         SELECT COUNT(*) as count
         FROM purchase_order_items poi
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
+        JOIN goods g ON poi.goods_id = g.id
         JOIN suppliers s ON po.supplier_id = s.id
         WHERE po.base_id = ${baseId}
       `;
@@ -80,6 +84,9 @@ export class PurchaseBaseService {
       }
       if (supplierName) {
         countSql += ` AND s.name ILIKE '%${supplierName}%'`;
+      }
+      if (goodsName) {
+        countSql += ` AND g.name ILIKE '%${goodsName}%'`;
       }
       if (startDate) {
         countSql += ` AND po.purchase_date >= '${startDate}'`;
