@@ -98,7 +98,7 @@ const ArrivalManagement: React.FC = () => {
       });
       
       if (result.success && result.data) {
-        // 去重，按采购单号分组，并保存采购日期和商品名称用于生成采购名称
+        // 保存采购订单完整信息（包括id和goodsId）
         const orderMap = new Map();
         result.data.forEach((item: any) => {
           if (!orderMap.has(item.orderNo)) {
@@ -107,7 +107,9 @@ const ArrivalManagement: React.FC = () => {
               ? item.purchaseDate.split('T')[0] 
               : '';
             orderMap.set(item.orderNo, {
+              id: item.id,                    // 采购订单ID
               orderNo: item.orderNo,
+              goodsId: item.goodsId,          // 商品ID
               purchaseDate: dateStr,
               goodsName: item.goodsName,
               supplierName: item.supplierName,
@@ -157,7 +159,7 @@ const ArrivalManagement: React.FC = () => {
     setHandlersLoading(true);
     try {
       // 加载主播和仓管
-      const result = await request(`/api/v1/bases/${currentBase.id}/staff`, {
+      const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
         method: 'GET',
       });
       
@@ -191,8 +193,16 @@ const ArrivalManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
+      // 根据选择的采购单号找到对应的采购订单信息
+      const selectedOrder = purchaseOrders.find(o => o.orderNo === values.purchaseOrderNo);
+      if (!selectedOrder) {
+        message.error('请选择有效的采购单');
+        setCreateLoading(false);
+        return;
+      }
+
       const requestData = {
-        purchaseOrderNo: values.purchaseOrderNo,
+        purchaseOrderId: selectedOrder.id,    // 采购订单ID（商品ID从采购单自动获取）
         arrivalDate: values.arrivalDate?.format('YYYY-MM-DD'),
         locationId: values.locationId,
         handlerId: values.handlerId,
@@ -450,6 +460,7 @@ const ArrivalManagement: React.FC = () => {
           <Form.Item
             label="主播"
             name="handlerId"
+            rules={[{ required: true, message: '请选择主播' }]}
           >
             <Select
               placeholder="请选择"

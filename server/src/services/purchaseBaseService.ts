@@ -19,6 +19,7 @@ export class PurchaseBaseService {
       let sql = `
         SELECT 
           poi.id,
+          po.id as "purchaseOrderId",
           po.code as "orderNo",
           s.name as "supplierName",
           po.supplier_id as "supplierId",
@@ -27,6 +28,7 @@ export class PurchaseBaseService {
           po.actual_amount as "actualAmount",
           po.created_by as "createdBy",
           po.created_at as "createdAt",
+          g.id as "goodsId",
           g.code as "goodsCode",
           g.name as "goodsName",
           g.retail_price as "retailPrice",
@@ -101,11 +103,12 @@ export class PurchaseBaseService {
         const unitPricePiece = unitPricePack / piecePerPack;
         
         return {
-          id: item.id,
+          id: item.purchaseOrderId,       // 返回采购订单ID
           orderNo: item.orderNo,
           supplierName: item.supplierName,
           baseId: item.baseId,
           purchaseDate: item.purchaseDate,
+          goodsId: item.goodsId,          // 返回商品ID
           goodsCode: item.goodsCode,
           goodsName: item.goodsName,
           retailPrice: Number(item.retailPrice),

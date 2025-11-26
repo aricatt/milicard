@@ -132,21 +132,25 @@ export class ArrivalRecordService {
     userId: string
   ): Promise<ArrivalResponse> {
     try {
-      // 验证必填字段
-      if (!data.arrivalDate || !data.purchaseOrderId || !data.goodsId || 
+      // 验证必填字段（不需要goodsId，从采购单获取）
+      if (!data.arrivalDate || !data.purchaseOrderId || 
           !data.locationId || !data.handlerId) {
         throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
       }
 
-      // 验证采购订单是否存在且属于该基地
+      // 验证采购订单是否存在且属于该基地，并获取关联的商品ID
       const purchaseOrder = await prisma.purchaseOrder.findFirst({
         where: {
           id: data.purchaseOrderId,
           baseId: baseId
         },
-        select: {
-          id: true,
-          code: true
+        include: {
+          items: {
+            select: {
+              goodsId: true
+            },
+            take: 1  // 取第一个商品（一个采购单通常对应一个商品）
+          }
         }
       });
 
@@ -154,21 +158,10 @@ export class ArrivalRecordService {
         throw new BaseError('采购订单不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
-      // 验证商品是否存在且属于该基地
-      const goods = await prisma.goods.findFirst({
-        where: {
-          id: data.goodsId,
-          baseId: baseId
-        },
-        select: {
-          id: true,
-          code: true,
-          name: true
-        }
-      });
-
-      if (!goods) {
-        throw new BaseError('商品不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      // 从采购单中获取商品ID
+      const goodsId = purchaseOrder.items[0]?.goodsId;
+      if (!goodsId) {
+        throw new BaseError('采购订单没有关联商品', BaseErrorType.VALIDATION_ERROR);
       }
 
       // 验证位置是否存在且属于该基地
@@ -210,7 +203,7 @@ export class ArrivalRecordService {
         data: {
           arrivalDate: new Date(data.arrivalDate),
           purchaseOrderId: data.purchaseOrderId,
-          goodsId: data.goodsId,
+          goodsId: goodsId,  // 使用从采购单获取的商品ID
           locationId: data.locationId,
           handlerId: data.handlerId,
           baseId: baseId,
