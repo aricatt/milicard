@@ -226,9 +226,9 @@ model Inventory {
 
 model PurchaseOrder {
   id               String              @id @default(uuid())
-  orderNo          String              @unique @map("order_no")
+  code             String              @unique
   supplierName     String              @map("supplier_name")
-  targetLocationId Int                 @map("target_location_id")
+  targetLocationId Int?                @map("target_location_id")
   baseId           Int                 @map("base_id")
   purchaseDate     DateTime            @map("purchase_date") @db.Date
   totalAmount      Decimal             @default(0) @map("total_amount") @db.Decimal(12, 2)
@@ -243,9 +243,9 @@ model PurchaseOrder {
   items            PurchaseOrderItem[]
   base             Base                @relation(fields: [baseId], references: [id])
   creator          User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
-  targetLocation   Location            @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
+  targetLocation   Location?           @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
 
-  @@index([orderNo])
+  @@index([code])
   @@index([supplierName])
   @@index([targetLocationId])
   @@index([baseId])
@@ -275,7 +275,7 @@ model PurchaseOrderItem {
 
 model ArrivalOrder {
   id              String             @id @default(uuid())
-  arrivalNo       String             @unique @map("arrival_no")
+  code            String             @unique
   purchaseOrderId String             @map("purchase_order_id")
   locationId      Int                @map("location_id")
   arrivalDate     DateTime           @map("arrival_date") @db.Date
@@ -287,7 +287,7 @@ model ArrivalOrder {
   location        Location           @relation(fields: [locationId], references: [id])
   purchaseOrder   PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id])
 
-  @@index([arrivalNo])
+  @@index([code])
   @@index([purchaseOrderId])
   @@index([locationId])
   @@index([arrivalDate])
@@ -311,7 +311,7 @@ model ArrivalOrderItem {
 
 model TransferOrder {
   id             String              @id @default(uuid())
-  transferNo     String              @unique @map("transfer_no")
+  code           String              @unique
   fromLocationId Int                 @map("from_location_id")
   toLocationId   Int                 @map("to_location_id")
   transferDate   DateTime            @map("transfer_date") @db.Date
@@ -323,7 +323,7 @@ model TransferOrder {
   fromLocation   Location            @relation("TransferOrderFrom", fields: [fromLocationId], references: [id])
   toLocation     Location            @relation("TransferOrderTo", fields: [toLocationId], references: [id])
 
-  @@index([transferNo])
+  @@index([code])
   @@index([fromLocationId])
   @@index([toLocationId])
   @@index([transferDate])
@@ -375,7 +375,7 @@ model StockConsumption {
 
 model DistributionOrder {
   id              String                  @id @default(uuid())
-  orderNo         String                  @unique @map("order_no")
+  code            String                  @unique
   customerId      String                  @map("customer_id")
   totalAmount     Decimal                 @default(0) @map("total_amount") @db.Decimal(12, 2)
   discountPercent Decimal                 @default(0) @map("discount_percent") @db.Decimal(5, 2)
@@ -391,7 +391,7 @@ model DistributionOrder {
   receivables     Receivable[]
   stockOutOrders  StockOutOrder[]
 
-  @@index([orderNo])
+  @@index([code])
   @@index([customerId])
   @@index([orderDate])
   @@index([createdBy])
@@ -419,7 +419,7 @@ model DistributionOrderItem {
 
 model StockOutOrder {
   id                  String              @id @default(uuid())
-  outNo               String              @unique @map("out_no")
+  code                String              @unique
   distributionOrderId String              @map("distribution_order_id")
   locationId          Int                 @map("location_id")
   outDate             DateTime            @map("out_date") @db.Date
@@ -431,7 +431,7 @@ model StockOutOrder {
   distributionOrder   DistributionOrder   @relation(fields: [distributionOrderId], references: [id])
   location            Location            @relation(fields: [locationId], references: [id])
 
-  @@index([outNo])
+  @@index([code])
   @@index([distributionOrderId])
   @@index([locationId])
   @@index([outDate])

@@ -62,7 +62,16 @@ export class PurchaseBaseController {
         });
       }
 
-      const result = await PurchaseBaseService.createPurchaseOrder(baseId, orderData);
+      // 从认证中间件获取用户ID
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '未授权'
+        });
+      }
+
+      const result = await PurchaseBaseService.createPurchaseOrder(baseId, orderData, userId);
       
       res.status(201).json(result);
     } catch (error) {
@@ -77,6 +86,39 @@ export class PurchaseBaseController {
                         (error as Error).message.includes('不属于') ? 403 : 500;
       
       res.status(statusCode).json({
+        success: false,
+        message: (error as Error).message
+      });
+    }
+  }
+
+  /**
+   * 删除采购订单
+   */
+  static async deletePurchaseOrder(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      const orderId = req.params.orderId;
+
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '无效的基地ID'
+        });
+      }
+
+      const result = await PurchaseBaseService.deletePurchaseOrder(baseId, orderId);
+      
+      res.json(result);
+    } catch (error) {
+      logger.error('删除采购订单失败', { 
+        error: (error as Error).message, 
+        baseId: req.params.baseId,
+        orderId: req.params.orderId,
+        service: 'milicard-api' 
+      });
+      
+      res.status(500).json({
         success: false,
         message: (error as Error).message
       });

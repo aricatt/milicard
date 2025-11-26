@@ -15,32 +15,36 @@ export class PurchaseBaseService {
       const { current = 1, pageSize = 10, orderNo, supplierName, startDate, endDate } = params;
       const skip = (current - 1) * pageSize;
 
-      // 构建查询SQL
+      // 构建查询SQL - 关联订单明细和商品信息
       let sql = `
         SELECT 
-          po.id,
-          po.order_no as "orderNo",
+          poi.id,
+          po.code as "orderNo",
           po.supplier_name as "supplierName",
-          po.target_location_id as "targetLocationId",
           po.base_id as "baseId",
           po.purchase_date as "purchaseDate",
-          po.total_amount as "totalAmount",
-          po.notes,
           po.created_by as "createdBy",
           po.created_at as "createdAt",
-          po.updated_at as "updatedAt",
-          l.name as "locationName",
-          l.type as "locationType",
-          b.name as "baseName"
-        FROM purchase_orders po
-        JOIN locations l ON po.target_location_id = l.id
-        JOIN bases b ON po.base_id = b.id
+          g.code as "goodsCode",
+          g.name as "goodsName",
+          g.retail_price as "retailPrice",
+          g.pack_per_box as "packPerBox",
+          g.piece_per_pack as "piecePerPack",
+          poi.box_quantity as "purchaseBoxQty",
+          poi.pack_quantity as "purchasePackQty",
+          poi.piece_quantity as "purchasePieceQty",
+          poi.unit_price as "unitPrice",
+          poi.total_pieces as "totalPieces",
+          poi.total_price as "totalAmount"
+        FROM purchase_order_items poi
+        JOIN purchase_orders po ON poi.purchase_order_id = po.id
+        JOIN goods g ON poi.goods_id = g.id
         WHERE po.base_id = ${baseId}
       `;
 
       // 添加过滤条件
       if (orderNo) {
-        sql += ` AND po.order_no ILIKE '%${orderNo}%'`;
+        sql += ` AND po.code ILIKE '%${orderNo}%'`;
       }
       if (supplierName) {
         sql += ` AND po.supplier_name ILIKE '%${supplierName}%'`;
@@ -52,20 +56,21 @@ export class PurchaseBaseService {
         sql += ` AND po.purchase_date <= '${endDate}'`;
       }
 
-      sql += ` ORDER BY po.created_at DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      sql += ` ORDER BY po.created_at DESC, poi.id LIMIT ${pageSize} OFFSET ${skip}`;
 
       // 执行查询
-      const purchaseOrders = await prisma.$queryRawUnsafe(sql);
+      const purchaseItems = await prisma.$queryRawUnsafe(sql);
 
-      // 获取总数
+      // 获取总数（按明细行计数）
       let countSql = `
         SELECT COUNT(*) as count
-        FROM purchase_orders po
+        FROM purchase_order_items poi
+        JOIN purchase_orders po ON poi.purchase_order_id = po.id
         WHERE po.base_id = ${baseId}
       `;
 
       if (orderNo) {
-        countSql += ` AND po.order_no ILIKE '%${orderNo}%'`;
+        countSql += ` AND po.code ILIKE '%${orderNo}%'`;
       }
       if (supplierName) {
         countSql += ` AND po.supplier_name ILIKE '%${supplierName}%'`;
@@ -80,27 +85,37 @@ export class PurchaseBaseService {
       const totalResult = await prisma.$queryRawUnsafe(countSql);
       const total = Number((totalResult as any)[0]?.count || 0);
 
-      // 转换数据格式
-      const data = (purchaseOrders as any[]).map(po => ({
-        id: po.id,
-        orderNo: po.orderNo,
-        supplierName: po.supplierName,
-        targetLocationId: po.targetLocationId,
-        baseId: po.baseId,
-        purchaseDate: po.purchaseDate,
-        totalAmount: Number(po.totalAmount),
-        notes: po.notes,
-        createdBy: po.createdBy,
-        createdAt: po.createdAt.toISOString(),
-        updatedAt: po.updatedAt.toISOString(),
-        location: {
-          name: po.locationName,
-          type: po.locationType
-        },
-        base: {
-          name: po.baseName
-        }
-      }));
+      // 转换数据格式 - 计算单价
+      const data = (purchaseItems as any[]).map(item => {
+        const packPerBox = Number(item.packPerBox) || 1;
+        const piecePerPack = Number(item.piecePerPack) || 1;
+        const unitPrice = Number(item.unitPrice) || 0;
+        
+        // 计算各级单价（假设unitPrice是箱单价）
+        const unitPriceBox = unitPrice;
+        const unitPricePack = unitPrice / packPerBox;
+        const unitPricePiece = unitPricePack / piecePerPack;
+        
+        return {
+          id: item.id,
+          orderNo: item.orderNo,
+          supplierName: item.supplierName,
+          baseId: item.baseId,
+          purchaseDate: item.purchaseDate,
+          goodsCode: item.goodsCode,
+          goodsName: item.goodsName,
+          retailPrice: Number(item.retailPrice),
+          purchaseBoxQty: Number(item.purchaseBoxQty),
+          purchasePackQty: Number(item.purchasePackQty),
+          purchasePieceQty: Number(item.purchasePieceQty),
+          unitPriceBox,
+          unitPricePack,
+          unitPricePiece,
+          totalAmount: Number(item.totalAmount),
+          createdBy: item.createdBy,
+          createdAt: item.createdAt?.toISOString?.() || item.createdAt,
+        };
+      });
 
       logger.info('获取基地采购订单列表成功', {
         service: 'milicard-api',
@@ -125,7 +140,7 @@ export class PurchaseBaseService {
   /**
    * 创建采购订单
    */
-  static async createPurchaseOrder(baseId: number, orderData: any) {
+  static async createPurchaseOrder(baseId: number, orderData: any, userId: string) {
     try {
       const { supplierName, targetLocationId, purchaseDate, notes, items = [] } = orderData;
 
@@ -151,14 +166,14 @@ export class PurchaseBaseService {
         totalAmount += (item.quantity || 0) * (item.unitPrice || 0);
       }
 
-      // 创建采购订单（不包含created_by外键约束）
+      // 创建采购订单
       const createSql = `
         INSERT INTO purchase_orders (
-          id, order_no, supplier_name, target_location_id, base_id, 
-          purchase_date, total_amount, notes, created_at, updated_at
+          id, code, supplier_name, target_location_id, base_id, 
+          purchase_date, total_amount, notes, created_by, created_at, updated_at
         ) VALUES (
-          gen_random_uuid(), '${orderNo}', '${supplierName}', ${targetLocationId ? `'${targetLocationId}'` : 'NULL'}, ${baseId},
-          '${purchaseDate}', ${totalAmount}, ${notes ? `'${notes}'` : 'NULL'}, NOW(), NOW()
+          gen_random_uuid(), '${orderNo}', '${supplierName}', ${targetLocationId ? `${targetLocationId}` : 'NULL'}, ${baseId},
+          '${purchaseDate}', ${totalAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
         ) RETURNING *
       `;
 
@@ -167,14 +182,41 @@ export class PurchaseBaseService {
 
       // 创建采购订单项目
       for (const item of items) {
+        const boxQty = item.boxQuantity || 0;
+        const packQty = item.packQuantity || 0;
+        const pieceQty = item.pieceQuantity || 0;
+        
+        // 从商品表获取拆分比例和真实ID
+        const goodsSql = `
+          SELECT id, pack_per_box, piece_per_pack 
+          FROM goods 
+          WHERE code = '${item.goodsId}'
+        `;
+        const goodsResult = await prisma.$queryRawUnsafe(goodsSql);
+        const goods = (goodsResult as any[])[0];
+        
+        if (!goods) {
+          throw new Error(`商品不存在: ${item.goodsId}`);
+        }
+        
+        const goodsRealId = goods.id;  // 商品的真实UUID
+        const packPerBox = goods.pack_per_box || 1;
+        const piecePerPack = goods.piece_per_pack || 1;
+        
+        // 计算总件数
+        const totalPieces = (boxQty * packPerBox * piecePerPack) + (packQty * piecePerPack) + pieceQty;
+        
+        // 计算总价
+        const totalPrice = (boxQty + packQty + pieceQty) * (item.unitPrice || 0);
+        
         const itemSql = `
           INSERT INTO purchase_order_items (
             id, purchase_order_id, goods_id, box_quantity, pack_quantity, 
-            piece_quantity, unit_price, total_price, notes
+            piece_quantity, total_pieces, unit_price, total_price, notes
           ) VALUES (
-            gen_random_uuid(), '${purchaseOrder.id}', '${item.goodsId}', 
-            ${item.boxQuantity || 0}, ${item.packQuantity || 0}, ${item.pieceQuantity || 0},
-            ${item.unitPrice || 0}, ${(item.quantity || 0) * (item.unitPrice || 0)}, 
+            gen_random_uuid(), '${purchaseOrder.id}', '${goodsRealId}', 
+            ${boxQty}, ${packQty}, ${pieceQty}, ${totalPieces},
+            ${item.unitPrice || 0}, ${totalPrice}, 
             ${item.notes ? `'${item.notes}'` : 'NULL'}
           )
         `;

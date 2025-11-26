@@ -28,6 +28,12 @@ router.get('/:baseId/purchase-orders', authenticateToken, PurchaseBaseController
 router.post('/:baseId/purchase-orders', authenticateToken, PurchaseBaseController.createPurchaseOrder);
 
 /**
+ * 删除采购订单
+ * DELETE /api/v1/bases/{baseId}/purchase-orders/:orderId
+ */
+router.delete('/:baseId/purchase-orders/:orderId', authenticateToken, PurchaseBaseController.deletePurchaseOrder);
+
+/**
  * 获取基地供应商列表
  * GET /api/v1/bases/{baseId}/suppliers
  */
