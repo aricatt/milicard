@@ -203,7 +203,7 @@ const ProcurementManagement: React.FC = () => {
         supplierName: values.supplierName || '',
         // targetLocationId 不需要填写，到货时才分配具体位置
         purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
-        actualAmount: totalAmount,
+        actualAmount: values.actualAmount || 0,  // 使用用户输入的实付金额
         items: [
           {
             goodsId: selectedGoods.code, // 使用商品编号作为ID

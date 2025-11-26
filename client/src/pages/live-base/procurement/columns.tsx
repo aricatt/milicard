@@ -117,6 +117,36 @@ export const getColumns = (
     render: (_, record) => record.unitPricePiece ? `¥${record.unitPricePiece.toFixed(2)}` : '-',
   },
   {
+    title: '应付金额/箱',
+    key: 'amountBox',
+    width: 110,
+    hideInSearch: true,
+    render: (_, record) => {
+      const amount = (record.purchaseBoxQty || 0) * (record.unitPriceBox || 0);
+      return `¥${amount.toFixed(2)}`;
+    },
+  },
+  {
+    title: '应付金额/盒',
+    key: 'amountPack',
+    width: 110,
+    hideInSearch: true,
+    render: (_, record) => {
+      const amount = (record.purchasePackQty || 0) * (record.unitPricePack || 0);
+      return `¥${amount.toFixed(2)}`;
+    },
+  },
+  {
+    title: '应付金额/包',
+    key: 'amountPiece',
+    width: 110,
+    hideInSearch: true,
+    render: (_, record) => {
+      const amount = (record.purchasePieceQty || 0) * (record.unitPricePiece || 0);
+      return `¥${amount.toFixed(2)}`;
+    },
+  },
+  {
     title: '应付总金额',
     dataIndex: 'totalAmount',
     key: 'totalAmount',
@@ -124,10 +154,36 @@ export const getColumns = (
     hideInSearch: true,
     hideInSetting: true,
     render: (_, record) => (
-      <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
+      <span style={{ color: '#1890ff', fontWeight: 'bold' }}>
         ¥{record.totalAmount.toFixed(2)}
       </span>
     ),
+  },
+  {
+    title: '实付金额',
+    dataIndex: 'actualAmount',
+    key: 'actualAmount',
+    width: 110,
+    hideInSearch: true,
+    render: (_, record) => (
+      <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
+        ¥{(record.actualAmount || 0).toFixed(2)}
+      </span>
+    ),
+  },
+  {
+    title: '未支付金额',
+    key: 'unpaidAmount',
+    width: 110,
+    hideInSearch: true,
+    render: (_, record) => {
+      const unpaid = (record.totalAmount || 0) - (record.actualAmount || 0);
+      return (
+        <span style={{ color: unpaid > 0 ? '#f5222d' : '#52c41a', fontWeight: 'bold' }}>
+          ¥{unpaid.toFixed(2)}
+        </span>
+      );
+    },
   },
   {
     title: '创建时间',

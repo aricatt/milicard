@@ -23,6 +23,7 @@ export class PurchaseBaseService {
           po.supplier_name as "supplierName",
           po.base_id as "baseId",
           po.purchase_date as "purchaseDate",
+          po.actual_amount as "actualAmount",
           po.created_by as "createdBy",
           po.created_at as "createdAt",
           g.code as "goodsCode",
@@ -112,6 +113,7 @@ export class PurchaseBaseService {
           unitPricePack,
           unitPricePiece,
           totalAmount: Number(item.totalAmount),
+          actualAmount: Number(item.actualAmount) || 0,
           createdBy: item.createdBy,
           createdAt: item.createdAt?.toISOString?.() || item.createdAt,
         };
@@ -142,7 +144,7 @@ export class PurchaseBaseService {
    */
   static async createPurchaseOrder(baseId: number, orderData: any, userId: string) {
     try {
-      const { supplierName, targetLocationId, purchaseDate, notes, items = [] } = orderData;
+      const { supplierName, targetLocationId, purchaseDate, notes, actualAmount = 0, items = [] } = orderData;
 
       // 如果指定了目标位置，检查是否属于该基地
       if (targetLocationId) {
@@ -170,10 +172,10 @@ export class PurchaseBaseService {
       const createSql = `
         INSERT INTO purchase_orders (
           id, code, supplier_name, target_location_id, base_id, 
-          purchase_date, total_amount, notes, created_by, created_at, updated_at
+          purchase_date, total_amount, actual_amount, notes, created_by, created_at, updated_at
         ) VALUES (
           gen_random_uuid(), '${orderNo}', '${supplierName}', ${targetLocationId ? `${targetLocationId}` : 'NULL'}, ${baseId},
-          '${purchaseDate}', ${totalAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
+          '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
         ) RETURNING *
       `;
 

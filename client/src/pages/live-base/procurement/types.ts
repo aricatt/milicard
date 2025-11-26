@@ -30,6 +30,7 @@ export interface PurchaseOrder {
   amountPack?: number;          // 应付金额盒
   amountPiece?: number;         // 应付金额包
   totalAmount: number;          // 应付总金额
+  actualAmount?: number;        // 实付金额
   baseId: number;
   createdBy?: string;
   createdAt: string;
@@ -74,4 +75,5 @@ export interface ProcurementFormValues {
   purchasePackQty: number;
   unitPricePiece?: number;
   purchasePieceQty: number;
+  actualAmount?: number;        // 实付金额
 }

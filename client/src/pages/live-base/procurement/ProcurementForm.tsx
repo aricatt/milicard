@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form, DatePicker, Select, InputNumber, Row, Col } from 'antd';
+import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
 import type { GoodsOption, SupplierOption, ProcurementFormValues } from './types';
 
@@ -97,9 +98,11 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
       layout="vertical"
       onFinish={onFinish}
       initialValues={{
+        purchaseDate: dayjs(),  // 默认当日
         purchaseBoxQty: 0,
         purchasePackQty: 0,
         purchasePieceQty: 0,
+        actualAmount: 0,
       }}
     >
       {/* 采购日期 */}
@@ -124,7 +127,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           optionFilterProp="children"
           onChange={handleGoodsChange}
           filterOption={(input, option) =>
-            (option?.children as string).toLowerCase().includes(input.toLowerCase())
+            String(option?.children || '').toLowerCase().includes(input.toLowerCase())
           }
         >
           {goodsOptions.map(goods => (
@@ -158,7 +161,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           optionFilterProp="children"
           onChange={handleSupplierChange}
           filterOption={(input, option) =>
-            (option?.children as string).toLowerCase().includes(input.toLowerCase())
+            String(option?.children || '').toLowerCase().includes(input.toLowerCase())
           }
         >
           {supplierOptions.map(supplier => (
@@ -346,9 +349,9 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
       </Row>
 
-      {/* 实付总金额 */}
+      {/* 应付金额（自动计算） */}
       <Form.Item
-        label="实付总金额"
+        label="应付金额（自动计算）"
         shouldUpdate={(prevValues, currentValues) =>
           prevValues.unitPriceBox !== currentValues.unitPriceBox ||
           prevValues.purchaseBoxQty !== currentValues.purchaseBoxQty ||
@@ -367,9 +370,9 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
             <div style={{ 
               fontSize: 20, 
               fontWeight: 'bold', 
-              color: '#f5222d',
+              color: '#1890ff',
               padding: '10px',
-              background: '#fff1f0',
+              background: '#e6f7ff',
               borderRadius: 4,
               textAlign: 'center'
             }}>
@@ -377,6 +380,22 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
             </div>
           );
         }}
+      </Form.Item>
+
+      {/* 实付金额（手动输入） */}
+      <Form.Item
+        label="实付金额"
+        name="actualAmount"
+        rules={[{ required: true, message: '请输入实付金额' }]}
+        extra="如果本次未付清，请输入实际支付的金额"
+      >
+        <InputNumber
+          style={{ width: '100%' }}
+          placeholder="请输入实付金额"
+          precision={2}
+          min={0}
+          size="large"
+        />
       </Form.Item>
     </Form>
   );
