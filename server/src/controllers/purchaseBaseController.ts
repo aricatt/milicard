@@ -53,12 +53,12 @@ export class PurchaseBaseController {
         });
       }
 
-      const { supplierName, targetLocationId, purchaseDate } = orderData;
+      const { supplierName, purchaseDate } = orderData;
 
-      if (!supplierName || !targetLocationId || !purchaseDate) {
+      if (!supplierName || !purchaseDate) {
         return res.status(400).json({
           success: false,
-          message: '供应商名称、目标位置和采购日期不能为空'
+          message: '供应商名称和采购日期不能为空'
         });
       }
 

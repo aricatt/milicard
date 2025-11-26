@@ -196,7 +196,7 @@ export interface PurchaseOrderItemRequest {
  */
 export interface CreatePurchaseOrderRequest {
   supplierName: string
-  targetLocationId: string
+  targetLocationId?: string  // 可选，到货时才分配具体位置
   purchaseDate: string
   actualAmount?: number  // 实付金额
   notes?: string

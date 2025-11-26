@@ -5,23 +5,25 @@ import {
   Form,
   App,
   Button,
+  Popconfirm,
   Popover,
   Descriptions,
 } from 'antd';
 import { 
   PlusOutlined, 
+  EditOutlined,
+  DeleteOutlined,
   InfoCircleOutlined,
   ExportOutlined,
   ImportOutlined,
   DownloadOutlined
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
-import type { ActionType } from '@ant-design/pro-components';
+import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import { useProcurementExcel } from './useProcurementExcel';
 import ProcurementForm from './ProcurementForm';
-import { getColumns } from './columns';
 import type { 
   PurchaseOrder, 
   PurchaseStats, 
@@ -97,8 +99,6 @@ const ProcurementManagement: React.FC = () => {
           code: item.code,
           name: item.name,
           retailPrice: item.retailPrice,
-          packPerBox: item.packPerBox || 1,      // 多少盒1箱
-          piecePerPack: item.piecePerPack || 1,  // 多少包1盒
         }));
         setGoodsOptions(options);
       }
@@ -184,40 +184,22 @@ const ProcurementManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
-      // 找到选中的商品，获取商品ID
-      const selectedGoods = goodsOptions.find(g => g.code === values.goodsCode);
-      if (!selectedGoods) {
-        message.error('未找到选中的商品');
-        setCreateLoading(false);
-        return;
-      }
-
       // 计算应付金额
       const amountBox = (values.unitPriceBox || 0) * (values.purchaseBoxQty || 0);
       const amountPack = (values.unitPricePack || 0) * (values.purchasePackQty || 0);
       const amountPiece = (values.unitPricePiece || 0) * (values.purchasePieceQty || 0);
       const totalAmount = amountBox + amountPack + amountPiece;
 
-      // 构造后端API期望的数据格式
-      const requestData = {
-        supplierName: values.supplierName || '',
-        // targetLocationId 不需要填写，到货时才分配具体位置
-        purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
-        actualAmount: totalAmount,
-        items: [
-          {
-            goodsId: selectedGoods.code, // 使用商品编号作为ID
-            boxQuantity: values.purchaseBoxQty || 0,
-            packQuantity: values.purchasePackQty || 0,
-            pieceQuantity: values.purchasePieceQty || 0,
-            unitPrice: values.unitPriceBox || 0,
-          }
-        ]
-      };
-
       const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
         method: 'POST',
-        data: requestData,
+        data: {
+          ...values,
+          purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
+          amountBox,
+          amountPack,
+          amountPiece,
+          totalAmount,
+        },
       });
 
       if (result.success) {
@@ -327,190 +309,4 @@ const ProcurementManagement: React.FC = () => {
     setEditModalVisible(true);
   };
 
-  /**
-   * 统计信息内容
-   */
-  const statsContent = (
-    <Descriptions column={1} size="small">
-      <Descriptions.Item label="总订单数">{stats.totalOrders} 单</Descriptions.Item>
-      <Descriptions.Item label="总金额">¥{stats.totalAmount.toFixed(2)}</Descriptions.Item>
-      <Descriptions.Item label="供应商数">{stats.uniqueSuppliers} 家</Descriptions.Item>
-      <Descriptions.Item label="平均订单金额">¥{stats.averageAmount.toFixed(2)}</Descriptions.Item>
-    </Descriptions>
-  );
-
-  // 获取列定义
-  const columns = getColumns(handleEdit, handleDelete);
-
-  if (!currentBase) {
-    return (
-      <PageContainer>
-        <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          请先选择基地
-        </div>
-      </PageContainer>
-    );
-  }
-
-  return (
-    <PageContainer>
-      <ProTable<PurchaseOrder>
-        columns={columns}
-        actionRef={actionRef}
-        request={async (params) => {
-          try {
-            const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
-              method: 'GET',
-              params: {
-                page: params.current,
-                pageSize: params.pageSize,
-                orderNo: params.orderNo,
-                supplierName: params.supplierName,
-                goodsName: params.goodsName,
-              },
-            });
-
-            if (result.success) {
-              return {
-                data: result.data || [],
-                success: true,
-                total: result.pagination?.total || 0,
-              };
-            }
-            return {
-              data: [],
-              success: false,
-              total: 0,
-            };
-          } catch (error) {
-            console.error('加载采购订单失败:', error);
-            return {
-              data: [],
-              success: false,
-              total: 0,
-            };
-          }
-        }}
-        rowKey="id"
-        pagination={{
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
-        }}
-        search={{
-          labelWidth: 'auto',
-        }}
-        scroll={{ x: 'max-content' }}
-        options={{
-          setting: {
-            listsHeight: 400,
-          },
-          reload: true,
-          density: true,
-        }}
-        toolBarRender={() => [
-          <Button
-            key="template"
-            icon={<DownloadOutlined />}
-            onClick={handleDownloadTemplate}
-          >
-            下载模板
-          </Button>,
-          <Button
-            key="export"
-            icon={<ExportOutlined />}
-            onClick={handleExport}
-          >
-            导出Excel
-          </Button>,
-          <Button
-            key="import"
-            icon={<ImportOutlined />}
-            onClick={() => setImportModalVisible(true)}
-          >
-            导入Excel
-          </Button>,
-          <Button
-            key="create"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setCreateModalVisible(true)}
-          >
-            创建采购订单
-          </Button>,
-        ]}
-        dateFormatter="string"
-        headerTitle={
-          <Space>
-            <span>采购订单列表</span>
-            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalOrders} 单)
-            </span>
-            <Popover
-              content={statsContent}
-              title="统计详情"
-              trigger="click"
-              placement="bottomLeft"
-            >
-              <Button
-                type="text"
-                size="small"
-                icon={<InfoCircleOutlined />}
-                style={{ color: '#1890ff' }}
-              >
-                详情
-              </Button>
-            </Popover>
-          </Space>
-        }
-      />
-
-      {/* 创建采购订单模态框 */}
-      <Modal
-        title="创建采购订单"
-        open={createModalVisible}
-        onOk={() => createForm.submit()}
-        onCancel={() => {
-          setCreateModalVisible(false);
-          createForm.resetFields();
-        }}
-        confirmLoading={createLoading}
-        width={700}
-      >
-        <ProcurementForm
-          form={createForm}
-          goodsOptions={goodsOptions}
-          supplierOptions={supplierOptions}
-          goodsLoading={goodsLoading}
-          supplierLoading={supplierLoading}
-          onFinish={handleCreate}
-        />
-      </Modal>
-
-      {/* 编辑采购订单模态框 */}
-      <Modal
-        title="编辑采购订单"
-        open={editModalVisible}
-        onOk={() => editForm.submit()}
-        onCancel={() => {
-          setEditModalVisible(false);
-          editForm.resetFields();
-          setEditingOrder(null);
-        }}
-        confirmLoading={editLoading}
-        width={700}
-      >
-        <ProcurementForm
-          form={editForm}
-          goodsOptions={goodsOptions}
-          supplierOptions={supplierOptions}
-          goodsLoading={goodsLoading}
-          supplierLoading={supplierLoading}
-          onFinish={handleUpdate}
-        />
-      </Modal>
-    </PageContainer>
-  );
-};
-
-export default ProcurementManagement;
+// 继续在 index_new_part2.tsx

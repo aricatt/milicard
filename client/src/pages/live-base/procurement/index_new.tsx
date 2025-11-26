@@ -97,8 +97,6 @@ const ProcurementManagement: React.FC = () => {
           code: item.code,
           name: item.name,
           retailPrice: item.retailPrice,
-          packPerBox: item.packPerBox || 1,      // 多少盒1箱
-          piecePerPack: item.piecePerPack || 1,  // 多少包1盒
         }));
         setGoodsOptions(options);
       }
@@ -184,40 +182,22 @@ const ProcurementManagement: React.FC = () => {
 
     setCreateLoading(true);
     try {
-      // 找到选中的商品，获取商品ID
-      const selectedGoods = goodsOptions.find(g => g.code === values.goodsCode);
-      if (!selectedGoods) {
-        message.error('未找到选中的商品');
-        setCreateLoading(false);
-        return;
-      }
-
       // 计算应付金额
       const amountBox = (values.unitPriceBox || 0) * (values.purchaseBoxQty || 0);
       const amountPack = (values.unitPricePack || 0) * (values.purchasePackQty || 0);
       const amountPiece = (values.unitPricePiece || 0) * (values.purchasePieceQty || 0);
       const totalAmount = amountBox + amountPack + amountPiece;
 
-      // 构造后端API期望的数据格式
-      const requestData = {
-        supplierName: values.supplierName || '',
-        // targetLocationId 不需要填写，到货时才分配具体位置
-        purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
-        actualAmount: totalAmount,
-        items: [
-          {
-            goodsId: selectedGoods.code, // 使用商品编号作为ID
-            boxQuantity: values.purchaseBoxQty || 0,
-            packQuantity: values.purchasePackQty || 0,
-            pieceQuantity: values.purchasePieceQty || 0,
-            unitPrice: values.unitPriceBox || 0,
-          }
-        ]
-      };
-
       const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
         method: 'POST',
-        data: requestData,
+        data: {
+          ...values,
+          purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
+          amountBox,
+          amountPack,
+          amountPiece,
+          totalAmount,
+        },
       });
 
       if (result.success) {
@@ -476,6 +456,7 @@ const ProcurementManagement: React.FC = () => {
         }}
         confirmLoading={createLoading}
         width={700}
+        destroyOnClose
       >
         <ProcurementForm
           form={createForm}
@@ -499,6 +480,7 @@ const ProcurementManagement: React.FC = () => {
         }}
         confirmLoading={editLoading}
         width={700}
+        destroyOnClose
       >
         <ProcurementForm
           form={editForm}

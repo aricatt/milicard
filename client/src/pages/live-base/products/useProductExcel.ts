@@ -139,14 +139,40 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
         return;
       }
 
+      // 获取现有商品列表用于去重检查
+      message.loading('正在检查重复数据...', 0);
+      const existingGoods = await request(`/api/v1/bases/${baseId}/goods`, {
+        method: 'GET',
+        params: { page: 1, pageSize: 10000 },
+      });
+      message.destroy();
+
+      // 构建去重Map: "商品名称" -> 商品ID（基地内唯一）
+      const existingMap = new Map<string, string>();
+      if (existingGoods.success && existingGoods.data) {
+        existingGoods.data.forEach((goods: any) => {
+          existingMap.set(goods.name, goods.id);
+        });
+      }
+
       // 批量导入
       let successCount = 0;
       let failCount = 0;
+      let skipCount = 0;
       const failedItems: string[] = [];
+      const skippedItems: string[] = [];
 
       for (let i = 0; i < importData.length; i++) {
         const item = importData[i];
         setImportProgress(Math.round(((i + 1) / importData.length) * 100));
+
+        // 检查是否重复（仅商品名称，基地内唯一）
+        if (existingMap.has(item.name)) {
+          // 跳过重复数据
+          skipCount++;
+          skippedItems.push(`第${i + 2}行：${item.name}`);
+          continue;
+        }
 
         try {
           const result = await request(`/api/v1/bases/${baseId}/goods`, {
@@ -156,6 +182,8 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
           if (result.success) {
             successCount++;
+            // 添加到去重Map，避免同一批次内的重复
+            existingMap.set(item.name, result.data?.id || '');
           } else {
             failCount++;
             failedItems.push(`第${i + 2}行：${item.name} - ${result.message || '创建失败'}`);
@@ -169,12 +197,25 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       message.destroy();
 
       // 显示导入结果
-      if (failCount === 0) {
+      if (failCount === 0 && skipCount === 0) {
         message.success(`导入完成！成功导入 ${successCount} 条商品`);
       } else {
-        const failedList = failedItems.slice(0, 10).join('\n');
-        const moreFailures = failedItems.length > 10 ? `\n...还有 ${failedItems.length - 10} 条失败` : '';
-        const content = `成功导入：${successCount} 条\n失败：${failCount} 条\n\n失败详情：\n${failedList}${moreFailures}`;
+        let content = `成功导入：${successCount} 条\n跳过重复：${skipCount} 条\n失败：${failCount} 条`;
+        
+        // 显示跳过的数据
+        if (skipCount > 0) {
+          const skippedList = skippedItems.slice(0, 5).join('\n');
+          const moreSkipped = skippedItems.length > 5 ? `\n...还有 ${skippedItems.length - 5} 条重复` : '';
+          content += `\n\n跳过的重复数据：\n${skippedList}${moreSkipped}`;
+        }
+        
+        // 显示失败的数据
+        if (failCount > 0) {
+          const failedList = failedItems.slice(0, 5).join('\n');
+          const moreFailures = failedItems.length > 5 ? `\n...还有 ${failedItems.length - 5} 条失败` : '';
+          content += `\n\n失败详情：\n${failedList}${moreFailures}`;
+        }
+        
         Modal.warning({
           title: '导入完成',
           content,

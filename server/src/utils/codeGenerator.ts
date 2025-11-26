@@ -63,20 +63,22 @@ export class CodeGenerator {
    * 检查编号是否唯一
    * @param code 编号
    * @param tableName 表名
+   * @param fieldName 字段名（默认为'code'）
    * @returns 是否唯一
    */
-  private static async isCodeUnique(code: string, tableName: string): Promise<boolean> {
+  private static async isCodeUnique(code: string, tableName: string, fieldName: string = 'code'): Promise<boolean> {
     try {
       // 动态查询对应表
       const result = await (prisma as any)[tableName].findUnique({
-        where: { code }
+        where: { [fieldName]: code }
       });
       return !result;
     } catch (error) {
       logger.error('检查编号唯一性失败', { 
         error, 
         code, 
-        tableName, 
+        tableName,
+        fieldName, 
         service: 'code-generator' 
       });
       return false;
@@ -87,12 +89,14 @@ export class CodeGenerator {
    * 生成业务编号
    * @param type 业务类型
    * @param tableName 对应的数据库表名
+   * @param fieldName 唯一字段名（默认为'code'）
    * @param maxRetries 最大重试次数
    * @returns 唯一编号
    */
   public static async generateCode(
     type: keyof typeof CodeGenerator.CODE_PREFIXES,
     tableName: string,
+    fieldName: string = 'code',
     maxRetries: number = 10
   ): Promise<string> {
     const prefix = this.CODE_PREFIXES[type];
@@ -107,7 +111,7 @@ export class CodeGenerator {
       const randomStr = this.generateRandomString(this.RANDOM_LENGTH);
       const code = `${prefix}-${randomStr}`;
       
-      const isUnique = await this.isCodeUnique(code, tableName);
+      const isUnique = await this.isCodeUnique(code, tableName, fieldName);
       
       if (isUnique) {
         logger.info('业务编号生成成功', {
@@ -171,35 +175,35 @@ export class CodeGenerator {
    * 采购订单编号生成
    */
   public static async generatePurchaseOrderCode(): Promise<string> {
-    return this.generateCode('PURCHASE_ORDER', 'purchaseOrder');
+    return this.generateCode('PURCHASE_ORDER', 'PurchaseOrder', 'orderNo');
   }
 
   /**
    * 销售订单编号生成
    */
   public static async generateDistributionOrderCode(): Promise<string> {
-    return this.generateCode('DISTRIBUTION_ORDER', 'distributionOrder');
+    return this.generateCode('DISTRIBUTION_ORDER', 'DistributionOrder', 'orderNo');
   }
 
   /**
    * 调拨订单编号生成
    */
   public static async generateTransferOrderCode(): Promise<string> {
-    return this.generateCode('TRANSFER_ORDER', 'transferOrder');
+    return this.generateCode('TRANSFER_ORDER', 'TransferOrder', 'transferNo');
   }
 
   /**
    * 到货单编号生成
    */
   public static async generateArrivalOrderCode(): Promise<string> {
-    return this.generateCode('ARRIVAL_ORDER', 'arrivalOrder');
+    return this.generateCode('ARRIVAL_ORDER', 'ArrivalOrder', 'arrivalNo');
   }
 
   /**
    * 出库单编号生成
    */
   public static async generateStockOutOrderCode(): Promise<string> {
-    return this.generateCode('STOCK_OUT_ORDER', 'stockOutOrder');
+    return this.generateCode('STOCK_OUT_ORDER', 'StockOutOrder', 'outNo');
   }
 
   /**

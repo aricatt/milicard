@@ -129,15 +129,17 @@ export class PurchaseBaseService {
     try {
       const { supplierName, targetLocationId, purchaseDate, notes, items = [] } = orderData;
 
-      // 检查目标位置是否属于该基地
-      const locationSql = `
-        SELECT id, name FROM locations 
-        WHERE id = '${targetLocationId}' AND base_id = ${baseId}
-      `;
-      const locationResult = await prisma.$queryRawUnsafe(locationSql);
+      // 如果指定了目标位置，检查是否属于该基地
+      if (targetLocationId) {
+        const locationSql = `
+          SELECT id, name FROM locations 
+          WHERE id = '${targetLocationId}' AND base_id = ${baseId}
+        `;
+        const locationResult = await prisma.$queryRawUnsafe(locationSql);
 
-      if ((locationResult as any[]).length === 0) {
-        throw new Error('目标位置不存在或不属于该基地');
+        if ((locationResult as any[]).length === 0) {
+          throw new Error('目标位置不存在或不属于该基地');
+        }
       }
 
       // 生成采购订单号
@@ -155,7 +157,7 @@ export class PurchaseBaseService {
           id, order_no, supplier_name, target_location_id, base_id, 
           purchase_date, total_amount, notes, created_at, updated_at
         ) VALUES (
-          gen_random_uuid(), '${orderNo}', '${supplierName}', '${targetLocationId}', ${baseId},
+          gen_random_uuid(), '${orderNo}', '${supplierName}', ${targetLocationId ? `'${targetLocationId}'` : 'NULL'}, ${baseId},
           '${purchaseDate}', ${totalAmount}, ${notes ? `'${notes}'` : 'NULL'}, NOW(), NOW()
         ) RETURNING *
       `;
