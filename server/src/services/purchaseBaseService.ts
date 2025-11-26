@@ -15,7 +15,7 @@ export class PurchaseBaseService {
       const { current = 1, pageSize = 10, orderNo, supplierName, goodsName, startDate, endDate } = params;
       const skip = (current - 1) * pageSize;
 
-      // 构建查询SQL - 关联订单明细、商品信息和供应商信息
+      // 构建查询SQL - 关联订单明细、商品信息、供应商信息和到货统计
       let sql = `
         SELECT 
           poi.id,
@@ -39,11 +39,23 @@ export class PurchaseBaseService {
           poi.piece_quantity as "purchasePieceQty",
           poi.unit_price as "unitPrice",
           poi.total_pieces as "totalPieces",
-          poi.total_price as "totalAmount"
+          poi.total_price as "totalAmount",
+          COALESCE(arr.arrived_box, 0) as "arrivedBoxQty",
+          COALESCE(arr.arrived_pack, 0) as "arrivedPackQty",
+          COALESCE(arr.arrived_piece, 0) as "arrivedPieceQty"
         FROM purchase_order_items poi
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
         JOIN goods g ON poi.goods_id = g.id
         JOIN suppliers s ON po.supplier_id = s.id
+        LEFT JOIN (
+          SELECT 
+            purchase_order_id,
+            SUM(box_quantity) as arrived_box,
+            SUM(pack_quantity) as arrived_pack,
+            SUM(piece_quantity) as arrived_piece
+          FROM arrival_records
+          GROUP BY purchase_order_id
+        ) arr ON arr.purchase_order_id = po.id
         WHERE po.base_id = ${baseId}
       `;
 
@@ -98,7 +110,7 @@ export class PurchaseBaseService {
       const totalResult = await prisma.$queryRawUnsafe(countSql);
       const total = Number((totalResult as any)[0]?.count || 0);
 
-      // 转换数据格式 - 计算单价
+      // 转换数据格式 - 计算单价、到货和相差
       const data = (purchaseItems as any[]).map(item => {
         const packPerBox = Number(item.packPerBox) || 1;
         const piecePerPack = Number(item.piecePerPack) || 1;
@@ -108,6 +120,21 @@ export class PurchaseBaseService {
         const unitPriceBox = unitPrice;
         const unitPricePack = unitPrice / packPerBox;
         const unitPricePiece = unitPricePack / piecePerPack;
+
+        // 采购数量
+        const purchaseBoxQty = Number(item.purchaseBoxQty) || 0;
+        const purchasePackQty = Number(item.purchasePackQty) || 0;
+        const purchasePieceQty = Number(item.purchasePieceQty) || 0;
+
+        // 到货数量
+        const arrivedBoxQty = Number(item.arrivedBoxQty) || 0;
+        const arrivedPackQty = Number(item.arrivedPackQty) || 0;
+        const arrivedPieceQty = Number(item.arrivedPieceQty) || 0;
+
+        // 相差数量 = 采购 - 到货
+        const diffBoxQty = purchaseBoxQty - arrivedBoxQty;
+        const diffPackQty = purchasePackQty - arrivedPackQty;
+        const diffPieceQty = purchasePieceQty - arrivedPieceQty;
         
         return {
           id: item.purchaseOrderId,       // 返回采购订单ID
@@ -119,9 +146,15 @@ export class PurchaseBaseService {
           goodsCode: item.goodsCode,
           goodsName: item.goodsName,
           retailPrice: Number(item.retailPrice),
-          purchaseBoxQty: Number(item.purchaseBoxQty),
-          purchasePackQty: Number(item.purchasePackQty),
-          purchasePieceQty: Number(item.purchasePieceQty),
+          purchaseBoxQty,
+          purchasePackQty,
+          purchasePieceQty,
+          arrivedBoxQty,
+          arrivedPackQty,
+          arrivedPieceQty,
+          diffBoxQty,
+          diffPackQty,
+          diffPieceQty,
           unitPriceBox,
           unitPricePack,
           unitPricePiece,

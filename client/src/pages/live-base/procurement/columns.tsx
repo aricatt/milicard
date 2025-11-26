@@ -121,6 +121,69 @@ export const getColumns = (
     align: 'right',
   },
   {
+    title: '到货箱',
+    dataIndex: 'arrivedBoxQty',
+    key: 'arrivedBoxQty',
+    width: 80,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => record.arrivedBoxQty || 0,
+  },
+  {
+    title: '到货盒',
+    dataIndex: 'arrivedPackQty',
+    key: 'arrivedPackQty',
+    width: 80,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => record.arrivedPackQty || 0,
+  },
+  {
+    title: '到货包',
+    dataIndex: 'arrivedPieceQty',
+    key: 'arrivedPieceQty',
+    width: 80,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => record.arrivedPieceQty || 0,
+  },
+  {
+    title: '相差箱',
+    dataIndex: 'diffBoxQty',
+    key: 'diffBoxQty',
+    width: 80,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => {
+      const diff = record.diffBoxQty || 0;
+      return diff > 0 ? <span style={{ color: '#ff4d4f' }}>{diff}</span> : diff;
+    },
+  },
+  {
+    title: '相差盒',
+    dataIndex: 'diffPackQty',
+    key: 'diffPackQty',
+    width: 80,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => {
+      const diff = record.diffPackQty || 0;
+      return diff > 0 ? <span style={{ color: '#ff4d4f' }}>{diff}</span> : diff;
+    },
+  },
+  {
+    title: '相差包',
+    dataIndex: 'diffPieceQty',
+    key: 'diffPieceQty',
+    width: 80,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => {
+      const diff = record.diffPieceQty || 0;
+      return diff > 0 ? <span style={{ color: '#ff4d4f' }}>{diff}</span> : diff;
+    },
+  },
+  {
     title: '拿货单价/箱',
     dataIndex: 'unitPriceBox',
     key: 'unitPriceBox',
