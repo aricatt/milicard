@@ -280,4 +280,53 @@ export class TransferController {
       }
     }
   }
+
+  /**
+   * 导入调货记录（通过名称匹配）
+   */
+  static async importTransferRecord(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '基地ID无效'
+        });
+      }
+
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '未授权'
+        });
+      }
+
+      const result = await TransferRecordService.importTransferRecord(baseId, req.body, userId);
+      res.json({
+        success: true,
+        data: result
+      });
+
+    } catch (error) {
+      logger.error('导入调货记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId: req.params.baseId,
+        body: req.body,
+        controller: 'TransferController'
+      });
+
+      if (error instanceof BaseError) {
+        res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: error instanceof Error ? error.message : '服务器内部错误'
+        });
+      }
+    }
+  }
 }

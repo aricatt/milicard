@@ -18,6 +18,7 @@ import {
 import { 
   PlusOutlined, 
   ExportOutlined, 
+  ImportOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
@@ -26,6 +27,8 @@ import { useBase } from '@/contexts/BaseContext';
 import { request } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
+import { useTransferExcel } from './useTransferExcel';
+import ImportModal from '@/components/ImportModal';
 import type { 
   TransferRecord, 
   TransferStats, 
@@ -46,6 +49,24 @@ const TransferManagement: React.FC = () => {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [form] = Form.useForm();
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useTransferExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+      loadStats();
+    },
+  });
 
   // 状态管理
   const [stats, setStats] = useState<TransferStats>({
@@ -190,13 +211,6 @@ const TransferManagement: React.FC = () => {
     }
   };
 
-  /**
-   * 导出数据
-   */
-  const handleExport = () => {
-    message.info('导出功能开发中...');
-  };
-
   // 初始化加载
   useEffect(() => {
     if (currentBase) {
@@ -296,6 +310,13 @@ const TransferManagement: React.FC = () => {
               统计信息
             </Button>
           </Popover>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入Excel
+          </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
@@ -488,6 +509,24 @@ const TransferManagement: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 导入模态框 */}
+      <ImportModal
+        title="导入调货记录"
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        onDownloadTemplate={handleDownloadTemplate}
+        loading={importLoading}
+        progress={importProgress}
+        tips={[
+          '调货日期格式：YYYY-MM-DD（如：2025-11-24）',
+          '商品名称必须与系统中已有的商品名称完全匹配',
+          '调出/调入直播间名称必须与系统中已有的位置名称匹配',
+          '调出/调入主播名称必须与系统中已有的人员名称匹配',
+          '数量字段为空时默认为0',
+        ]}
+      />
     </PageContainer>
   );
 };

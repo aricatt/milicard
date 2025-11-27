@@ -614,4 +614,157 @@ export class TransferRecordService {
       throw new BaseError('获取调货统计失败', BaseErrorType.DATABASE_ERROR);
     }
   }
+
+  /**
+   * 导入调货记录（通过名称匹配）
+   */
+  static async importTransferRecord(
+    baseId: number,
+    data: {
+      transferDate: string;
+      goodsName: string;
+      sourceLocationName: string;
+      sourceHandlerName: string;
+      destinationLocationName: string;
+      destinationHandlerName: string;
+      boxQuantity?: number;
+      packQuantity?: number;
+      pieceQuantity?: number;
+      notes?: string;
+    },
+    userId: string
+  ): Promise<any> {
+    try {
+      // 验证必填字段
+      if (!data.transferDate || !data.goodsName || 
+          !data.sourceLocationName || !data.sourceHandlerName ||
+          !data.destinationLocationName || !data.destinationHandlerName) {
+        throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
+      }
+
+      // 根据商品名称查找商品
+      const goods = await prisma.goods.findFirst({
+        where: {
+          name: data.goodsName,
+          baseId: baseId
+        }
+      });
+
+      if (!goods) {
+        throw new BaseError(`商品不存在: ${data.goodsName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 根据名称查找调出位置
+      const sourceLocation = await prisma.location.findFirst({
+        where: {
+          name: data.sourceLocationName,
+          baseId: baseId
+        }
+      });
+
+      if (!sourceLocation) {
+        throw new BaseError(`调出位置不存在: ${data.sourceLocationName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 根据名称查找调出主播
+      const sourceHandler = await prisma.personnel.findFirst({
+        where: {
+          name: data.sourceHandlerName,
+          baseId: baseId
+        }
+      });
+
+      if (!sourceHandler) {
+        throw new BaseError(`调出主播不存在: ${data.sourceHandlerName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 根据名称查找调入位置
+      const destinationLocation = await prisma.location.findFirst({
+        where: {
+          name: data.destinationLocationName,
+          baseId: baseId
+        }
+      });
+
+      if (!destinationLocation) {
+        throw new BaseError(`调入位置不存在: ${data.destinationLocationName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 根据名称查找调入主播
+      const destinationHandler = await prisma.personnel.findFirst({
+        where: {
+          name: data.destinationHandlerName,
+          baseId: baseId
+        }
+      });
+
+      if (!destinationHandler) {
+        throw new BaseError(`调入主播不存在: ${data.destinationHandlerName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 创建调货记录
+      const record = await prisma.transferRecord.create({
+        data: {
+          transferDate: new Date(data.transferDate),
+          goodsId: goods.id,
+          sourceLocationId: sourceLocation.id,
+          sourceHandlerId: sourceHandler.id,
+          destinationLocationId: destinationLocation.id,
+          destinationHandlerId: destinationHandler.id,
+          baseId: baseId,
+          boxQuantity: data.boxQuantity || 0,
+          packQuantity: data.packQuantity || 0,
+          pieceQuantity: data.pieceQuantity || 0,
+          notes: data.notes,
+          createdBy: userId,
+          updatedBy: userId
+        },
+        include: {
+          goods: true,
+          sourceLocation: true,
+          sourceHandler: true,
+          destinationLocation: true,
+          destinationHandler: true,
+          base: true
+        }
+      });
+
+      logger.info('调货记录导入成功', {
+        recordId: record.id,
+        goodsName: data.goodsName,
+        baseId,
+        userId,
+        service: 'milicard-api'
+      });
+
+      return {
+        id: record.id,
+        transferDate: record.transferDate.toISOString().split('T')[0],
+        goodsId: record.goodsId,
+        goodsName: record.goods?.name || '',
+        sourceLocationId: record.sourceLocationId,
+        sourceLocationName: record.sourceLocation?.name || '',
+        sourceHandlerId: record.sourceHandlerId,
+        sourceHandlerName: record.sourceHandler?.name || '',
+        destinationLocationId: record.destinationLocationId,
+        destinationLocationName: record.destinationLocation?.name || '',
+        destinationHandlerId: record.destinationHandlerId,
+        destinationHandlerName: record.destinationHandler?.name || '',
+        boxQuantity: record.boxQuantity,
+        packQuantity: record.packQuantity,
+        pieceQuantity: record.pieceQuantity,
+        notes: record.notes,
+      };
+
+    } catch (error) {
+      logger.error('导入调货记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId,
+        data,
+        userId,
+        service: 'milicard-api'
+      });
+      throw error;
+    }
+  }
 }
