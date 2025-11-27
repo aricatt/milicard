@@ -24,6 +24,7 @@ export class TransferController {
         sourceLocationId: req.query.sourceLocationId as string,
         destinationLocationId: req.query.destinationLocationId as string,
         goodsId: req.query.goodsId as string,
+        goodsName: req.query.goodsName as string,  // 商品名称搜索
         handlerId: req.query.handlerId as string,
         status: req.query.status as TransferStatus,
         startDate: req.query.startDate as string,

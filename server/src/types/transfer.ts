@@ -5,9 +5,10 @@
 export interface CreateTransferRequest {
   transferDate: string; // YYYY-MM-DD
   goodsId: string;
-  sourceLocationId: string;
-  destinationLocationId: string;
-  handlerId: string;
+  sourceLocationId: number;
+  sourceHandlerId: string;        // 调出主播
+  destinationLocationId: number;
+  destinationHandlerId: string;   // 调入主播
   boxQuantity?: number;
   packQuantity?: number;
   pieceQuantity?: number;
@@ -18,9 +19,10 @@ export interface CreateTransferRequest {
 export interface UpdateTransferRequest {
   transferDate?: string;
   goodsId?: string;
-  sourceLocationId?: string;
-  destinationLocationId?: string;
-  handlerId?: string;
+  sourceLocationId?: number;
+  sourceHandlerId?: string;
+  destinationLocationId?: number;
+  destinationHandlerId?: string;
   boxQuantity?: number;
   packQuantity?: number;
   pieceQuantity?: number;
@@ -34,6 +36,7 @@ export interface TransferQueryParams {
   sourceLocationId?: string;
   destinationLocationId?: string;
   goodsId?: string;
+  goodsName?: string;  // 商品名称模糊搜索
   handlerId?: string;
   status?: TransferStatus;
   startDate?: string;
@@ -44,11 +47,14 @@ export interface TransferResponse {
   id: string;
   transferDate: string;
   goodsId: string;
+  goodsCode?: string;
   goodsName: string;
-  sourceLocationId: string;
+  sourceLocationId: number;
   sourceLocationName: string;
-  destinationLocationId: string;
+  sourceHandlerName?: string;
+  destinationLocationId: number;
   destinationLocationName: string;
+  destinationHandlerName?: string;
   handlerId: string;
   handlerName: string;
   baseId: number;
@@ -76,9 +82,11 @@ export interface TransferStatsResponse {
   success: boolean;
   data: {
     totalRecords: number;
-    pendingRecords: number;
-    completedRecords: number;
-    cancelledRecords: number;
+    totalGoods: number;
+    totalBoxQuantity: number;
+    totalPackQuantity: number;
+    totalPieceQuantity: number;
+    todayRecords: number;
   };
   message?: string;
 }

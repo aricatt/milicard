@@ -26,6 +26,7 @@ export class TransferRecordService {
         sourceLocationId,
         destinationLocationId,
         goodsId,
+        goodsName,
         handlerId,
         status,
         startDate,
@@ -49,6 +50,16 @@ export class TransferRecordService {
 
       if (goodsId) {
         where.goodsId = goodsId;
+      }
+
+      // 商品名称模糊搜索
+      if (goodsName) {
+        where.goods = {
+          name: {
+            contains: goodsName,
+            mode: 'insensitive'
+          }
+        };
       }
 
       if (handlerId) {
@@ -91,6 +102,13 @@ export class TransferRecordService {
                 type: true
               }
             },
+            sourceHandler: {
+              select: {
+                id: true,
+                name: true,
+                role: true
+              }
+            },
             destinationLocation: {
               select: {
                 id: true,
@@ -98,7 +116,7 @@ export class TransferRecordService {
                 type: true
               }
             },
-            handler: {
+            destinationHandler: {
               select: {
                 id: true,
                 name: true,
@@ -120,13 +138,16 @@ export class TransferRecordService {
         id: record.id,
         transferDate: record.transferDate.toISOString().split('T')[0],
         goodsId: record.goodsId,
+        goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         sourceLocationId: record.sourceLocationId,
         sourceLocationName: record.sourceLocation?.name || '',
+        sourceHandlerName: record.sourceHandler?.name || '',
         destinationLocationId: record.destinationLocationId,
         destinationLocationName: record.destinationLocation?.name || '',
-        handlerId: record.handlerId,
-        handlerName: record.handler?.name || '',
+        destinationHandlerName: record.destinationHandler?.name || '',
+        handlerId: record.sourceHandlerId,  // 兼容旧字段
+        handlerName: record.sourceHandler?.name || '',
         baseId: record.baseId,
         baseName: record.base?.name || '',
         boxQuantity: record.boxQuantity,
@@ -169,7 +190,7 @@ export class TransferRecordService {
     try {
       // 验证必填字段
       if (!data.transferDate || !data.goodsId || !data.sourceLocationId || 
-          !data.destinationLocationId || !data.handlerId) {
+          !data.destinationLocationId || !data.sourceHandlerId || !data.destinationHandlerId) {
         throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
       }
 
@@ -182,11 +203,7 @@ export class TransferRecordService {
       const goods = await prisma.goods.findFirst({
         where: {
           id: data.goodsId,
-          goodsBases: {
-            some: {
-              baseId: baseId
-            }
-          }
+          baseId: baseId
         },
         select: {
           id: true,
@@ -233,10 +250,10 @@ export class TransferRecordService {
         throw new BaseError('调入位置不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
-      // 验证经手人是否存在且属于该基地
-      const handler = await prisma.personnel.findFirst({
+      // 验证调出主播是否存在且属于该基地
+      const sourceHandler = await prisma.personnel.findFirst({
         where: {
-          id: data.handlerId,
+          id: data.sourceHandlerId,
           baseId: baseId
         },
         select: {
@@ -246,8 +263,25 @@ export class TransferRecordService {
         }
       });
 
-      if (!handler) {
-        throw new BaseError('经手人不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      if (!sourceHandler) {
+        throw new BaseError('调出主播不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 验证调入主播是否存在且属于该基地
+      const destinationHandler = await prisma.personnel.findFirst({
+        where: {
+          id: data.destinationHandlerId,
+          baseId: baseId
+        },
+        select: {
+          id: true,
+          name: true,
+          role: true
+        }
+      });
+
+      if (!destinationHandler) {
+        throw new BaseError('调入主播不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
       // 创建调货记录
@@ -256,13 +290,14 @@ export class TransferRecordService {
           transferDate: new Date(data.transferDate),
           goodsId: data.goodsId,
           sourceLocationId: data.sourceLocationId,
+          sourceHandlerId: data.sourceHandlerId,
           destinationLocationId: data.destinationLocationId,
-          handlerId: data.handlerId,
+          destinationHandlerId: data.destinationHandlerId,
           baseId: baseId,
           boxQuantity: data.boxQuantity || 0,
           packQuantity: data.packQuantity || 0,
           pieceQuantity: data.pieceQuantity || 0,
-          status: data.status || 'PENDING',
+          status: data.status || 'COMPLETED',
           notes: data.notes,
           createdBy: userId,
           updatedBy: userId
@@ -282,6 +317,13 @@ export class TransferRecordService {
               type: true
             }
           },
+          sourceHandler: {
+            select: {
+              id: true,
+              name: true,
+              role: true
+            }
+          },
           destinationLocation: {
             select: {
               id: true,
@@ -289,7 +331,7 @@ export class TransferRecordService {
               type: true
             }
           },
-          handler: {
+          destinationHandler: {
             select: {
               id: true,
               name: true,
@@ -316,13 +358,16 @@ export class TransferRecordService {
         id: record.id,
         transferDate: record.transferDate.toISOString().split('T')[0],
         goodsId: record.goodsId,
+        goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         sourceLocationId: record.sourceLocationId,
         sourceLocationName: record.sourceLocation?.name || '',
+        sourceHandlerName: record.sourceHandler?.name || '',
         destinationLocationId: record.destinationLocationId,
         destinationLocationName: record.destinationLocation?.name || '',
-        handlerId: record.handlerId,
-        handlerName: record.handler?.name || '',
+        destinationHandlerName: record.destinationHandler?.name || '',
+        handlerId: record.sourceHandlerId,
+        handlerName: record.sourceHandler?.name || '',
         baseId: record.baseId,
         baseName: record.base?.name || '',
         boxQuantity: record.boxQuantity,
@@ -512,30 +557,38 @@ export class TransferRecordService {
    */
   static async getTransferStats(baseId: number): Promise<TransferStatsResponse> {
     try {
-      const [totalRecords, pendingRecords, completedRecords, cancelledRecords] = await Promise.all([
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const [totalRecords, totalGoods, quantityStats, todayRecords] = await Promise.all([
         // 总调货记录数
         prisma.transferRecord.count({
           where: { baseId }
         }),
-        // 待处理记录数
-        prisma.transferRecord.count({
-          where: {
-            baseId,
-            status: 'PENDING'
+        // 涉及商品数
+        prisma.transferRecord.groupBy({
+          by: ['goodsId'],
+          where: { baseId }
+        }),
+        // 总调货数量
+        prisma.transferRecord.aggregate({
+          where: { baseId },
+          _sum: {
+            boxQuantity: true,
+            packQuantity: true,
+            pieceQuantity: true
           }
         }),
-        // 已完成记录数
+        // 今日调货数
         prisma.transferRecord.count({
           where: {
             baseId,
-            status: 'COMPLETED'
-          }
-        }),
-        // 已取消记录数
-        prisma.transferRecord.count({
-          where: {
-            baseId,
-            status: 'CANCELLED'
+            transferDate: {
+              gte: today,
+              lt: tomorrow
+            }
           }
         })
       ]);
@@ -544,9 +597,11 @@ export class TransferRecordService {
         success: true,
         data: {
           totalRecords,
-          pendingRecords,
-          completedRecords,
-          cancelledRecords
+          totalGoods: totalGoods.length,
+          totalBoxQuantity: quantityStats._sum.boxQuantity || 0,
+          totalPackQuantity: quantityStats._sum.packQuantity || 0,
+          totalPieceQuantity: quantityStats._sum.pieceQuantity || 0,
+          todayRecords
         }
       };
 
