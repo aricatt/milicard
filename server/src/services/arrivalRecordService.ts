@@ -1,6 +1,7 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
 import { BaseError, BaseErrorType } from '../types/base';
+import { GoodsCostService } from './goodsCostService';
 import type {
   CreateArrivalRequest,
   UpdateArrivalRequest,
@@ -323,6 +324,54 @@ export class ArrivalRecordService {
         service: 'milicard-api'
       });
 
+      // 更新商品平均成本
+      try {
+        // 获取采购单价（每箱）
+        const unitPricePerBox = Number(purchaseItem.unitPrice);
+        
+        // 计算当前库存（到货前的库存，以箱为单位）
+        // 从所有到货记录中汇总（不包括本次）
+        const existingStock = await prisma.arrivalRecord.aggregate({
+          where: {
+            goodsId: goodsId,
+            baseId: baseId,
+            id: { not: record.id }  // 排除本次到货
+          },
+          _sum: {
+            boxQuantity: true
+          }
+        });
+        
+        const currentStockBoxes = existingStock._sum.boxQuantity || 0;
+        const arrivalBoxes = data.boxQuantity || 0;
+        
+        // 更新平均成本
+        await GoodsCostService.updateAverageCost(
+          goodsId,
+          baseId,
+          unitPricePerBox,
+          arrivalBoxes,
+          currentStockBoxes
+        );
+        
+        logger.info('商品平均成本更新成功', {
+          goodsId,
+          baseId,
+          unitPricePerBox,
+          arrivalBoxes,
+          currentStockBoxes,
+          service: 'milicard-api'
+        });
+      } catch (costError) {
+        // 成本更新失败不影响到货记录创建
+        logger.error('更新商品平均成本失败', {
+          error: costError instanceof Error ? costError.message : String(costError),
+          goodsId,
+          baseId,
+          service: 'milicard-api'
+        });
+      }
+
       return {
         id: record.id,
         arrivalDate: record.arrivalDate.toISOString().split('T')[0],
@@ -626,6 +675,50 @@ export class ArrivalRecordService {
         userId,
         service: 'milicard-api'
       });
+
+      // 更新商品平均成本
+      try {
+        const unitPricePerBox = Number(purchaseItem.unitPrice);
+        
+        // 计算当前库存（到货前的库存，以箱为单位）
+        const existingStock = await prisma.arrivalRecord.aggregate({
+          where: {
+            goodsId: goodsId,
+            baseId: baseId,
+            id: { not: record.id }
+          },
+          _sum: {
+            boxQuantity: true
+          }
+        });
+        
+        const currentStockBoxes = existingStock._sum.boxQuantity || 0;
+        const arrivalBoxes = newBoxQty;
+        
+        await GoodsCostService.updateAverageCost(
+          goodsId,
+          baseId,
+          unitPricePerBox,
+          arrivalBoxes,
+          currentStockBoxes
+        );
+        
+        logger.info('商品平均成本更新成功（导入）', {
+          goodsId,
+          baseId,
+          unitPricePerBox,
+          arrivalBoxes,
+          currentStockBoxes,
+          service: 'milicard-api'
+        });
+      } catch (costError) {
+        logger.error('更新商品平均成本失败（导入）', {
+          error: costError instanceof Error ? costError.message : String(costError),
+          goodsId,
+          baseId,
+          service: 'milicard-api'
+        });
+      }
 
       return {
         id: record.id,

@@ -108,7 +108,6 @@ model Location {
   anchorProfits        AnchorProfit[]
   arrivalOrders        ArrivalOrder[]
   arrivalRecords       ArrivalRecord[]
-  inventory            Inventory[]
   inventoryLedgers     InventoryLedger[]  @relation("InventoryLedgerLocation")
   base                 Base               @relation(fields: [baseId], references: [id])
   purchaseOrders       PurchaseOrder[]    @relation("PurchaseOrderTarget")
@@ -205,21 +204,18 @@ model Goods {
   @@map("goods")
 }
 
+// 商品成本表：存储每个商品的移动加权平均成本
 model Inventory {
-  id            String   @id @default(uuid())
-  goodsId       String   @map("goods_id")
-  locationId    Int      @map("location_id")
-  baseId        Int      @map("base_id")
-  stockQuantity Int      @default(0) @map("stock_quantity")
-  averageCost   Decimal  @default(0) @map("average_cost") @db.Decimal(12, 2)
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  base          Base     @relation(fields: [baseId], references: [id])
-  goods         Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
-  location      Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  goodsId     String   @map("goods_id")
+  baseId      Int      @map("base_id")
+  averageCost Decimal  @default(0) @map("average_cost") @db.Decimal(12, 2)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  base        Base     @relation(fields: [baseId], references: [id])
+  goods       Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
 
-  @@unique([goodsId, locationId])
+  @@unique([goodsId, baseId])
   @@index([goodsId])
-  @@index([locationId])
   @@index([baseId])
   @@map("inventory")
 }
