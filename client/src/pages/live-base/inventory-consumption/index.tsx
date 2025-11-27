@@ -1,693 +1,453 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  Table, 
-  Card, 
   Button, 
   Space, 
-  Tag, 
-  Statistic, 
-  Row, 
-  Col, 
-  Input, 
-  Select, 
   Modal,
   Form,
   DatePicker,
   InputNumber,
-  Tabs,
-  App 
+  Select,
+  App,
+  Popover,
+  Descriptions,
+  Input,
+  Row,
+  Col,
+  Divider,
+  Spin,
+  Alert,
 } from 'antd';
 import { 
   PlusOutlined, 
-  SearchOutlined, 
   ExportOutlined, 
-  ReloadOutlined,
-  WarningOutlined,
-  CheckCircleOutlined,
-  DeleteOutlined,
-  DatabaseOutlined,
-  ShoppingOutlined
+  ImportOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
+import type { ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
-import type { ColumnsType } from 'antd/es/table';
+import { request } from '@umijs/max';
 import dayjs from 'dayjs';
-import styles from './index.less';
+import { getColumns } from './columns';
+import { useConsumptionExcel } from './useConsumptionExcel';
+import ImportModal from '@/components/ImportModal';
+import type { 
+  ConsumptionRecord, 
+  ConsumptionStats, 
+  ConsumptionFormValues,
+  LocationOption,
+  PersonnelOption,
+  GoodsOption,
+} from './types';
 
-const { Search } = Input;
-const { Option } = Select;
 const { TextArea } = Input;
-const { TabPane } = Tabs;
-
-// 库存数据类型定义
-interface InventoryRecord {
-  id: string;
-  goodsName: string;
-  locationName: string;
-  boxQuantity: number;
-  packQuantity: number;
-  pieceQuantity: number;
-  totalValue: number;
-  lastUpdated: string;
-}
-
-// 消耗记录数据类型定义
-interface ConsumptionRecord {
-  id: string;
-  consumptionDate: string;
-  goodsName: string;
-  locationName: string;
-  handlerName: string;
-  boxQuantity: number;
-  packQuantity: number;
-  pieceQuantity: number;
-  reason: string;
-  notes: string;
-  createdAt: string;
-}
-
-// 统计数据类型
-interface Stats {
-  totalInventoryValue: number;
-  totalConsumptions: number;
-  todayConsumptions: number;
-  lowStockItems: number;
-}
 
 /**
- * 库存和消耗管理页面
- * 显示库存状态和记录销售消耗情况
+ * 消耗管理页面
+ * 记录主播销售消耗情况
  */
-const InventoryConsumptionManagement: React.FC = () => {
+const ConsumptionManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
-  
-  // 状态管理
-  const [loading, setLoading] = useState(false);
-  const [inventoryData, setInventoryData] = useState<InventoryRecord[]>([]);
-  const [consumptionData, setConsumptionData] = useState<ConsumptionRecord[]>([]);
-  const [stats, setStats] = useState<Stats>({
-    totalInventoryValue: 0,
-    totalConsumptions: 0,
-    todayConsumptions: 0,
-    lowStockItems: 0,
-  });
-  
-  // 筛选条件
-  const [searchText, setSearchText] = useState('');
-  const [locationFilter, setLocationFilter] = useState<string>('');
-  const [tableSize, setTableSize] = useState<'small' | 'middle' | 'large'>('small');
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 30,
-    total: 0,
-  });
-
-  // 模态框状态
-  const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
+  const actionRef = useRef<ActionType>();
   const [form] = Form.useForm();
 
-  // 库存表格列定义
-  const inventoryColumns: ColumnsType<InventoryRecord> = [
-    {
-      title: '商品名称',
-      dataIndex: 'goodsName',
-      key: 'goodsName',
-      width: 200,
-      fixed: 'left',
-      render: (text: string) => <strong>{text}</strong>,
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useConsumptionExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+      loadStats();
     },
-    {
-      title: '位置',
-      dataIndex: 'locationName',
-      key: 'locationName',
-      width: 120,
-      render: (text: string) => (
-        <Tag color="blue" icon={<DatabaseOutlined />}>
-          {text}
-        </Tag>
-      ),
-    },
-    {
-      title: '库存箱',
-      dataIndex: 'boxQuantity',
-      key: 'boxQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => (
-        <span style={{ color: value < 5 ? '#ff4d4f' : '#000' }}>
-          {value > 0 ? `${value}箱` : '-'}
-        </span>
-      ),
-    },
-    {
-      title: '库存包',
-      dataIndex: 'packQuantity',
-      key: 'packQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => (
-        <span style={{ color: value < 10 ? '#ff4d4f' : '#000' }}>
-          {value > 0 ? `${value}包` : '-'}
-        </span>
-      ),
-    },
-    {
-      title: '库存盒',
-      dataIndex: 'pieceQuantity',
-      key: 'pieceQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => (
-        <span style={{ color: value < 20 ? '#ff4d4f' : '#000' }}>
-          {value > 0 ? `${value}盒` : '-'}
-        </span>
-      ),
-    },
-    {
-      title: '总价值',
-      dataIndex: 'totalValue',
-      key: 'totalValue',
-      width: 120,
-      align: 'right',
-      render: (value: number) => `¥${value.toFixed(2)}`,
-    },
-    {
-      title: '最后更新',
-      dataIndex: 'lastUpdated',
-      key: 'lastUpdated',
-      width: 150,
-      render: (value: string) => dayjs(value).format('YYYY-MM-DD HH:mm'),
-    },
-  ];
+  });
 
-  // 消耗记录表格列定义
-  const consumptionColumns: ColumnsType<ConsumptionRecord> = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      render: (text: string) => text.slice(-8),
-    },
-    {
-      title: '日期',
-      dataIndex: 'consumptionDate',
-      key: 'consumptionDate',
-      width: 120,
-      render: (value: string) => dayjs(value).format('YYYY-MM-DD'),
-    },
-    {
-      title: '商品',
-      dataIndex: 'goodsName',
-      key: 'goodsName',
-      width: 200,
-      render: (text: string) => <strong>{text}</strong>,
-    },
-    {
-      title: '位置',
-      dataIndex: 'locationName',
-      key: 'locationName',
-      width: 120,
-      render: (text: string) => (
-        <Tag color="green" icon={<ShoppingOutlined />}>
-          {text}
-        </Tag>
-      ),
-    },
-    {
-      title: '经手人',
-      dataIndex: 'handlerName',
-      key: 'handlerName',
-      width: 100,
-    },
-    {
-      title: '消耗箱',
-      dataIndex: 'boxQuantity',
-      key: 'boxQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => value > 0 ? `${value}箱` : '-',
-    },
-    {
-      title: '消耗包',
-      dataIndex: 'packQuantity',
-      key: 'packQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => value > 0 ? `${value}包` : '-',
-    },
-    {
-      title: '消耗盒',
-      dataIndex: 'pieceQuantity',
-      key: 'pieceQuantity',
-      width: 80,
-      align: 'right',
-      render: (value: number) => value > 0 ? `${value}盒` : '-',
-    },
-    {
-      title: '原因',
-      dataIndex: 'reason',
-      key: 'reason',
-      width: 100,
-      render: (text: string) => (
-        <Tag color="orange">{text}</Tag>
-      ),
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 150,
-      render: (value: string) => dayjs(value).format('YYYY-MM-DD HH:mm'),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      width: 80,
-      fixed: 'right',
-      render: (_, record) => (
-        <Button 
-          type="link" 
-          size="small" 
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => handleDeleteConsumption(record)}
-        >
-          删除
-        </Button>
-      ),
-    },
-  ];
+  // 状态管理
+  const [stats, setStats] = useState<ConsumptionStats>({
+    totalRecords: 0,
+    totalGoods: 0,
+    totalBoxQuantity: 0,
+    totalPackQuantity: 0,
+    totalPieceQuantity: 0,
+    todayRecords: 0,
+  });
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
 
-  // 获取库存数据
-  const fetchInventoryData = async () => {
-    if (!currentBase) {
-      message.warning('请先选择基地');
-      return;
-    }
+  // 期初数据状态
+  const [openingStock, setOpeningStock] = useState<{
+    openingBoxQty: number;
+    openingPackQty: number;
+    openingPieceQty: number;
+    unitPricePerBox: number;
+  } | null>(null);
+  const [openingStockLoading, setOpeningStockLoading] = useState(false);
 
-    setLoading(true);
+  // 期末数据（用户填写）
+  const [closingStock, setClosingStock] = useState({
+    closingBoxQty: 0,
+    closingPackQty: 0,
+    closingPieceQty: 0,
+  });
+
+  // 下拉选项
+  const [locationOptions, setLocationOptions] = useState<LocationOption[]>([]);
+  const [personnelOptions, setPersonnelOptions] = useState<PersonnelOption[]>([]);
+  const [goodsOptions, setGoodsOptions] = useState<GoodsOption[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState(false);
+
+  /**
+   * 加载统计数据
+   */
+  const loadStats = async () => {
+    if (!currentBase) return;
+    
     try {
-      // 模拟库存数据
-      const mockInventoryData: InventoryRecord[] = [
-        {
-          id: '1',
-          goodsName: '苹果手机壳',
-          locationName: '主仓库',
-          boxQuantity: 8,
-          packQuantity: 15,
-          pieceQuantity: 120,
-          totalValue: 2400.00,
-          lastUpdated: '2024-01-15T10:30:00Z',
-        },
-        {
-          id: '2',
-          goodsName: '数据线',
-          locationName: '直播间A',
-          boxQuantity: 2,
-          packQuantity: 5,
-          pieceQuantity: 30,
-          totalValue: 450.00,
-          lastUpdated: '2024-01-14T14:20:00Z',
-        },
-      ];
+      const result = await request(`/api/v1/bases/${currentBase.id}/consumptions/stats`, {
+        method: 'GET',
+      });
 
-      // 模拟消耗数据
-      const mockConsumptionData: ConsumptionRecord[] = [
-        {
-          id: '1',
-          consumptionDate: '2024-01-15',
-          goodsName: '苹果手机壳',
-          locationName: '直播间A',
-          handlerName: '张三',
-          boxQuantity: 0,
-          packQuantity: 2,
-          pieceQuantity: 0,
-          reason: '销售',
-          notes: '直播销售',
-          createdAt: '2024-01-15T16:30:00Z',
-        },
-        {
-          id: '2',
-          consumptionDate: '2024-01-14',
-          goodsName: '数据线',
-          locationName: '直播间B',
-          handlerName: '李四',
-          boxQuantity: 0,
-          packQuantity: 0,
-          pieceQuantity: 10,
-          reason: '销售',
-          notes: '线上销售',
-          createdAt: '2024-01-14T18:20:00Z',
-        },
-      ];
-
-      setInventoryData(mockInventoryData);
-      setConsumptionData(mockConsumptionData);
-      setPagination(prev => ({
-        ...prev,
-        total: mockConsumptionData.length,
-      }));
-      
-      // 计算统计数据
-      calculateStats(mockInventoryData, mockConsumptionData);
+      if (result.success && result.data) {
+        setStats({
+          totalRecords: result.data.totalRecords || 0,
+          totalGoods: result.data.totalGoods || 0,
+          totalBoxQuantity: result.data.totalBoxQuantity || 0,
+          totalPackQuantity: result.data.totalPackQuantity || 0,
+          totalPieceQuantity: result.data.totalPieceQuantity || 0,
+          todayRecords: result.data.todayRecords || 0,
+        });
+      }
     } catch (error) {
-      console.error('获取库存数据失败:', error);
-      message.error('获取库存数据失败，请稍后重试');
-    } finally {
-      setLoading(false);
+      console.error('获取消耗统计失败:', error);
     }
   };
 
-  // 计算统计数据
-  const calculateStats = (inventoryData: InventoryRecord[], consumptionData: ConsumptionRecord[]) => {
-    const now = dayjs();
-    const today = now.format('YYYY-MM-DD');
+  /**
+   * 加载下拉选项数据
+   */
+  const loadOptions = async () => {
+    if (!currentBase) return;
     
-    const totalInventoryValue = inventoryData.reduce((sum, item) => sum + item.totalValue, 0);
-    const totalConsumptions = consumptionData.length;
-    const todayConsumptions = consumptionData.filter(item => 
-      dayjs(item.consumptionDate).format('YYYY-MM-DD') === today
-    ).length;
-    const lowStockItems = inventoryData.filter(item => 
-      item.boxQuantity < 5 || item.packQuantity < 10 || item.pieceQuantity < 20
-    ).length;
-    
-    setStats({
-      totalInventoryValue,
-      totalConsumptions,
-      todayConsumptions,
-      lowStockItems,
-    });
+    setOptionsLoading(true);
+    try {
+      const [locationsRes, personnelRes, goodsRes] = await Promise.all([
+        request(`/api/v1/bases/${currentBase.id}/locations`, { method: 'GET' }),
+        request(`/api/v1/bases/${currentBase.id}/personnel`, { method: 'GET' }),
+        request(`/api/v1/bases/${currentBase.id}/goods`, { method: 'GET', params: { pageSize: 1000 } }),
+      ]);
+
+      if (locationsRes.success) {
+        setLocationOptions(locationsRes.data || []);
+      }
+      if (personnelRes.success) {
+        setPersonnelOptions(personnelRes.data || []);
+      }
+      if (goodsRes.success) {
+        setGoodsOptions(goodsRes.data || []);
+      }
+    } catch (error) {
+      console.error('加载选项数据失败:', error);
+    } finally {
+      setOptionsLoading(false);
+    }
   };
 
-  // 处理删除消耗记录
-  const handleDeleteConsumption = (record: ConsumptionRecord) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除消耗记录 ${record.goodsName} 吗？`,
-      okText: '确定',
-      cancelText: '取消',
-      onOk: () => {
+  /**
+   * 删除消耗记录
+   */
+  const handleDelete = async (record: ConsumptionRecord) => {
+    if (!currentBase) return;
+
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/consumptions/${record.id}`, {
+        method: 'DELETE',
+      });
+
+      if (result.success) {
         message.success('删除成功');
-        fetchInventoryData();
-      },
-    });
+        actionRef.current?.reload();
+        loadStats();
+      } else {
+        message.error(result.message || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除消耗记录失败:', error);
+      message.error('删除失败');
+    }
   };
 
-  // 处理创建消耗记录
-  const handleCreateConsumption = async (values: any) => {
-    if (!currentBase) {
-      message.warning('请先选择基地');
+  /**
+   * 获取期初数据
+   */
+  const loadOpeningStock = useCallback(async (goodsId: string, locationId: number) => {
+    if (!currentBase || !goodsId || !locationId) {
+      setOpeningStock(null);
       return;
     }
+
+    setOpeningStockLoading(true);
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/consumptions/opening-stock`, {
+        method: 'GET',
+        params: { goodsId, locationId },
+      });
+
+      if (result.success && result.data) {
+        setOpeningStock(result.data);
+        // 重置期末数据
+        setClosingStock({
+          closingBoxQty: 0,
+          closingPackQty: 0,
+          closingPieceQty: 0,
+        });
+      } else {
+        setOpeningStock(null);
+      }
+    } catch (error) {
+      console.error('获取期初数据失败:', error);
+      setOpeningStock(null);
+    } finally {
+      setOpeningStockLoading(false);
+    }
+  }, [currentBase]);
+
+  /**
+   * 商品或直播间变化时加载期初数据
+   */
+  const handleGoodsOrLocationChange = () => {
+    const goodsId = form.getFieldValue('goodsId');
+    const locationId = form.getFieldValue('locationId');
+    if (goodsId && locationId) {
+      loadOpeningStock(goodsId, locationId);
+    } else {
+      setOpeningStock(null);
+    }
+  };
+
+  /**
+   * 计算消耗数量
+   */
+  const calculateConsumption = () => {
+    if (!openingStock) return { boxQty: 0, packQty: 0, pieceQty: 0 };
+    return {
+      boxQty: openingStock.openingBoxQty - closingStock.closingBoxQty,
+      packQty: openingStock.openingPackQty - closingStock.closingPackQty,
+      pieceQty: openingStock.openingPieceQty - closingStock.closingPieceQty,
+    };
+  };
+
+  /**
+   * 创建消耗记录
+   */
+  const handleCreate = async (values: ConsumptionFormValues) => {
+    if (!currentBase || !openingStock) return;
 
     setCreateLoading(true);
     try {
-      // 这里应该调用后端API
-      console.log('创建消耗记录:', values);
-      
-      message.success('消耗记录创建成功');
-      setCreateModalVisible(false);
-      form.resetFields();
-      fetchInventoryData();
-    } catch (error) {
+      const result = await request(`/api/v1/bases/${currentBase.id}/consumptions`, {
+        method: 'POST',
+        data: {
+          consumptionDate: values.consumptionDate.format('YYYY-MM-DD'),
+          goodsId: values.goodsId,
+          locationId: values.locationId,
+          handlerId: values.handlerId,
+          openingBoxQty: openingStock.openingBoxQty,
+          openingPackQty: openingStock.openingPackQty,
+          openingPieceQty: openingStock.openingPieceQty,
+          closingBoxQty: closingStock.closingBoxQty,
+          closingPackQty: closingStock.closingPackQty,
+          closingPieceQty: closingStock.closingPieceQty,
+          notes: values.notes,
+        },
+      });
+
+      if (result.success) {
+        message.success('创建成功');
+        setCreateModalVisible(false);
+        form.resetFields();
+        setOpeningStock(null);
+        setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
+        actionRef.current?.reload();
+        loadStats();
+      } else {
+        message.error(result.message || '创建失败');
+      }
+    } catch (error: any) {
       console.error('创建消耗记录失败:', error);
-      message.error('创建消耗记录失败，请稍后重试');
+      message.error(error.message || '创建失败');
     } finally {
       setCreateLoading(false);
     }
   };
 
-  // 导出数据
-  const handleExport = () => {
-    message.info('导出功能开发中...');
-  };
-
-  // 刷新数据
-  const handleRefresh = () => {
-    fetchInventoryData();
-  };
-
-  // 表格变化处理
-  const handleTableChange = (newPagination: any) => {
-    setPagination(prev => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
-  };
-
-  // 搜索处理
-  const handleSearch = (value: string) => {
-    setSearchText(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
   // 页面加载时获取数据
   useEffect(() => {
     if (currentBase) {
-      fetchInventoryData();
+      loadStats();
+      loadOptions();
     }
-  }, [currentBase, pagination.current, pagination.pageSize, searchText, locationFilter]);
+  }, [currentBase]);
+
+  // 统计详情内容
+  const statsContent = (
+    <Descriptions column={1} size="small">
+      <Descriptions.Item label="总消耗记录">{stats.totalRecords} 条</Descriptions.Item>
+      <Descriptions.Item label="今日消耗">{stats.todayRecords} 条</Descriptions.Item>
+      <Descriptions.Item label="涉及商品">{stats.totalGoods} 种</Descriptions.Item>
+      <Descriptions.Item label="总消耗箱数">{stats.totalBoxQuantity} 箱</Descriptions.Item>
+      <Descriptions.Item label="总消耗盒数">{stats.totalPackQuantity} 盒</Descriptions.Item>
+      <Descriptions.Item label="总消耗包数">{stats.totalPieceQuantity} 包</Descriptions.Item>
+    </Descriptions>
+  );
 
   // 如果没有选择基地
   if (!currentBase) {
     return (
       <PageContainer>
-        <Card>
-          <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <WarningOutlined style={{ fontSize: '48px', color: '#faad14' }} />
-            <h3>请先选择基地</h3>
-            <p>库存和消耗管理需要在特定基地下进行，请先选择一个基地。</p>
-          </div>
-        </Card>
+        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+          请先选择基地
+        </div>
       </PageContainer>
     );
   }
 
+  const columns = getColumns({ onDelete: handleDelete });
+
   return (
-    <PageContainer
-      title="库存和消耗"
-      subTitle={`当前基地：${currentBase.name}`}
-      extra={[
-        <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
-          导出
-        </Button>,
-        <Button key="refresh" icon={<ReloadOutlined />} onClick={handleRefresh}>
-          刷新
-        </Button>,
-        <Button 
-          key="add" 
-          type="primary" 
-          icon={<PlusOutlined />}
-          onClick={() => setCreateModalVisible(true)}
-        >
-          添加消耗记录
-        </Button>,
-      ]}
-    >
-      {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="库存总价值"
-              value={stats.totalInventoryValue}
-              precision={2}
-              prefix="¥"
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="消耗记录"
-              value={stats.totalConsumptions}
-              suffix="条"
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="今日消耗"
-              value={stats.todayConsumptions}
-              suffix="条"
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="低库存商品"
-              value={stats.lowStockItems}
-              suffix="种"
-              valueStyle={{ color: '#ff4d4f' }}
-            />
-          </Card>
-        </Col>
-      </Row>
+    <PageContainer>
+      <ProTable<ConsumptionRecord>
+        columns={columns}
+        actionRef={actionRef}
+        cardBordered
+        request={async (params) => {
+          if (!currentBase) {
+            return { data: [], success: true, total: 0 };
+          }
 
-      {/* 筛选工具栏 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
-          <Col span={8}>
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder="搜索商品名称"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onPressEnter={() => handleSearch(searchText)}
-              />
-              <Button
-                type="primary"
-                icon={<SearchOutlined />}
-                onClick={() => handleSearch(searchText)}
-              >
-                搜索
-              </Button>
-            </Space.Compact>
-          </Col>
-          <Col span={4}>
-            <Select
-              placeholder="选择位置"
-              allowClear
-              style={{ width: '100%' }}
-              value={locationFilter}
-              onChange={(value) => setLocationFilter(value || '')}
+          try {
+            const result = await request(`/api/v1/bases/${currentBase.id}/consumptions`, {
+              method: 'GET',
+              params: {
+                current: params.current,
+                pageSize: params.pageSize,
+                goodsName: params.goodsName,
+                startDate: params.consumptionDate?.[0],
+                endDate: params.consumptionDate?.[1],
+              },
+            });
+
+            return {
+              data: result.data || [],
+              success: result.success,
+              total: result.total || 0,
+            };
+          } catch (error) {
+            console.error('获取消耗记录失败:', error);
+            return { data: [], success: false, total: 0 };
+          }
+        }}
+        rowKey="id"
+        search={{
+          labelWidth: 'auto',
+          defaultCollapsed: true,
+        }}
+        options={{
+          setting: { listsHeight: 400 },
+          density: true,
+          reload: () => {
+            actionRef.current?.reload();
+            loadStats();
+          },
+        }}
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: true,
+        }}
+        dateFormatter="string"
+        headerTitle={
+          <Space>
+            <span>消耗记录列表</span>
+            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
+              (共 {stats.totalRecords} 条)
+            </span>
+            <Popover
+              content={statsContent}
+              title="统计详情"
+              trigger="click"
+              placement="bottomLeft"
             >
-              <Option value="">全部位置</Option>
-              <Option value="主仓库">主仓库</Option>
-              <Option value="副仓库">副仓库</Option>
-              <Option value="直播间A">直播间A</Option>
-              <Option value="直播间B">直播间B</Option>
-            </Select>
-          </Col>
-          <Col span={6}>
-            <Space>
-              <span style={{ fontSize: '14px', color: '#666' }}>表格密度:</span>
-              <Select
-                value={tableSize}
-                onChange={setTableSize}
-                style={{ width: 80 }}
+              <Button
+                type="text"
                 size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
               >
-                <Option value="small">紧凑</Option>
-                <Option value="middle">默认</Option>
-                <Option value="large">宽松</Option>
-              </Select>
-            </Space>
-          </Col>
-          <Col span={4} style={{ textAlign: 'right' }}>
-            <Space>
-              <Button
-                icon={<ExportOutlined />}
-                onClick={() => message.info('导出功能开发中...')}
-              >
-                导出
+                详情
               </Button>
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={() => fetchInventoryData()}
-              >
-                刷新
-              </Button>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setCreateModalVisible(true)}
-              >
-                添加消耗
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-      </Card>
-
-      {/* 库存和消耗标签页 */}
-      <Card>
-        <Tabs 
-          defaultActiveKey="inventory" 
-          size="large"
-          items={[
-            {
-              key: 'inventory',
-              label: '库存状态',
-              children: (
-            <Table
-              columns={inventoryColumns}
-              dataSource={inventoryData}
-              rowKey="id"
-              loading={loading}
-              pagination={false}
-              scroll={{ x: 800 }}
-              size={tableSize}
-              className={styles.inventoryTable}
-            />
-              )
-            },
-            {
-              key: 'consumption',
-              label: '消耗记录',
-              children: (
-            <Table
-              columns={consumptionColumns}
-              dataSource={consumptionData}
-              rowKey="id"
-              loading={loading}
-              pagination={{
-                ...pagination,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                pageSizeOptions: ['20', '30', '50', '100'],
-                showTotal: (total, range) => 
-                  `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
-              }}
-              onChange={handleTableChange}
-              scroll={{ x: 1000 }}
-              size={tableSize}
-              className={styles.consumptionTable}
-            />
-              )
-            }
-          ]}
-        />
-      </Card>
+            </Popover>
+          </Space>
+        }
+        toolBarRender={() => [
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出Excel
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入Excel
+          </Button>,
+          <Button
+            key="add"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              form.resetFields();
+              form.setFieldsValue({ consumptionDate: dayjs() });
+              setCreateModalVisible(true);
+            }}
+          >
+            添加消耗记录
+          </Button>,
+        ]}
+        scroll={{ x: 1800 }}
+      />
 
       {/* 创建消耗记录模态框 */}
       <Modal
         title="添加消耗记录"
         open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
+        onCancel={() => {
+          setCreateModalVisible(false);
+          setOpeningStock(null);
+          setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
+        }}
         footer={null}
         width={800}
+        destroyOnClose
       >
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleCreateConsumption}
-          autoComplete="off"
+          onFinish={handleCreate}
+          initialValues={{ consumptionDate: dayjs() }}
         >
           <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="商品"
-                name="goodsId"
-                rules={[{ required: true, message: '请选择商品' }]}
-              >
-                <Select placeholder="请选择商品">
-                  <Option value="1">苹果手机壳</Option>
-                  <Option value="2">数据线</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="消耗日期"
                 name="consumptionDate"
@@ -696,122 +456,213 @@ const InventoryConsumptionManagement: React.FC = () => {
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
-                label="消耗位置"
+                label="商品"
+                name="goodsId"
+                rules={[{ required: true, message: '请选择商品' }]}
+              >
+                <Select
+                  placeholder="请选择商品"
+                  loading={optionsLoading}
+                  showSearch
+                  optionFilterProp="label"
+                  options={goodsOptions.map(g => ({ value: g.id, label: g.name }))}
+                  onChange={handleGoodsOrLocationChange}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="直播间"
                 name="locationId"
-                rules={[{ required: true, message: '请选择消耗位置' }]}
+                rules={[{ required: true, message: '请选择直播间' }]}
               >
-                <Select placeholder="请选择消耗位置">
-                  <Option value="1">主仓库</Option>
-                  <Option value="2">副仓库</Option>
-                  <Option value="3">直播间A</Option>
-                  <Option value="4">直播间B</Option>
-                </Select>
+                <Select
+                  placeholder="请选择直播间"
+                  loading={optionsLoading}
+                  showSearch
+                  optionFilterProp="label"
+                  options={locationOptions.map(l => ({ value: l.id, label: l.name }))}
+                  onChange={handleGoodsOrLocationChange}
+                />
               </Form.Item>
             </Col>
-            <Col span={12}>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={8}>
               <Form.Item
-                label="经手人"
+                label="主播"
                 name="handlerId"
-                rules={[{ required: true, message: '请选择经手人' }]}
+                rules={[{ required: true, message: '请选择主播' }]}
               >
-                <Select placeholder="请选择经手人">
-                  <Option value="1">张三</Option>
-                  <Option value="2">李四</Option>
-                </Select>
+                <Select
+                  placeholder="请选择主播"
+                  loading={optionsLoading}
+                  showSearch
+                  optionFilterProp="label"
+                  options={personnelOptions.map(p => ({ value: p.id, label: p.name }))}
+                />
               </Form.Item>
             </Col>
           </Row>
 
+          {/* 期初数据显示 */}
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>期初（调入总量）</Divider>
+          <Spin spinning={openingStockLoading}>
+            {openingStock ? (
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Form.Item label="调入/箱">
+                    <InputNumber
+                      value={openingStock.openingBoxQty}
+                      disabled
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item label="调入/盒">
+                    <InputNumber
+                      value={openingStock.openingPackQty}
+                      disabled
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item label="调入/包">
+                    <InputNumber
+                      value={openingStock.openingPieceQty}
+                      disabled
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            ) : (
+              <Alert
+                message="请先选择商品和直播间，系统将自动获取调入总量"
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+            )}
+          </Spin>
+
+          {/* 期末数据输入 */}
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>期末（剩余数量）</Divider>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item
-                label="消耗箱数"
-                name="boxQuantity"
-                initialValue={0}
-              >
+              <Form.Item label="剩余/箱">
                 <InputNumber
                   min={0}
+                  max={openingStock?.openingBoxQty || 0}
+                  value={closingStock.closingBoxQty}
+                  onChange={(v) => setClosingStock(prev => ({ ...prev, closingBoxQty: v || 0 }))}
+                  disabled={!openingStock}
                   style={{ width: '100%' }}
-                  placeholder="请输入箱数"
+                  placeholder="0"
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item
-                label="消耗包数"
-                name="packQuantity"
-                initialValue={0}
-              >
+              <Form.Item label="剩余/盒">
                 <InputNumber
                   min={0}
+                  max={openingStock?.openingPackQty || 0}
+                  value={closingStock.closingPackQty}
+                  onChange={(v) => setClosingStock(prev => ({ ...prev, closingPackQty: v || 0 }))}
+                  disabled={!openingStock}
                   style={{ width: '100%' }}
-                  placeholder="请输入包数"
+                  placeholder="0"
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item
-                label="消耗盒数"
-                name="pieceQuantity"
-                initialValue={0}
-              >
+              <Form.Item label="剩余/包">
                 <InputNumber
                   min={0}
+                  max={openingStock?.openingPieceQty || 0}
+                  value={closingStock.closingPieceQty}
+                  onChange={(v) => setClosingStock(prev => ({ ...prev, closingPieceQty: v || 0 }))}
+                  disabled={!openingStock}
                   style={{ width: '100%' }}
-                  placeholder="请输入盒数"
+                  placeholder="0"
                 />
               </Form.Item>
             </Col>
           </Row>
 
+          {/* 消耗数据显示（自动计算） */}
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>消耗（自动计算）</Divider>
           <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="消耗原因"
-                name="reason"
-                rules={[{ required: true, message: '请选择消耗原因' }]}
-              >
-                <Select placeholder="请选择消耗原因">
-                  <Option value="销售">销售</Option>
-                  <Option value="损耗">损耗</Option>
-                  <Option value="退货">退货</Option>
-                  <Option value="其他">其他</Option>
-                </Select>
+            <Col span={8}>
+              <Form.Item label="消耗/箱">
+                <InputNumber
+                  value={calculateConsumption().boxQty}
+                  disabled
+                  style={{ width: '100%', backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label="消耗/盒">
+                <InputNumber
+                  value={calculateConsumption().packQty}
+                  disabled
+                  style={{ width: '100%', backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label="消耗/包">
+                <InputNumber
+                  value={calculateConsumption().pieceQty}
+                  disabled
+                  style={{ width: '100%', backgroundColor: '#f5f5f5' }}
+                />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item
-            label="备注"
-            name="notes"
-          >
-            <TextArea
-              rows={4}
-              placeholder="请输入备注信息"
-              maxLength={500}
-              showCount
-            />
+          <Form.Item label="备注" name="notes">
+            <TextArea rows={2} placeholder="请输入备注信息" maxLength={500} showCount />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
             <Space>
-              <Button onClick={() => setCreateModalVisible(false)}>
-                取消
-              </Button>
-              <Button type="primary" htmlType="submit" loading={createLoading}>
+              <Button onClick={() => {
+                setCreateModalVisible(false);
+                setOpeningStock(null);
+                setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
+              }}>取消</Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={createLoading}
+                disabled={!openingStock}
+              >
                 创建
               </Button>
             </Space>
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 导入模态框 */}
+      <ImportModal
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        onDownloadTemplate={handleDownloadTemplate}
+        loading={importLoading}
+        progress={importProgress}
+        title="导入消耗记录"
+      />
     </PageContainer>
   );
 };
 
-export default InventoryConsumptionManagement;
+export default ConsumptionManagement;

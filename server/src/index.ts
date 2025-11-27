@@ -54,6 +54,7 @@ import personnelBaseRoutes from './routes/personnelBaseRoutes'
 import locationBaseRoutes from './routes/locationBaseRoutes'
 import arrivalRoutes from './routes/arrivalRoutes'
 import transferRoutes from './routes/transferRoutes'
+import consumptionRoutes from './routes/consumptionRoutes'
 import userRoutes from './routes/userRoutes'
 import devRoutes from './routes/devRoutes'
 
@@ -73,6 +74,7 @@ app.use('/api/v1/bases', salesBaseRoutes)
 app.use('/api/v1/bases', personnelBaseRoutes)
 app.use('/api/v1/bases', arrivalRoutes)
 app.use('/api/v1/bases', transferRoutes)
+app.use('/api/v1/bases', consumptionRoutes)
 app.use('/api', userRoutes)
 
 // 开发环境路由（仅在开发环境下启用）

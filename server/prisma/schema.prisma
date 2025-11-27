@@ -342,30 +342,43 @@ model TransferOrderItem {
 }
 
 model StockConsumption {
-  id                   String   @id @default(uuid())
-  locationId           Int      @map("location_id")
-  goodsId              String   @map("goods_id")
-  consumptionDate      DateTime @map("consumption_date") @db.Date
-  openingStock         Int      @default(0) @map("opening_stock")
-  closingStock         Int      @default(0) @map("closing_stock")
-  arrivalQuantity      Int      @default(0) @map("arrival_quantity")
-  transferIn           Int      @default(0) @map("transfer_in")
-  transferOut          Int      @default(0) @map("transfer_out")
-  stockOut             Int      @default(0) @map("stock_out")
-  consumption          Int      @default(0)
-  consumptionUnitPrice Decimal  @default(0) @map("consumption_unit_price") @db.Decimal(12, 2)
-  consumptionValue     Decimal  @default(0) @map("consumption_value") @db.Decimal(12, 2)
-  notes                String?
-  createdBy            String   @map("created_by")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
-  creator              User     @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
-  goods                Goods    @relation(fields: [goodsId], references: [id])
-  location             Location @relation(fields: [locationId], references: [id])
+  id              String    @id @default(uuid())
+  consumptionDate DateTime  @map("consumption_date") @db.Date
+  goodsId         String    @map("goods_id")
+  locationId      Int       @map("location_id")
+  handlerId       String    @map("handler_id")
+  baseId          Int       @map("base_id")
+  // 期初（调入总量）
+  openingBoxQty   Int       @default(0) @map("opening_box_qty")
+  openingPackQty  Int       @default(0) @map("opening_pack_qty")
+  openingPieceQty Int       @default(0) @map("opening_piece_qty")
+  // 期末（用户填写的剩余）
+  closingBoxQty   Int       @default(0) @map("closing_box_qty")
+  closingPackQty  Int       @default(0) @map("closing_pack_qty")
+  closingPieceQty Int       @default(0) @map("closing_piece_qty")
+  // 消耗（期初-期末）
+  boxQuantity     Int       @default(0) @map("box_quantity")
+  packQuantity    Int       @default(0) @map("pack_quantity")
+  pieceQuantity   Int       @default(0) @map("piece_quantity")
+  // 平均单价/箱（快照，从Inventory获取）
+  unitPricePerBox Decimal   @default(0) @map("unit_price_per_box") @db.Decimal(12, 2)
+  notes           String?
+  createdBy       String    @map("created_by")
+  updatedBy       String?   @map("updated_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  goods           Goods     @relation(fields: [goodsId], references: [id])
+  location        Location  @relation(fields: [locationId], references: [id])
+  handler         Personnel @relation("ConsumptionHandler", fields: [handlerId], references: [id])
+  base            Base      @relation(fields: [baseId], references: [id])
+  creator         User      @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
 
-  @@unique([locationId, goodsId, consumptionDate])
+  @@unique([consumptionDate, goodsId, locationId, handlerId])
+  @@index([baseId])
   @@index([locationId])
   @@index([goodsId])
+  @@index([handlerId])
   @@index([consumptionDate])
   @@map("stock_consumption")
 }
@@ -628,18 +641,19 @@ model Base {
   updatedBy        String            @map("updated_by")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
-  arrivalRecords   ArrivalRecord[]
-  customers        Customer[]
-  goods            Goods[]
-  inventory        Inventory[]
-  inventoryLedgers InventoryLedger[]
-  locations        Location[]
-  personnel        Personnel[]
-  purchaseOrders   PurchaseOrder[]
-  supplierBases    SupplierBase[]
-  transferRecords  TransferRecord[]
-  userBases        UserBase[]
-  defaultUsers     User[]            @relation("UserDefaultBase")
+  arrivalRecords    ArrivalRecord[]
+  consumptions      StockConsumption[]
+  customers         Customer[]
+  goods             Goods[]
+  inventory         Inventory[]
+  inventoryLedgers  InventoryLedger[]
+  locations         Location[]
+  personnel         Personnel[]
+  purchaseOrders    PurchaseOrder[]
+  supplierBases     SupplierBase[]
+  transferRecords   TransferRecord[]
+  userBases         UserBase[]
+  defaultUsers      User[]            @relation("UserDefaultBase")
 
   @@index([code])
   @@index([name])
@@ -724,13 +738,14 @@ model Personnel {
   updatedBy        String?           @map("updated_by")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
-  arrivalRecords              ArrivalRecord[]   @relation("ArrivalHandler")
-  inventoryLedgers            InventoryLedger[] @relation("InventoryLedgerHandler")
-  base                        Base              @relation(fields: [baseId], references: [id], onDelete: Cascade)
-  creator                     User?             @relation("PersonnelCreator", fields: [createdBy], references: [id])
-  updater                     User?             @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
-  transferSourceRecords       TransferRecord[]  @relation("TransferSourceHandler")
-  transferDestinationRecords  TransferRecord[]  @relation("TransferDestinationHandler")
+  arrivalRecords              ArrivalRecord[]      @relation("ArrivalHandler")
+  inventoryLedgers            InventoryLedger[]    @relation("InventoryLedgerHandler")
+  consumptions                StockConsumption[]   @relation("ConsumptionHandler")
+  base                        Base                 @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator                     User?                @relation("PersonnelCreator", fields: [createdBy], references: [id])
+  updater                     User?                @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
+  transferSourceRecords       TransferRecord[]     @relation("TransferSourceHandler")
+  transferDestinationRecords  TransferRecord[]     @relation("TransferDestinationHandler")
 
   @@index([code])
   @@index([name])
