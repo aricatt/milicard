@@ -13,7 +13,6 @@ interface ProcurementFormProps {
   goodsLoading: boolean;
   supplierLoading: boolean;
   onFinish: (values: ProcurementFormValues) => void;
-  currencySymbol?: string;
 }
 
 /**
@@ -27,7 +26,6 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
   goodsLoading,
   supplierLoading,
   onFinish,
-  currencySymbol = '¥',
 }) => {
   /**
    * 商品选择变化时，自动填充零售价和拆分关系
@@ -227,7 +225,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
               const amount = unitPrice * qty;
               return (
                 <div style={{ lineHeight: '32px', fontWeight: 'bold', color: '#1890ff' }}>
-                  {currencySymbol}{amount.toFixed(2)}
+                  {amount.toFixed(2)}
                 </div>
               );
             }}
@@ -251,7 +249,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
               const unitPrice = getFieldValue('unitPricePack') || 0;
               return (
                 <div style={{ lineHeight: '32px', color: '#666' }}>
-                  {currencySymbol}{unitPrice.toFixed(4)}
+                  {unitPrice.toFixed(4)}
                 </div>
               );
             }}
@@ -285,7 +283,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
               const amount = unitPrice * qty;
               return (
                 <div style={{ lineHeight: '32px', fontWeight: 'bold', color: '#1890ff' }}>
-                  {currencySymbol}{amount.toFixed(2)}
+                  {amount.toFixed(2)}
                 </div>
               );
             }}
@@ -309,7 +307,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
               const unitPrice = getFieldValue('unitPricePiece') || 0;
               return (
                 <div style={{ lineHeight: '32px', color: '#666' }}>
-                  {currencySymbol}{unitPrice.toFixed(4)}
+                  {unitPrice.toFixed(4)}
                 </div>
               );
             }}
@@ -343,7 +341,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
               const amount = unitPrice * qty;
               return (
                 <div style={{ paddingTop: 30, fontWeight: 'bold', color: '#f5222d' }}>
-                  {currencySymbol}{amount.toFixed(2)}
+                  {amount.toFixed(2)}
                 </div>
               );
             }}
@@ -378,7 +376,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
               borderRadius: 4,
               textAlign: 'center'
             }}>
-              {currencySymbol}{total.toFixed(2)}
+              {total.toFixed(2)}
             </div>
           );
         }}

@@ -18,7 +18,7 @@ import {
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
 import { request } from '@umijs/max';
-import { useBase, useBaseCurrency } from '@/contexts/BaseContext';
+import { useBase } from '@/contexts/BaseContext';
 import { useProcurementExcel } from './useProcurementExcel';
 import ProcurementForm from './ProcurementForm';
 import { getColumns } from './columns';
@@ -38,7 +38,6 @@ import dayjs from 'dayjs';
  */
 const ProcurementManagement: React.FC = () => {
   const { currentBase } = useBase();
-  const { symbol: currencySymbol } = useBaseCurrency();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   
@@ -344,14 +343,14 @@ const ProcurementManagement: React.FC = () => {
   const statsContent = (
     <Descriptions column={1} size="small">
       <Descriptions.Item label="总订单数">{stats.totalOrders} 单</Descriptions.Item>
-      <Descriptions.Item label="总金额">{currencySymbol}{floorTo2(stats.totalAmount)}</Descriptions.Item>
+      <Descriptions.Item label="总金额">{floorTo2(stats.totalAmount)}</Descriptions.Item>
       <Descriptions.Item label="供应商数">{stats.uniqueSuppliers} 家</Descriptions.Item>
-      <Descriptions.Item label="平均订单金额">{currencySymbol}{floorTo2(stats.averageAmount)}</Descriptions.Item>
+      <Descriptions.Item label="平均订单金额">{floorTo2(stats.averageAmount)}</Descriptions.Item>
     </Descriptions>
   );
 
   // 获取列定义
-  const columns = getColumns(handleEdit, handleDelete, currencySymbol);
+  const columns = getColumns(handleEdit, handleDelete);
 
   if (!currentBase) {
     return (
@@ -495,7 +494,6 @@ const ProcurementManagement: React.FC = () => {
           goodsLoading={goodsLoading}
           supplierLoading={supplierLoading}
           onFinish={handleCreate}
-          currencySymbol={currencySymbol}
         />
       </Modal>
 
@@ -519,7 +517,6 @@ const ProcurementManagement: React.FC = () => {
           goodsLoading={goodsLoading}
           supplierLoading={supplierLoading}
           onFinish={handleUpdate}
-          currencySymbol={currencySymbol}
         />
       </Modal>
 

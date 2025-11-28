@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Button, Dropdown, Space, Typography, Avatar, Modal, App } from 'antd';
+import { Button, Dropdown, Space, Typography, Avatar, Modal, App, Tag } from 'antd';
 import { SwapOutlined, HomeOutlined, PlusOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
-import { useBase, BaseInfo } from '@/contexts/BaseContext';
+import { useBase, useBaseCurrency, BaseInfo } from '@/contexts/BaseContext';
+import { getCurrencySymbol } from '@/utils/currency';
 import type { MenuProps } from 'antd';
 
 const { Text } = Typography;
@@ -101,18 +102,18 @@ const BaseSwitcher: React.FC = () => {
         placement="bottomLeft"
         trigger={['click']}
       >
-        <Button type="text" style={{ height: 'auto', padding: '4px 8px' }}>
-          <Space>
-            <Avatar size="small" icon={<HomeOutlined />} />
+        <Button type="text" style={{ height: 'auto', padding: '4px 12px' }}>
+          <Space size={8}>
+            <Avatar size="small" icon={<HomeOutlined />} style={{ backgroundColor: '#1890ff' }} />
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '14px', fontWeight: 500 }}>
+              <div style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.2 }}>
                 {currentBase.name}
               </div>
-              <Text type="secondary" style={{ fontSize: '12px' }}>
-                {currentBase.code}
-              </Text>
             </div>
-            <SwapOutlined style={{ fontSize: '12px' }} />
+            <Tag color="blue" style={{ margin: 0 }}>
+              {getCurrencySymbol(currentBase.currency)}
+            </Tag>
+            <SwapOutlined style={{ fontSize: '12px', color: '#999' }} />
           </Space>
         </Button>
       </Dropdown>

@@ -25,7 +25,7 @@ import {
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
-import { useBase, useBaseCurrency } from '@/contexts/BaseContext';
+import { useBase } from '@/contexts/BaseContext';
 import { request } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
@@ -48,7 +48,6 @@ const { TextArea } = Input;
  */
 const ConsumptionManagement: React.FC = () => {
   const { currentBase } = useBase();
-  const { symbol: currencySymbol } = useBaseCurrency();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [form] = Form.useForm();
@@ -323,7 +322,7 @@ const ConsumptionManagement: React.FC = () => {
     );
   }
 
-  const columns = getColumns({ onDelete: handleDelete, currencySymbol });
+  const columns = getColumns({ onDelete: handleDelete });
 
   return (
     <PageContainer>

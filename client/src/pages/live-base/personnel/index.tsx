@@ -519,7 +519,6 @@ const PersonnelManagement: React.FC = () => {
     <PageContainer
       header={{
         title: '主播/仓管管理',
-        subTitle: `当前基地：${currentBase.name}`,
       }}
     >
       {/* ProTable */}

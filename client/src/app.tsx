@@ -137,29 +137,41 @@ export const layout: RunTimeLayoutConfig = ({
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <App>
-          <BaseProvider>
-            {children}
-            {isDev && (
-              <SettingDrawer
-                disableUrlParams
-                enableDarkTheme
-                settings={initialState?.settings}
-                onSettingChange={(settings) => {
-                  setInitialState((preInitialState) => ({
-                    ...preInitialState,
-                    settings,
-                  }));
-                }}
-              />
-            )}
-          </BaseProvider>
-        </App>
+        <>
+          {children}
+          {isDev && (
+            <SettingDrawer
+              disableUrlParams
+              enableDarkTheme
+              settings={initialState?.settings}
+              onSettingChange={(settings) => {
+                setInitialState((preInitialState) => ({
+                  ...preInitialState,
+                  settings,
+                }));
+              }}
+            />
+          )}
+        </>
       );
     },
     ...initialState?.settings,
   };
 };
+
+/**
+ * @name rootContainer 根容器
+ * 用于包裹整个应用，使 BaseProvider 在 layout 的 actionsRender 中也能使用
+ */
+export function rootContainer(container: React.ReactNode) {
+  return (
+    <App>
+      <BaseProvider>
+        {container}
+      </BaseProvider>
+    </App>
+  );
+}
 
 /**
  * @name request 配置，可以配置错误处理

@@ -594,7 +594,6 @@ const LocationManagement: React.FC = () => {
     <PageContainer
       header={{
         title: '直播间/仓库管理',
-        subTitle: `当前基地：${currentBase.name}`,
       }}
     >
       {/* 没有总仓库的警告提示 */}

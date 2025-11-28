@@ -16,8 +16,7 @@ const floorTo2 = (value: number): string => {
  */
 export const getColumns = (
   handleEdit: (record: PurchaseOrder) => void,
-  handleDelete: (record: PurchaseOrder) => void,
-  currencySymbol: string = '¥'
+  handleDelete: (record: PurchaseOrder) => void
 ): ProColumns<PurchaseOrder>[] => [
   {
     title: 'ID',
@@ -81,7 +80,7 @@ export const getColumns = (
     key: 'retailPrice',
     width: 100,
     hideInSearch: true,
-    render: (_, record) => record.retailPrice ? `${currencySymbol}${floorTo2(record.retailPrice)}` : '-',
+    render: (_, record) => record.retailPrice ? `${floorTo2(record.retailPrice)}` : '-',
   },
   {
     title: '折扣%',
@@ -190,7 +189,7 @@ export const getColumns = (
     key: 'unitPriceBox',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPriceBox ? `${currencySymbol}${floorTo2(record.unitPriceBox)}` : '-',
+    render: (_, record) => record.unitPriceBox ? `${floorTo2(record.unitPriceBox)}` : '-',
   },
   {
     title: '拿货单价/盒',
@@ -198,7 +197,7 @@ export const getColumns = (
     key: 'unitPricePack',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPricePack ? `${currencySymbol}${floorTo2(record.unitPricePack)}` : '-',
+    render: (_, record) => record.unitPricePack ? `${floorTo2(record.unitPricePack)}` : '-',
   },
   {
     title: '拿货单价/包',
@@ -206,7 +205,7 @@ export const getColumns = (
     key: 'unitPricePiece',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPricePiece ? `${currencySymbol}${floorTo2(record.unitPricePiece)}` : '-',
+    render: (_, record) => record.unitPricePiece ? `${floorTo2(record.unitPricePiece)}` : '-',
   },
   {
     title: '应付金额/箱',
@@ -215,7 +214,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchaseBoxQty || 0) * (record.unitPriceBox || 0);
-      return `${currencySymbol}${floorTo2(amount)}`;
+      return `${floorTo2(amount)}`;
     },
   },
   {
@@ -225,7 +224,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchasePackQty || 0) * (record.unitPricePack || 0);
-      return `${currencySymbol}${floorTo2(amount)}`;
+      return `${floorTo2(amount)}`;
     },
   },
   {
@@ -235,7 +234,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchasePieceQty || 0) * (record.unitPricePiece || 0);
-      return `${currencySymbol}${floorTo2(amount)}`;
+      return `${floorTo2(amount)}`;
     },
   },
   {
@@ -247,7 +246,7 @@ export const getColumns = (
     hideInSetting: true,
     render: (_, record) => (
       <span style={{ color: '#1890ff', fontWeight: 'bold' }}>
-        {currencySymbol}{floorTo2(record.totalAmount)}
+        {floorTo2(record.totalAmount)}
       </span>
     ),
   },
@@ -259,7 +258,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => (
       <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
-        {currencySymbol}{floorTo2(record.actualAmount || 0)}
+        {floorTo2(record.actualAmount || 0)}
       </span>
     ),
   },
@@ -272,7 +271,7 @@ export const getColumns = (
       const unpaid = (record.totalAmount || 0) - (record.actualAmount || 0);
       return (
         <span style={{ color: unpaid > 0 ? '#f5222d' : '#52c41a', fontWeight: 'bold' }}>
-          {currencySymbol}{floorTo2(unpaid)}
+          {floorTo2(unpaid)}
         </span>
       );
     },

@@ -22,7 +22,7 @@ import {
   CheckCircleOutlined 
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
-import { useBase, useBaseCurrency } from '@/contexts/BaseContext';
+import { useBase } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
 
@@ -77,7 +77,6 @@ interface InventoryStats {
  */
 const InventoryManagement: React.FC = () => {
   const { currentBase } = useBase();
-  const { symbol: currencySymbol } = useBaseCurrency();
   const { message } = App.useApp();
   
   // 状态管理
@@ -146,7 +145,7 @@ const InventoryManagement: React.FC = () => {
       key: 'averageCost',
       width: 100,
       align: 'right',
-      render: (value: number) => `${currencySymbol}${Number(value).toFixed(2)}`,
+      render: (value: number) => `${Number(value).toFixed(2)}`,
     },
     {
       title: '库存价值',
@@ -154,7 +153,7 @@ const InventoryManagement: React.FC = () => {
       key: 'totalValue',
       width: 120,
       align: 'right',
-      render: (value: number) => `${currencySymbol}${Number(value).toFixed(2)}`,
+      render: (value: number) => `${Number(value).toFixed(2)}`,
     },
     {
       title: '存储位置',
@@ -351,7 +350,6 @@ const InventoryManagement: React.FC = () => {
   return (
     <PageContainer
       title="库存管理"
-      subTitle={`当前基地：${currentBase.name}`}
       extra={[
         <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
           导出
@@ -382,7 +380,6 @@ const InventoryManagement: React.FC = () => {
               title="库存总价值"
               value={stats.totalValue}
               precision={2}
-              prefix={currencySymbol}
               valueStyle={{ color: '#52c41a' }}
             />
           </Card>

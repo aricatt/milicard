@@ -28,7 +28,7 @@ import {
   EyeOutlined
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
-import { useBase, useBaseCurrency } from '@/contexts/BaseContext';
+import { useBase } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
 
@@ -75,7 +75,6 @@ interface Customer {
  */
 const SalesManagement: React.FC = () => {
   const { currentBase } = useBase();
-  const { symbol: currencySymbol } = useBaseCurrency();
   const { message } = App.useApp();
   
   // 状态管理
@@ -140,7 +139,7 @@ const SalesManagement: React.FC = () => {
       key: 'totalAmount',
       width: 120,
       align: 'right',
-      render: (value: number) => `${currencySymbol}${Number(value).toFixed(2)}`,
+      render: (value: number) => `${Number(value).toFixed(2)}`,
     },
     {
       title: '状态',
@@ -359,7 +358,6 @@ const SalesManagement: React.FC = () => {
   return (
     <PageContainer
       title="销售管理"
-      subTitle={`当前基地：${currentBase.name}`}
       extra={[
         <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
           导出
@@ -395,7 +393,6 @@ const SalesManagement: React.FC = () => {
               title="销售总额"
               value={stats.totalAmount}
               precision={2}
-              prefix={currencySymbol}
               valueStyle={{ color: '#52c41a' }}
             />
           </Card>
@@ -416,7 +413,6 @@ const SalesManagement: React.FC = () => {
               title="平均订单额"
               value={stats.averageAmount}
               precision={2}
-              prefix={currencySymbol}
               valueStyle={{ color: '#722ed1' }}
             />
           </Card>

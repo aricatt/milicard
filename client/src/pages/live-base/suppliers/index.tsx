@@ -533,7 +533,6 @@ const SupplierManagement: React.FC = () => {
     <PageContainer
       header={{
         title: '供应商管理',
-        subTitle: `当前基地：${currentBase.name}`,
       }}
     >
       {/* ProTable */}
