@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Dependencies (will be installed in Docker)
+client/node_modules
+server/node_modules
+
+# Build outputs (will be built in Docker)
+client/dist
+server/dist
+
+# Environment files
+.env*
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+
+# Documentation
+doc
+*.md
+!README.md
+
+# Docker files (not needed inside container)
+docker-compose*.yml
