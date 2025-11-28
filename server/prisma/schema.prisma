@@ -368,11 +368,12 @@ model StockConsumption {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   
-  goods           Goods     @relation(fields: [goodsId], references: [id])
-  location        Location  @relation(fields: [locationId], references: [id])
-  handler         Personnel @relation("ConsumptionHandler", fields: [handlerId], references: [id])
-  base            Base      @relation(fields: [baseId], references: [id])
-  creator         User      @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
+  goods           Goods          @relation(fields: [goodsId], references: [id])
+  location        Location       @relation(fields: [locationId], references: [id])
+  handler         Personnel      @relation("ConsumptionHandler", fields: [handlerId], references: [id])
+  base            Base           @relation(fields: [baseId], references: [id])
+  creator         User           @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
+  anchorProfit    AnchorProfit?
 
   @@unique([consumptionDate, goodsId, locationId, handlerId])
   @@index([baseId])
@@ -464,29 +465,32 @@ model StockOutOrderItem {
 }
 
 model AnchorProfit {
-  id               String   @id @default(uuid())
-  locationId       Int      @map("location_id")
-  profitDate       DateTime @map("profit_date") @db.Date
-  gmvAmount        Decimal  @default(0) @map("gmv_amount") @db.Decimal(12, 2)
-  refundAmount     Decimal  @default(0) @map("refund_amount") @db.Decimal(12, 2)
-  offlineAmount    Decimal  @default(0) @map("offline_amount") @db.Decimal(12, 2)
-  consumptionValue Decimal  @default(0) @map("consumption_value") @db.Decimal(12, 2)
-  adCost           Decimal  @default(0) @map("ad_cost") @db.Decimal(12, 2)
-  platformFeeRate  Decimal  @default(0) @map("platform_fee_rate") @db.Decimal(5, 2)
-  platformFee      Decimal  @default(0) @map("platform_fee") @db.Decimal(12, 2)
-  dailySales       Decimal  @default(0) @map("daily_sales") @db.Decimal(12, 2)
-  profitAmount     Decimal  @default(0) @map("profit_amount") @db.Decimal(12, 2)
-  profitRate       Decimal  @default(0) @map("profit_rate") @db.Decimal(5, 2)
+  id               String            @id @default(uuid())
+  locationId       Int               @map("location_id")
+  consumptionId    String?           @unique @map("consumption_id")
+  profitDate       DateTime          @map("profit_date") @db.Date
+  gmvAmount        Decimal           @default(0) @map("gmv_amount") @db.Decimal(12, 2)
+  refundAmount     Decimal           @default(0) @map("refund_amount") @db.Decimal(12, 2)
+  offlineAmount    Decimal           @default(0) @map("offline_amount") @db.Decimal(12, 2)
+  consumptionValue Decimal           @default(0) @map("consumption_value") @db.Decimal(12, 2)
+  adCost           Decimal           @default(0) @map("ad_cost") @db.Decimal(12, 2)
+  platformFeeRate  Decimal           @default(0) @map("platform_fee_rate") @db.Decimal(5, 2)
+  platformFee      Decimal           @default(0) @map("platform_fee") @db.Decimal(12, 2)
+  dailySales       Decimal           @default(0) @map("daily_sales") @db.Decimal(12, 2)
+  profitAmount     Decimal           @default(0) @map("profit_amount") @db.Decimal(12, 2)
+  profitRate       Decimal           @default(0) @map("profit_rate") @db.Decimal(5, 2)
   notes            String?
-  createdBy        String   @map("created_by")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-  creator          User     @relation("AnchorProfitCreator", fields: [createdBy], references: [id])
-  location         Location @relation(fields: [locationId], references: [id])
+  createdBy        String            @map("created_by")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  creator          User              @relation("AnchorProfitCreator", fields: [createdBy], references: [id])
+  location         Location          @relation(fields: [locationId], references: [id])
+  consumption      StockConsumption? @relation(fields: [consumptionId], references: [id])
 
   @@unique([locationId, profitDate])
   @@index([locationId])
   @@index([profitDate])
+  @@index([consumptionId])
   @@map("anchor_profits")
 }
 

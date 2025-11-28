@@ -183,7 +183,48 @@ export class AnchorProfitController {
   }
 
   /**
-   * 获取消耗金额
+   * 获取未关联利润的消耗记录
+   */
+  static async getUnlinkedConsumptions(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '基地ID无效',
+        });
+      }
+
+      const { handlerId } = req.query;
+
+      if (!handlerId) {
+        return res.status(400).json({
+          success: false,
+          message: '缺少必填参数：handlerId',
+        });
+      }
+
+      const result = await AnchorProfitService.getUnlinkedConsumptions(
+        baseId,
+        handlerId as string
+      );
+
+      res.json(result);
+    } catch (error) {
+      logger.error('获取未关联消耗记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId: req.params.baseId,
+        controller: 'AnchorProfitController',
+      });
+      res.status(500).json({
+        success: false,
+        message: '服务器内部错误',
+      });
+    }
+  }
+
+  /**
+   * 获取消耗金额（根据消耗记录ID）
    */
   static async getConsumptionAmount(req: Request, res: Response) {
     try {
@@ -195,19 +236,18 @@ export class AnchorProfitController {
         });
       }
 
-      const { date, handlerId } = req.query;
+      const { consumptionId } = req.query;
 
-      if (!date || !handlerId) {
+      if (!consumptionId) {
         return res.status(400).json({
           success: false,
-          message: '缺少必填参数：date 和 handlerId',
+          message: '缺少必填参数：consumptionId',
         });
       }
 
       const result = await AnchorProfitService.getConsumptionAmount(
         baseId,
-        date as string,
-        handlerId as string
+        consumptionId as string
       );
 
       res.json(result);

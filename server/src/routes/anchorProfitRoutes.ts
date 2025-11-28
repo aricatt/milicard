@@ -10,6 +10,9 @@ router.use(authenticateToken);
 // 获取统计数据
 router.get('/:baseId/anchor-profits/stats', AnchorProfitController.getStats);
 
+// 获取未关联利润的消耗记录
+router.get('/:baseId/anchor-profits/unlinked-consumptions', AnchorProfitController.getUnlinkedConsumptions);
+
 // 获取消耗金额
 router.get('/:baseId/anchor-profits/consumption-amount', AnchorProfitController.getConsumptionAmount);
 

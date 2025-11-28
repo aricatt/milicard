@@ -15,7 +15,6 @@ import {
   Statistic,
   Divider,
   Alert,
-  Spin,
   Space,
   Popover,
   Descriptions,
@@ -37,6 +36,7 @@ import type {
   AnchorProfitStats,
   AnchorProfitFormValues,
   PersonnelOption,
+  ConsumptionOption,
 } from './types';
 
 const { TextArea } = Input;
@@ -87,6 +87,10 @@ const AnchorProfitPage: React.FC = () => {
   // 下拉选项
   const [personnelOptions, setPersonnelOptions] = useState<PersonnelOption[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
+  
+  // 消耗记录选项
+  const [consumptionOptions, setConsumptionOptions] = useState<ConsumptionOption[]>([]);
+  const [consumptionOptionsLoading, setConsumptionOptionsLoading] = useState(false);
 
   // 计算字段
   const [calculatedValues, setCalculatedValues] = useState({
@@ -96,9 +100,8 @@ const AnchorProfitPage: React.FC = () => {
     profitRate: 0,
   });
 
-  // 消耗金额（从消耗记录自动获取）
+  // 消耗金额（从选择的消耗记录获取）
   const [consumptionAmount, setConsumptionAmount] = useState(0);
-  const [consumptionLoading, setConsumptionLoading] = useState(false);
 
   /**
    * 加载统计数据
@@ -145,34 +148,49 @@ const AnchorProfitPage: React.FC = () => {
   };
 
   /**
-   * 获取消耗金额（根据日期和主播）
+   * 加载未关联利润的消耗记录（根据主播）
    */
-  const loadConsumptionAmount = useCallback(async (date: string, handlerId: string) => {
-    if (!currentBase || !date || !handlerId) {
+  const loadUnlinkedConsumptions = useCallback(async (handlerId: string) => {
+    if (!currentBase || !handlerId) {
+      setConsumptionOptions([]);
       setConsumptionAmount(0);
       return;
     }
 
-    setConsumptionLoading(true);
+    setConsumptionOptionsLoading(true);
     try {
       const result = await request(
-        `/api/v1/bases/${currentBase.id}/anchor-profits/consumption-amount`,
+        `/api/v1/bases/${currentBase.id}/anchor-profits/unlinked-consumptions`,
         {
           method: 'GET',
-          params: { date, handlerId },
+          params: { handlerId },
         }
       );
 
       if (result.success) {
-        setConsumptionAmount(result.data?.amount || 0);
+        setConsumptionOptions(result.data || []);
       }
     } catch (error) {
-      console.error('获取消耗金额失败:', error);
-      setConsumptionAmount(0);
+      console.error('获取消耗记录失败:', error);
+      setConsumptionOptions([]);
     } finally {
-      setConsumptionLoading(false);
+      setConsumptionOptionsLoading(false);
     }
   }, [currentBase]);
+
+  /**
+   * 选择消耗记录后更新消耗金额
+   */
+  const handleConsumptionChange = useCallback((consumptionId: string) => {
+    const selected = consumptionOptions.find(c => c.id === consumptionId);
+    if (selected) {
+      setConsumptionAmount(selected.consumptionAmount);
+      // 自动设置日期为消耗记录的日期
+      form.setFieldValue('profitDate', dayjs(selected.consumptionDate));
+    } else {
+      setConsumptionAmount(0);
+    }
+  }, [consumptionOptions, form]);
 
   /**
    * 计算利润相关字段
@@ -202,16 +220,21 @@ const AnchorProfitPage: React.FC = () => {
   }, [form, consumptionAmount]);
 
   /**
+   * 主播选择变化时加载消耗记录
+   */
+  const handleHandlerChange = (handlerId: string) => {
+    // 清空之前选择的消耗记录
+    form.setFieldValue('consumptionId', undefined);
+    setConsumptionAmount(0);
+    // 加载该主播的未关联消耗记录
+    loadUnlinkedConsumptions(handlerId);
+    calculateProfit();
+  };
+
+  /**
    * 表单字段变化时重新计算
    */
   const handleFormValuesChange = () => {
-    const date = form.getFieldValue('profitDate');
-    const handlerId = form.getFieldValue('handlerId');
-    
-    if (date && handlerId) {
-      loadConsumptionAmount(dayjs(date).format('YYYY-MM-DD'), handlerId);
-    }
-    
     calculateProfit();
   };
 
@@ -274,6 +297,7 @@ const AnchorProfitPage: React.FC = () => {
       const requestData = {
         profitDate: dayjs(values.profitDate).format('YYYY-MM-DD'),
         handlerId: values.handlerId,
+        consumptionId: values.consumptionId, // 关联的消耗记录ID
         gmvAmount: values.gmvAmount || 0,
         refundAmount: values.refundAmount || 0,
         waterAmount: values.waterAmount || 0,
@@ -296,6 +320,7 @@ const AnchorProfitPage: React.FC = () => {
         setCreateModalVisible(false);
         form.resetFields();
         setConsumptionAmount(0);
+        setConsumptionOptions([]);
         setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         actionRef.current?.reload();
         loadStats();
@@ -426,11 +451,7 @@ const AnchorProfitPage: React.FC = () => {
 
   // 表单内容（创建和编辑共用）
   const formContent = (
-    <Form
-      form={form}
-      layout="vertical"
-      onValuesChange={handleFormValuesChange}
-    >
+    <>
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
@@ -453,10 +474,40 @@ const AnchorProfitPage: React.FC = () => {
               loading={optionsLoading}
               showSearch
               optionFilterProp="label"
+              onChange={handleHandlerChange}
               options={personnelOptions.map((p) => ({
                 value: p.id,
                 label: `🎤 ${p.name}`,
               }))}
+            />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Row gutter={16}>
+        <Col span={24}>
+          <Form.Item
+            label="直播消耗"
+            name="consumptionId"
+            rules={[{ required: true, message: '请选择消耗记录' }]}
+            extra="选择该主播的一条消耗记录关联利润"
+          >
+            <Select
+              placeholder="请先选择主播，然后选择消耗记录"
+              loading={consumptionOptionsLoading}
+              showSearch
+              optionFilterProp="label"
+              onChange={handleConsumptionChange}
+              disabled={consumptionOptions.length === 0}
+              options={consumptionOptions.map((c) => ({
+                value: c.id,
+                label: c.label,
+              }))}
+              notFoundContent={
+                consumptionOptionsLoading 
+                  ? '加载中...' 
+                  : '暂无可关联的消耗记录'
+              }
             />
           </Form.Item>
         </Col>
@@ -515,15 +566,14 @@ const AnchorProfitPage: React.FC = () => {
       <Divider orientation="left" style={{ margin: '8px 0 16px' }}>成本</Divider>
       <Row gutter={16}>
         <Col span={8}>
-          <Form.Item label="消耗金额" extra="根据消耗记录自动计算">
-            <Spin spinning={consumptionLoading} size="small">
-              <InputNumber
-                value={consumptionAmount}
-                disabled
-                style={{ width: '100%' }}
-                prefix="¥"
-              />
-            </Spin>
+          <Form.Item label="消耗金额" extra="根据选择的消耗记录自动获取">
+            <InputNumber
+              value={consumptionAmount}
+              disabled
+              style={{ width: '100%' }}
+              prefix="¥"
+              precision={2}
+            />
           </Form.Item>
         </Col>
         <Col span={8}>
@@ -620,7 +670,7 @@ const AnchorProfitPage: React.FC = () => {
       <Form.Item label="备注" name="notes">
         <TextArea rows={2} placeholder="请输入备注信息" />
       </Form.Item>
-    </Form>
+    </>
   );
 
   // 统计详情内容
@@ -752,7 +802,7 @@ const AnchorProfitPage: React.FC = () => {
         width={800}
         destroyOnClose
       >
-        <Form form={form} onFinish={handleCreate}>
+        <Form form={form} layout="vertical" onFinish={handleCreate} onValuesChange={handleFormValuesChange}>
           {formContent}
         </Form>
       </Modal>
@@ -773,7 +823,7 @@ const AnchorProfitPage: React.FC = () => {
         width={800}
         destroyOnClose
       >
-        <Form form={form} onFinish={handleUpdate}>
+        <Form form={form} layout="vertical" onFinish={handleUpdate} onValuesChange={handleFormValuesChange}>
           {formContent}
         </Form>
       </Modal>

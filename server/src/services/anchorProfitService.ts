@@ -112,6 +112,7 @@ export class AnchorProfitService {
     data: {
       profitDate: string;
       handlerId: string;
+      consumptionId: string; // 关联的消耗记录ID
       gmvAmount: number;
       refundAmount: number;
       waterAmount: number;
@@ -126,21 +127,27 @@ export class AnchorProfitService {
     userId: string
   ) {
     try {
-      // 根据主播获取直播间（暂时用第一个直播间）
-      const location = await prisma.location.findFirst({
-        where: { baseId, type: 'LIVE_ROOM' },
+      // 验证消耗记录存在且未被关联
+      const consumption = await prisma.stockConsumption.findFirst({
+        where: {
+          id: data.consumptionId,
+          baseId,
+          anchorProfit: null, // 确保未被关联
+        },
       });
 
-      if (!location) {
+      if (!consumption) {
         return {
           success: false,
-          message: '未找到直播间',
+          message: '消耗记录不存在或已被关联',
         };
       }
 
+      // 使用消耗记录的直播间
       const record = await prisma.anchorProfit.create({
         data: {
-          locationId: location.id,
+          locationId: consumption.locationId,
+          consumptionId: data.consumptionId,
           profitDate: new Date(data.profitDate),
           gmvAmount: data.gmvAmount,
           refundAmount: data.refundAmount,
@@ -343,27 +350,118 @@ export class AnchorProfitService {
   }
 
   /**
-   * 获取消耗金额（根据日期和主播）
+   * 获取未关联利润的消耗记录（根据主播）
    */
-  static async getConsumptionAmount(
+  static async getUnlinkedConsumptions(
     baseId: number,
-    date: string,
     handlerId: string
   ) {
     try {
-      // 从消耗记录中汇总该主播当天的消耗金额
-      // TODO: 需要根据实际的消耗记录表结构来实现
-      // 暂时返回0
+      // 查询该主播的消耗记录，排除已关联利润的
+      const consumptions = await prisma.stockConsumption.findMany({
+        where: {
+          baseId,
+          handlerId,
+          anchorProfit: null, // 未关联利润
+        },
+        include: {
+          goods: { 
+            select: { 
+              name: true,
+              packPerBox: true,  // 多少盒/箱
+              piecePerPack: true, // 多少包/盒
+            } 
+          },
+          location: { select: { name: true } },
+          handler: { select: { name: true } },
+        },
+        orderBy: { consumptionDate: 'desc' },
+      });
+
+      // 计算每条消耗记录的消耗金额
+      const result = consumptions.map((c) => {
+        const unitPricePerBox = Number(c.unitPricePerBox);
+        const packPerBox = Number(c.goods.packPerBox) || 1;
+        const piecePerPack = Number(c.goods.piecePerPack) || 1;
+        
+        // 计算单价/盒 和 单价/包
+        const unitPricePerPack = unitPricePerBox / packPerBox;
+        const unitPricePerPiece = unitPricePerPack / piecePerPack;
+        
+        // 消耗金额 = 箱数×单价/箱 + 盒数×单价/盒 + 包数×单价/包
+        const consumptionAmount = 
+          Number(c.boxQuantity) * unitPricePerBox +
+          Number(c.packQuantity) * unitPricePerPack +
+          Number(c.pieceQuantity) * unitPricePerPiece;
+          
+        return {
+          id: c.id,
+          consumptionDate: c.consumptionDate,
+          goodsName: c.goods.name,
+          locationName: c.location.name,
+          handlerName: c.handler.name,
+          boxQuantity: c.boxQuantity,
+          packQuantity: c.packQuantity,
+          pieceQuantity: c.pieceQuantity,
+          consumptionAmount,
+          label: `${c.consumptionDate.toISOString().split('T')[0]} - ${c.goods.name} (${c.boxQuantity}箱${c.packQuantity}盒${c.pieceQuantity}包) ¥${consumptionAmount.toFixed(2)}`,
+        };
+      });
+
       return {
         success: true,
-        data: { amount: 0 },
+        data: result,
+      };
+    } catch (error) {
+      logger.error('获取未关联消耗记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId,
+        handlerId,
+        service: 'milicard-api',
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * 获取消耗金额（根据消耗记录ID）
+   */
+  static async getConsumptionAmount(
+    baseId: number,
+    consumptionId: string
+  ) {
+    try {
+      const consumption = await prisma.stockConsumption.findFirst({
+        where: {
+          id: consumptionId,
+          baseId,
+        },
+      });
+
+      if (!consumption) {
+        return {
+          success: false,
+          message: '消耗记录不存在',
+        };
+      }
+
+      // 消耗金额 = 消耗箱数 * 单价/箱
+      const amount = Number(consumption.boxQuantity) * Number(consumption.unitPricePerBox);
+
+      return {
+        success: true,
+        data: { 
+          amount,
+          consumptionDate: consumption.consumptionDate,
+          handlerId: consumption.handlerId,
+          locationId: consumption.locationId,
+        },
       };
     } catch (error) {
       logger.error('获取消耗金额失败', {
         error: error instanceof Error ? error.message : String(error),
         baseId,
-        date,
-        handlerId,
+        consumptionId,
         service: 'milicard-api',
       });
       throw error;
