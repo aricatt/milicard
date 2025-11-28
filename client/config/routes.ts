@@ -128,6 +128,12 @@ export default [
         path: '/live-base/inventory-consumption',
         component: './live-base/inventory-consumption',
       },
+      {
+        name: 'anchor-profit',
+        icon: 'dollarCircle',
+        path: '/live-base/anchor-profit',
+        component: './live-base/anchor-profit',
+      },
     ],
   },
   {
