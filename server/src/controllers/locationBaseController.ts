@@ -117,10 +117,10 @@ export class LocationBaseController {
       }
 
       // 验证位置类型
-      if (!['LIVE_ROOM', 'WAREHOUSE'].includes(locationData.type)) {
+      if (!['MAIN_WAREHOUSE', 'WAREHOUSE', 'LIVE_ROOM'].includes(locationData.type)) {
         return res.status(400).json({
           success: false,
-          message: '位置类型必须是 LIVE_ROOM 或 WAREHOUSE',
+          message: '位置类型必须是 MAIN_WAREHOUSE、WAREHOUSE 或 LIVE_ROOM',
         });
       }
 
@@ -153,10 +153,10 @@ export class LocationBaseController {
       }
 
       // 验证位置类型（如果提供）
-      if (locationData.type && !['LIVE_ROOM', 'WAREHOUSE'].includes(locationData.type)) {
+      if (locationData.type && !['MAIN_WAREHOUSE', 'WAREHOUSE', 'LIVE_ROOM'].includes(locationData.type)) {
         return res.status(400).json({
           success: false,
-          message: '位置类型必须是 LIVE_ROOM 或 WAREHOUSE',
+          message: '位置类型必须是 MAIN_WAREHOUSE、WAREHOUSE 或 LIVE_ROOM',
         });
       }
 

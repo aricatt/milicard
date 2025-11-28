@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   Card, 
   Space, 
@@ -12,7 +12,8 @@ import {
   Button,
   Popconfirm,
   Popover,
-  Descriptions
+  Descriptions,
+  Alert
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -21,7 +22,8 @@ import {
   DatabaseOutlined,
   DesktopOutlined,
   ExclamationCircleOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  WarningOutlined
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
@@ -33,6 +35,7 @@ const { Option } = Select;
 
 // 位置类型枚举
 enum LocationType {
+  MAIN_WAREHOUSE = 'MAIN_WAREHOUSE',
   WAREHOUSE = 'WAREHOUSE',
   LIVE_ROOM = 'LIVE_ROOM',
 }
@@ -57,6 +60,7 @@ interface Location {
 // 位置统计数据类型
 interface LocationStats {
   totalLocations: number;
+  mainWarehouses: number;
   warehouses: number;
   liveRooms: number;
   activeLocations: number;
@@ -74,6 +78,7 @@ const LocationManagement: React.FC = () => {
   // 状态管理
   const [stats, setStats] = useState<LocationStats>({
     totalLocations: 0,
+    mainWarehouses: 0,
     warehouses: 0,
     liveRooms: 0,
     activeLocations: 0,
@@ -85,6 +90,11 @@ const LocationManagement: React.FC = () => {
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  
+  // 总仓库检测状态
+  const [hasMainWarehouse, setHasMainWarehouse] = useState(true); // 默认true避免初始闪烁
+  const [noMainWarehouseModalVisible, setNoMainWarehouseModalVisible] = useState(false);
+  const [hasCheckedMainWarehouse, setHasCheckedMainWarehouse] = useState(false);
   
   // 表单实例
   const [createForm] = Form.useForm();
@@ -162,13 +172,25 @@ const LocationManagement: React.FC = () => {
    * 计算统计数据
    */
   const calculateStats = (data: Location[]) => {
+    const mainWarehouseCount = data.filter(item => item.type === LocationType.MAIN_WAREHOUSE).length;
     const newStats: LocationStats = {
       totalLocations: data.length,
+      mainWarehouses: mainWarehouseCount,
       warehouses: data.filter(item => item.type === LocationType.WAREHOUSE).length,
       liveRooms: data.filter(item => item.type === LocationType.LIVE_ROOM).length,
       activeLocations: data.filter(item => item.isActive).length,
     };
     setStats(newStats);
+    
+    // 检测是否有总仓库
+    const hasMain = mainWarehouseCount > 0;
+    setHasMainWarehouse(hasMain);
+    
+    // 首次加载且没有总仓库时弹窗提示
+    if (!hasCheckedMainWarehouse && !hasMain && data.length > 0) {
+      setNoMainWarehouseModalVisible(true);
+    }
+    setHasCheckedMainWarehouse(true);
   };
 
   /**
@@ -334,17 +356,23 @@ const LocationManagement: React.FC = () => {
       width: 100,
       valueType: 'select',
       valueEnum: {
-        WAREHOUSE: { text: '仓库', status: 'Default' },
+        MAIN_WAREHOUSE: { text: '总仓库', status: 'Warning' },
+        WAREHOUSE: { text: '子仓库', status: 'Default' },
         LIVE_ROOM: { text: '直播间', status: 'Processing' },
       },
-      render: (_, record) => (
-        <Tag 
-          icon={record.type === LocationType.WAREHOUSE ? <DatabaseOutlined /> : <DesktopOutlined />}
-          color={record.type === LocationType.WAREHOUSE ? 'blue' : 'green'}
-        >
-          {record.type === LocationType.WAREHOUSE ? '仓库' : '直播间'}
-        </Tag>
-      ),
+      render: (_, record) => {
+        const typeConfig = {
+          [LocationType.MAIN_WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'orange', text: '总仓库' },
+          [LocationType.WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'blue', text: '子仓库' },
+          [LocationType.LIVE_ROOM]: { icon: <DesktopOutlined />, color: 'green', text: '直播间' },
+        };
+        const config = typeConfig[record.type] || typeConfig[LocationType.WAREHOUSE];
+        return (
+          <Tag icon={config.icon} color={config.color}>
+            {config.text}
+          </Tag>
+        );
+      },
       // 支持筛选
       hideInSearch: false,
     },
@@ -525,7 +553,14 @@ const LocationManagement: React.FC = () => {
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalLocations}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="仓库">
+        <Descriptions.Item label="总仓库">
+          <Space>
+            <DatabaseOutlined style={{ color: '#fa8c16' }} />
+            <span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{stats.mainWarehouses}</span>
+            <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.mainWarehouses / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="子仓库">
           <Space>
             <DatabaseOutlined style={{ color: '#1890ff' }} />
             <span style={{ color: '#1890ff', fontWeight: 'bold' }}>{stats.warehouses}</span>
@@ -562,6 +597,37 @@ const LocationManagement: React.FC = () => {
         subTitle: `当前基地：${currentBase.name}`,
       }}
     >
+      {/* 没有总仓库的警告提示 */}
+      {!hasMainWarehouse && stats.totalLocations > 0 && (
+        <Alert
+          message="缺少总仓库"
+          description="当前基地尚未设置总仓库。请通过编辑现有位置，将其中一个设置为总仓库。每个基地必须有且只有一个总仓库。"
+          type="warning"
+          showIcon
+          icon={<WarningOutlined />}
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
+      {/* 没有总仓库的弹窗提示 */}
+      <Modal
+        title={
+          <Space>
+            <WarningOutlined style={{ color: '#faad14' }} />
+            <span>缺少总仓库</span>
+          </Space>
+        }
+        open={noMainWarehouseModalVisible}
+        onOk={() => setNoMainWarehouseModalVisible(false)}
+        onCancel={() => setNoMainWarehouseModalVisible(false)}
+        okText="我知道了"
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        <p>当前基地尚未设置<strong>总仓库</strong>。</p>
+        <p>每个基地必须有且只有一个总仓库，才能创建其他子仓库和直播间。</p>
+        <p>请通过<strong>编辑</strong>现有位置，将其中一个设置为总仓库。</p>
+      </Modal>
+
       {/* ProTable */}
       <ProTable<Location>
         columns={columns}
@@ -680,10 +746,18 @@ const LocationManagement: React.FC = () => {
             label="位置类型"
             name="type"
             rules={[{ required: true, message: '请选择位置类型' }]}
+            extra={!hasMainWarehouse ? '当前基地没有总仓库，请先创建总仓库' : '已有总仓库，不能重复创建'}
           >
             <Select placeholder="请选择位置类型">
-              <Option value={LocationType.WAREHOUSE}>仓库</Option>
-              <Option value={LocationType.LIVE_ROOM}>直播间</Option>
+              <Option value={LocationType.MAIN_WAREHOUSE} disabled={hasMainWarehouse}>
+                总仓库 {hasMainWarehouse ? '(已存在)' : ''}
+              </Option>
+              <Option value={LocationType.WAREHOUSE} disabled={!hasMainWarehouse}>
+                子仓库 {!hasMainWarehouse ? '(需先创建总仓库)' : ''}
+              </Option>
+              <Option value={LocationType.LIVE_ROOM} disabled={!hasMainWarehouse}>
+                直播间 {!hasMainWarehouse ? '(需先创建总仓库)' : ''}
+              </Option>
             </Select>
           </Form.Item>
 
@@ -758,9 +832,21 @@ const LocationManagement: React.FC = () => {
             label="位置类型"
             name="type"
             rules={[{ required: true, message: '请选择位置类型' }]}
+            extra={
+              editingLocation?.type === LocationType.MAIN_WAREHOUSE
+                ? '当前位置是总仓库，修改类型后将失去总仓库身份'
+                : (!hasMainWarehouse ? '当前基地没有总仓库，可以将此位置设为总仓库' : '')
+            }
           >
             <Select placeholder="请选择位置类型">
-              <Option value={LocationType.WAREHOUSE}>仓库</Option>
+              {/* 总仓库选项：如果当前编辑的就是总仓库，或者还没有总仓库，则可选 */}
+              <Option 
+                value={LocationType.MAIN_WAREHOUSE} 
+                disabled={hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE}
+              >
+                总仓库 {hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE ? '(已存在)' : ''}
+              </Option>
+              <Option value={LocationType.WAREHOUSE}>子仓库</Option>
               <Option value={LocationType.LIVE_ROOM}>直播间</Option>
             </Select>
           </Form.Item>

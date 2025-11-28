@@ -877,6 +877,7 @@ model InventoryLedger {
 }
 
 enum LocationType {
+  MAIN_WAREHOUSE
   WAREHOUSE
   LIVE_ROOM
 }
