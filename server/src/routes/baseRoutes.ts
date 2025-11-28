@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { BaseController } from '../controllers/baseController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// 暂时不使用认证，先测试基础功能
-// router.use(authenticateToken);
+// 启用认证中间件
+router.use(authenticateToken);
 
 /**
  * @swagger

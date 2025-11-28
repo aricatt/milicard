@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { message } from 'antd';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import { request } from '@umijs/max';
+import { getCurrencyConfig, getCurrencySymbol, formatCurrency, type CurrencyConfig } from '@/utils/currency';
+import { getLanguageConfig, type LanguageConfig } from '@/utils/language';
 
 // 基地信息接口
 export interface BaseInfo {
@@ -10,6 +12,10 @@ export interface BaseInfo {
   address?: string;
   contactPerson?: string;
   contactPhone?: string;
+  // 货币代码：CNY(人民币), VND(越南盾), THB(泰铢), USD(美元)
+  currency: string;
+  // 语言代码：zh-CN(简体中文), zh-TW(繁体中文), vi(越南语), th(泰语), en(英语)
+  language: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -65,18 +71,10 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const refreshBaseList = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/live-base/bases', {
+      const result = await request('/api/v1/live-base/bases', {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
       if (result.success) {
         setBaseList(result.data || []);
       } else {
@@ -84,7 +82,8 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       console.error('获取基地列表失败:', error);
-      message.error('获取基地列表失败，请稍后重试');
+      // 不在 Context 中显示 message，避免静态方法警告
+      // 调用者可以根据 baseList 为空来处理错误状态
       setBaseList([]);
     } finally {
       setLoading(false);
@@ -136,4 +135,40 @@ export const useRequireBase = (): BaseInfo => {
     throw new Error('当前没有选择基地，请先选择一个基地');
   }
   return currentBase;
+};
+
+// 获取当前基地货币配置的Hook
+export const useBaseCurrency = () => {
+  const { currentBase } = useBase();
+  
+  return useMemo(() => {
+    const currencyCode = currentBase?.currency || 'CNY';
+    const config = getCurrencyConfig(currencyCode);
+    
+    return {
+      code: currencyCode,
+      symbol: config.symbol,
+      config,
+      // 格式化金额的便捷方法
+      format: (amount: number | string | undefined | null, showSymbol: boolean = true) => 
+        formatCurrency(amount, currencyCode, showSymbol),
+    };
+  }, [currentBase?.currency]);
+};
+
+// 获取当前基地语言配置的Hook
+export const useBaseLanguage = () => {
+  const { currentBase } = useBase();
+  
+  return useMemo(() => {
+    const languageCode = currentBase?.language || 'zh-CN';
+    const config = getLanguageConfig(languageCode);
+    
+    return {
+      code: languageCode,
+      config,
+      dateFormat: config.dateFormat,
+      dateTimeFormat: config.dateTimeFormat,
+    };
+  }, [currentBase?.language]);
 };

@@ -5,7 +5,7 @@ import {
   PageContainer,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, message, Popconfirm } from 'antd';
+import { App, Button, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 
 export interface ListPageTemplateProps<T> {
@@ -42,6 +42,7 @@ function ListPageTemplate<T extends Record<string, any>>({
   rowKey = 'id',
   searchConfig = { labelWidth: 120 },
 }: ListPageTemplateProps<T>) {
+  const { message } = App.useApp();
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<T>();

@@ -1,16 +1,19 @@
 import type { ProColumns } from '@ant-design/pro-components';
-import { ProFormText } from '@ant-design/pro-components';
+import { ProFormText, ProFormTextArea, ProFormSelect } from '@ant-design/pro-components';
+import { Tag } from 'antd';
 import React from 'react';
 import ListPageTemplate from '@/components/PageTemplates/ListPageTemplate';
 import type { BaseItem } from './data.d';
 import { addBase, queryBaseList, updateBase } from './service';
+import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
+import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
 
 const BaseList: React.FC = () => {
   const columns: ProColumns<BaseItem>[] = [
     {
       title: 'ID',
       dataIndex: 'id',
-      width: 80,
+      width: 60,
       search: false,
     },
     {
@@ -23,13 +26,58 @@ const BaseList: React.FC = () => {
     {
       title: '名称',
       dataIndex: 'name',
-      width: 200,
+      width: 150,
       ellipsis: true,
+    },
+    {
+      title: '货币',
+      dataIndex: 'currency',
+      width: 100,
+      search: false,
+      render: (_, record) => (
+        <Tag color="blue">
+          {getCurrencySymbol(record.currency)} {record.currency}
+        </Tag>
+      ),
+    },
+    {
+      title: '语言',
+      dataIndex: 'language',
+      width: 100,
+      search: false,
+      render: (_, record) => (
+        <Tag color="green">{getLanguageName(record.language)}</Tag>
+      ),
+    },
+    {
+      title: '联系人',
+      dataIndex: 'contactPerson',
+      width: 100,
+      search: false,
+      ellipsis: true,
+    },
+    {
+      title: '联系电话',
+      dataIndex: 'contactPhone',
+      width: 120,
+      search: false,
+      ellipsis: true,
+    },
+    {
+      title: '状态',
+      dataIndex: 'isActive',
+      width: 80,
+      search: false,
+      render: (_, record) => (
+        <Tag color={record.isActive ? 'success' : 'default'}>
+          {record.isActive ? '启用' : '停用'}
+        </Tag>
+      ),
     },
     {
       title: '创建时间',
       dataIndex: 'createdAt',
-      width: 180,
+      width: 160,
       valueType: 'dateTime',
       search: false,
     },
@@ -38,16 +86,50 @@ const BaseList: React.FC = () => {
   const addFormFields = (
     <>
       <ProFormText
-        rules={[
-          {
-            required: true,
-            message: '基地名称为必填项',
-          },
-        ]}
+        rules={[{ required: true, message: '基地名称为必填项' }]}
         label="基地名称"
         name="name"
         placeholder="请输入基地名称，如：杭州基地"
         extra="基地编号将自动生成（格式：BASE-XXXXXXXXXXX）"
+      />
+      <ProFormTextArea
+        label="描述"
+        name="description"
+        placeholder="请输入基地描述"
+        fieldProps={{ rows: 2 }}
+      />
+      <ProFormText
+        label="地址"
+        name="address"
+        placeholder="请输入基地地址"
+      />
+      <ProFormText
+        label="联系人"
+        name="contactPerson"
+        placeholder="请输入联系人姓名"
+      />
+      <ProFormText
+        label="联系电话"
+        name="contactPhone"
+        placeholder="请输入联系电话"
+      />
+      <ProFormSelect
+        label="货币"
+        name="currency"
+        placeholder="请选择货币"
+        options={CURRENCY_OPTIONS}
+        initialValue="CNY"
+        rules={[{ required: true, message: '请选择货币' }]}
+        extra="选择该基地使用的货币单位"
+      />
+      <ProFormSelect
+        label="语言"
+        name="language"
+        placeholder="请选择语言"
+        options={LANGUAGE_OPTIONS}
+        initialValue="zh-CN"
+        rules={[{ required: true, message: '请选择语言' }]}
+        extra="选择该基地的默认显示语言"
       />
     </>
   );
@@ -55,28 +137,51 @@ const BaseList: React.FC = () => {
   const updateFormFields = (
     <>
       <ProFormText
-        rules={[
-          {
-            required: true,
-            message: '基地编号为必填项',
-          },
-        ]}
         label="基地编号"
         name="code"
-        placeholder="请输入基地编号，如：BASE-83Q6731DP7J"
         disabled
         extra="编号创建后不可修改"
       />
       <ProFormText
-        rules={[
-          {
-            required: true,
-            message: '基地名称为必填项',
-          },
-        ]}
+        rules={[{ required: true, message: '基地名称为必填项' }]}
         label="基地名称"
         name="name"
-        placeholder="请输入基地名称，如：杭州基地"
+        placeholder="请输入基地名称"
+      />
+      <ProFormTextArea
+        label="描述"
+        name="description"
+        placeholder="请输入基地描述"
+        fieldProps={{ rows: 2 }}
+      />
+      <ProFormText
+        label="地址"
+        name="address"
+        placeholder="请输入基地地址"
+      />
+      <ProFormText
+        label="联系人"
+        name="contactPerson"
+        placeholder="请输入联系人姓名"
+      />
+      <ProFormText
+        label="联系电话"
+        name="contactPhone"
+        placeholder="请输入联系电话"
+      />
+      <ProFormSelect
+        label="货币"
+        name="currency"
+        placeholder="请选择货币"
+        options={CURRENCY_OPTIONS}
+        rules={[{ required: true, message: '请选择货币' }]}
+      />
+      <ProFormSelect
+        label="语言"
+        name="language"
+        placeholder="请选择语言"
+        options={LANGUAGE_OPTIONS}
+        rules={[{ required: true, message: '请选择语言' }]}
       />
     </>
   );

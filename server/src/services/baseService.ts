@@ -87,6 +87,13 @@ export class BaseService {
         id: base.id,
         code: base.code,
         name: base.name,
+        description: base.description,
+        address: base.address,
+        contactPerson: base.contactPerson,
+        contactPhone: base.contactPhone,
+        currency: base.currency,
+        language: base.language,
+        isActive: base.isActive,
         createdAt: base.createdAt.toISOString(),
         updatedAt: base.updatedAt.toISOString(),
       };
@@ -101,7 +108,7 @@ export class BaseService {
    */
   static async createBase(data: CreateBaseRequest, userId: string): Promise<BaseResponse> {
     try {
-      let { code, name } = data;
+      let { code, name, description, address, contactPerson, contactPhone, currency, language } = data;
 
       // 验证输入
       if (!name) {
@@ -127,6 +134,12 @@ export class BaseService {
         data: {
           code,
           name,
+          description,
+          address,
+          contactPerson,
+          contactPhone,
+          currency: currency || 'CNY',
+          language: language || 'zh-CN',
           createdBy: userId,
           updatedBy: userId,
         },
@@ -143,6 +156,13 @@ export class BaseService {
         id: base.id,
         code: base.code,
         name: base.name,
+        description: base.description,
+        address: base.address,
+        contactPerson: base.contactPerson,
+        contactPhone: base.contactPhone,
+        currency: base.currency,
+        language: base.language,
+        isActive: base.isActive,
         createdAt: base.createdAt.toISOString(),
         updatedAt: base.updatedAt.toISOString(),
       };
@@ -157,7 +177,7 @@ export class BaseService {
    */
   static async updateBase(id: number, data: UpdateBaseRequest, userId: string): Promise<BaseResponse> {
     try {
-      const { code, name } = data;
+      const { code, name, description, address, contactPerson, contactPhone, currency, language } = data;
 
       // 检查基地是否存在
       const existingBase = await prisma.base.findUnique({
@@ -188,6 +208,12 @@ export class BaseService {
       };
       if (code) updateData.code = code;
       if (name) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+      if (address !== undefined) updateData.address = address;
+      if (contactPerson !== undefined) updateData.contactPerson = contactPerson;
+      if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
+      if (currency) updateData.currency = currency;
+      if (language) updateData.language = language;
 
       const base = await prisma.base.update({
         where: { id },
@@ -204,6 +230,13 @@ export class BaseService {
         id: base.id,
         code: base.code,
         name: base.name,
+        description: base.description,
+        address: base.address,
+        contactPerson: base.contactPerson,
+        contactPhone: base.contactPhone,
+        currency: base.currency,
+        language: base.language,
+        isActive: base.isActive,
         createdAt: base.createdAt.toISOString(),
         updatedAt: base.updatedAt.toISOString(),
       };

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Empty, Spin, Modal, Form, Input, Typography, Space, Tag, App } from 'antd';
+import { Table, Button, Empty, Spin, Modal, Form, Input, Select, Typography, Space, Tag, App } from 'antd';
 import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
-import { history } from '@umijs/max';
+import { history, request } from '@umijs/max';
 import { useBase, BaseInfo, BaseProvider } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
+import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
+import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
 import styles from './BaseSelector.less';
 
 const { Title, Text } = Typography;
@@ -29,19 +31,11 @@ const BaseSelectorContent: React.FC = () => {
   const handleCreateBase = async (values: any) => {
     setCreateLoading(true);
     try {
-      const response = await fetch('/api/v1/live-base/bases', {
+      const result = await request('/api/v1/live-base/bases', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
+        data: values,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
       if (result.success) {
         message.success('基地创建成功！');
         setCreateModalVisible(false);
@@ -79,10 +73,22 @@ const BaseSelectorContent: React.FC = () => {
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: '描述',
-      dataIndex: 'description',
-      key: 'description',
-      ellipsis: true,
+      title: '货币',
+      dataIndex: 'currency',
+      key: 'currency',
+      width: 100,
+      render: (currency: string) => (
+        <Tag color="blue">{getCurrencySymbol(currency)} {currency}</Tag>
+      ),
+    },
+    {
+      title: '语言',
+      dataIndex: 'language',
+      key: 'language',
+      width: 100,
+      render: (language: string) => (
+        <Tag color="green">{getLanguageName(language)}</Tag>
+      ),
     },
     {
       title: '操作',
@@ -153,6 +159,7 @@ const BaseSelectorContent: React.FC = () => {
           layout="vertical"
           onFinish={handleCreateBase}
           autoComplete="off"
+          initialValues={{ currency: 'CNY', language: 'zh-CN' }}
         >
           <Form.Item
             label="基地名称"
@@ -166,6 +173,30 @@ const BaseSelectorContent: React.FC = () => {
             <Input 
               placeholder="请输入基地名称，如：北京总部基地" 
               autoFocus
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="货币"
+            name="currency"
+            rules={[{ required: true, message: '请选择货币' }]}
+            extra="选择该基地使用的货币单位"
+          >
+            <Select 
+              placeholder="请选择货币"
+              options={CURRENCY_OPTIONS}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="语言"
+            name="language"
+            rules={[{ required: true, message: '请选择语言' }]}
+            extra="选择该基地的默认显示语言"
+          >
+            <Select 
+              placeholder="请选择语言"
+              options={LANGUAGE_OPTIONS}
             />
           </Form.Item>
 

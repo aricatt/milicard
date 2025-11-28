@@ -91,10 +91,20 @@ export class BaseController {
    */
   static async createBase(req: Request, res: Response) {
     try {
-      const { code, name, description } = req.body;
-      const userId = req.user?.id || 'system'; // 暂时使用system用户进行测试
+      const { code, name, description, address, contactPerson, contactPhone, currency, language } = req.body;
+      const userId = req.user?.id;
 
-      const base = await BaseService.createBase({ code, name, description }, userId);
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '用户未认证',
+        });
+      }
+
+      const base = await BaseService.createBase(
+        { code, name, description, address, contactPerson, contactPhone, currency, language },
+        userId
+      );
       
       res.status(201).json({
         success: true,
@@ -125,7 +135,7 @@ export class BaseController {
   static async updateBase(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { code, name } = req.body;
+      const { code, name, description, address, contactPerson, contactPhone, currency, language } = req.body;
       const userId = req.user?.id;
       const baseId = parseInt(id);
 
@@ -143,7 +153,11 @@ export class BaseController {
         });
       }
 
-      const base = await BaseService.updateBase(baseId, { code, name }, userId);
+      const base = await BaseService.updateBase(
+        baseId,
+        { code, name, description, address, contactPerson, contactPhone, currency, language },
+        userId
+      );
       
       res.json({
         success: true,
