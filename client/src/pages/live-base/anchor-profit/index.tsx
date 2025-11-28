@@ -777,6 +777,7 @@ const AnchorProfitPage: React.FC = () => {
             onClick={() => {
               form.resetFields();
               setConsumptionAmount(0);
+              setConsumptionOptions([]); // 清空消耗记录选项
               setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
               setCreateModalVisible(true);
             }}
@@ -796,6 +797,7 @@ const AnchorProfitPage: React.FC = () => {
           setCreateModalVisible(false);
           form.resetFields();
           setConsumptionAmount(0);
+          setConsumptionOptions([]); // 清空消耗记录选项
           setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         }}
         confirmLoading={createLoading}
@@ -817,6 +819,7 @@ const AnchorProfitPage: React.FC = () => {
           setEditingRecord(null);
           form.resetFields();
           setConsumptionAmount(0);
+          setConsumptionOptions([]); // 清空消耗记录选项
           setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         }}
         confirmLoading={editLoading}

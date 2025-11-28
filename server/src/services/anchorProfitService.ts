@@ -59,6 +59,14 @@ export class AnchorProfitService {
             creator: {
               select: { id: true, username: true },
             },
+            consumption: {
+              select: {
+                id: true,
+                handler: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
           },
           orderBy: { profitDate: 'desc' },
           skip,
@@ -73,8 +81,9 @@ export class AnchorProfitService {
         profitDate: record.profitDate.toISOString().split('T')[0],
         locationId: record.locationId,
         locationName: record.location.name,
-        handlerId: '', // TODO: 从调货记录获取
-        handlerName: record.location.name, // 暂时用直播间名称
+        consumptionId: record.consumptionId,
+        handlerId: record.consumption?.handler?.id || '',
+        handlerName: record.consumption?.handler?.name || '未关联',
         gmvAmount: Number(record.gmvAmount),
         refundAmount: Number(record.refundAmount),
         waterAmount: Number(record.offlineAmount),
