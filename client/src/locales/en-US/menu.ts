@@ -20,7 +20,6 @@ export default {
   'menu.live-base.procurement': 'Procurement Management',
   'menu.live-base.sales': 'Sales Management',
   'menu.live-base.products': 'Product Management',
-  'menu.live-base.product-category': 'Product Categories',
   'menu.live-base.inventory': 'Inventory Management',
   'menu.exception.403': '403',
   'menu.exception.404': '404',

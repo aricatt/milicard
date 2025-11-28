@@ -128,13 +128,6 @@ export default [
         path: '/live-base/inventory-consumption',
         component: './live-base/inventory-consumption',
       },
-      // 商品分类
-      {
-        name: 'product-category',
-        icon: 'tags',
-        path: '/live-base/product-category',
-        component: './Welcome',
-      },
     ],
   },
   {

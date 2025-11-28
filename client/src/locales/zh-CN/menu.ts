@@ -21,7 +21,6 @@ export default {
   'menu.live-base.arrivals': '到货',
   'menu.live-base.transfers': '调货',
   'menu.live-base.inventory-consumption': '库存和消耗',
-  'menu.live-base.product-category': '商品分类',
   'menu.exception.403': '403',
   'menu.exception.404': '404',
   'menu.exception.500': '500',
