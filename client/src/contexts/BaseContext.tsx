@@ -76,7 +76,19 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       if (result.success) {
-        setBaseList(result.data || []);
+        const newBaseList = result.data || [];
+        setBaseList(newBaseList);
+        
+        // 如果当前有选中的基地，从新列表中更新它的信息（确保货币等设置是最新的）
+        if (currentBase) {
+          const updatedBase = newBaseList.find((b: BaseInfo) => b.id === currentBase.id);
+          if (updatedBase) {
+            // 只有当数据有变化时才更新，避免不必要的重渲染
+            if (JSON.stringify(updatedBase) !== JSON.stringify(currentBase)) {
+              setCurrentBase(updatedBase);
+            }
+          }
+        }
       } else {
         throw new Error(result.message || '获取基地列表失败');
       }

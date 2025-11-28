@@ -7,8 +7,10 @@ import type { BaseItem } from './data.d';
 import { addBase, queryBaseList, updateBase } from './service';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
 import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
+import { useBase } from '@/contexts/BaseContext';
 
 const BaseList: React.FC = () => {
+  const { refreshBaseList } = useBase();
   const columns: ProColumns<BaseItem>[] = [
     {
       title: 'ID',
@@ -207,10 +209,14 @@ const BaseList: React.FC = () => {
       }}
       onAdd={async (fields) => {
         await addBase(fields);
+        // 刷新基地列表，确保 Context 中的数据是最新的
+        await refreshBaseList();
         return true;
       }}
       onUpdate={async (fields) => {
         await updateBase(fields.id, fields);
+        // 刷新基地列表，确保当前基地的货币等设置是最新的
+        await refreshBaseList();
         return true;
       }}
       addFormFields={addFormFields}

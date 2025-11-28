@@ -27,7 +27,7 @@ import {
 } from '@ant-design/icons';
 import { request } from '@umijs/max';
 import dayjs from 'dayjs';
-import { useBase } from '@/contexts/BaseContext';
+import { useBase, useBaseCurrency } from '@/contexts/BaseContext';
 import { getColumns } from './columns';
 import { useAnchorProfitExcel } from './useAnchorProfitExcel';
 import ImportModal from '@/components/ImportModal';
@@ -43,6 +43,7 @@ const { TextArea } = Input;
 
 const AnchorProfitPage: React.FC = () => {
   const { currentBase } = useBase();
+  const { symbol: currencySymbol } = useBaseCurrency();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   const [form] = Form.useForm();
@@ -438,7 +439,7 @@ const AnchorProfitPage: React.FC = () => {
   };
 
   // 列定义
-  const columns = getColumns(handleEdit, handleDelete);
+  const columns = getColumns(handleEdit, handleDelete, currencySymbol);
 
   // 无基地时显示提示
   if (!currentBase) {
@@ -526,7 +527,7 @@ const AnchorProfitPage: React.FC = () => {
               precision={2}
               style={{ width: '100%' }}
               placeholder="请输入"
-              prefix="¥"
+              prefix={currencySymbol}
             />
           </Form.Item>
         </Col>
@@ -541,7 +542,7 @@ const AnchorProfitPage: React.FC = () => {
               precision={2}
               style={{ width: '100%' }}
               placeholder="0"
-              prefix="¥"
+              prefix={currencySymbol}
             />
           </Form.Item>
         </Col>
@@ -557,7 +558,7 @@ const AnchorProfitPage: React.FC = () => {
               precision={2}
               style={{ width: '100%' }}
               placeholder="0"
-              prefix="¥"
+              prefix={currencySymbol}
             />
           </Form.Item>
         </Col>
@@ -571,7 +572,7 @@ const AnchorProfitPage: React.FC = () => {
               value={consumptionAmount}
               disabled
               style={{ width: '100%' }}
-              prefix="¥"
+              prefix={currencySymbol}
               precision={2}
             />
           </Form.Item>
@@ -587,7 +588,7 @@ const AnchorProfitPage: React.FC = () => {
               precision={2}
               style={{ width: '100%' }}
               placeholder="0"
-              prefix="¥"
+              prefix={currencySymbol}
             />
           </Form.Item>
         </Col>
@@ -630,7 +631,7 @@ const AnchorProfitPage: React.FC = () => {
             title="当日销售额"
             value={calculatedValues.salesAmount}
             precision={2}
-            prefix="¥"
+            prefix={currencySymbol}
             valueStyle={{ color: '#722ed1' }}
           />
         </Col>
@@ -639,7 +640,7 @@ const AnchorProfitPage: React.FC = () => {
             title="平台扣点"
             value={calculatedValues.platformFeeAmount}
             precision={2}
-            prefix="¥"
+            prefix={currencySymbol}
             valueStyle={{ color: '#faad14' }}
           />
         </Col>
@@ -648,7 +649,7 @@ const AnchorProfitPage: React.FC = () => {
             title="利润金额"
             value={calculatedValues.profitAmount}
             precision={2}
-            prefix="¥"
+            prefix={currencySymbol}
             valueStyle={{ color: calculatedValues.profitAmount >= 0 ? '#52c41a' : '#ff4d4f' }}
           />
         </Col>
@@ -678,15 +679,15 @@ const AnchorProfitPage: React.FC = () => {
     <Descriptions column={2} size="small" style={{ width: 400 }}>
       <Descriptions.Item label="总记录数">{stats.totalRecords} 条</Descriptions.Item>
       <Descriptions.Item label="今日记录">{stats.todayRecords} 条</Descriptions.Item>
-      <Descriptions.Item label="总GMV">¥{stats.totalGmv.toFixed(2)}</Descriptions.Item>
-      <Descriptions.Item label="总退款">¥{stats.totalRefund.toFixed(2)}</Descriptions.Item>
-      <Descriptions.Item label="总销售额">¥{stats.totalSales.toFixed(2)}</Descriptions.Item>
-      <Descriptions.Item label="总消耗">¥{stats.totalConsumption.toFixed(2)}</Descriptions.Item>
-      <Descriptions.Item label="总投流">¥{stats.totalAdSpend.toFixed(2)}</Descriptions.Item>
-      <Descriptions.Item label="总平台扣点">¥{stats.totalPlatformFee.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总GMV">{currencySymbol}{stats.totalGmv.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总退款">{currencySymbol}{stats.totalRefund.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总销售额">{currencySymbol}{stats.totalSales.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总消耗">{currencySymbol}{stats.totalConsumption.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总投流">{currencySymbol}{stats.totalAdSpend.toFixed(2)}</Descriptions.Item>
+      <Descriptions.Item label="总平台扣点">{currencySymbol}{stats.totalPlatformFee.toFixed(2)}</Descriptions.Item>
       <Descriptions.Item label="总利润">
         <span style={{ color: stats.totalProfit >= 0 ? '#52c41a' : '#ff4d4f', fontWeight: 'bold' }}>
-          ¥{stats.totalProfit.toFixed(2)}
+          {currencySymbol}{stats.totalProfit.toFixed(2)}
         </span>
       </Descriptions.Item>
       <Descriptions.Item label="平均毛利率">

@@ -5,7 +5,8 @@ import type { AnchorProfitRecord } from './types';
 
 export const getColumns = (
   onEdit: (record: AnchorProfitRecord) => void,
-  onDelete: (id: string) => void
+  onDelete: (id: string) => void,
+  currencySymbol: string = '¥'
 ): ProColumns<AnchorProfitRecord>[] => [
   {
     title: '日期',
@@ -32,7 +33,7 @@ export const getColumns = (
     sorter: true,
     render: (_, record) => (
       <span style={{ color: '#1890ff', fontWeight: 500 }}>
-        ¥{record.gmvAmount.toFixed(2)}
+        {currencySymbol}{record.gmvAmount.toFixed(2)}
       </span>
     ),
   },
@@ -43,7 +44,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: record.refundAmount > 0 ? '#ff4d4f' : '#999' }}>
-        ¥{record.refundAmount.toFixed(2)}
+        {currencySymbol}{record.refundAmount.toFixed(2)}
       </span>
     ),
   },
@@ -54,7 +55,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: record.waterAmount > 0 ? '#52c41a' : '#999' }}>
-        ¥{record.waterAmount.toFixed(2)}
+        {currencySymbol}{record.waterAmount.toFixed(2)}
       </span>
     ),
   },
@@ -67,7 +68,7 @@ export const getColumns = (
     render: (_, record) => (
       <Tooltip title="GMV - 退款 + 走水">
         <span style={{ color: '#722ed1', fontWeight: 500 }}>
-          ¥{record.salesAmount.toFixed(2)}
+          {currencySymbol}{record.salesAmount.toFixed(2)}
         </span>
       </Tooltip>
     ),
@@ -79,7 +80,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: '#fa8c16' }}>
-        ¥{record.consumptionAmount.toFixed(2)}
+        {currencySymbol}{record.consumptionAmount.toFixed(2)}
       </span>
     ),
   },
@@ -90,7 +91,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: '#eb2f96' }}>
-        ¥{record.adSpendAmount.toFixed(2)}
+        {currencySymbol}{record.adSpendAmount.toFixed(2)}
       </span>
     ),
   },
@@ -101,7 +102,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: '#faad14' }}>
-        ¥{record.platformFeeAmount.toFixed(2)}
+        {currencySymbol}{record.platformFeeAmount.toFixed(2)}
       </span>
     ),
   },
@@ -117,7 +118,7 @@ export const getColumns = (
           color: record.profitAmount >= 0 ? '#52c41a' : '#ff4d4f', 
           fontWeight: 'bold' 
         }}>
-          ¥{record.profitAmount.toFixed(2)}
+          {currencySymbol}{record.profitAmount.toFixed(2)}
         </span>
       </Tooltip>
     ),

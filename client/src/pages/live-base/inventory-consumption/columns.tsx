@@ -7,6 +7,7 @@ import type { ConsumptionRecord } from './types';
 
 interface ColumnsConfig {
   onDelete: (record: ConsumptionRecord) => void;
+  currencySymbol?: string;
 }
 
 /**
@@ -45,7 +46,7 @@ const calcInventoryValue = (record: ConsumptionRecord) => {
   );
 };
 
-export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => [
+export const getColumns = ({ onDelete, currencySymbol = '¥' }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => [
   {
     title: '日期',
     dataIndex: 'consumptionDate',
@@ -140,7 +141,7 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     width: 90,
     align: 'right',
     search: false,
-    render: (_, record) => `¥${(record.unitPricePerBox || 0).toFixed(2)}`,
+    render: (_, record) => `${currencySymbol}${(record.unitPricePerBox || 0).toFixed(2)}`,
   },
   {
     title: '消耗/箱',
@@ -174,7 +175,7 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     search: false,
     render: (_, record) => {
       const amount = calcConsumptionAmount(record);
-      return <span style={{ color: '#f5222d', fontWeight: 500 }}>¥{amount.toFixed(2)}</span>;
+      return <span style={{ color: '#f5222d', fontWeight: 500 }}>{currencySymbol}{amount.toFixed(2)}</span>;
     },
   },
   {
@@ -185,7 +186,7 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     search: false,
     render: (_, record) => {
       const value = calcInventoryValue(record);
-      return <span style={{ color: '#52c41a' }}>¥{value.toFixed(2)}</span>;
+      return <span style={{ color: '#52c41a' }}>{currencySymbol}{value.toFixed(2)}</span>;
     },
   },
   {

@@ -31,7 +31,7 @@ import {
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request } from '@umijs/max';
-import { useBase } from '@/contexts/BaseContext';
+import { useBase, useBaseCurrency } from '@/contexts/BaseContext';
 import styles from './index.less';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
@@ -74,6 +74,7 @@ interface ProductStats {
  */
 const ProductManagement: React.FC = () => {
   const { currentBase } = useBase();
+  const { symbol: currencySymbol } = useBaseCurrency();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   
@@ -363,7 +364,7 @@ const ProductManagement: React.FC = () => {
       align: 'right',
       render: (price: number) => (
         <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
-          ¥{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
+          {currencySymbol}{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
         </span>
       ),
     },
@@ -377,7 +378,7 @@ const ProductManagement: React.FC = () => {
       align: 'right',
       render: (price: number) => price ? (
         <span style={{ color: '#fa8c16' }}>
-          ¥{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
+          {currencySymbol}{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
         </span>
       ) : '-',
     },
@@ -391,7 +392,7 @@ const ProductManagement: React.FC = () => {
       align: 'right',
       render: (price: number) => price ? (
         <span style={{ color: '#52c41a' }}>
-          ¥{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
+          {currencySymbol}{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
         </span>
       ) : '-',
     },
@@ -803,7 +804,7 @@ const ProductManagement: React.FC = () => {
                   placeholder="零售价"
                   min={0}
                   precision={2}
-                  addonBefore="¥"
+                  addonBefore={currencySymbol}
                 />
               </Form.Item>
             </Col>
@@ -820,7 +821,7 @@ const ProductManagement: React.FC = () => {
                   placeholder="平拆价"
                   min={0}
                   precision={2}
-                  addonBefore="¥"
+                  addonBefore={currencySymbol}
                 />
               </Form.Item>
             </Col>
@@ -976,7 +977,7 @@ const ProductManagement: React.FC = () => {
                   placeholder="零售价"
                   min={0}
                   precision={2}
-                  addonBefore="¥"
+                  addonBefore={currencySymbol}
                 />
               </Form.Item>
             </Col>
@@ -993,7 +994,7 @@ const ProductManagement: React.FC = () => {
                   placeholder="平拆价"
                   min={0}
                   precision={2}
-                  addonBefore="¥"
+                  addonBefore={currencySymbol}
                 />
               </Form.Item>
             </Col>
