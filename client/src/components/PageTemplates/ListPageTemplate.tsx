@@ -214,13 +214,22 @@ function ListPageTemplate<T extends Record<string, any>>({
       )}
 
       {/* 编辑弹窗 */}
-      {onUpdate && updateFormFields && (
+      {onUpdate && updateFormFields && currentRow && (
         <ModalForm
           title="编辑"
           width="400px"
           open={updateModalOpen}
-          onOpenChange={handleUpdateModalOpen}
+          onOpenChange={(open) => {
+            handleUpdateModalOpen(open);
+            if (!open) {
+              setCurrentRow(undefined);
+            }
+          }}
           initialValues={currentRow}
+          key={currentRow?.[rowKey]}
+          modalProps={{
+            destroyOnClose: true,
+          }}
           onFinish={async (value) => {
             const success = await handleUpdate({ ...currentRow, ...value } as T);
             if (success) {
