@@ -468,37 +468,43 @@ const ArrivalManagement: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="仓库"
+            label="总仓库"
             name="locationId"
-            rules={[{ required: true, message: '请选择仓库' }]}
+            rules={[{ required: true, message: '请选择总仓库' }]}
+            extra="到货只能入库到总仓库"
           >
             <Select
-              placeholder="请选择"
+              placeholder="请选择总仓库"
               loading={locationsLoading}
               showSearch
               optionFilterProp="label"
-              options={locations.map((loc) => ({
-                value: loc.id,
-                label: loc.name,
-              }))}
+              options={locations
+                .filter((loc) => loc.type === 'MAIN_WAREHOUSE')
+                .map((loc) => ({
+                  value: loc.id,
+                  label: loc.name,
+                }))}
             />
           </Form.Item>
 
           <Form.Item
-            label="主播"
+            label="仓管"
             name="handlerId"
-            rules={[{ required: true, message: '请选择主播' }]}
+            rules={[{ required: true, message: '请选择仓管' }]}
+            extra="到货由仓管负责入库"
           >
             <Select
-              placeholder="请选择"
+              placeholder="请选择仓管"
               loading={handlersLoading}
               showSearch
               optionFilterProp="label"
               allowClear
-              options={handlers.map((h) => ({
-                value: h.id,
-                label: `${h.role === 'ANCHOR' ? '🎤 ' : '👷 '}${h.name}`,
-              }))}
+              options={handlers
+                .filter((h) => h.role === 'WAREHOUSE_KEEPER')
+                .map((h) => ({
+                  value: h.id,
+                  label: `👷 ${h.name}`,
+                }))}
             />
           </Form.Item>
 

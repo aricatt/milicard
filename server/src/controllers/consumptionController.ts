@@ -168,6 +168,7 @@ export class ConsumptionController {
 
   /**
    * 获取期初数据（调入总量）
+   * 按主播查询，因为直播间的货物归属是人
    */
   static async getOpeningStock(req: Request, res: Response) {
     try {
@@ -180,16 +181,16 @@ export class ConsumptionController {
       }
 
       const goodsId = req.query.goodsId as string;
-      const locationId = req.query.locationId ? parseInt(req.query.locationId as string) : undefined;
+      const handlerId = req.query.handlerId as string;
 
-      if (!goodsId || !locationId) {
+      if (!goodsId || !handlerId) {
         return res.status(400).json({
           success: false,
-          message: '缺少必填参数：goodsId 和 locationId'
+          message: '缺少必填参数：goodsId 和 handlerId'
         });
       }
 
-      const result = await ConsumptionService.getOpeningStock(baseId, goodsId, locationId);
+      const result = await ConsumptionService.getOpeningStock(baseId, goodsId, handlerId);
       res.json(result);
 
     } catch (error) {

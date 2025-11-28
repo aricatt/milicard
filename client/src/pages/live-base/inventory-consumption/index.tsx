@@ -186,9 +186,10 @@ const ConsumptionManagement: React.FC = () => {
 
   /**
    * 获取期初数据
+   * 按主播查询，因为直播间的货物归属是人
    */
-  const loadOpeningStock = useCallback(async (goodsId: string, locationId: number) => {
-    if (!currentBase || !goodsId || !locationId) {
+  const loadOpeningStock = useCallback(async (goodsId: string, handlerId: string) => {
+    if (!currentBase || !goodsId || !handlerId) {
       setOpeningStock(null);
       return;
     }
@@ -197,7 +198,7 @@ const ConsumptionManagement: React.FC = () => {
     try {
       const result = await request(`/api/v1/bases/${currentBase.id}/consumptions/opening-stock`, {
         method: 'GET',
-        params: { goodsId, locationId },
+        params: { goodsId, handlerId },
       });
 
       if (result.success && result.data) {
@@ -220,13 +221,15 @@ const ConsumptionManagement: React.FC = () => {
   }, [currentBase]);
 
   /**
-   * 商品或直播间变化时加载期初数据
+   * 商品、直播间或主播变化时加载期初数据
+   * 注意：在直播间，货物归属是人，所以需要选择主播后才计算期初库存
    */
-  const handleGoodsOrLocationChange = () => {
+  const handleFormFieldChange = () => {
     const goodsId = form.getFieldValue('goodsId');
-    const locationId = form.getFieldValue('locationId');
-    if (goodsId && locationId) {
-      loadOpeningStock(goodsId, locationId);
+    const handlerId = form.getFieldValue('handlerId');
+    // 需要商品和主播都选择后才加载期初数据（按主播计算）
+    if (goodsId && handlerId) {
+      loadOpeningStock(goodsId, handlerId);
     } else {
       setOpeningStock(null);
     }
@@ -468,7 +471,7 @@ const ConsumptionManagement: React.FC = () => {
                   showSearch
                   optionFilterProp="label"
                   options={goodsOptions.map(g => ({ value: g.id, label: g.name }))}
-                  onChange={handleGoodsOrLocationChange}
+                  onChange={handleFormFieldChange}
                 />
               </Form.Item>
             </Col>
@@ -483,8 +486,9 @@ const ConsumptionManagement: React.FC = () => {
                   loading={optionsLoading}
                   showSearch
                   optionFilterProp="label"
-                  options={locationOptions.map(l => ({ value: l.id, label: l.name }))}
-                  onChange={handleGoodsOrLocationChange}
+                  options={locationOptions
+                    .filter(l => l.type === 'LIVE_ROOM')
+                    .map(l => ({ value: l.id, label: l.name }))}
                 />
               </Form.Item>
             </Col>
@@ -496,13 +500,17 @@ const ConsumptionManagement: React.FC = () => {
                 label="主播"
                 name="handlerId"
                 rules={[{ required: true, message: '请选择主播' }]}
+                extra="选择主播后计算期初库存（直播间货物归属人）"
               >
                 <Select
                   placeholder="请选择主播"
                   loading={optionsLoading}
                   showSearch
                   optionFilterProp="label"
-                  options={personnelOptions.map(p => ({ value: p.id, label: p.name }))}
+                  options={personnelOptions
+                    .filter(p => p.role === 'ANCHOR')
+                    .map(p => ({ value: p.id, label: `🎤 ${p.name}` }))}
+                  onChange={handleFormFieldChange}
                 />
               </Form.Item>
             </Col>
@@ -543,7 +551,7 @@ const ConsumptionManagement: React.FC = () => {
               </Row>
             ) : (
               <Alert
-                message="请先选择商品和直播间，系统将自动获取调入总量"
+                message="请先选择商品和主播，系统将自动获取该主播的调入总量（直播间货物归属人）"
                 type="info"
                 showIcon
                 style={{ marginBottom: 16 }}

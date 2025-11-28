@@ -294,12 +294,13 @@ export class ConsumptionService {
 
   /**
    * 获取期初数据（调入总量）
-   * 查询某商品调入到某直播间的总量
+   * 按主播查询某商品调入给该主播的总量
+   * 注意：直播间的货物归属是人，所以按 handlerId 查询
    */
   static async getOpeningStock(
     baseId: number,
     goodsId: string,
-    locationId: number
+    handlerId: string
   ): Promise<{
     success: boolean;
     data: {
@@ -310,11 +311,11 @@ export class ConsumptionService {
     };
   }> {
     try {
-      // 查询调入该直播间的调货记录（目标位置是该直播间）
+      // 查询调入给该主播的调货记录（目标主播是该人）
       const transferRecords = await prisma.transferRecord.findMany({
         where: {
           baseId,
-          destinationLocationId: locationId,
+          destinationHandlerId: handlerId,
           goodsId
         },
         select: {
@@ -350,7 +351,7 @@ export class ConsumptionService {
         error: error instanceof Error ? error.message : String(error),
         baseId,
         goodsId,
-        locationId,
+        handlerId,
         service: 'milicard-api'
       });
       throw new BaseError('获取期初数据失败', BaseErrorType.DATABASE_ERROR);
