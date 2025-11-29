@@ -3,7 +3,7 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/client
 COPY client/package*.json ./
-RUN npm ci --registry=https://registry.npmmirror.com
+RUN npm ci --registry=https://registry.npmmirror.com --legacy-peer-deps
 COPY client/ ./
 RUN npm run build
 
