@@ -53,6 +53,7 @@ COPY --from=backend-builder /app/server/dist /app/server/dist
 COPY --from=backend-builder /app/server/node_modules /app/server/node_modules
 COPY --from=backend-builder /app/server/package.json /app/server/
 COPY --from=backend-builder /app/server/prisma /app/server/prisma
+COPY --from=backend-builder /app/server/config /app/server/config
 
 # 复制配置文件
 COPY docker/nginx.conf /etc/nginx/sites-available/default
