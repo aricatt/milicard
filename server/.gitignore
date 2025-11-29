@@ -212,8 +212,7 @@ $RECYCLE.BIN/
 # Linux
 *~
 
-# Package managers
-package-lock.json
+# Package managers (keep package-lock.json for reproducible builds)
 yarn.lock
 pnpm-lock.yaml
 
