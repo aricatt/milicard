@@ -5,6 +5,10 @@ echo "=========================================="
 echo "  MiliCard Docker Container Starting"
 echo "=========================================="
 
+# 确保日志目录存在且有正确权限
+mkdir -p /var/log/supervisor
+chmod 777 /var/log/supervisor
+
 # 检查必要的环境变量
 if [ -z "$DB_PASSWORD" ]; then
     echo "ERROR: DB_PASSWORD environment variable is required"
