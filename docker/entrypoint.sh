@@ -54,10 +54,10 @@ echo "PostgreSQL is ready."
 # 设置 DATABASE_URL 环境变量用于 Prisma
 export DATABASE_URL="postgresql://milicard:${DB_PASSWORD}@localhost:5432/milicard?schema=public"
 
-# 运行 Prisma 迁移
-echo "Running Prisma migrations..."
+# 同步数据库 schema
+echo "Syncing database schema..."
 cd /app/server
-npx prisma migrate deploy
+npx prisma db push --accept-data-loss
 
 # 首次运行时创建管理员账号
 if [ "$FIRST_RUN" = true ]; then
