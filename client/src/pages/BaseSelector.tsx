@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Empty, Spin, Modal, Form, Input, Select, Typography, Space, Tag, App } from 'antd';
 import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { history, request } from '@umijs/max';
-import { useBase, BaseInfo, BaseProvider, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
+import { BaseInfo, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
 import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
@@ -10,24 +10,51 @@ import styles from './BaseSelector.less';
 
 const { Title, Text } = Typography;
 
+// 本地存储键名（与 BaseContext 保持一致）
+const STORAGE_KEY = 'milicard_current_base';
+
 const BaseSelectorContent: React.FC = () => {
-  const { baseList, loading, setCurrentBase, refreshBaseList } = useBase();
   const { message } = App.useApp();
+  const [baseList, setBaseList] = useState<BaseInfo[]>([]);
+  const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [form] = Form.useForm();
 
+  // 获取基地列表
+  const fetchBaseList = async () => {
+    setLoading(true);
+    try {
+      const result = await request('/api/v1/live-base/bases', {
+        method: 'GET',
+      });
+      if (result.success) {
+        setBaseList(result.data || []);
+      }
+    } catch (error) {
+      console.error('获取基地列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始化时获取基地列表
+  useEffect(() => {
+    fetchBaseList();
+  }, []);
+
   // 选择基地并进入
   const handleSelectBase = (base: BaseInfo) => {
-    setCurrentBase(base);
-    message.success(`已选择基地：${base.name}`);
-    // 根据基地类型跳转到不同页面
+    console.log('handleSelectBase called with:', base);
+    // 直接保存到 localStorage，让全局 BaseProvider 在页面加载时读取
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
+    message.success(`已选择基地：${base.name} (ID: ${base.id})`);
+    // 使用 window.location.href 强制刷新页面，确保 BaseProvider 重新初始化
     setTimeout(() => {
-      if (base.type === BaseType.OFFLINE_REGION) {
-        history.push('/offline-region/districts');
-      } else {
-        history.push('/live-base/base-data/bases');
-      }
+      const targetPath = base.type === BaseType.OFFLINE_REGION 
+        ? '/offline-region/districts' 
+        : '/live-base/base-data/bases';
+      window.location.href = targetPath;
     }, 100);
   };
 
@@ -44,7 +71,7 @@ const BaseSelectorContent: React.FC = () => {
         message.success('基地创建成功！');
         setCreateModalVisible(false);
         form.resetFields();
-        await refreshBaseList();
+        await fetchBaseList();
       } else {
         throw new Error(result.message || '创建基地失败');
       }
@@ -242,13 +269,5 @@ const BaseSelectorContent: React.FC = () => {
   );
 };
 
-// 主组件，包裹 BaseProvider
-const BaseSelector: React.FC = () => {
-  return (
-    <BaseProvider>
-      <BaseSelectorContent />
-    </BaseProvider>
-  );
-};
-
-export default BaseSelector;
+// 直接导出内容组件，使用全局的 BaseProvider
+export default BaseSelectorContent;

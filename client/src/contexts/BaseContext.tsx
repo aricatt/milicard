@@ -46,6 +46,7 @@ interface BaseContextType {
   currentBase: BaseInfo | null;
   baseList: BaseInfo[];
   loading: boolean;
+  initialized: boolean; // 标识 Context 是否已完成初始化
   setCurrentBase: (base: BaseInfo | null) => void;
   refreshBaseList: () => Promise<void>;
   clearBaseContext: () => void;
@@ -62,6 +63,7 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currentBase, setCurrentBaseState] = useState<BaseInfo | null>(null);
   const [baseList, setBaseList] = useState<BaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   // 从本地存储恢复基地信息
   useEffect(() => {
@@ -75,6 +77,7 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem(STORAGE_KEY);
       }
     }
+    setInitialized(true);
   }, []);
 
   // 设置当前基地
@@ -137,6 +140,7 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     currentBase,
     baseList,
     loading,
+    initialized,
     setCurrentBase,
     refreshBaseList,
     clearBaseContext,
@@ -160,13 +164,10 @@ export const useBaseOptional = (): BaseContextType | null => {
   return context || null;
 };
 
-// 检查是否有基地上下文的Hook
-export const useRequireBase = (): BaseInfo => {
-  const { currentBase } = useBase();
-  if (!currentBase) {
-    throw new Error('当前没有选择基地，请先选择一个基地');
-  }
-  return currentBase;
+// 检查是否有基地上下文的Hook（带初始化状态）
+export const useRequireBase = (): { base: BaseInfo | null; initialized: boolean } => {
+  const { currentBase, initialized } = useBase();
+  return { base: currentBase, initialized };
 };
 
 // 获取当前基地货币配置的Hook

@@ -15,6 +15,7 @@ import {
 import {
   FormattedMessage,
   Helmet,
+  history,
   SelectLang,
   useIntl,
   useModel,
@@ -154,7 +155,17 @@ const Login: React.FC = () => {
         
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
-        window.location.href = urlParams.get('redirect') || '/';
+        const redirect = urlParams.get('redirect');
+        
+        // 检查是否有已选择的基地
+        const savedBase = localStorage.getItem('milicard_current_base');
+        if (savedBase) {
+          // 有已选择的基地，跳转到 redirect 或首页
+          history.push(redirect || '/');
+        } else {
+          // 没有选择基地，跳转到基地选择页面
+          history.push('/base-selector');
+        }
         return;
       }
       console.log('登录失败:', msg);

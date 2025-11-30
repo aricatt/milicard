@@ -135,9 +135,21 @@ export const layout: RunTimeLayoutConfig = ({
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
+      // 不需要检查的页面
+      const whiteList = [loginPath, '/user/register', '/user/register-result', '/base-selector'];
+      
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
+      if (!initialState?.currentUser && !whiteList.includes(location.pathname)) {
         history.push(loginPath);
+        return;
+      }
+      
+      // 如果已登录但没有选择基地，且不在白名单页面，重定向到基地选择页面
+      if (initialState?.currentUser && !whiteList.includes(location.pathname)) {
+        const savedBase = localStorage.getItem('milicard_current_base');
+        if (!savedBase) {
+          history.push('/base-selector');
+        }
       }
     },
     bgLayoutImgList: [

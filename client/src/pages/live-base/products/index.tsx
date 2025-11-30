@@ -73,7 +73,7 @@ interface ProductStats {
  * 基地中心化的商品管理，统一管理商品信息
  */
 const ProductManagement: React.FC = () => {
-  const { currentBase } = useBase();
+  const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>();
   
@@ -564,6 +564,17 @@ const ProductManagement: React.FC = () => {
       ],
     },
   ];
+
+  // 等待 Context 初始化完成
+  if (!initialized) {
+    return (
+      <PageContainer>
+        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+          <p>加载中...</p>
+        </div>
+      </PageContainer>
+    );
+  }
 
   if (!currentBase) {
     return (
