@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Dropdown, Space, Typography, Avatar, Modal, App, Tag } from 'antd';
 import { SwapOutlined, HomeOutlined, PlusOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
-import { useBase, useBaseCurrency, BaseInfo } from '@/contexts/BaseContext';
+import { useBase, useBaseCurrency, BaseInfo, BaseType } from '@/contexts/BaseContext';
 import { getCurrencySymbol } from '@/utils/currency';
 import type { MenuProps } from 'antd';
 
@@ -34,8 +34,12 @@ const BaseSwitcher: React.FC = () => {
     message.success(`已切换到基地：${base.name}`);
     setSwitchModalVisible(false);
     
-    // 切换后跳转到直播基地概览
-    history.push('/live-base/overview');
+    // 直播基地 → 直播间/仓库页，线下基地 → 小区页
+    // 使用 window.location.href 强制刷新，确保菜单正确更新
+    const targetPath = base.type === BaseType.OFFLINE_REGION 
+      ? '/offline-region/sub-districts' 
+      : '/live-base/locations';
+    window.location.href = targetPath;
   };
 
   // 创建新基地

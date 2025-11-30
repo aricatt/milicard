@@ -12,14 +12,19 @@ export class BaseController {
    */
   static async getBaseList(req: Request, res: Response) {
     try {
-      const { current = 1, pageSize = 10, name, code } = req.query;
+      const { current = 1, pageSize = 10, name, code, type } = req.query;
       
-      const params = {
+      const params: any = {
         current: parseInt(current as string),
         pageSize: parseInt(pageSize as string),
         name: name as string,
         code: code as string,
       };
+      
+      // 只有当 type 有值时才添加到参数中
+      if (type) {
+        params.type = type as string;
+      }
 
       const result = await BaseService.getBaseList(params);
       

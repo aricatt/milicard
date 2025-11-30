@@ -83,7 +83,7 @@ const BaseList: React.FC = () => {
       search: false,
       render: (_, record) => (
         <Tag color={record.isActive ? 'success' : 'default'}>
-          {record.isActive ? '启用' : '停用'}
+          {record.isActive ? '启用' : '禁用'}
         </Tag>
       ),
     },
@@ -225,6 +225,7 @@ const BaseList: React.FC = () => {
           pageSize: params.pageSize,
           name: params.name,
           code: params.code,
+          type: BaseType.LIVE_BASE, // 只显示直播基地类型
         });
         return {
           data: response.data,

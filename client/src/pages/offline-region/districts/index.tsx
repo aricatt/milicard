@@ -1,32 +1,235 @@
+import type { ProColumns } from '@ant-design/pro-components';
+import { ProFormText, ProFormTextArea, ProFormSelect } from '@ant-design/pro-components';
+import { Tag } from 'antd';
 import React from 'react';
-import { PageContainer } from '@ant-design/pro-components';
-import { Card, Empty, Typography } from 'antd';
-import { GlobalOutlined } from '@ant-design/icons';
+import ListPageTemplate from '@/components/PageTemplates/ListPageTemplate';
+import type { BaseItem } from '@/pages/live-base/base-data/bases/data.d';
+import { addBase, queryBaseList, updateBase } from '@/pages/live-base/base-data/bases/service';
+import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
+import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
+import { useBase, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
 
-const { Title, Paragraph } = Typography;
-
+/**
+ * 大区管理页面
+ * 复用基地列表组件，只显示线下基地类型
+ */
 const DistrictsPage: React.FC = () => {
+  const { refreshBaseList } = useBase();
+  
+  const columns: ProColumns<BaseItem>[] = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      width: 60,
+      search: false,
+    },
+    {
+      title: '编号',
+      dataIndex: 'code',
+      width: 150,
+      copyable: true,
+      ellipsis: true,
+    },
+    {
+      title: '名称',
+      dataIndex: 'name',
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: '货币',
+      dataIndex: 'currency',
+      width: 100,
+      search: false,
+      render: (_, record) => (
+        <Tag color="blue">
+          {getCurrencySymbol(record.currency)} {record.currency}
+        </Tag>
+      ),
+    },
+    {
+      title: '语言',
+      dataIndex: 'language',
+      width: 100,
+      search: false,
+      render: (_, record) => (
+        <Tag color="green">{getLanguageName(record.language)}</Tag>
+      ),
+    },
+    {
+      title: '联系人',
+      dataIndex: 'contactPerson',
+      width: 100,
+      search: false,
+      ellipsis: true,
+    },
+    {
+      title: '联系电话',
+      dataIndex: 'contactPhone',
+      width: 120,
+      search: false,
+      ellipsis: true,
+    },
+    {
+      title: '状态',
+      dataIndex: 'isActive',
+      width: 80,
+      search: false,
+      render: (_, record) => (
+        <Tag color={record.isActive ? 'success' : 'default'}>
+          {record.isActive ? '启用' : '禁用'}
+        </Tag>
+      ),
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      width: 160,
+      valueType: 'dateTime',
+      search: false,
+    },
+  ];
+
+  // 添加表单字段（不包含类型选择，固定为线下基地）
+  const addFormFields = (
+    <>
+      <ProFormText
+        rules={[{ required: true, message: '大区名称为必填项' }]}
+        label="大区名称"
+        name="name"
+        placeholder="请输入大区名称"
+      />
+      <ProFormTextArea
+        label="描述"
+        name="description"
+        placeholder="请输入大区描述"
+        fieldProps={{ rows: 2 }}
+      />
+      <ProFormText
+        label="地址"
+        name="address"
+        placeholder="请输入大区地址"
+      />
+      <ProFormText
+        label="联系人"
+        name="contactPerson"
+        placeholder="请输入联系人姓名"
+      />
+      <ProFormText
+        label="联系电话"
+        name="contactPhone"
+        placeholder="请输入联系电话"
+      />
+      <ProFormSelect
+        label="货币"
+        name="currency"
+        placeholder="请选择货币"
+        options={CURRENCY_OPTIONS}
+        rules={[{ required: true, message: '请选择货币' }]}
+      />
+      <ProFormSelect
+        label="语言"
+        name="language"
+        placeholder="请选择语言"
+        options={LANGUAGE_OPTIONS}
+        rules={[{ required: true, message: '请选择语言' }]}
+      />
+    </>
+  );
+
+  // 更新表单字段
+  const updateFormFields = (
+    <>
+      <ProFormText
+        label="大区编号"
+        name="code"
+        disabled
+        extra="编号创建后不可修改"
+      />
+      <ProFormText
+        rules={[{ required: true, message: '大区名称为必填项' }]}
+        label="大区名称"
+        name="name"
+        placeholder="请输入大区名称"
+      />
+      <ProFormTextArea
+        label="描述"
+        name="description"
+        placeholder="请输入大区描述"
+        fieldProps={{ rows: 2 }}
+      />
+      <ProFormText
+        label="地址"
+        name="address"
+        placeholder="请输入大区地址"
+      />
+      <ProFormText
+        label="联系人"
+        name="contactPerson"
+        placeholder="请输入联系人姓名"
+      />
+      <ProFormText
+        label="联系电话"
+        name="contactPhone"
+        placeholder="请输入联系电话"
+      />
+      <ProFormSelect
+        label="货币"
+        name="currency"
+        placeholder="请选择货币"
+        options={CURRENCY_OPTIONS}
+        rules={[{ required: true, message: '请选择货币' }]}
+      />
+      <ProFormSelect
+        label="语言"
+        name="language"
+        placeholder="请选择语言"
+        options={LANGUAGE_OPTIONS}
+        rules={[{ required: true, message: '请选择语言' }]}
+      />
+    </>
+  );
+
   return (
-    <PageContainer
-      header={{
-        title: '大区管理',
-        subTitle: '管理线下市场的大区划分',
+    <ListPageTemplate<BaseItem>
+      title="大区管理"
+      subTitle="管理线下市场的大区划分"
+      headerTitle="大区列表"
+      columns={columns}
+      request={async (params) => {
+        const response = await queryBaseList({
+          current: params.current,
+          pageSize: params.pageSize,
+          name: params.name,
+          code: params.code,
+          type: BaseType.OFFLINE_REGION, // 只显示线下基地类型
+        });
+        return {
+          data: response.data,
+          success: response.success,
+          total: response.total,
+        };
       }}
-    >
-      <Card>
-        <Empty
-          image={<GlobalOutlined style={{ fontSize: 64, color: '#1890ff' }} />}
-          description={
-            <Typography>
-              <Title level={4}>大区管理功能开发中</Title>
-              <Paragraph type="secondary">
-                此功能将用于管理线下市场的大区划分，如城市级别的区域管理。
-              </Paragraph>
-            </Typography>
-          }
-        />
-      </Card>
-    </PageContainer>
+      onAdd={async (fields) => {
+        // 强制设置类型为线下基地
+        await addBase({ ...fields, type: BaseType.OFFLINE_REGION });
+        await refreshBaseList();
+        return true;
+      }}
+      onUpdate={async (fields) => {
+        await updateBase(fields.id, fields);
+        await refreshBaseList();
+        return true;
+      }}
+      addFormFields={addFormFields}
+      updateFormFields={updateFormFields}
+      addFormInitialValues={{
+        type: BaseType.OFFLINE_REGION,
+        currency: 'CNY',
+        language: 'zh-CN',
+      }}
+      rowKey="id"
+    />
   );
 };
 

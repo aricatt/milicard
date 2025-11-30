@@ -51,9 +51,10 @@ const BaseSelectorContent: React.FC = () => {
     message.success(`已选择基地：${base.name} (ID: ${base.id})`);
     // 使用 window.location.href 强制刷新页面，确保 BaseProvider 重新初始化
     setTimeout(() => {
+      // 直播基地 → 直播间/仓库页，线下基地 → 小区页
       const targetPath = base.type === BaseType.OFFLINE_REGION 
-        ? '/offline-region/districts' 
-        : '/live-base/base-data/bases';
+        ? '/offline-region/sub-districts' 
+        : '/live-base/locations';
       window.location.href = targetPath;
     }, 100);
   };

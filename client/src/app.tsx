@@ -13,8 +13,9 @@ import {
 } from '@/components';
 import BaseSwitcher from '@/components/BaseSwitcher';
 import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
-import { BaseProvider } from '@/contexts/BaseContext';
+import { BaseProvider, BaseType } from '@/contexts/BaseContext';
 import { App } from 'antd';
+import type { MenuDataItem } from '@ant-design/pro-components';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import '@ant-design/v5-patch-for-react-19';
@@ -133,6 +134,33 @@ export const layout: RunTimeLayoutConfig = ({
       content: initialState?.currentUser?.name,
     },
     footerRender: () => <Footer />,
+    // 根据当前基地类型动态过滤菜单
+    menuDataRender: (menuData: MenuDataItem[]) => {
+      // 从 localStorage 获取当前基地类型
+      const savedBase = localStorage.getItem('milicard_current_base');
+      let baseType: string | null = null;
+      if (savedBase) {
+        try {
+          const base = JSON.parse(savedBase);
+          baseType = base.type;
+        } catch (e) {
+          // ignore
+        }
+      }
+      
+      // 根据基地类型过滤菜单
+      return menuData.filter((item) => {
+        // 如果是直播基地类型，隐藏线下区域菜单
+        if (baseType === BaseType.LIVE_BASE && item.path === '/offline-region') {
+          return false;
+        }
+        // 如果是线下区域类型，隐藏直播基地菜单
+        if (baseType === BaseType.OFFLINE_REGION && item.path === '/live-base') {
+          return false;
+        }
+        return true;
+      });
+    },
     onPageChange: () => {
       const { location } = history;
       // 不需要检查的页面
