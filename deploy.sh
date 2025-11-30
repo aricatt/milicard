@@ -17,12 +17,12 @@ IMAGE_NAME="milicard"
 # 根据环境设置配置
 if [ "$ENV" = "production" ]; then
     CONTAINER_NAME="milicard-prod"
-    PORT=8175
+    DEFAULT_PORT=8175
     VOLUME_NAME="milicard_prod_data"
     echo -e "${GREEN}Deploying PRODUCTION environment${NC}"
 elif [ "$ENV" = "staging" ]; then
     CONTAINER_NAME="milicard-staging"
-    PORT=8075
+    DEFAULT_PORT=8075
     VOLUME_NAME="milicard_staging_data"
     echo -e "${YELLOW}Deploying STAGING environment${NC}"
 else
@@ -62,6 +62,9 @@ if [ -z "$JWT_SECRET" ]; then
     echo -e "${RED}ERROR: Please set JWT_SECRET in $ENV_FILE${NC}"
     exit 1
 fi
+
+# 使用环境变量中的端口，如果没有则使用默认值
+PORT=${PORT:-$DEFAULT_PORT}
 
 echo "=========================================="
 echo "  Environment: $ENV"

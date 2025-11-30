@@ -14,12 +14,12 @@ $IMAGE_NAME = "milicard"
 
 if ($Env -eq "production") {
     $CONTAINER_NAME = "milicard-prod"
-    $PORT = 8175
+    $DEFAULT_PORT = 8175
     $VOLUME_NAME = "milicard_prod_data"
     Write-Host "Deploying PRODUCTION environment" -ForegroundColor Green
 } else {
     $CONTAINER_NAME = "milicard-staging"
-    $PORT = 8075
+    $DEFAULT_PORT = 8075
     $VOLUME_NAME = "milicard_staging_data"
     Write-Host "Deploying STAGING environment" -ForegroundColor Yellow
 }
@@ -69,6 +69,14 @@ foreach ($line in $envContent) {
     if ($line -match "^\s*JWT_SECRET\s*=\s*(.+)$") {
         $JWT_SECRET = $Matches[1].Trim()
     }
+    if ($line -match "^\s*PORT\s*=\s*(.+)$") {
+        $PORT = $Matches[1].Trim()
+    }
+}
+
+# 使用环境变量中的端口，如果没有则使用默认值
+if (-not $PORT) {
+    $PORT = $DEFAULT_PORT
 }
 
 # 验证必要的环境变量
