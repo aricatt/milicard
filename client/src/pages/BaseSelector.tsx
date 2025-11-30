@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Empty, Spin, Modal, Form, Input, Select, Typography, Space, Tag, App } from 'antd';
 import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
 import { history, request } from '@umijs/max';
-import { useBase, BaseInfo, BaseProvider } from '@/contexts/BaseContext';
+import { useBase, BaseInfo, BaseProvider, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
 import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
@@ -21,9 +21,13 @@ const BaseSelectorContent: React.FC = () => {
   const handleSelectBase = (base: BaseInfo) => {
     setCurrentBase(base);
     message.success(`已选择基地：${base.name}`);
-    // 跳转到直播基地概览页面
+    // 根据基地类型跳转到不同页面
     setTimeout(() => {
-      history.push('/live-base/overview');
+      if (base.type === BaseType.OFFLINE_REGION) {
+        history.push('/offline-region/districts');
+      } else {
+        history.push('/live-base/base-data/bases');
+      }
     }, 100);
   };
 
@@ -73,6 +77,17 @@ const BaseSelectorContent: React.FC = () => {
       render: (text: string) => <strong>{text}</strong>,
     },
     {
+      title: '类型',
+      dataIndex: 'type',
+      key: 'type',
+      width: 100,
+      render: (type: BaseType) => (
+        <Tag color={type === BaseType.LIVE_BASE ? 'blue' : 'orange'}>
+          {getBaseTypeLabel(type)}
+        </Tag>
+      ),
+    },
+    {
       title: '货币',
       dataIndex: 'currency',
       key: 'currency',
@@ -109,9 +124,9 @@ const BaseSelectorContent: React.FC = () => {
   return (
     <div className={styles.baseSelectorContainer}>
       <div className={styles.header}>
-        <Title level={2}>选择直播基地</Title>
+        <Title level={2}>选择基地</Title>
         <Text type="secondary">
-          请选择一个基地开始您的直播电商管理之旅，或创建一个新的基地
+          请选择一个基地开始您的管理之旅，或创建一个新的基地
         </Text>
       </div>
 
@@ -159,7 +174,7 @@ const BaseSelectorContent: React.FC = () => {
           layout="vertical"
           onFinish={handleCreateBase}
           autoComplete="off"
-          initialValues={{ currency: 'CNY', language: 'zh-CN' }}
+          initialValues={{ currency: 'CNY', language: 'zh-CN', type: BaseType.LIVE_BASE }}
         >
           <Form.Item
             label="基地名称"
@@ -172,7 +187,18 @@ const BaseSelectorContent: React.FC = () => {
           >
             <Input 
               placeholder="请输入基地名称，如：北京总部基地" 
-              autoFocus
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="基地类型"
+            name="type"
+            rules={[{ required: true, message: '请选择基地类型' }]}
+            extra="直播基地用于直播电商管理，线下区域用于线下市场管理"
+          >
+            <Select 
+              placeholder="请选择基地类型"
+              options={BASE_TYPE_OPTIONS}
             />
           </Form.Item>
 

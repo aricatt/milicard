@@ -361,7 +361,7 @@ const TransferManagement: React.FC = () => {
         }}
         footer={null}
         width={700}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}

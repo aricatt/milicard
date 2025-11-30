@@ -19,6 +19,44 @@ import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import '@ant-design/v5-patch-for-react-19';
 
+// 抑制 umi-presets-pro 的内置组件错误（giveFreely、远程配置等）
+if (typeof window !== 'undefined') {
+  // 捕获未处理的 Promise 错误
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = event.reason?.message || '';
+    const stack = event.reason?.stack || '';
+    if (msg.includes('payload') ||
+        msg.includes('Failed to fetch') ||
+        stack.includes('giveFreely') ||
+        stack.includes('browserPolyfillWrapper')) {
+      event.preventDefault();
+    }
+  });
+
+  // 过滤控制台错误
+  const originalError = console.error;
+  console.error = (...args) => {
+    const fullMsg = args.map(a => String(a)).join(' ');
+    // 过滤 React Fragment autoFocus 警告和 giveFreely 相关错误
+    if (fullMsg.includes('autoFocus') ||
+        fullMsg.includes('giveFreely') ||
+        fullMsg.includes('payload')) {
+      return;
+    }
+    originalError.apply(console, args);
+  };
+
+  // 过滤控制台警告
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const msg = args[0]?.toString?.() || '';
+    if (msg.includes('Failed to fetch latest config')) {
+      return;
+    }
+    originalWarn.apply(console, args);
+  };
+}
+
 const isDev =
   process.env.NODE_ENV === 'development' || process.env.CI;
 const loginPath = '/user/login';

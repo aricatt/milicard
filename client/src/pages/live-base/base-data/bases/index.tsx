@@ -7,7 +7,7 @@ import type { BaseItem } from './data.d';
 import { addBase, queryBaseList, updateBase } from './service';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
 import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
-import { useBase } from '@/contexts/BaseContext';
+import { useBase, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
 
 const BaseList: React.FC = () => {
   const { refreshBaseList } = useBase();
@@ -30,6 +30,17 @@ const BaseList: React.FC = () => {
       dataIndex: 'name',
       width: 150,
       ellipsis: true,
+    },
+    {
+      title: '类型',
+      dataIndex: 'type',
+      width: 100,
+      search: false,
+      render: (_, record) => (
+        <Tag color={record.type === BaseType.LIVE_BASE ? 'blue' : 'orange'}>
+          {getBaseTypeLabel(record.type)}
+        </Tag>
+      ),
     },
     {
       title: '货币',
@@ -94,6 +105,14 @@ const BaseList: React.FC = () => {
         placeholder="请输入基地名称，如：杭州基地"
         extra="基地编号将自动生成（格式：BASE-XXXXXXXXXXX）"
       />
+      <ProFormSelect
+        label="基地类型"
+        name="type"
+        placeholder="请选择基地类型"
+        options={BASE_TYPE_OPTIONS}
+        rules={[{ required: true, message: '请选择基地类型' }]}
+        extra="直播基地用于直播电商管理，线下区域用于线下市场管理"
+      />
       <ProFormTextArea
         label="描述"
         name="description"
@@ -120,7 +139,6 @@ const BaseList: React.FC = () => {
         name="currency"
         placeholder="请选择货币"
         options={CURRENCY_OPTIONS}
-        initialValue="CNY"
         rules={[{ required: true, message: '请选择货币' }]}
         extra="选择该基地使用的货币单位"
       />
@@ -129,7 +147,6 @@ const BaseList: React.FC = () => {
         name="language"
         placeholder="请选择语言"
         options={LANGUAGE_OPTIONS}
-        initialValue="zh-CN"
         rules={[{ required: true, message: '请选择语言' }]}
         extra="选择该基地的默认显示语言"
       />
@@ -149,6 +166,14 @@ const BaseList: React.FC = () => {
         label="基地名称"
         name="name"
         placeholder="请输入基地名称"
+      />
+      <ProFormSelect
+        label="基地类型"
+        name="type"
+        placeholder="请选择基地类型"
+        options={BASE_TYPE_OPTIONS}
+        rules={[{ required: true, message: '请选择基地类型' }]}
+        extra="基地类型创建后不建议修改"
       />
       <ProFormTextArea
         label="描述"
@@ -191,7 +216,7 @@ const BaseList: React.FC = () => {
   return (
     <ListPageTemplate<BaseItem>
       title="基地管理"
-      subTitle="管理系统中的所有直播基地信息"
+      subTitle="管理系统中的所有基地信息"
       headerTitle="基地列表"
       columns={columns}
       request={async (params) => {
@@ -221,6 +246,11 @@ const BaseList: React.FC = () => {
       }}
       addFormFields={addFormFields}
       updateFormFields={updateFormFields}
+      addFormInitialValues={{
+        type: BaseType.LIVE_BASE,
+        currency: 'CNY',
+        language: 'zh-CN',
+      }}
       rowKey="id"
     />
   );

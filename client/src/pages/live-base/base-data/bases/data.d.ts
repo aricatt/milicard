@@ -1,3 +1,5 @@
+import { BaseType } from '@/contexts/BaseContext';
+
 /**
  * 基地数据类型定义
  */
@@ -5,6 +7,8 @@ export interface BaseItem {
   id: number;
   code: string;
   name: string;
+  // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
+  type: BaseType;
   description?: string;
   address?: string;
   contactPerson?: string;
@@ -26,6 +30,7 @@ export interface BaseQueryParams {
   pageSize?: number;
   name?: string;
   code?: string;
+  type?: BaseType;
 }
 
 /**
@@ -43,6 +48,8 @@ export interface BaseListResponse {
 export interface AddBaseRequest {
   code?: string; // 可选，留空时自动生成
   name: string;
+  // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
+  type?: BaseType;
   description?: string;
   address?: string;
   contactPerson?: string;
@@ -57,6 +64,7 @@ export interface AddBaseRequest {
 export interface UpdateBaseRequest {
   code?: string;
   name?: string;
+  type?: BaseType;
   description?: string;
   address?: string;
   contactPerson?: string;

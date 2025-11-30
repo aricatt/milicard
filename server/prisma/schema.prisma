@@ -636,6 +636,8 @@ model Base {
   id               Int               @id @default(autoincrement())
   code             String            @unique
   name             String
+  // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
+  type             BaseType          @default(LIVE_BASE)
   description      String?
   address          String?
   contactPerson    String?           @map("contact_person")
@@ -883,6 +885,11 @@ model InventoryLedger {
   @@index([baseId])
   @@index([createdAt])
   @@map("inventory_ledger")
+}
+
+enum BaseType {
+  LIVE_BASE       // 直播基地
+  OFFLINE_REGION  // 线下区域
 }
 
 enum LocationType {

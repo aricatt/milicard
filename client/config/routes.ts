@@ -58,15 +58,9 @@ export default [
     routes: [
       {
         path: '/live-base',
-        redirect: '/live-base/overview',
+        redirect: '/live-base/base-data/bases',
       },
       // 基地管理
-      {
-        name: 'overview',
-        icon: 'dashboard',
-        path: '/live-base/overview',
-        component: './Welcome',
-      },
       {
         name: 'base-list',
         icon: 'home',
@@ -133,6 +127,109 @@ export default [
         icon: 'dollarCircle',
         path: '/live-base/anchor-profit',
         component: './live-base/anchor-profit',
+      },
+      // 出库管理
+      {
+        name: 'stock-out',
+        icon: 'export',
+        path: '/live-base/stock-out',
+        component: './live-base/sales',
+      },
+      // 应收管理
+      {
+        name: 'receivables',
+        icon: 'moneyCollect',
+        path: '/live-base/receivables',
+        component: './live-base/sales',
+      },
+    ],
+  },
+  // 线下区域管理系统
+  {
+    path: '/offline-region',
+    name: 'offline-region',
+    icon: 'environment',
+    routes: [
+      {
+        path: '/offline-region',
+        redirect: '/offline-region/districts',
+      },
+      // 大区管理
+      {
+        name: 'districts',
+        icon: 'global',
+        path: '/offline-region/districts',
+        component: './offline-region/districts',
+      },
+      // 小区管理
+      {
+        name: 'sub-districts',
+        icon: 'cluster',
+        path: '/offline-region/sub-districts',
+        component: './offline-region/sub-districts',
+      },
+      // 点位信息
+      {
+        name: 'locations',
+        icon: 'pushpin',
+        path: '/offline-region/locations',
+        component: './offline-region/locations',
+      },
+      // 供应商管理（复用直播基地）
+      {
+        name: 'suppliers',
+        icon: 'shop',
+        path: '/offline-region/suppliers',
+        component: './live-base/suppliers',
+      },
+      // 商品管理（复用直播基地）
+      {
+        name: 'products',
+        icon: 'gift',
+        path: '/offline-region/products',
+        component: './live-base/products',
+      },
+      // 采购管理（复用直播基地）
+      {
+        name: 'procurement',
+        icon: 'shopping-cart',
+        path: '/offline-region/procurement',
+        component: './live-base/procurement',
+      },
+      // 到货管理（复用直播基地）
+      {
+        name: 'arrivals',
+        icon: 'inbox',
+        path: '/offline-region/arrivals',
+        component: './live-base/arrivals',
+      },
+      // 库存和消耗（复用直播基地）
+      {
+        name: 'inventory-consumption',
+        icon: 'database',
+        path: '/offline-region/inventory-consumption',
+        component: './live-base/inventory-consumption',
+      },
+      // 出库管理
+      {
+        name: 'stock-out',
+        icon: 'export',
+        path: '/offline-region/stock-out',
+        component: './offline-region/stock-out',
+      },
+      // 应收管理
+      {
+        name: 'receivables',
+        icon: 'moneyCollect',
+        path: '/offline-region/receivables',
+        component: './offline-region/receivables',
+      },
+      // 点位利润
+      {
+        name: 'location-profit',
+        icon: 'dollarCircle',
+        path: '/offline-region/location-profit',
+        component: './offline-region/location-profit',
       },
     ],
   },

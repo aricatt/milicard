@@ -91,7 +91,7 @@ export class BaseController {
    */
   static async createBase(req: Request, res: Response) {
     try {
-      const { code, name, description, address, contactPerson, contactPhone, currency, language } = req.body;
+      const { code, name, type, description, address, contactPerson, contactPhone, currency, language } = req.body;
       const userId = req.user?.id;
 
       if (!userId) {
@@ -102,7 +102,7 @@ export class BaseController {
       }
 
       const base = await BaseService.createBase(
-        { code, name, description, address, contactPerson, contactPhone, currency, language },
+        { code, name, type, description, address, contactPerson, contactPhone, currency, language },
         userId
       );
       
@@ -135,7 +135,7 @@ export class BaseController {
   static async updateBase(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { code, name, description, address, contactPerson, contactPhone, currency, language } = req.body;
+      const { code, name, type, description, address, contactPerson, contactPhone, currency, language } = req.body;
       const userId = req.user?.id;
       const baseId = parseInt(id);
 
@@ -155,7 +155,7 @@ export class BaseController {
 
       const base = await BaseService.updateBase(
         baseId,
-        { code, name, description, address, contactPerson, contactPhone, currency, language },
+        { code, name, type, description, address, contactPerson, contactPhone, currency, language },
         userId
       );
       

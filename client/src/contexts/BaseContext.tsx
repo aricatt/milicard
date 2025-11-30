@@ -3,11 +3,31 @@ import { request } from '@umijs/max';
 import { getCurrencyConfig, getCurrencySymbol, formatCurrency, type CurrencyConfig } from '@/utils/currency';
 import { getLanguageConfig, type LanguageConfig } from '@/utils/language';
 
+// 基地类型枚举
+export enum BaseType {
+  LIVE_BASE = 'LIVE_BASE',           // 直播基地
+  OFFLINE_REGION = 'OFFLINE_REGION'  // 线下区域
+}
+
+// 基地类型选项（用于前端下拉选择）
+export const BASE_TYPE_OPTIONS = [
+  { value: BaseType.LIVE_BASE, label: '直播基地' },
+  { value: BaseType.OFFLINE_REGION, label: '线下区域' },
+];
+
+// 获取基地类型标签
+export const getBaseTypeLabel = (type: BaseType | string): string => {
+  const option = BASE_TYPE_OPTIONS.find(opt => opt.value === type);
+  return option?.label || type;
+};
+
 // 基地信息接口
 export interface BaseInfo {
   id: number;
   code: string;
   name: string;
+  // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
+  type: BaseType;
   description?: string;
   address?: string;
   contactPerson?: string;

@@ -9,7 +9,7 @@ import type {
   UpdateBaseRequest,
   BaseResponse,
 } from '../types/base';
-import { BaseError, BaseErrorType } from '../types/base';
+import { BaseError, BaseErrorType, BaseType } from '../types/base';
 
 /**
  * 基地服务类
@@ -20,7 +20,7 @@ export class BaseService {
    */
   static async getBaseList(params: BaseQueryParams): Promise<BaseListResponse> {
     try {
-      const { current = 1, pageSize = 10, name, code } = params;
+      const { current = 1, pageSize = 10, name, code, type } = params;
       const skip = (current - 1) * pageSize;
 
       // 构建查询条件
@@ -36,6 +36,9 @@ export class BaseService {
           contains: code,
           mode: 'insensitive',
         };
+      }
+      if (type) {
+        where.type = type;
       }
 
       // 查询数据和总数
@@ -87,6 +90,7 @@ export class BaseService {
         id: base.id,
         code: base.code,
         name: base.name,
+        type: base.type as BaseType,
         description: base.description,
         address: base.address,
         contactPerson: base.contactPerson,
@@ -108,7 +112,7 @@ export class BaseService {
    */
   static async createBase(data: CreateBaseRequest, userId: string): Promise<BaseResponse> {
     try {
-      let { code, name, description, address, contactPerson, contactPhone, currency, language } = data;
+      let { code, name, type, description, address, contactPerson, contactPhone, currency, language } = data;
 
       // 验证输入
       if (!name) {
@@ -134,6 +138,7 @@ export class BaseService {
         data: {
           code,
           name,
+          type: type || 'LIVE_BASE',
           description,
           address,
           contactPerson,
@@ -156,6 +161,7 @@ export class BaseService {
         id: base.id,
         code: base.code,
         name: base.name,
+        type: base.type as BaseType,
         description: base.description,
         address: base.address,
         contactPerson: base.contactPerson,
@@ -177,7 +183,7 @@ export class BaseService {
    */
   static async updateBase(id: number, data: UpdateBaseRequest, userId: string): Promise<BaseResponse> {
     try {
-      const { code, name, description, address, contactPerson, contactPhone, currency, language } = data;
+      const { code, name, type, description, address, contactPerson, contactPhone, currency, language } = data;
 
       // 检查基地是否存在
       const existingBase = await prisma.base.findUnique({
@@ -203,6 +209,8 @@ export class BaseService {
       }
 
       // 更新基地
+      logger.info('更新基地请求数据', { data, type, service: 'milicard-api' });
+      
       const updateData: any = {
         updatedBy: userId,
       };
@@ -214,6 +222,9 @@ export class BaseService {
       if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
       if (currency) updateData.currency = currency;
       if (language) updateData.language = language;
+      if (type) updateData.type = type;
+      
+      logger.info('更新基地数据', { updateData, service: 'milicard-api' });
 
       const base = await prisma.base.update({
         where: { id },
@@ -230,6 +241,7 @@ export class BaseService {
         id: base.id,
         code: base.code,
         name: base.name,
+        type: base.type as BaseType,
         description: base.description,
         address: base.address,
         contactPerson: base.contactPerson,

@@ -19,6 +19,7 @@ export interface ListPageTemplateProps<T> {
   onDelete?: (id: number | string) => Promise<boolean>;
   addFormFields?: React.ReactNode;
   updateFormFields?: React.ReactNode;
+  addFormInitialValues?: Record<string, any>;
   rowKey?: string;
   searchConfig?: {
     labelWidth?: number;
@@ -39,6 +40,7 @@ function ListPageTemplate<T extends Record<string, any>>({
   onDelete,
   addFormFields,
   updateFormFields,
+  addFormInitialValues,
   rowKey = 'id',
   searchConfig = { labelWidth: 120 },
 }: ListPageTemplateProps<T>) {
@@ -50,6 +52,7 @@ function ListPageTemplate<T extends Record<string, any>>({
 
   const handleAdd = async (fields: any) => {
     if (!onAdd) return false;
+    console.log('handleAdd fields:', fields);
     const hide = message.loading('正在添加');
     try {
       const success = await onAdd(fields);
@@ -68,6 +71,7 @@ function ListPageTemplate<T extends Record<string, any>>({
 
   const handleUpdate = async (fields: T) => {
     if (!onUpdate) return false;
+    console.log('handleUpdate fields:', fields);
     const hide = message.loading('正在更新');
     try {
       const success = await onUpdate(fields);
@@ -199,6 +203,7 @@ function ListPageTemplate<T extends Record<string, any>>({
           width="400px"
           open={createModalOpen}
           onOpenChange={handleModalOpen}
+          initialValues={addFormInitialValues}
           onFinish={async (value) => {
             const success = await handleAdd(value);
             if (success) {
@@ -228,7 +233,7 @@ function ListPageTemplate<T extends Record<string, any>>({
           initialValues={currentRow}
           key={currentRow?.[rowKey]}
           modalProps={{
-            destroyOnClose: true,
+            destroyOnHidden: true,
           }}
           onFinish={async (value) => {
             const success = await handleUpdate({ ...currentRow, ...value } as T);

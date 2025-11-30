@@ -3,12 +3,29 @@
  */
 
 /**
+ * 基地类型枚举
+ */
+export enum BaseType {
+  LIVE_BASE = 'LIVE_BASE',           // 直播基地
+  OFFLINE_REGION = 'OFFLINE_REGION'  // 线下区域
+}
+
+/**
+ * 基地类型选项（用于前端下拉选择）
+ */
+export const BASE_TYPE_OPTIONS = [
+  { value: BaseType.LIVE_BASE, label: '直播基地' },
+  { value: BaseType.OFFLINE_REGION, label: '线下区域' },
+];
+
+/**
  * 基地基本信息
  */
 export interface BaseItem {
   id: number;
   code: string;
   name: string;
+  type: BaseType;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +38,7 @@ export interface BaseQueryParams {
   pageSize?: number;
   name?: string;
   code?: string;
+  type?: BaseType;
 }
 
 /**
@@ -37,6 +55,8 @@ export interface BaseListResponse {
 export interface CreateBaseRequest {
   code?: string; // 可选，留空时自动生成
   name: string;
+  // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
+  type?: BaseType;
   description?: string;
   address?: string;
   contactPerson?: string;
@@ -53,6 +73,7 @@ export interface CreateBaseRequest {
 export interface UpdateBaseRequest {
   code?: string;
   name?: string;
+  type?: BaseType;
   description?: string;
   address?: string;
   contactPerson?: string;
@@ -68,6 +89,8 @@ export interface BaseResponse {
   id: number;
   code: string;
   name: string;
+  // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
+  type: BaseType;
   description?: string | null;
   address?: string | null;
   contactPerson?: string | null;

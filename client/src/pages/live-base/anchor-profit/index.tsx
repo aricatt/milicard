@@ -793,7 +793,7 @@ const AnchorProfitPage: React.FC = () => {
         }}
         confirmLoading={createLoading}
         width={800}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleCreate} onValuesChange={handleFormValuesChange}>
           {formContent}
@@ -815,7 +815,7 @@ const AnchorProfitPage: React.FC = () => {
         }}
         confirmLoading={editLoading}
         width={800}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleUpdate} onValuesChange={handleFormValuesChange}>
           {formContent}
