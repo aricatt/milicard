@@ -71,6 +71,10 @@ RUN mkdir -p /var/log/supervisor /run/postgresql \
 # 暴露端口
 EXPOSE 80
 
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/api/v1/health || exit 1
+
 # 数据卷 - PostgreSQL 数据目录
 VOLUME ["/var/lib/postgresql/data"]
 

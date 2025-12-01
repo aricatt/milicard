@@ -2,7 +2,11 @@
 set -e
 
 # MiliCard 一键部署脚本
-# 用法: ./deploy.sh [staging|production]
+# 用法: ./deploy.sh [staging|production] [--systemd]
+# 
+# 选项:
+#   --systemd    安装为系统服务（推荐，防止用户会话超时导致容器停止）
+#   --user       作为用户容器运行（默认，但可能因会话超时而停止）
 
 # 颜色输出
 RED='\033[0;31m'
@@ -10,8 +14,16 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# 默认配置
+# 解析参数
+USE_SYSTEMD=false
 ENV=${1:-staging}
+if [ "$2" = "--systemd" ] || [ "$1" = "--systemd" ]; then
+    USE_SYSTEMD=true
+    if [ "$1" = "--systemd" ]; then
+        ENV="staging"
+    fi
+fi
+
 IMAGE_NAME="milicard"
 
 # 根据环境设置配置
@@ -106,12 +118,47 @@ docker run -d \
 echo -e "${YELLOW}Waiting for container to start...${NC}"
 sleep 10
 
+# 如果使用 systemd，则安装系统服务
+if [ "$USE_SYSTEMD" = true ]; then
+    echo -e "${GREEN}Installing as systemd service...${NC}"
+    
+    # 检查是否为 root
+    if [ "$EUID" -ne 0 ]; then
+        echo -e "${YELLOW}Systemd service requires root privileges. Running with sudo...${NC}"
+        sudo bash docker/install-service.sh "$ENV"
+    else
+        bash docker/install-service.sh "$ENV"
+    fi
+    
+    echo -e "${GREEN}=========================================="
+    echo "  Systemd service installed!"
+    echo "  Service:    milicard-${ENV}"
+    echo "  Access URL: http://localhost:${PORT}"
+    echo ""
+    echo "  Useful commands:"
+    echo "    journalctl -u milicard-${ENV} -f    # View logs"
+    echo "    systemctl status milicard-${ENV}    # Check status"
+    echo "    systemctl restart milicard-${ENV}   # Restart service"
+    echo "==========================================${NC}"
+    exit 0
+fi
+
 # 检查容器状态
 if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
     echo -e "${GREEN}=========================================="
     echo "  Deployment successful!"
     echo "  Access URL: http://localhost:${PORT}"
     echo "  Container:  ${CONTAINER_NAME}"
+    echo ""
+    echo -e "${YELLOW}  ⚠️  WARNING: User session timeout issue detected!"
+    echo "  Your container may stop after ~7 hours due to systemd user session timeout."
+    echo ""
+    echo "  Recommended solutions:"
+    echo "    1. Redeploy as systemd service (recommended):"
+    echo "       ./deploy.sh ${ENV} --systemd"
+    echo ""
+    echo "    2. Enable user linger (temporary fix):"
+    echo "       sudo loginctl enable-linger \$(whoami)"
     echo "==========================================${NC}"
     
     # 显示容器日志

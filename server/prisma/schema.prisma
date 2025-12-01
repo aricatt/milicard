@@ -4,8 +4,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  relationMode      = "prisma"
+  // 连接池配置：防止连接泄漏
+  // connection_limit: 最大连接数
+  // pool_timeout: 连接池超时时间（秒）
 }
 
 model User {

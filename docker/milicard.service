@@ -1,0 +1,33 @@
+[Unit]
+Description=MiliCard Application Container
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 使用 root 或指定用户运行
+User=root
+# 容器运行命令
+ExecStartPre=-/usr/bin/podman stop milicard-staging
+ExecStartPre=-/usr/bin/podman rm milicard-staging
+ExecStart=/usr/bin/podman run \
+  --name milicard-staging \
+  -p 8075:80 \
+  -e DB_PASSWORD=${DB_PASSWORD} \
+  -e JWT_SECRET=${JWT_SECRET} \
+  -v milicard_staging_data:/var/lib/postgresql/data \
+  milicard:latest
+
+ExecStop=/usr/bin/podman stop -t 30 milicard-staging
+ExecStopPost=/usr/bin/podman rm -f milicard-staging
+
+# 自动重启配置
+Restart=always
+RestartSec=10s
+
+# 资源限制
+MemoryLimit=2G
+CPUQuota=200%
+
+[Install]
+WantedBy=multi-user.target
