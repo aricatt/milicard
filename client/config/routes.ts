@@ -500,6 +500,32 @@ export default [
       },
     ],
   },
+  // 系统管理
+  {
+    path: '/system',
+    name: 'system',
+    icon: 'setting',
+    routes: [
+      {
+        path: '/system',
+        redirect: '/system/users',
+      },
+      // 用户管理
+      {
+        name: 'users',
+        icon: 'user',
+        path: '/system/users',
+        component: './system/users',
+      },
+      // 角色管理（预留）
+      {
+        name: 'roles',
+        icon: 'team',
+        path: '/system/roles',
+        component: './system/roles',
+      },
+    ],
+  },
   {
     path: '/',
     redirect: '/base-selector',

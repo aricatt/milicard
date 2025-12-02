@@ -57,6 +57,8 @@ import transferRoutes from './routes/transferRoutes'
 import consumptionRoutes from './routes/consumptionRoutes'
 import anchorProfitRoutes from './routes/anchorProfitRoutes'
 import userRoutes from './routes/userRoutes'
+import userManagementRoutes from './routes/userManagementRoutes'
+import roleRoutes from './routes/roleRoutes'
 import devRoutes from './routes/devRoutes'
 
 app.use('/api/v1/auth', authRoutes)
@@ -78,6 +80,8 @@ app.use('/api/v1/bases', transferRoutes)
 app.use('/api/v1/bases', consumptionRoutes)
 app.use('/api/v1/bases', anchorProfitRoutes)
 app.use('/api', userRoutes)
+app.use('/api/v1/users', userManagementRoutes)
+app.use('/api/v1/roles', roleRoutes)
 
 // 开发环境路由（仅在开发环境下启用）
 if (process.env.NODE_ENV === 'development') {

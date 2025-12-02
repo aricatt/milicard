@@ -38,6 +38,10 @@ export default {
   'menu.offline-region.stock-out': '出库',
   'menu.offline-region.receivables': '应收',
   'menu.offline-region.location-profit': '点位利润',
+  // 系统管理
+  'menu.system': '系统管理',
+  'menu.system.users': '用户管理',
+  'menu.system.roles': '角色管理',
   'menu.exception.403': '403',
   'menu.exception.404': '404',
   'menu.exception.500': '500',

@@ -13,39 +13,71 @@ export enum PermissionAction {
 
 // 资源模块类型
 export enum ResourceModule {
-  // 用户管理
+  // 系统管理
+  SYSTEM = 'system',
   USER = 'user',
   ROLE = 'role',
   PERMISSION = 'permission',
   
-  // 基础数据
+  // 基地管理
+  BASE = 'base',
   LOCATION = 'location',
+  PERSONNEL = 'personnel',
+  
+  // 基础数据
   CUSTOMER = 'customer',
   SUPPLIER = 'supplier',
   GOODS = 'goods',
   
   // 库存管理
   INVENTORY = 'inventory',
-  STOCK_IN = 'stock_in',
-  STOCK_OUT = 'stock_out',
-  STOCK_TRANSFER = 'stock_transfer',
-  STOCK_CONSUMPTION = 'stock_consumption',
-  
-  // 采购管理
   PURCHASE_ORDER = 'purchase_order',
   ARRIVAL_ORDER = 'arrival_order',
-  
-  // 销售管理
-  DISTRIBUTION_ORDER = 'distribution_order',
+  STOCK_TRANSFER = 'stock_transfer',
+  STOCK_OUT = 'stock_out',
+  STOCK_CONSUMPTION = 'stock_consumption',
   
   // 财务管理
   ANCHOR_PROFIT = 'anchor_profit',
   RECEIVABLE = 'receivable',
-  PAYABLE = 'payable',
   
-  // 系统管理
-  SYSTEM = 'system',
+  // 点位订单系统（新增）
+  POINT = 'point',              // 点位管理
+  POINT_ORDER = 'point_order',  // 点位订单
+  
+  // 其他
   TRANSLATION = 'translation'
+}
+
+// 菜单权限映射
+export enum MenuPermission {
+  // 直播基地菜单
+  LIVE_BASE = 'menu:live_base',
+  LIVE_BASE_BASES = 'menu:live_base:bases',
+  LIVE_BASE_LOCATIONS = 'menu:live_base:locations',
+  LIVE_BASE_PERSONNEL = 'menu:live_base:personnel',
+  LIVE_BASE_SUPPLIERS = 'menu:live_base:suppliers',
+  LIVE_BASE_PRODUCTS = 'menu:live_base:products',
+  LIVE_BASE_PROCUREMENT = 'menu:live_base:procurement',
+  LIVE_BASE_ARRIVALS = 'menu:live_base:arrivals',
+  LIVE_BASE_TRANSFERS = 'menu:live_base:transfers',
+  LIVE_BASE_INVENTORY = 'menu:live_base:inventory',
+  LIVE_BASE_ANCHOR_PROFIT = 'menu:live_base:anchor_profit',
+  LIVE_BASE_STOCK_OUT = 'menu:live_base:stock_out',
+  LIVE_BASE_RECEIVABLES = 'menu:live_base:receivables',
+  
+  // 线下区域菜单
+  OFFLINE_REGION = 'menu:offline_region',
+  
+  // 点位订单菜单（新增）
+  POINT_ORDER = 'menu:point_order',
+  POINT_ORDER_LIST = 'menu:point_order:list',
+  POINT_ORDER_POINTS = 'menu:point_order:points',
+  
+  // 系统管理菜单
+  SYSTEM = 'menu:system',
+  SYSTEM_USERS = 'menu:system:users',
+  SYSTEM_ROLES = 'menu:system:roles',
 }
 
 // 权限字符串格式：module:action 或 module:action:field
@@ -140,45 +172,146 @@ export const PERMISSION_PRESETS = {
   ]
 } as const
 
-// 系统预定义角色权限
-export const SYSTEM_ROLE_PERMISSIONS = {
-  SUPER_ADMIN: [
+// 系统预定义角色权限（与 seed.ts 中的角色对应）
+export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
+  // 系统管理员 - 拥有所有权限
+  ADMIN: [
     // 系统管理
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.SYSTEM),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.USER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ROLE),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PERMISSION),
     
-    // 所有业务模块
-    ...Object.values(ResourceModule)
-      .filter(module => ![ResourceModule.SYSTEM, ResourceModule.USER, ResourceModule.ROLE, ResourceModule.PERMISSION].includes(module))
-      .flatMap(module => PERMISSION_PRESETS.FULL_MANAGE(module))
+    // 所有业务模块完全权限
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.BASE),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.LOCATION),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PERSONNEL),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.CUSTOMER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.SUPPLIER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.INVENTORY),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PURCHASE_ORDER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ARRIVAL_ORDER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_TRANSFER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_OUT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_CONSUMPTION),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ANCHOR_PROFIT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.RECEIVABLE),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT_ORDER),
+    
+    // 所有菜单权限
+    'system:read' as PermissionString,  // 菜单权限用 read 表示可见
   ],
   
-  ADMIN: [
-    // 基础数据管理
+  // 基地管理员 - 管理特定基地的所有业务
+  BASE_MANAGER: [
+    // 基地和地点管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.BASE),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.LOCATION),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PERSONNEL),
+    
+    // 基础数据管理
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.CUSTOMER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.SUPPLIER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS),
     
     // 库存管理
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.INVENTORY),
-    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_IN),
-    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_OUT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PURCHASE_ORDER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ARRIVAL_ORDER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_TRANSFER),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_OUT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_CONSUMPTION),
     
-    // 用户查看权限
-    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.USER)
+    // 财务管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ANCHOR_PROFIT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.RECEIVABLE),
+    
+    // 点位订单管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT_ORDER),
+    
+    // 用户只读
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.USER),
   ],
   
-  USER: [
-    // 基础查看权限
-    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.GOODS),
-    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.INVENTORY),
-    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.CUSTOMER),
+  // 点位老板 - 只能管理自己的点位和订单
+  POINT_OWNER: [
+    // 点位：只能查看和编辑自己的点位
+    `${ResourceModule.POINT}:${PermissionAction.READ}:own`,
+    `${ResourceModule.POINT}:${PermissionAction.UPDATE}:own`,
     
-    // 基础操作权限
-    ...PERMISSION_PRESETS.BASIC_CRUD(ResourceModule.STOCK_CONSUMPTION)
-  ]
-} as const
+    // 点位订单：完全管理自己的订单
+    `${ResourceModule.POINT_ORDER}:${PermissionAction.CREATE}`,
+    `${ResourceModule.POINT_ORDER}:${PermissionAction.READ}:own`,
+    `${ResourceModule.POINT_ORDER}:${PermissionAction.UPDATE}:own`,
+    `${ResourceModule.POINT_ORDER}:${PermissionAction.DELETE}:own`,
+    
+    // 商品：只读（用于下单时选择商品）
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.GOODS),
+  ],
+  
+  // 客服 - 处理点位订单和发货配送
+  CUSTOMER_SERVICE: [
+    // 点位：查看所有点位
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.POINT),
+    
+    // 点位订单：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT_ORDER),
+    
+    // 库存：只读（用于确认库存）
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.INVENTORY),
+    
+    // 出库：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_OUT),
+    
+    // 商品：只读
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.GOODS),
+  ],
+  
+  // 仓管 - 管理仓库库存和到货调货
+  WAREHOUSE_KEEPER: [
+    // 商品：查看和创建、编辑基础信息
+    `${ResourceModule.GOODS}:${PermissionAction.READ}`,
+    `${ResourceModule.GOODS}:${PermissionAction.CREATE}`,
+    `${ResourceModule.GOODS}:${PermissionAction.UPDATE}`,
+    
+    // 采购管理：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PURCHASE_ORDER),
+    
+    // 到货管理：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ARRIVAL_ORDER),
+    
+    // 调货管理：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_TRANSFER),
+    
+    // 出库管理：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_OUT),
+    
+    // 库存：只读
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.INVENTORY),
+    
+    // 地点：只读
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.LOCATION),
+  ],
+  
+  // 主播 - 管理自己的库存消耗和利润
+  ANCHOR: [
+    // 商品：只读基础信息
+    `${ResourceModule.GOODS}:${PermissionAction.READ}`,
+    
+    // 消耗：完全管理
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_CONSUMPTION),
+    
+    // 调货：只能查看自己相关的
+    `${ResourceModule.STOCK_TRANSFER}:${PermissionAction.READ}:own`,
+    
+    // 利润：查看和编辑自己的
+    `${ResourceModule.ANCHOR_PROFIT}:${PermissionAction.READ}:own`,
+    `${ResourceModule.ANCHOR_PROFIT}:${PermissionAction.UPDATE}:own`,
+    
+    // 库存：只读
+    ...PERMISSION_PRESETS.READ_ONLY(ResourceModule.INVENTORY),
+  ],
+}
