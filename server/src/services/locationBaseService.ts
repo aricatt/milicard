@@ -28,7 +28,12 @@ export class LocationBaseService {
       }
       
       if (type) {
-        where.type = type;
+        // 支持逗号分隔的多个类型
+        if (type.includes(',')) {
+          where.type = { in: type.split(',') };
+        } else {
+          where.type = type;
+        }
       }
       
       if (isActive !== undefined) {

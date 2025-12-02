@@ -19,6 +19,7 @@ export class CodeGenerator {
     
     // 位置管理
     LIVE_ROOM: 'LIVE',          // 直播间
+    MAIN_WAREHOUSE: 'MWAREHOUSE', // 总仓库
     WAREHOUSE: 'WAREHOUSE',     // 仓库
     
     // 基础数据
@@ -135,7 +136,7 @@ export class CodeGenerator {
   /**
    * 位置编号生成
    */
-  public static async generateLocationCode(type: 'LIVE_ROOM' | 'WAREHOUSE'): Promise<string> {
+  public static async generateLocationCode(type: 'LIVE_ROOM' | 'MAIN_WAREHOUSE' | 'WAREHOUSE'): Promise<string> {
     return this.generateCode(type, 'location');
   }
 

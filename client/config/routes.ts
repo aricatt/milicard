@@ -161,12 +161,19 @@ export default [
         path: '/offline-region/districts',
         component: './offline-region/districts',
       },
-      // 小区管理
+      // 小区/仓库管理
       {
         name: 'sub-districts',
         icon: 'cluster',
         path: '/offline-region/sub-districts',
         component: './offline-region/sub-districts',
+      },
+      // 仓管人员
+      {
+        name: 'warehouse-keepers',
+        icon: 'user',
+        path: '/offline-region/warehouse-keepers',
+        component: './offline-region/warehouse-keepers',
       },
       // 点位信息
       {

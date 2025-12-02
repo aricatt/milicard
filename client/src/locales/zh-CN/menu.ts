@@ -27,7 +27,8 @@ export default {
   // 线下区域
   'menu.offline-region': '线下区域',
   'menu.offline-region.districts': '大区',
-  'menu.offline-region.sub-districts': '小区',
+  'menu.offline-region.sub-districts': '小区/仓库',
+  'menu.offline-region.warehouse-keepers': '仓管',
   'menu.offline-region.locations': '点位信息',
   'menu.offline-region.suppliers': '供应商',
   'menu.offline-region.products': '商品',
