@@ -45,14 +45,37 @@ function hasRole(roles: UserRole[] | undefined, roleName: string): boolean {
  * 检查用户是否是管理员
  */
 function isAdmin(roles: UserRole[] | undefined): boolean {
+  if (!roles || roles.length === 0) return false;
   return hasRole(roles, 'SUPER_ADMIN') || hasRole(roles, 'ADMIN');
+}
+
+/**
+ * 检查用户是否已登录（有任何角色）
+ */
+function isLoggedIn(roles: UserRole[] | undefined): boolean {
+  return !!roles && roles.length > 0;
 }
 
 export default function access(
   initialState: { currentUser?: API.CurrentUser } | undefined,
 ) {
   const { currentUser } = initialState ?? {};
-  const roles = currentUser?.roles as UserRole[] | undefined;
+  
+  // 兼容 roles 可能是字符串数组或对象数组的情况
+  let roles: UserRole[] | undefined;
+  if (currentUser?.roles) {
+    if (typeof currentUser.roles[0] === 'string') {
+      // 旧格式：字符串数组
+      roles = (currentUser.roles as unknown as string[]).map(name => ({
+        id: '',
+        name,
+        permissions: name === 'SUPER_ADMIN' || name === 'ADMIN' ? ['*'] : [],
+      }));
+    } else {
+      // 新格式：对象数组
+      roles = currentUser.roles as UserRole[];
+    }
+  }
 
   return {
     // 旧版兼容

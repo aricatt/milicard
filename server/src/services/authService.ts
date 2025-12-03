@@ -394,7 +394,12 @@ export class AuthService {
         name: user.name, // 前端期望的字段名
         displayName: user.name, // 保留原字段名
         email: user.email || '',
-        roles: user.userRoles.map(ur => ur.role.name),
+        roles: user.userRoles.map(ur => ({
+          id: ur.role.id,
+          name: ur.role.name,
+          description: ur.role.description,
+          permissions: ur.role.permissions as string[] || [],
+        })),
         access: user.userRoles.length > 0 ? user.userRoles[0].role.name.toLowerCase() : 'guest', // 前端期望的access字段
         isActive: user.isActive,
         lastLoginAt: user.lastLoginAt,
