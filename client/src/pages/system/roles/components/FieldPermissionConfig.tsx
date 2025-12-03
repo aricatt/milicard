@@ -35,6 +35,40 @@ interface Props {
 
 // 资源定义（与后端保持一致）
 const RESOURCES: Resource[] = [
+  // ========== 基地管理 ==========
+  {
+    key: 'base',
+    label: '基地',
+    fields: [
+      { key: 'code', label: '编号', type: 'string' },
+      { key: 'name', label: '名称', type: 'string' },
+      { key: 'type', label: '类型', type: 'string' },
+      { key: 'address', label: '地址', type: 'string' },
+      { key: 'contactPerson', label: '联系人', type: 'string' },
+      { key: 'contactPhone', label: '联系电话', type: 'string' },
+    ],
+  },
+  {
+    key: 'location',
+    label: '直播间/仓库',
+    fields: [
+      { key: 'code', label: '编号', type: 'string' },
+      { key: 'name', label: '名称', type: 'string' },
+      { key: 'type', label: '类型', type: 'string' },
+      { key: 'capacity', label: '容量', type: 'number' },
+    ],
+  },
+  {
+    key: 'personnel',
+    label: '人员',
+    fields: [
+      { key: 'code', label: '编号', type: 'string' },
+      { key: 'name', label: '名称', type: 'string' },
+      { key: 'type', label: '类型', type: 'string' },
+      { key: 'phone', label: '电话', type: 'string' },
+    ],
+  },
+  // ========== 点位管理 ==========
   {
     key: 'point',
     label: '点位',
@@ -63,6 +97,22 @@ const RESOURCES: Resource[] = [
       { key: 'notes', label: '备注', type: 'string' },
     ],
   },
+  // ========== 商品管理 ==========
+  {
+    key: 'goods',
+    label: '商品',
+    fields: [
+      { key: 'code', label: '编号', type: 'string' },
+      { key: 'name', label: '名称', type: 'string' },
+      { key: 'barcode', label: '条码', type: 'string' },
+      { key: 'unit', label: '单位', type: 'string' },
+      { key: 'boxSpec', label: '箱规', type: 'number' },
+      { key: 'packSpec', label: '包规', type: 'number' },
+      { key: 'purchasePrice', label: '采购价', type: 'number' },
+      { key: 'sellingPrice', label: '销售价', type: 'number' },
+    ],
+  },
+  // ========== 库存管理 ==========
   {
     key: 'inventory',
     label: '库存',
@@ -70,6 +120,56 @@ const RESOURCES: Resource[] = [
       { key: 'goodsName', label: '商品名称', type: 'string' },
       { key: 'quantity', label: '数量', type: 'number' },
       { key: 'averageCost', label: '平均成本', type: 'number' },
+    ],
+  },
+  {
+    key: 'purchaseOrder',
+    label: '采购订单',
+    fields: [
+      { key: 'code', label: '订单号', type: 'string' },
+      { key: 'supplierName', label: '供应商', type: 'string' },
+      { key: 'totalAmount', label: '总金额', type: 'number' },
+      { key: 'status', label: '状态', type: 'string' },
+      { key: 'notes', label: '备注', type: 'string' },
+    ],
+  },
+  {
+    key: 'arrivalOrder',
+    label: '到货单',
+    fields: [
+      { key: 'code', label: '单号', type: 'string' },
+      { key: 'status', label: '状态', type: 'string' },
+      { key: 'notes', label: '备注', type: 'string' },
+    ],
+  },
+  {
+    key: 'transferOrder',
+    label: '调货单',
+    fields: [
+      { key: 'code', label: '单号', type: 'string' },
+      { key: 'status', label: '状态', type: 'string' },
+      { key: 'notes', label: '备注', type: 'string' },
+    ],
+  },
+  {
+    key: 'stockConsumption',
+    label: '消耗记录',
+    fields: [
+      { key: 'code', label: '单号', type: 'string' },
+      { key: 'status', label: '状态', type: 'string' },
+      { key: 'notes', label: '备注', type: 'string' },
+    ],
+  },
+  // ========== 用户管理 ==========
+  {
+    key: 'user',
+    label: '用户',
+    fields: [
+      { key: 'username', label: '用户名', type: 'string' },
+      { key: 'name', label: '姓名', type: 'string' },
+      { key: 'email', label: '邮箱', type: 'string' },
+      { key: 'phone', label: '电话', type: 'string' },
+      { key: 'isActive', label: '状态', type: 'boolean' },
     ],
   },
 ];

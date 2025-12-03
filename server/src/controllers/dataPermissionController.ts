@@ -29,6 +29,34 @@ const OPERATORS = [
 
 // 可用的资源及其字段
 const RESOURCES = [
+  // ========== 基地管理 ==========
+  {
+    key: 'base',
+    label: '基地',
+    fields: [
+      { key: 'id', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+    ],
+  },
+  {
+    key: 'location',
+    label: '直播间/仓库',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'type', label: '类型', type: 'string' },
+      { key: 'managerId', label: '负责人ID', type: 'string' },
+    ],
+  },
+  {
+    key: 'personnel',
+    label: '人员',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'type', label: '类型', type: 'string' },
+      { key: 'userId', label: '用户ID', type: 'string' },
+    ],
+  },
+  // ========== 点位管理 ==========
   {
     key: 'point',
     label: '点位',
@@ -55,19 +83,85 @@ const RESOURCES = [
       { key: 'pointId', label: '点位ID', type: 'string' },
     ],
   },
+  // ========== 商品管理 ==========
   {
-    key: 'inventory',
-    label: '库存',
+    key: 'goods',
+    label: '商品',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+    ],
+  },
+  {
+    key: 'goodsCategory',
+    label: '商品分类',
     fields: [
       { key: 'baseId', label: '基地ID', type: 'number' },
     ],
   },
+  // ========== 库存管理 ==========
   {
-    key: 'order',
-    label: '订单',
+    key: 'inventory',
+    label: '库存',
     fields: [
-      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'locationId', label: '位置ID', type: 'number' },
       { key: 'baseId', label: '基地ID', type: 'number' },
+    ],
+  },
+  {
+    key: 'purchaseOrder',
+    label: '采购订单',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'targetLocationId', label: '目标位置ID', type: 'number' },
+    ],
+  },
+  {
+    key: 'arrivalOrder',
+    label: '到货单',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'locationId', label: '位置ID', type: 'number' },
+    ],
+  },
+  {
+    key: 'transferOrder',
+    label: '调货单',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'fromLocationId', label: '来源位置ID', type: 'number' },
+      { key: 'toLocationId', label: '目标位置ID', type: 'number' },
+    ],
+  },
+  {
+    key: 'stockConsumption',
+    label: '消耗记录',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'locationId', label: '位置ID', type: 'number' },
+      { key: 'personnelId', label: '人员ID', type: 'string' },
+    ],
+  },
+  {
+    key: 'stockOutOrder',
+    label: '出库单',
+    fields: [
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'locationId', label: '位置ID', type: 'number' },
+    ],
+  },
+  // ========== 用户管理 ==========
+  {
+    key: 'user',
+    label: '用户',
+    fields: [
+      { key: 'id', label: '用户ID', type: 'string' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
     ],
   },
 ];
