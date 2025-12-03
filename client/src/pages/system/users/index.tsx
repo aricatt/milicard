@@ -1,5 +1,4 @@
-import React, { useRef, useState, useContext } from 'react';
-import { BaseContext } from '@/contexts/BaseContext';
+import React, { useRef, useState } from 'react';
 import {
   PageContainer,
   ProTable,
@@ -17,10 +16,8 @@ import {
   Tag,
   Space,
   Tooltip,
-  Card,
-  Row,
-  Col,
-  Statistic,
+  Popover,
+  Descriptions,
 } from 'antd';
 import {
   PlusOutlined,
@@ -31,6 +28,7 @@ import {
   TeamOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import { request, useModel } from '@umijs/max';
 
@@ -85,9 +83,6 @@ const UsersPage: React.FC = () => {
   const [availableBases, setAvailableBases] = useState<BaseItem[]>([]);
   const [stats, setStats] = useState<UserStats>({ total: 0, active: 0, inactive: 0 });
   const [currentUserLevel, setCurrentUserLevel] = useState<number>(999); // 当前登录用户的角色层级
-  
-  // 获取当前基地上下文
-  const { currentBase } = useContext(BaseContext);
   
   // 计算当前登录用户的最高角色层级
   React.useEffect(() => {
@@ -463,44 +458,43 @@ const UsersPage: React.FC = () => {
     },
   ];
 
+  // 统计详情弹出内容
+  const statsContent = (
+    <div style={{ width: 280 }}>
+      <Descriptions column={1} size="small" bordered>
+        <Descriptions.Item label="用户总数">
+          <Space>
+            <TeamOutlined />
+            <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.total}</span>
+            <span style={{ color: '#999' }}>人</span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="启用用户">
+          <Space>
+            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+            <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.active}</span>
+            <span style={{ color: '#999' }}>
+              ({stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}%)
+            </span>
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="禁用用户">
+          <Space>
+            <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+            <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.inactive}</span>
+            <span style={{ color: '#999' }}>
+              ({stats.total > 0 ? ((stats.inactive / stats.total) * 100).toFixed(1) : 0}%)
+            </span>
+          </Space>
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
+
   return (
     <PageContainer header={{ title: '用户管理' }}>
-      {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="用户总数"
-              value={stats.total}
-              prefix={<TeamOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="启用用户"
-              value={stats.active}
-              valueStyle={{ color: '#3f8600' }}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="禁用用户"
-              value={stats.inactive}
-              valueStyle={{ color: '#cf1322' }}
-              prefix={<CloseCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
-
       {/* 用户列表 */}
       <ProTable<UserItem>
-        headerTitle="用户列表"
         actionRef={actionRef}
         rowKey="id"
         columns={columns}
@@ -510,6 +504,26 @@ const UsersPage: React.FC = () => {
           labelWidth: 'auto',
           defaultCollapsed: false,
         }}
+        headerTitle={
+          <Space>
+            <span>用户列表</span>
+            <Popover
+              content={statsContent}
+              title="统计详情"
+              trigger="click"
+              placement="bottomLeft"
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
+              >
+                详情
+              </Button>
+            </Popover>
+          </Space>
+        }
         toolBarRender={() => [
           <Button
             key="create"
@@ -588,7 +602,7 @@ const UsersPage: React.FC = () => {
           label="关联基地"
           mode="multiple"
           placeholder="请选择关联基地"
-          initialValue={currentBase ? [currentBase.id] : []}
+          initialValue={[]}
           options={availableBases.map((base) => ({
             label: `${base.name} (${base.code})`,
             value: base.id,

@@ -107,6 +107,20 @@ export default function access(
     // 报表权限
     canAccessReport: hasPermission(roles, 'report:read') || isAdmin(roles),
     
+    // 直播基地模块权限（权限字符串与后端 ResourceModule 一致）
+    canAccessProducts: hasPermission(roles, 'goods:read') || isAdmin(roles),
+    canAccessProcurement: hasPermission(roles, 'purchase_order:read') || isAdmin(roles),
+    canAccessArrivals: hasPermission(roles, 'arrival_order:read') || isAdmin(roles),
+    canAccessTransfers: hasPermission(roles, 'stock_transfer:read') || isAdmin(roles),
+    canAccessInventoryConsumption: hasPermission(roles, 'inventory:read') || hasPermission(roles, 'stock_consumption:read') || isAdmin(roles),
+    canAccessSuppliers: hasPermission(roles, 'supplier:read') || isAdmin(roles),
+    canAccessPersonnel: hasPermission(roles, 'personnel:read') || isAdmin(roles),
+    canAccessLocations: hasPermission(roles, 'location:read') || isAdmin(roles),
+    canAccessBases: hasPermission(roles, 'base:read') || isAdmin(roles),
+    canAccessAnchorProfit: hasPermission(roles, 'anchor_profit:read') || isAdmin(roles),
+    canAccessStockOut: hasPermission(roles, 'stock_out:read') || isAdmin(roles),
+    canAccessReceivables: hasPermission(roles, 'receivable:read') || isAdmin(roles),
+    
     // 通用权限检查函数
     hasPermission: (permission: string) => hasPermission(roles, permission) || isAdmin(roles),
     hasRole: (roleName: string) => hasRole(roles, roleName),

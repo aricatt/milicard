@@ -66,12 +66,14 @@ export default [
         icon: 'home',
         path: '/live-base/base-data/bases',
         component: './live-base/base-data/bases',
+        access: 'canAccessBases',
       },
       {
         name: 'locations',
         icon: 'database',
         path: '/live-base/locations',
         component: './live-base/locations',
+        access: 'canAccessLocations',
       },
       // 人员管理
       {
@@ -79,6 +81,7 @@ export default [
         icon: 'user',
         path: '/live-base/personnel',
         component: './live-base/personnel',
+        access: 'canAccessPersonnel',
       },
       // 供应商管理
       {
@@ -86,6 +89,7 @@ export default [
         icon: 'shop',
         path: '/live-base/suppliers',
         component: './live-base/suppliers',
+        access: 'canAccessSuppliers',
       },
       // 商品管理
       {
@@ -93,6 +97,7 @@ export default [
         icon: 'gift',
         path: '/live-base/products',
         component: './live-base/products',
+        access: 'canAccessProducts',
       },
       // 采购管理
       {
@@ -100,6 +105,7 @@ export default [
         icon: 'shopping-cart',
         path: '/live-base/procurement',
         component: './live-base/procurement',
+        access: 'canAccessProcurement',
       },
       // 到货管理
       {
@@ -107,6 +113,7 @@ export default [
         icon: 'inbox',
         path: '/live-base/arrivals',
         component: './live-base/arrivals',
+        access: 'canAccessArrivals',
       },
       // 调货管理
       {
@@ -114,6 +121,7 @@ export default [
         icon: 'swap',
         path: '/live-base/transfers',
         component: './live-base/transfers',
+        access: 'canAccessTransfers',
       },
       // 库存和消耗
       {
@@ -121,12 +129,14 @@ export default [
         icon: 'database',
         path: '/live-base/inventory-consumption',
         component: './live-base/inventory-consumption',
+        access: 'canAccessInventoryConsumption',
       },
       {
         name: 'anchor-profit',
         icon: 'dollarCircle',
         path: '/live-base/anchor-profit',
         component: './live-base/anchor-profit',
+        access: 'canAccessAnchorProfit',
       },
       // 出库管理
       {
@@ -134,6 +144,7 @@ export default [
         icon: 'export',
         path: '/live-base/stock-out',
         component: './live-base/sales',
+        access: 'canAccessStockOut',
       },
       // 应收管理
       {
@@ -141,6 +152,7 @@ export default [
         icon: 'moneyCollect',
         path: '/live-base/receivables',
         component: './live-base/sales',
+        access: 'canAccessReceivables',
       },
     ],
   },
@@ -160,6 +172,7 @@ export default [
         icon: 'global',
         path: '/offline-region/districts',
         component: './offline-region/districts',
+        access: 'canAccessBases',
       },
       // 小区/仓库管理
       {
@@ -167,6 +180,7 @@ export default [
         icon: 'cluster',
         path: '/offline-region/sub-districts',
         component: './offline-region/sub-districts',
+        access: 'canAccessLocations',
       },
       // 仓管人员
       {
@@ -174,6 +188,7 @@ export default [
         icon: 'user',
         path: '/offline-region/warehouse-keepers',
         component: './offline-region/warehouse-keepers',
+        access: 'canAccessPersonnel',
       },
       // 点位管理
       {
@@ -181,6 +196,7 @@ export default [
         icon: 'pushpin',
         path: '/offline-region/points',
         component: './offline-region/points',
+        access: 'canAccessPoint',
       },
       // 供应商管理（复用直播基地）
       {
@@ -188,6 +204,7 @@ export default [
         icon: 'shop',
         path: '/offline-region/suppliers',
         component: './live-base/suppliers',
+        access: 'canAccessSuppliers',
       },
       // 商品管理（复用直播基地）
       {
@@ -195,6 +212,7 @@ export default [
         icon: 'gift',
         path: '/offline-region/products',
         component: './live-base/products',
+        access: 'canAccessProducts',
       },
       // 采购管理（复用直播基地）
       {
@@ -202,6 +220,7 @@ export default [
         icon: 'shopping-cart',
         path: '/offline-region/procurement',
         component: './live-base/procurement',
+        access: 'canAccessProcurement',
       },
       // 到货管理（复用直播基地）
       {
@@ -209,6 +228,7 @@ export default [
         icon: 'inbox',
         path: '/offline-region/arrivals',
         component: './live-base/arrivals',
+        access: 'canAccessArrivals',
       },
       // 库存和消耗（复用直播基地）
       {
@@ -216,6 +236,7 @@ export default [
         icon: 'database',
         path: '/offline-region/inventory-consumption',
         component: './live-base/inventory-consumption',
+        access: 'canAccessInventoryConsumption',
       },
       // 出库管理
       {
@@ -223,6 +244,7 @@ export default [
         icon: 'export',
         path: '/offline-region/stock-out',
         component: './offline-region/stock-out',
+        access: 'canAccessStockOut',
       },
       // 应收管理
       {
@@ -230,6 +252,7 @@ export default [
         icon: 'moneyCollect',
         path: '/offline-region/receivables',
         component: './offline-region/receivables',
+        access: 'canAccessReceivables',
       },
       // 点位利润
       {
@@ -237,6 +260,7 @@ export default [
         icon: 'dollarCircle',
         path: '/offline-region/location-profit',
         component: './offline-region/location-profit',
+        access: 'canAccessAnchorProfit',
       },
     ],
   },
