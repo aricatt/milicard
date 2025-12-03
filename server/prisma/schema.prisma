@@ -52,6 +52,11 @@ model User {
   userLocations       UserLocation[]
   userRoles           UserRole[]
   defaultBase         Base?               @relation("UserDefaultBase", fields: [defaultBaseId], references: [id])
+  // 点位订单系统关联
+  ownedPoints         Point[]             @relation("PointOwner")
+  dealerPoints        Point[]             @relation("PointDealer")
+  createdPointOrders  PointOrder[]        @relation("PointOrderCreator")
+  confirmedPointOrders PointOrder[]       @relation("PointOrderConfirmer")
 
   @@index([username])
   @@index([email])
@@ -200,6 +205,10 @@ model Goods {
   stockOutOrderItems     StockOutOrderItem[]
   transferOrderItems     TransferOrderItem[]
   transferRecords        TransferRecord[]
+  // 点位订单系统关联
+  pointGoods             PointGoods[]
+  pointOrderItems        PointOrderItem[]
+  pointInventory         PointInventory[]
 
   @@index([code])
   @@index([name])
@@ -669,6 +678,9 @@ model Base {
   transferRecords   TransferRecord[]
   userBases         UserBase[]
   defaultUsers      User[]            @relation("UserDefaultBase")
+  // 点位订单系统关联
+  points            Point[]
+  pointOrders       PointOrder[]
 
   @@index([code])
   @@index([name])
@@ -911,4 +923,176 @@ enum TransferStatus {
   PENDING
   COMPLETED
   CANCELLED
+}
+
+// ==================== 点位订单系统 ====================
+
+// 点位订单状态
+enum PointOrderStatus {
+  PENDING      // 待处理（老板下单后）
+  CONFIRMED    // 已确认（客服确认）
+  SHIPPING     // 配送中（已发货）
+  DELIVERED    // 已送达
+  COMPLETED    // 已完成（货物入点位库存）
+  CANCELLED    // 已取消
+}
+
+// 付款状态
+enum PaymentStatus {
+  UNPAID       // 未付款
+  PARTIAL      // 部分付款
+  PAID         // 已付款
+}
+
+// 点位（线下门店）
+model Point {
+  id              String           @id @default(uuid())
+  code            String           @unique                    // 点位编号：POINT-XXXXXXXXXXX
+  name            String                                      // 店铺名称
+  address         String?                                     // 详细地址
+  contactPerson   String?          @map("contact_person")     // 联系人
+  contactPhone    String?          @map("contact_phone")      // 联系电话
+  baseId          Int              @map("base_id")            // 所属大区
+  ownerId         String?          @map("owner_id")           // 点位老板（用户ID）
+  dealerId        String?          @map("dealer_id")          // 经销商（用户ID）
+  notes           String?
+  isActive        Boolean          @default(true) @map("is_active")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  
+  base            Base             @relation(fields: [baseId], references: [id])
+  owner           User?            @relation("PointOwner", fields: [ownerId], references: [id])
+  dealer          User?            @relation("PointDealer", fields: [dealerId], references: [id])
+  pointOrders     PointOrder[]
+  pointInventory  PointInventory[]
+  pointGoods      PointGoods[]     // 该点位可采购的商品列表
+
+  @@index([code])
+  @@index([name])
+  @@index([baseId])
+  @@index([ownerId])
+  @@index([dealerId])
+  @@index([isActive])
+  @@map("points")
+}
+
+// 点位可采购商品
+model PointGoods {
+  id        String   @id @default(uuid())
+  pointId   String   @map("point_id")
+  goodsId   String   @map("goods_id")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  point     Point    @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  goods     Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+
+  @@unique([pointId, goodsId])
+  @@index([pointId])
+  @@index([goodsId])
+  @@map("point_goods")
+}
+
+// 点位订单
+model PointOrder {
+  id              String            @id @default(uuid())
+  code            String            @unique                    // 订单编号：PTO-XXXXXXXXXXX
+  pointId         String            @map("point_id")           // 下单点位
+  baseId          Int               @map("base_id")            // 所属大区
+  orderDate       DateTime          @map("order_date") @db.Date
+  totalAmount     Decimal           @default(0) @map("total_amount") @db.Decimal(12, 2)
+  status          PointOrderStatus  @default(PENDING)
+  
+  // 付款信息（人工编辑）
+  paymentStatus   PaymentStatus     @default(UNPAID) @map("payment_status")
+  paidAmount      Decimal           @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  paymentNotes    String?           @map("payment_notes")      // 付款备注
+  
+  // 配送信息
+  shippingAddress String?           @map("shipping_address")
+  shippingPhone   String?           @map("shipping_phone")
+  trackingNumber  String?           @map("tracking_number")    // 物流单号
+  deliveryPerson  String?           @map("delivery_person")    // 送货员
+  deliveryPhone   String?           @map("delivery_phone")     // 送货员电话
+  
+  // 时间节点
+  confirmedAt     DateTime?         @map("confirmed_at")       // 客服确认时间
+  shippedAt       DateTime?         @map("shipped_at")         // 发货时间
+  deliveredAt     DateTime?         @map("delivered_at")       // 送达时间
+  completedAt     DateTime?         @map("completed_at")       // 完成时间
+  cancelledAt     DateTime?         @map("cancelled_at")       // 取消时间
+  
+  notes           String?                                      // 订单备注
+  customerNotes   String?           @map("customer_notes")     // 客户备注
+  staffNotes      String?           @map("staff_notes")        // 客服备注
+  
+  createdBy       String            @map("created_by")         // 下单人
+  confirmedBy     String?           @map("confirmed_by")       // 确认人（客服）
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  
+  point           Point             @relation(fields: [pointId], references: [id])
+  base            Base              @relation(fields: [baseId], references: [id])
+  creator         User              @relation("PointOrderCreator", fields: [createdBy], references: [id])
+  confirmer       User?             @relation("PointOrderConfirmer", fields: [confirmedBy], references: [id])
+  items           PointOrderItem[]
+
+  @@index([code])
+  @@index([pointId])
+  @@index([baseId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([orderDate])
+  @@index([createdBy])
+  @@map("point_orders")
+}
+
+// 点位订单明细
+model PointOrderItem {
+  id            String      @id @default(uuid())
+  pointOrderId  String      @map("point_order_id")
+  goodsId       String      @map("goods_id")
+  
+  // 订购数量（以盒为最小单位）
+  boxQuantity   Int         @default(0) @map("box_quantity")
+  packQuantity  Int         @default(0) @map("pack_quantity")   // 盒数
+  
+  // 单价和总价
+  unitPrice     Decimal     @map("unit_price") @db.Decimal(12, 2)  // 单价/盒
+  totalPrice    Decimal     @map("total_price") @db.Decimal(12, 2)
+  
+  // 实际发货数量（客服可调整）
+  actualBoxQty  Int?        @map("actual_box_qty")
+  actualPackQty Int?        @map("actual_pack_qty")
+  
+  notes         String?
+  
+  pointOrder    PointOrder  @relation(fields: [pointOrderId], references: [id], onDelete: Cascade)
+  goods         Goods       @relation(fields: [goodsId], references: [id])
+
+  @@index([pointOrderId])
+  @@index([goodsId])
+  @@map("point_order_items")
+}
+
+// 点位库存
+model PointInventory {
+  id            String   @id @default(uuid())
+  pointId       String   @map("point_id")
+  goodsId       String   @map("goods_id")
+  
+  // 库存数量
+  boxQuantity   Int      @default(0) @map("box_quantity")
+  packQuantity  Int      @default(0) @map("pack_quantity")
+  pieceQuantity Int      @default(0) @map("piece_quantity")
+  
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  point         Point    @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  goods         Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+
+  @@unique([pointId, goodsId])
+  @@index([pointId])
+  @@index([goodsId])
+  @@map("point_inventory")
 }

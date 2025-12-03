@@ -175,12 +175,12 @@ export default [
         path: '/offline-region/warehouse-keepers',
         component: './offline-region/warehouse-keepers',
       },
-      // 点位信息
+      // 点位管理
       {
-        name: 'locations',
+        name: 'points',
         icon: 'pushpin',
-        path: '/offline-region/locations',
-        component: './offline-region/locations',
+        path: '/offline-region/points',
+        component: './offline-region/points',
       },
       // 供应商管理（复用直播基地）
       {
