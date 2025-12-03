@@ -2,8 +2,17 @@
 /* eslint-disable */
 
 declare namespace API {
+  type UserRole = {
+    id: string;
+    name: string;
+    description?: string;
+    permissions?: string[];
+  };
+
   type CurrentUser = {
+    id?: string;
     name?: string;
+    username?: string;
     avatar?: string;
     userid?: string;
     email?: string;
@@ -21,6 +30,7 @@ declare namespace API {
     };
     address?: string;
     phone?: string;
+    roles?: UserRole[];
   };
 
   type LoginResult = {

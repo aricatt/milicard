@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UserManagementController } from '../controllers/userManagementController';
 import { PermissionController } from '../controllers/permissionController';
+import { DataPermissionController } from '../controllers/dataPermissionController';
 
 const router = Router();
 
@@ -21,14 +22,26 @@ router.get('/permission-tree', PermissionController.getPermissionTree);
 // 获取预设权限
 router.get('/preset/:roleName', PermissionController.getPresetPermissions);
 
-// 获取角色权限
+// 获取角色权限（功能权限）
 router.get('/:roleId/permissions', PermissionController.getRolePermissions);
 
-// 更新角色权限
+// 更新角色权限（功能权限）
 router.put('/:roleId/permissions', PermissionController.updateRolePermissions);
 
 // 重置角色权限为预设值
 router.post('/:roleId/permissions/reset', PermissionController.resetRolePermissions);
+
+// 获取角色数据权限规则
+router.get('/:roleId/data-permissions', DataPermissionController.getRoleDataRules);
+
+// 创建角色数据权限规则
+router.post('/:roleId/data-permissions', DataPermissionController.createRule);
+
+// 获取角色字段权限
+router.get('/:roleId/field-permissions', DataPermissionController.getRoleFieldPermissions);
+
+// 更新角色字段权限
+router.put('/:roleId/field-permissions', DataPermissionController.updateFieldPermissions);
 
 // 获取角色详情
 router.get('/:roleId', PermissionController.getRoleDetail);

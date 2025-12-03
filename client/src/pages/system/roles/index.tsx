@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space } from 'antd';
-import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space, Tabs } from 'antd';
+import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined, PlusOutlined, DeleteOutlined, DatabaseOutlined, FormOutlined } from '@ant-design/icons';
 import { request } from '@umijs/max';
+import DataPermissionConfig from './components/DataPermissionConfig';
+import FieldPermissionConfig from './components/FieldPermissionConfig';
 
 interface RoleItem {
   id: string;
@@ -489,60 +491,106 @@ const RolesPage: React.FC = () => {
         title={`配置权限 - ${currentRole ? getRoleLabel(currentRole.name, currentRole.description).label : ''}`}
         open={permissionModalVisible}
         onCancel={() => setPermissionModalVisible(false)}
-        width={700}
-        footer={[
-          <Popconfirm
-            key="reset"
-            title="确定要重置为预设权限吗？"
-            description="这将覆盖当前的所有权限配置"
-            onConfirm={handleResetPermissions}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button icon={<ReloadOutlined />} loading={saving}>
-              重置为预设
-            </Button>
-          </Popconfirm>,
-          <Button key="cancel" onClick={() => setPermissionModalVisible(false)}>
-            取消
-          </Button>,
-          <Button key="save" type="primary" loading={saving} onClick={handleSavePermissions}>
-            保存
-          </Button>,
-        ]}
+        width={800}
+        footer={null}
+        destroyOnClose
       >
-        {permissionLoading ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <Spin tip="加载权限中..." />
-          </div>
-        ) : (
-          <>
-            <div style={{ marginBottom: 12, display: 'flex', gap: 8 }}>
-              <Tooltip title="全选所有权限">
-                <Button size="small" icon={<CheckSquareOutlined />} onClick={selectAll}>
-                  全选
-                </Button>
-              </Tooltip>
-              <Tooltip title="清空所有权限">
-                <Button size="small" icon={<MinusSquareOutlined />} onClick={clearAll}>
-                  清空
-                </Button>
-              </Tooltip>
-              <span style={{ marginLeft: 'auto', color: '#999', fontSize: 12 }}>
-                已选 {checkedKeys.size} 项权限
-              </span>
-            </div>
-            <Table
-              rowKey="key"
-              columns={permissionColumns}
-              dataSource={modules}
-              pagination={false}
-              size="small"
-              scroll={{ y: 400 }}
-              bordered
-            />
-          </>
-        )}
+        <Tabs
+          items={[
+            {
+              key: 'function',
+              label: (
+                <span>
+                  <SettingOutlined />
+                  功能权限
+                </span>
+              ),
+              children: permissionLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <Spin tip="加载权限中..." />
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 12, display: 'flex', gap: 8 }}>
+                    <Tooltip title="全选所有权限">
+                      <Button size="small" icon={<CheckSquareOutlined />} onClick={selectAll}>
+                        全选
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="清空所有权限">
+                      <Button size="small" icon={<MinusSquareOutlined />} onClick={clearAll}>
+                        清空
+                      </Button>
+                    </Tooltip>
+                    <Popconfirm
+                      title="确定要重置为预设权限吗？"
+                      description="这将覆盖当前的所有权限配置"
+                      onConfirm={handleResetPermissions}
+                      okText="确定"
+                      cancelText="取消"
+                    >
+                      <Button size="small" icon={<ReloadOutlined />} loading={saving}>
+                        重置为预设
+                      </Button>
+                    </Popconfirm>
+                    <span style={{ marginLeft: 'auto', color: '#999', fontSize: 12 }}>
+                      已选 {checkedKeys.size} 项权限
+                    </span>
+                  </div>
+                  <Table
+                    rowKey="key"
+                    columns={permissionColumns}
+                    dataSource={modules}
+                    pagination={false}
+                    size="small"
+                    scroll={{ y: 350 }}
+                    bordered
+                  />
+                  <div style={{ marginTop: 16, textAlign: 'right' }}>
+                    <Space>
+                      <Button onClick={() => setPermissionModalVisible(false)}>
+                        取消
+                      </Button>
+                      <Button type="primary" loading={saving} onClick={handleSavePermissions}>
+                        保存功能权限
+                      </Button>
+                    </Space>
+                  </div>
+                </>
+              ),
+            },
+            {
+              key: 'data',
+              label: (
+                <span>
+                  <DatabaseOutlined />
+                  数据权限
+                </span>
+              ),
+              children: currentRole ? (
+                <DataPermissionConfig
+                  roleId={currentRole.id}
+                  roleName={getRoleLabel(currentRole.name, currentRole.description).label}
+                />
+              ) : null,
+            },
+            {
+              key: 'field',
+              label: (
+                <span>
+                  <FormOutlined />
+                  字段权限
+                </span>
+              ),
+              children: currentRole ? (
+                <FieldPermissionConfig
+                  roleId={currentRole.id}
+                  roleName={getRoleLabel(currentRole.name, currentRole.description).label}
+                />
+              ) : null,
+            },
+          ]}
+        />
       </Modal>
     </PageContainer>
   );

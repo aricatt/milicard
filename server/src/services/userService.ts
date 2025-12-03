@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { logger } from '../utils/logger';
+import { casbinService } from './casbinService';
 
 const prisma = new PrismaClient();
 
@@ -280,14 +281,41 @@ export class UserService {
 
     // 更新角色
     if (roleIds !== undefined) {
+      // 获取用户关联的基地（用于 Casbin 域）
+      const userBases = await prisma.userBase.findMany({
+        where: { userId: id, isActive: true },
+        select: { baseId: true },
+      });
+      const baseIds = userBases.map(ub => ub.baseId);
+
+      // 获取现有角色
+      const existingRoles = await prisma.userRole.findMany({
+        where: { userId: id, isActive: true },
+        include: { role: true },
+      });
+
       // 禁用现有角色
       await prisma.userRole.updateMany({
         where: { userId: id, isActive: true },
         data: { isActive: false },
       });
 
+      // 从 Casbin 移除旧角色
+      for (const ur of existingRoles) {
+        for (const baseId of baseIds) {
+          await casbinService.removeRoleForUser(id, ur.role.name, baseId);
+        }
+        // 也移除全局角色
+        await casbinService.removeRoleForUser(id, ur.role.name, '*');
+      }
+
       // 添加新角色
       if (roleIds.length > 0) {
+        // 获取新角色信息
+        const newRoles = await prisma.role.findMany({
+          where: { id: { in: roleIds } },
+        });
+
         for (const roleId of roleIds) {
           await prisma.userRole.upsert({
             where: {
@@ -306,7 +334,21 @@ export class UserService {
             },
           });
         }
+
+        // 同步到 Casbin
+        for (const role of newRoles) {
+          // 为每个基地分配角色
+          for (const baseId of baseIds) {
+            await casbinService.addRoleForUser(id, role.name, baseId);
+          }
+          // 如果没有基地，分配全局角色
+          if (baseIds.length === 0) {
+            await casbinService.addRoleForUser(id, role.name, '*');
+          }
+        }
       }
+
+      logger.info('用户角色已更新并同步到 Casbin', { userId: id, roleIds });
     }
 
     // 更新基地

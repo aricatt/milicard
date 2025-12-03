@@ -4,7 +4,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { request, useAccess } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import PointForm from './components/PointForm';
 
@@ -64,9 +64,10 @@ interface OrderItem {
 }
 
 const PointsPage: React.FC = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const access = useAccess();
   const [formVisible, setFormVisible] = useState(false);
   const [editingPoint, setEditingPoint] = useState<PointItem | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -215,27 +216,31 @@ const PointsPage: React.FC = () => {
           >
             详情
           </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingPoint(record);
-              setFormVisible(true);
-            }}
-          >
-            编辑
-          </Button>
-          <Popconfirm
-            title="确定删除该点位吗？"
-            onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-              删除
+          {access.canUpdatePoint && (
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setEditingPoint(record);
+                setFormVisible(true);
+              }}
+            >
+              编辑
             </Button>
-          </Popconfirm>
+          )}
+          {access.canDeletePoint && (
+            <Popconfirm
+              title="确定删除该点位吗？"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+                删除
+              </Button>
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -267,17 +272,19 @@ const PointsPage: React.FC = () => {
           labelWidth: 'auto',
         }}
         toolBarRender={() => [
-          <Button
-            key="add"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setEditingPoint(null);
-              setFormVisible(true);
-            }}
-          >
-            新建点位
-          </Button>,
+          access.canCreatePoint && (
+            <Button
+              key="add"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingPoint(null);
+                setFormVisible(true);
+              }}
+            >
+              新建点位
+            </Button>
+          ),
         ]}
         request={fetchPoints}
         columns={columns}

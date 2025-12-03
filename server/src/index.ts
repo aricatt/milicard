@@ -61,6 +61,7 @@ import userManagementRoutes from './routes/userManagementRoutes'
 import roleRoutes from './routes/roleRoutes'
 import devRoutes from './routes/devRoutes'
 import pointRoutes from './routes/pointRoutes'
+import dataPermissionRoutes from './routes/dataPermissionRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
@@ -83,6 +84,7 @@ app.use('/api/v1/bases', anchorProfitRoutes)
 app.use('/api', userRoutes)
 app.use('/api/v1/users', userManagementRoutes)
 app.use('/api/v1/roles', roleRoutes)
+app.use('/api/v1/data-permissions', dataPermissionRoutes)
 app.use('/api/v1/bases', pointRoutes)
 
 // 开发环境路由（仅在开发环境下启用）

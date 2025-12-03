@@ -505,6 +505,7 @@ export default [
     path: '/system',
     name: 'system',
     icon: 'setting',
+    access: 'canAccessSystem', // 权限控制
     routes: [
       {
         path: '/system',
@@ -516,13 +517,15 @@ export default [
         icon: 'user',
         path: '/system/users',
         component: './system/users',
+        access: 'canManageUsers',
       },
-      // 角色管理（预留）
+      // 角色管理
       {
         name: 'roles',
         icon: 'team',
         path: '/system/roles',
         component: './system/roles',
+        access: 'canManageRoles',
       },
     ],
   },

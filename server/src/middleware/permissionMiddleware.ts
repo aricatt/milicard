@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { PermissionService } from '../services/permissionService'
+import { casbinService } from '../services/casbinService'
+import { dataPermissionService } from '../services/dataPermissionService'
 import {
   PermissionMiddlewareOptions,
   PermissionError,
@@ -11,7 +13,141 @@ import {
 import { logger } from '../utils/logger'
 
 /**
- * 权限检查中间件工厂函数
+ * 基于 Casbin 的功能权限检查中间件
+ * @param resource 资源名称（如 'point', 'order'）
+ * @param action 操作名称（如 'read', 'create', 'update', 'delete'）
+ */
+export const checkPermission = (resource: string, action: string) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user?.id
+      const baseId = req.params.baseId || req.body?.baseId || req.query?.baseId
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: '未登录',
+          code: 'AUTHENTICATION_REQUIRED'
+        })
+        return
+      }
+
+      if (!baseId) {
+        res.status(400).json({
+          success: false,
+          message: '缺少基地ID',
+          code: 'MISSING_BASE_ID'
+        })
+        return
+      }
+
+      const hasPermission = await casbinService.checkPermission(
+        userId,
+        String(baseId),
+        resource,
+        action
+      )
+
+      if (hasPermission) {
+        next()
+        return
+      }
+
+      logger.warn('Casbin 权限检查失败', {
+        userId,
+        baseId,
+        resource,
+        action,
+        ip: req.ip,
+        path: req.path
+      })
+
+      res.status(403).json({
+        success: false,
+        message: '没有权限执行此操作',
+        code: 'PERMISSION_DENIED',
+        requiredPermission: `${resource}:${action}`
+      })
+    } catch (error) {
+      logger.error('Casbin 权限检查异常', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: req.user?.id,
+        path: req.path
+      })
+
+      res.status(500).json({
+        success: false,
+        message: '权限检查失败'
+      })
+    }
+  }
+}
+
+/**
+ * 数据权限注入中间件（基于 Casbin）
+ * 将数据过滤条件注入到 req.permissionContext
+ */
+export const injectDataPermission = (resource: string) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user?.id
+      const baseId = parseInt(req.params.baseId || req.body?.baseId || req.query?.baseId || '0')
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: '未登录'
+        })
+        return
+      }
+
+      // 获取用户在该基地的角色
+      let roles = await casbinService.getUserRoles(userId, baseId)
+      
+      // 如果没有基地角色，检查全局角色
+      if (roles.length === 0) {
+        roles = await casbinService.getUserRoles(userId, '*')
+      }
+
+      // 获取数据过滤条件
+      const dataFilter = await dataPermissionService.getDataFilter(
+        { userId, baseId, roles },
+        resource
+      )
+
+      // 获取字段权限
+      const fieldPermissions = await dataPermissionService.getFieldPermissions(
+        { userId, baseId, roles },
+        resource
+      )
+
+      // 注入到请求对象
+      req.permissionContext = {
+        userId,
+        baseId,
+        roles,
+        dataFilter,
+        fieldPermissions,
+      }
+
+      next()
+    } catch (error) {
+      logger.error('数据权限注入异常', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: req.user?.id,
+        resource
+      })
+
+      res.status(500).json({
+        success: false,
+        message: '数据权限检查失败'
+      })
+    }
+  }
+}
+
+/**
+ * 权限检查中间件工厂函数（兼容旧版）
  */
 export const requirePermission = (options: PermissionMiddlewareOptions) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -292,7 +428,7 @@ async function checkResourceOwnership(
  * 数据权限过滤中间件
  * 在查询数据时自动应用权限过滤
  */
-export const applyDataPermission = (resource: ResourceModule, action: PermissionAction) => {
+export const applyDataPermission = (resource: ResourceModule | string, action?: PermissionAction) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       if (!req.user) {
@@ -303,23 +439,46 @@ export const applyDataPermission = (resource: ResourceModule, action: Permission
         return
       }
 
-      const filter = await PermissionService.generateDataFilter({
-        userId: req.user.id,
-        roles: req.user.roles,
-        resource,
-        action
-      })
+      const userId = req.user.id
+      const baseId = parseInt(req.params.baseId || req.query.baseId as string || '0')
+      const resourceName = typeof resource === 'string' ? resource : resource
+
+      // 获取用户在该基地的角色（使用 Casbin）
+      let roles = await casbinService.getUserRoles(userId, baseId)
+      
+      // 如果没有基地角色，检查全局角色
+      if (roles.length === 0) {
+        roles = await casbinService.getUserRoles(userId, '*')
+      }
+
+      // 使用新的数据权限服务生成过滤条件
+      const dataFilter = await dataPermissionService.getDataFilter(
+        { userId, baseId, roles },
+        resourceName
+      )
+
+      // 获取字段权限
+      const fieldPermissions = await dataPermissionService.getFieldPermissions(
+        { userId, baseId, roles },
+        resourceName
+      )
 
       // 将过滤条件添加到请求对象中，供后续使用
-      req.dataFilter = filter
+      req.dataFilter = dataFilter
+      req.permissionContext = {
+        userId,
+        baseId,
+        roles,
+        dataFilter,
+        fieldPermissions,
+      }
 
       next()
     } catch (error) {
       logger.error('数据权限过滤中间件异常', {
         error: error instanceof Error ? error.message : String(error),
         userId: req.user?.id,
-        resource,
-        action
+        resource
       })
 
       res.status(500).json({
@@ -330,11 +489,77 @@ export const applyDataPermission = (resource: ResourceModule, action: Permission
   }
 }
 
-// 扩展Request接口以包含数据过滤条件
+/**
+ * 字段权限过滤响应中间件
+ * 在响应发送前过滤不可读字段
+ */
+export const filterResponseFields = () => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const originalJson = res.json.bind(res)
+    
+    res.json = (body: any) => {
+      const fieldPermissions = req.permissionContext?.fieldPermissions
+      
+      // 如果没有字段权限配置或允许所有字段，直接返回
+      if (!fieldPermissions || fieldPermissions.readable.includes('*')) {
+        return originalJson(body)
+      }
+
+      // 过滤响应数据
+      if (body && body.success && body.data) {
+        if (Array.isArray(body.data)) {
+          body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
+        } else if (typeof body.data === 'object') {
+          body.data = filterObject(body.data, fieldPermissions.readable)
+        }
+      }
+
+      return originalJson(body)
+    }
+
+    next()
+  }
+}
+
+/**
+ * 过滤对象字段
+ */
+function filterObject(obj: any, allowedFields: string[]): any {
+  if (!obj || typeof obj !== 'object') {
+    return obj
+  }
+
+  const filtered: any = {}
+  
+  // 始终保留 id 字段
+  if ('id' in obj) {
+    filtered.id = obj.id
+  }
+
+  for (const field of allowedFields) {
+    if (field in obj) {
+      filtered[field] = obj[field]
+    }
+  }
+
+  return filtered
+}
+
+// 扩展Request接口以包含数据过滤条件和权限上下文
 declare global {
   namespace Express {
     interface Request {
       dataFilter?: any
+      permissionContext?: {
+        userId: string
+        baseId: number
+        roles: string[]
+        dataFilter: any
+        fieldPermissions: {
+          readable: string[]
+          writable: string[]
+        }
+      }
     }
   }
 }

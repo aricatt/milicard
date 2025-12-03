@@ -69,13 +69,16 @@ model Role {
   id             String     @id @default(uuid())
   name           String     @unique
   description    String?
-  permissions    Json
+  permissions    Json       @default("[]")
   isSystem       Boolean    @default(false) @map("is_system")
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
   descriptionKey String?    @map("description_key")
   nameKey        String?    @map("name_key")
-  userRoles      UserRole[]
+  
+  userRoles            UserRole[]
+  dataPermissionRules  DataPermissionRule[]
+  fieldPermissions     FieldPermission[]
 
   @@index([name])
   @@index([nameKey])
@@ -1095,4 +1098,71 @@ model PointInventory {
   @@index([pointId])
   @@index([goodsId])
   @@map("point_inventory")
+}
+
+// ============================================
+// Casbin 权限系统相关模型
+// ============================================
+
+/// Casbin 策略存储表
+model CasbinRule {
+  id    Int     @id @default(autoincrement())
+  ptype String  // 策略类型: p (policy) 或 g (grouping)
+  v0    String? // 角色/用户
+  v1    String? // 域(基地ID) 或 角色
+  v2    String? // 资源 或 域
+  v3    String? // 操作
+  v4    String? // 效果 (allow/deny)
+  v5    String? // 保留字段
+
+  @@index([ptype])
+  @@index([v0])
+  @@index([v1])
+  @@map("casbin_rules")
+}
+
+/// 数据权限规则表
+model DataPermissionRule {
+  id          String   @id @default(uuid())
+  roleId      String   @map("role_id")
+  
+  resource    String   // 资源类型: point, order, inventory
+  field       String   // 过滤字段: ownerId, dealerId, createdBy
+  operator    String   // 操作符: eq, in, contains
+  valueType   String   @map("value_type") // 值类型: currentUser, currentUserPoints, fixed
+  fixedValue  String?  @map("fixed_value") // 固定值（当 valueType 为 fixed 时）
+  
+  description String?  // 规则描述
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, resource, field])
+  @@index([roleId])
+  @@index([resource])
+  @@index([isActive])
+  @@map("data_permission_rules")
+}
+
+/// 字段权限表（控制哪些字段可见/可编辑）
+model FieldPermission {
+  id          String   @id @default(uuid())
+  roleId      String   @map("role_id")
+  
+  resource    String   // 资源类型
+  field       String   // 字段名
+  canRead     Boolean  @default(true) @map("can_read")
+  canWrite    Boolean  @default(true) @map("can_write")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, resource, field])
+  @@index([roleId])
+  @@index([resource])
+  @@map("field_permissions")
 }

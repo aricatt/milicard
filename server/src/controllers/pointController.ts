@@ -19,6 +19,9 @@ export class PointController {
         dealerId,
       } = req.query;
 
+      // 从权限中间件获取数据过滤条件
+      const dataFilter = req.permissionContext?.dataFilter || {};
+
       const result = await PointService.getList({
         baseId,
         page: parseInt(page as string, 10),
@@ -27,6 +30,7 @@ export class PointController {
         isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
         ownerId: ownerId as string,
         dealerId: dealerId as string,
+        dataFilter, // 传递数据权限过滤条件
       });
 
       res.json({

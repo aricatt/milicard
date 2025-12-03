@@ -11,6 +11,7 @@ export interface PointListParams {
   isActive?: boolean;
   ownerId?: string;
   dealerId?: string;
+  dataFilter?: Record<string, any>; // 数据权限过滤条件
 }
 
 export interface CreatePointData {
@@ -62,10 +63,13 @@ export class PointService {
       isActive,
       ownerId,
       dealerId,
+      dataFilter = {},
     } = params;
 
+    // 基础查询条件
     const where: Prisma.PointWhereInput = {
       baseId,
+      ...dataFilter, // 应用数据权限过滤条件
     };
 
     if (isActive !== undefined) {

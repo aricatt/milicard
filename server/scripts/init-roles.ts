@@ -54,6 +54,30 @@ const defaultRoles = [
     ],
     isSystem: false,
   },
+  {
+    name: 'POINT_OWNER',
+    description: '点位老板 - 管理自己的点位',
+    permissions: [
+      'point:read',
+      'point:update',
+      'pointOrder:read',
+      'pointOrder:create',
+      'pointInventory:read',
+      'pointGoods:read',
+    ],
+    isSystem: false,
+  },
+  {
+    name: 'DEALER',
+    description: '经销商 - 管理负责的点位',
+    permissions: [
+      'point:read',
+      'pointOrder:read',
+      'pointOrder:create',
+      'pointInventory:read',
+    ],
+    isSystem: false,
+  },
 ];
 
 async function initRoles() {
