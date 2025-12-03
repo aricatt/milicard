@@ -460,6 +460,7 @@ const UsersPage: React.FC = () => {
           name="username"
           label="用户名"
           placeholder="请输入用户名"
+          fieldProps={{ autoComplete: 'off' }}
           rules={[
             { required: true, message: '请输入用户名' },
             { min: 3, message: '用户名至少3个字符' },
@@ -470,6 +471,7 @@ const UsersPage: React.FC = () => {
           name="password"
           label="密码"
           placeholder="请输入密码"
+          fieldProps={{ autoComplete: 'new-password' }}
           rules={[
             { required: true, message: '请输入密码' },
             { min: 6, message: '密码至少6个字符' },
