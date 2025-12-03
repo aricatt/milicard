@@ -11,7 +11,26 @@ const prisma = new PrismaClient();
  */
 export class UserService {
   /**
+   * 获取用户的最高角色层级
+   * 层级越小权限越高
+   */
+  static async getUserHighestRoleLevel(userId: string): Promise<number> {
+    const userRoles = await prisma.userRole.findMany({
+      where: { userId, isActive: true },
+      include: { role: true },
+    });
+
+    if (userRoles.length === 0) {
+      return 99; // 无角色，最低权限
+    }
+
+    // 返回最小的 level（最高权限）
+    return Math.min(...userRoles.map(ur => ur.role.level));
+  }
+
+  /**
    * 获取用户列表
+   * 根据当前用户的角色层级过滤：只能看到同级或更低级别的用户
    */
   static async getUserList(params: {
     page?: number;
@@ -19,11 +38,38 @@ export class UserService {
     keyword?: string;
     isActive?: boolean;
     roleId?: string;
+    currentUserId?: string; // 当前操作用户ID，用于层级过滤
   }) {
-    const { page = 1, pageSize = 10, keyword, isActive, roleId } = params;
+    const { page = 1, pageSize = 10, keyword, isActive, roleId, currentUserId } = params;
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
+
+    // 根据当前用户角色层级过滤
+    if (currentUserId) {
+      const currentUserLevel = await this.getUserHighestRoleLevel(currentUserId);
+      
+      logger.info('用户列表层级过滤', { 
+        currentUserId, 
+        currentUserLevel,
+        willFilter: currentUserLevel > 1 
+      });
+      
+      // 只能看到角色层级 >= 当前用户层级的用户（同级或更低权限）
+      // Level 0-1 (SUPER_ADMIN, ADMIN) 可以看到所有用户
+      if (currentUserLevel > 1) {
+        where.userRoles = {
+          some: {
+            isActive: true,
+            role: {
+              level: { gte: currentUserLevel },
+            },
+          },
+        };
+      }
+    } else {
+      logger.warn('用户列表查询缺少 currentUserId，无法进行层级过滤');
+    }
 
     // 关键词搜索（用户名、姓名、手机号）
     if (keyword) {
@@ -39,14 +85,18 @@ export class UserService {
       where.isActive = isActive;
     }
 
-    // 角色筛选
+    // 角色筛选（与层级过滤合并）
     if (roleId) {
-      where.userRoles = {
-        some: {
-          roleId,
-          isActive: true,
-        },
-      };
+      if (where.userRoles) {
+        where.userRoles.some.roleId = roleId;
+      } else {
+        where.userRoles = {
+          some: {
+            roleId,
+            isActive: true,
+          },
+        };
+      }
     }
 
     const [users, total] = await Promise.all([
@@ -152,6 +202,54 @@ export class UserService {
   }
 
   /**
+   * 验证角色分配权限
+   * 确保当前用户只能分配同级或更低级别的角色
+   */
+  static async validateRoleAssignment(currentUserId: string, roleIds: string[]): Promise<void> {
+    if (!roleIds || roleIds.length === 0) return;
+
+    const currentUserLevel = await this.getUserHighestRoleLevel(currentUserId);
+    
+    // 获取要分配的角色的层级
+    const roles = await prisma.role.findMany({
+      where: { id: { in: roleIds } },
+      select: { id: true, name: true, level: true },
+    });
+
+    for (const role of roles) {
+      if (role.level < currentUserLevel) {
+        throw new Error(`无权分配角色 "${role.name}"，该角色权限高于您的权限`);
+      }
+    }
+  }
+
+  /**
+   * 验证基地分配权限
+   * 确保当前用户只能分配自己有权限的基地
+   */
+  static async validateBaseAssignment(currentUserId: string, baseIds: number[]): Promise<void> {
+    if (!baseIds || baseIds.length === 0) return;
+
+    const currentUserLevel = await this.getUserHighestRoleLevel(currentUserId);
+    
+    // Level 0-1 (SUPER_ADMIN, ADMIN) 可以分配任何基地
+    if (currentUserLevel <= 1) return;
+
+    // 获取当前用户关联的基地
+    const userBases = await prisma.userBase.findMany({
+      where: { userId: currentUserId, isActive: true },
+      select: { baseId: true },
+    });
+    const allowedBaseIds = new Set(userBases.map(ub => ub.baseId));
+
+    for (const baseId of baseIds) {
+      if (!allowedBaseIds.has(baseId)) {
+        throw new Error(`无权分配基地 ID ${baseId}，您没有该基地的访问权限`);
+      }
+    }
+  }
+
+  /**
    * 创建用户
    */
   static async createUser(data: {
@@ -162,8 +260,15 @@ export class UserService {
     phone?: string;
     roleIds?: string[];
     baseIds?: number[];
+    currentUserId?: string; // 当前操作用户ID，用于权限验证
   }) {
-    const { username, password, name, email, phone, roleIds = [], baseIds = [] } = data;
+    const { username, password, name, email, phone, roleIds = [], baseIds = [], currentUserId } = data;
+
+    // 验证角色和基地分配权限
+    if (currentUserId) {
+      await this.validateRoleAssignment(currentUserId, roleIds);
+      await this.validateBaseAssignment(currentUserId, baseIds);
+    }
 
     // 检查用户名是否已存在
     const existingUser = await prisma.user.findUnique({
@@ -480,6 +585,7 @@ export class UserService {
     description?: string;
     permissions?: string[];
     isSystem?: boolean;
+    level?: number;
   }) {
     // 检查角色名是否已存在
     const existing = await prisma.role.findUnique({
@@ -496,10 +602,11 @@ export class UserService {
         description: data.description || '',
         permissions: data.permissions || [],
         isSystem: data.isSystem || false,
+        level: data.level ?? 3, // 默认等级为3
       },
     });
 
-    logger.info('创建角色成功', { roleId: role.id, name: role.name });
+    logger.info('创建角色成功', { roleId: role.id, name: role.name, level: role.level });
 
     return role;
   }

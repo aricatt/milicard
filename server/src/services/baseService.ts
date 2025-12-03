@@ -16,11 +16,32 @@ import { BaseError, BaseErrorType, BaseType } from '../types/base';
  */
 export class BaseService {
   /**
-   * 获取基地列表
+   * 获取用户的最高角色层级
+   * 层级越小权限越高
    */
-  static async getBaseList(params: BaseQueryParams): Promise<BaseListResponse> {
+  private static async getUserHighestRoleLevel(userId: string): Promise<number> {
+    const userRoles = await prisma.userRole.findMany({
+      where: { userId, isActive: true },
+      include: { role: true },
+    });
+
+    if (userRoles.length === 0) {
+      return 99; // 无角色，最低权限
+    }
+
+    // 返回最小的 level（最高权限）
+    return Math.min(...userRoles.map(ur => ur.role.level));
+  }
+
+  /**
+   * 获取基地列表
+   * 根据用户角色层级过滤：
+   * - Level 0-1 (SUPER_ADMIN, ADMIN): 返回所有基地
+   * - Level 2+ (其他角色): 只返回用户关联的基地
+   */
+  static async getBaseList(params: BaseQueryParams & { userId?: string }): Promise<BaseListResponse> {
     try {
-      const { current = 1, pageSize = 10, name, code, type } = params;
+      const { current = 1, pageSize = 10, name, code, type, userId } = params;
       const skip = (current - 1) * pageSize;
 
       // 构建查询条件
@@ -41,6 +62,30 @@ export class BaseService {
         where.type = type;
       }
 
+      // 根据用户角色层级过滤基地
+      if (userId) {
+        const userLevel = await this.getUserHighestRoleLevel(userId);
+        
+        // Level 0-1 (SUPER_ADMIN, ADMIN) 可以看到所有基地
+        // Level 2+ 只能看到关联的基地
+        if (userLevel > 1) {
+          // 获取用户关联的基地ID列表
+          const userBases = await prisma.userBase.findMany({
+            where: { userId, isActive: true },
+            select: { baseId: true },
+          });
+          
+          const allowedBaseIds = userBases.map(ub => ub.baseId);
+          
+          if (allowedBaseIds.length === 0) {
+            // 用户没有关联任何基地
+            return { data: [], total: 0 };
+          }
+          
+          where.id = { in: allowedBaseIds };
+        }
+      }
+
       // 查询数据和总数
       const [bases, total] = await Promise.all([
         prisma.base.findMany({
@@ -58,7 +103,7 @@ export class BaseService {
         service: 'milicard-api',
         count: bases.length,
         total,
-        params,
+        userId,
       });
 
       return {

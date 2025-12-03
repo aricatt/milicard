@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space, Tabs } from 'antd';
+import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space, Tabs, Select, InputNumber } from 'antd';
 import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined, PlusOutlined, DeleteOutlined, DatabaseOutlined, FormOutlined } from '@ant-design/icons';
 import { request } from '@umijs/max';
 import DataPermissionConfig from './components/DataPermissionConfig';
@@ -10,6 +10,7 @@ interface RoleItem {
   id: string;
   name: string;
   description?: string;
+  level: number;
   isSystem: boolean;
   createdAt: string;
   userCount?: number;
@@ -17,6 +18,18 @@ interface RoleItem {
     userRoles: number;
   };
 }
+
+// 角色等级说明
+// 等级决定基地访问范围，权限决定操作能力
+// 例如：Level 1 + 只读权限 = 可以查看所有基地但不能修改
+const LEVEL_OPTIONS = [
+  { value: 0, label: 'Level 0 - 超级管理员级', description: '可访问所有基地和用户（最高权限）' },
+  { value: 1, label: 'Level 1 - 全局访问级', description: '可访问所有基地（适合全局只读角色）' },
+  { value: 2, label: 'Level 2 - 经理级', description: '只能访问关联基地，可管理下级用户' },
+  { value: 3, label: 'Level 3 - 操作员级', description: '只能访问关联基地，有限操作权限' },
+  { value: 4, label: 'Level 4 - 查看者级', description: '只能访问关联基地，只读权限' },
+  { value: 5, label: 'Level 5 - 业务角色', description: '特定业务功能权限' },
+];
 
 interface PermissionTreeNode {
   key: string;
@@ -123,7 +136,7 @@ const RolesPage: React.FC = () => {
   }, []);
 
   // 创建角色
-  const handleCreateRole = async (values: { name: string; displayName: string; description?: string }) => {
+  const handleCreateRole = async (values: { name: string; displayName: string; description?: string; level?: number }) => {
     setSaving(true);
     try {
       const result = await request('/api/v1/roles', {
@@ -131,6 +144,7 @@ const RolesPage: React.FC = () => {
         data: {
           name: values.name,
           description: values.description || values.displayName,
+          level: values.level ?? 3,
         },
       });
       if (result.success) {
@@ -358,6 +372,22 @@ const RolesPage: React.FC = () => {
       ellipsis: true,
     },
     {
+      title: '等级',
+      dataIndex: 'level',
+      key: 'level',
+      width: 100,
+      sorter: (a: RoleItem, b: RoleItem) => a.level - b.level,
+      render: (level: number) => {
+        const levelInfo = LEVEL_OPTIONS.find(l => l.value === level);
+        const color = level === 0 ? 'red' : level === 1 ? 'volcano' : level <= 2 ? 'blue' : level <= 4 ? 'green' : 'default';
+        return (
+          <Tooltip title={levelInfo?.description}>
+            <Tag color={color}>Level {level}</Tag>
+          </Tooltip>
+        );
+      },
+    },
+    {
       title: '用户数',
       dataIndex: '_count',
       key: 'userCount',
@@ -470,6 +500,21 @@ const RolesPage: React.FC = () => {
             label="描述"
           >
             <Input.TextArea rows={3} placeholder="请输入角色描述（可选）" />
+          </Form.Item>
+          <Form.Item
+            name="level"
+            label="角色等级"
+            rules={[{ required: true, message: '请选择角色等级' }]}
+            extra="等级越低权限越高。Level 0-1 可访问所有基地，Level 2+ 只能访问关联基地"
+            initialValue={3}
+          >
+            <Select
+              options={LEVEL_OPTIONS.map(l => ({
+                value: l.value,
+                label: `${l.label}`,
+              }))}
+              placeholder="请选择角色等级"
+            />
           </Form.Item>
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
             <Space>

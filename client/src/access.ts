@@ -86,9 +86,9 @@ export default function access(
     isAdmin: isAdmin(roles),
     
     // 系统管理权限
-    canAccessSystem: isAdmin(roles),
-    canManageUsers: isAdmin(roles) || hasPermission(roles, 'user:manage'),
-    canManageRoles: isAdmin(roles) || hasPermission(roles, 'role:manage'),
+    canAccessSystem: isAdmin(roles) || hasPermission(roles, 'system:read') || hasPermission(roles, 'user:read') || hasPermission(roles, 'role:read'),
+    canManageUsers: isAdmin(roles) || hasPermission(roles, 'user:read') || hasPermission(roles, 'user:manage'),
+    canManageRoles: isAdmin(roles) || hasPermission(roles, 'role:read') || hasPermission(roles, 'role:manage'),
     
     // 点位管理权限
     canAccessPoint: hasPermission(roles, 'point:read') || isAdmin(roles),

@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import { UserManagementController } from '../controllers/userManagementController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
 /**
  * 用户管理路由
  * 处理用户 CRUD 和角色管理
+ * 所有路由都需要认证
  */
+router.use(authenticateToken);
 
 // 获取用户统计信息（放在 :id 路由之前，避免被匹配）
 router.get('/stats', UserManagementController.getUserStats);

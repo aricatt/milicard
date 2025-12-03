@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Empty, Spin, Modal, Form, Input, Select, Typography, Space, Tag, App } from 'antd';
+import { Table, Button, Empty, Spin, Modal, Form, Input, Select, Typography, Space, Tag, App, Alert } from 'antd';
 import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
-import { history, request } from '@umijs/max';
+import { history, request, useAccess } from '@umijs/max';
 import { BaseInfo, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
@@ -15,11 +15,15 @@ const STORAGE_KEY = 'milicard_current_base';
 
 const BaseSelectorContent: React.FC = () => {
   const { message } = App.useApp();
+  const access = useAccess();
   const [baseList, setBaseList] = useState<BaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [form] = Form.useForm();
+  
+  // 是否有权限创建基地（只有 ADMIN 及以上可以创建）
+  const canCreateBase = access.isAdmin;
 
   // 获取基地列表
   const fetchBaseList = async () => {
@@ -161,21 +165,35 @@ const BaseSelectorContent: React.FC = () => {
       <Spin spinning={loading}>
         <div className={styles.content}>
           <div className={styles.tableHeader}>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
-              onClick={() => setCreateModalVisible(true)}
-              style={{ marginBottom: 16 }}
-            >
-              创建新基地
-            </Button>
+            {canCreateBase && (
+              <Button 
+                type="primary" 
+                icon={<PlusOutlined />} 
+                onClick={() => setCreateModalVisible(true)}
+                style={{ marginBottom: 16 }}
+              >
+                创建新基地
+              </Button>
+            )}
           </div>
           
           {baseList.length === 0 && !loading ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="暂无基地，请创建您的第一个基地"
-            />
+            <div>
+              {canCreateBase ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="暂无基地，请创建您的第一个基地"
+                />
+              ) : (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="暂无可访问的基地"
+                  description="您当前没有关联任何基地。请联系管理员为您分配基地访问权限。"
+                  style={{ marginTop: 24 }}
+                />
+              )}
+            </div>
           ) : (
             <Table
               columns={columns}

@@ -10,10 +10,12 @@ export class UserManagementController {
   /**
    * 获取用户列表
    * GET /api/v1/users
+   * 根据当前用户角色层级过滤：只能看到同级或更低级别的用户
    */
   static async getUserList(req: Request, res: Response) {
     try {
       const { page, pageSize, keyword, isActive, roleId } = req.query;
+      const currentUserId = req.user?.id;
 
       const result = await UserService.getUserList({
         page: page ? parseInt(page as string) : 1,
@@ -21,6 +23,7 @@ export class UserManagementController {
         keyword: keyword as string,
         isActive: isActive !== undefined ? isActive === 'true' : undefined,
         roleId: roleId as string,
+        currentUserId, // 传递当前用户ID用于层级过滤
       });
 
       res.json({
@@ -80,10 +83,12 @@ export class UserManagementController {
   /**
    * 创建用户
    * POST /api/v1/users
+   * 只能分配同级或更低级别的角色，只能分配自己有权限的基地
    */
   static async createUser(req: Request, res: Response) {
     try {
       const { username, password, name, email, phone, roleIds, baseIds } = req.body;
+      const currentUserId = req.user?.id;
 
       // 参数验证
       if (!username || !password || !name) {
@@ -98,6 +103,7 @@ export class UserManagementController {
         password,
         name,
         email,
+        currentUserId, // 传递当前用户ID用于权限验证
         phone,
         roleIds,
         baseIds,
@@ -276,7 +282,7 @@ export class UserManagementController {
    */
   static async createRole(req: Request, res: Response) {
     try {
-      const { name, description, permissions } = req.body;
+      const { name, description, permissions, level } = req.body;
 
       if (!name) {
         return res.status(400).json({
@@ -289,6 +295,7 @@ export class UserManagementController {
         name,
         description,
         permissions,
+        level: level ?? 3, // 默认等级为3
       });
 
       res.status(201).json({

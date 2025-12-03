@@ -4,59 +4,59 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  relationMode      = "prisma"
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
   // 连接池配置：防止连接泄漏
   // connection_limit: 最大连接数
   // pool_timeout: 连接池超时时间（秒）
 }
 
 model User {
-  id                  String              @id @default(uuid())
-  username            String              @unique
-  email               String?             @unique
-  passwordHash        String              @map("password_hash")
-  name                String
-  phone               String?
-  isActive            Boolean             @default(true) @map("is_active")
-  lastLoginAt         DateTime?           @map("last_login_at")
-  defaultBaseId       Int?                @map("default_base_id")
-  createdAt           DateTime            @default(now()) @map("created_at")
-  updatedAt           DateTime            @updatedAt @map("updated_at")
-  anchorProfits       AnchorProfit[]      @relation("AnchorProfitCreator")
-  arrivalOrders       ArrivalOrder[]      @relation("ArrivalOrderCreator")
-  createdArrivals     ArrivalRecord[]     @relation("ArrivalCreator")
-  updatedArrivals     ArrivalRecord[]     @relation("ArrivalUpdater")
-  distributionOrders  DistributionOrder[] @relation("DistributionOrderCreator")
-  createdGoods        Goods[]             @relation("GoodsCreator")
-  updatedGoods        Goods[]             @relation("GoodsUpdater")
-  createdLedgers      InventoryLedger[]   @relation("InventoryLedgerCreator")
-  updatedLedgers      InventoryLedger[]   @relation("InventoryLedgerUpdater")
-  payablePayments     PayablePayment[]    @relation("PayablePaymentCreator")
-  payables            Payable[]           @relation("PayableCreator")
-  createdPersonnel    Personnel[]         @relation("PersonnelCreator")
-  updatedPersonnel    Personnel[]         @relation("PersonnelUpdater")
-  purchaseOrders      PurchaseOrder[]     @relation("PurchaseOrderCreator")
-  receivablePayments  ReceivablePayment[] @relation("ReceivablePaymentCreator")
-  receivables         Receivable[]        @relation("ReceivableCreator")
-  stockConsumptions   StockConsumption[]  @relation("StockConsumptionCreator")
-  stockOutOrders      StockOutOrder[]     @relation("StockOutOrderCreator")
-  transferOrders      TransferOrder[]     @relation("TransferOrderCreator")
-  createdTransfers    TransferRecord[]    @relation("TransferCreator")
-  updatedTransfers    TransferRecord[]    @relation("TransferUpdater")
-  translationReviews  TranslationReview[] @relation("TranslationReviewer")
-  createdTranslations Translation[]       @relation("TranslationCreator")
-  updatedTranslations Translation[]       @relation("TranslationUpdater")
-  userBases           UserBase[]
-  userLocations       UserLocation[]
-  userRoles           UserRole[]
-  defaultBase         Base?               @relation("UserDefaultBase", fields: [defaultBaseId], references: [id])
+  id                   String              @id @default(uuid())
+  username             String              @unique
+  email                String?             @unique
+  passwordHash         String              @map("password_hash")
+  name                 String
+  phone                String?
+  isActive             Boolean             @default(true) @map("is_active")
+  lastLoginAt          DateTime?           @map("last_login_at")
+  defaultBaseId        Int?                @map("default_base_id")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  anchorProfits        AnchorProfit[]      @relation("AnchorProfitCreator")
+  arrivalOrders        ArrivalOrder[]      @relation("ArrivalOrderCreator")
+  createdArrivals      ArrivalRecord[]     @relation("ArrivalCreator")
+  updatedArrivals      ArrivalRecord[]     @relation("ArrivalUpdater")
+  distributionOrders   DistributionOrder[] @relation("DistributionOrderCreator")
+  createdGoods         Goods[]             @relation("GoodsCreator")
+  updatedGoods         Goods[]             @relation("GoodsUpdater")
+  createdLedgers       InventoryLedger[]   @relation("InventoryLedgerCreator")
+  updatedLedgers       InventoryLedger[]   @relation("InventoryLedgerUpdater")
+  payablePayments      PayablePayment[]    @relation("PayablePaymentCreator")
+  payables             Payable[]           @relation("PayableCreator")
+  createdPersonnel     Personnel[]         @relation("PersonnelCreator")
+  updatedPersonnel     Personnel[]         @relation("PersonnelUpdater")
+  purchaseOrders       PurchaseOrder[]     @relation("PurchaseOrderCreator")
+  receivablePayments   ReceivablePayment[] @relation("ReceivablePaymentCreator")
+  receivables          Receivable[]        @relation("ReceivableCreator")
+  stockConsumptions    StockConsumption[]  @relation("StockConsumptionCreator")
+  stockOutOrders       StockOutOrder[]     @relation("StockOutOrderCreator")
+  transferOrders       TransferOrder[]     @relation("TransferOrderCreator")
+  createdTransfers     TransferRecord[]    @relation("TransferCreator")
+  updatedTransfers     TransferRecord[]    @relation("TransferUpdater")
+  translationReviews   TranslationReview[] @relation("TranslationReviewer")
+  createdTranslations  Translation[]       @relation("TranslationCreator")
+  updatedTranslations  Translation[]       @relation("TranslationUpdater")
+  userBases            UserBase[]
+  userLocations        UserLocation[]
+  userRoles            UserRole[]
+  defaultBase          Base?               @relation("UserDefaultBase", fields: [defaultBaseId], references: [id])
   // 点位订单系统关联
-  ownedPoints         Point[]             @relation("PointOwner")
-  dealerPoints        Point[]             @relation("PointDealer")
-  createdPointOrders  PointOrder[]        @relation("PointOrderCreator")
-  confirmedPointOrders PointOrder[]       @relation("PointOrderConfirmer")
+  ownedPoints          Point[]             @relation("PointOwner")
+  dealerPoints         Point[]             @relation("PointDealer")
+  createdPointOrders   PointOrder[]        @relation("PointOrderCreator")
+  confirmedPointOrders PointOrder[]        @relation("PointOrderConfirmer")
 
   @@index([username])
   @@index([email])
@@ -66,23 +66,25 @@ model User {
 }
 
 model Role {
-  id             String     @id @default(uuid())
-  name           String     @unique
+  id             String   @id @default(uuid())
+  name           String   @unique
   description    String?
-  permissions    Json       @default("[]")
-  isSystem       Boolean    @default(false) @map("is_system")
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime   @updatedAt @map("updated_at")
-  descriptionKey String?    @map("description_key")
-  nameKey        String?    @map("name_key")
-  
-  userRoles            UserRole[]
-  dataPermissionRules  DataPermissionRule[]
-  fieldPermissions     FieldPermission[]
+  level          Int      @default(99) // 角色层级：0=最高权限，数字越大权限越低
+  permissions    Json     @default("[]")
+  isSystem       Boolean  @default(false) @map("is_system")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  descriptionKey String?  @map("description_key")
+  nameKey        String?  @map("name_key")
+
+  userRoles           UserRole[]
+  dataPermissionRules DataPermissionRule[]
+  fieldPermissions    FieldPermission[]
 
   @@index([name])
   @@index([nameKey])
   @@index([isSystem])
+  @@index([level])
   @@map("roles")
 }
 
@@ -359,38 +361,38 @@ model TransferOrderItem {
 }
 
 model StockConsumption {
-  id              String    @id @default(uuid())
-  consumptionDate DateTime  @map("consumption_date") @db.Date
-  goodsId         String    @map("goods_id")
-  locationId      Int       @map("location_id")
-  handlerId       String    @map("handler_id")
-  baseId          Int       @map("base_id")
+  id              String   @id @default(uuid())
+  consumptionDate DateTime @map("consumption_date") @db.Date
+  goodsId         String   @map("goods_id")
+  locationId      Int      @map("location_id")
+  handlerId       String   @map("handler_id")
+  baseId          Int      @map("base_id")
   // 期初（调入总量）
-  openingBoxQty   Int       @default(0) @map("opening_box_qty")
-  openingPackQty  Int       @default(0) @map("opening_pack_qty")
-  openingPieceQty Int       @default(0) @map("opening_piece_qty")
+  openingBoxQty   Int      @default(0) @map("opening_box_qty")
+  openingPackQty  Int      @default(0) @map("opening_pack_qty")
+  openingPieceQty Int      @default(0) @map("opening_piece_qty")
   // 期末（用户填写的剩余）
-  closingBoxQty   Int       @default(0) @map("closing_box_qty")
-  closingPackQty  Int       @default(0) @map("closing_pack_qty")
-  closingPieceQty Int       @default(0) @map("closing_piece_qty")
+  closingBoxQty   Int      @default(0) @map("closing_box_qty")
+  closingPackQty  Int      @default(0) @map("closing_pack_qty")
+  closingPieceQty Int      @default(0) @map("closing_piece_qty")
   // 消耗（期初-期末）
-  boxQuantity     Int       @default(0) @map("box_quantity")
-  packQuantity    Int       @default(0) @map("pack_quantity")
-  pieceQuantity   Int       @default(0) @map("piece_quantity")
+  boxQuantity     Int      @default(0) @map("box_quantity")
+  packQuantity    Int      @default(0) @map("pack_quantity")
+  pieceQuantity   Int      @default(0) @map("piece_quantity")
   // 平均单价/箱（快照，从Inventory获取）
-  unitPricePerBox Decimal   @default(0) @map("unit_price_per_box") @db.Decimal(12, 2)
+  unitPricePerBox Decimal  @default(0) @map("unit_price_per_box") @db.Decimal(12, 2)
   notes           String?
-  createdBy       String    @map("created_by")
-  updatedBy       String?   @map("updated_by")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  
-  goods           Goods          @relation(fields: [goodsId], references: [id])
-  location        Location       @relation(fields: [locationId], references: [id])
-  handler         Personnel      @relation("ConsumptionHandler", fields: [handlerId], references: [id])
-  base            Base           @relation(fields: [baseId], references: [id])
-  creator         User           @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
-  anchorProfit    AnchorProfit?
+  createdBy       String   @map("created_by")
+  updatedBy       String?  @map("updated_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  goods        Goods         @relation(fields: [goodsId], references: [id])
+  location     Location      @relation(fields: [locationId], references: [id])
+  handler      Personnel     @relation("ConsumptionHandler", fields: [handlerId], references: [id])
+  base         Base          @relation(fields: [baseId], references: [id])
+  creator      User          @relation("StockConsumptionCreator", fields: [createdBy], references: [id])
+  anchorProfit AnchorProfit?
 
   @@unique([consumptionDate, goodsId, locationId, handlerId])
   @@index([baseId])
@@ -649,41 +651,41 @@ model casbin_rule {
 }
 
 model Base {
-  id               Int               @id @default(autoincrement())
-  code             String            @unique
+  id               Int                @id @default(autoincrement())
+  code             String             @unique
   name             String
   // 基地类型：LIVE_BASE(直播基地), OFFLINE_REGION(线下区域)
-  type             BaseType          @default(LIVE_BASE)
+  type             BaseType           @default(LIVE_BASE)
   description      String?
   address          String?
-  contactPerson    String?           @map("contact_person")
-  contactPhone     String?           @map("contact_phone")
-  contactEmail     String?           @map("contact_email")
+  contactPerson    String?            @map("contact_person")
+  contactPhone     String?            @map("contact_phone")
+  contactEmail     String?            @map("contact_email")
   // 货币代码：CNY(人民币), VND(越南盾), THB(泰铢), USD(美元)
-  currency         String            @default("CNY")
+  currency         String             @default("CNY")
   // 语言代码：zh-CN(简体中文), zh-TW(繁体中文), vi(越南语), th(泰语), en(英语)
-  language         String            @default("zh-CN")
-  isActive         Boolean           @default(true) @map("is_active")
-  createdBy        String            @map("created_by")
-  updatedBy        String            @map("updated_by")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  arrivalRecords    ArrivalRecord[]
-  consumptions      StockConsumption[]
-  customers         Customer[]
-  goods             Goods[]
-  inventory         Inventory[]
-  inventoryLedgers  InventoryLedger[]
-  locations         Location[]
-  personnel         Personnel[]
-  purchaseOrders    PurchaseOrder[]
-  supplierBases     SupplierBase[]
-  transferRecords   TransferRecord[]
-  userBases         UserBase[]
-  defaultUsers      User[]            @relation("UserDefaultBase")
+  language         String             @default("zh-CN")
+  isActive         Boolean            @default(true) @map("is_active")
+  createdBy        String             @map("created_by")
+  updatedBy        String             @map("updated_by")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  arrivalRecords   ArrivalRecord[]
+  consumptions     StockConsumption[]
+  customers        Customer[]
+  goods            Goods[]
+  inventory        Inventory[]
+  inventoryLedgers InventoryLedger[]
+  locations        Location[]
+  personnel        Personnel[]
+  purchaseOrders   PurchaseOrder[]
+  supplierBases    SupplierBase[]
+  transferRecords  TransferRecord[]
+  userBases        UserBase[]
+  defaultUsers     User[]             @relation("UserDefaultBase")
   // 点位订单系统关联
-  points            Point[]
-  pointOrders       PointOrder[]
+  points           Point[]
+  pointOrders      PointOrder[]
 
   @@index([code])
   @@index([name])
@@ -755,27 +757,27 @@ model SupplierBase {
 }
 
 model Personnel {
-  id               String            @id @default(uuid())
-  code             String            @unique
-  name             String
-  role             PersonnelRole
-  phone            String?
-  email            String?
-  notes            String?
-  baseId           Int               @map("base_id")
-  isActive         Boolean           @default(true) @map("is_active")
-  createdBy        String?           @map("created_by")
-  updatedBy        String?           @map("updated_by")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  arrivalRecords              ArrivalRecord[]      @relation("ArrivalHandler")
-  inventoryLedgers            InventoryLedger[]    @relation("InventoryLedgerHandler")
-  consumptions                StockConsumption[]   @relation("ConsumptionHandler")
-  base                        Base                 @relation(fields: [baseId], references: [id], onDelete: Cascade)
-  creator                     User?                @relation("PersonnelCreator", fields: [createdBy], references: [id])
-  updater                     User?                @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
-  transferSourceRecords       TransferRecord[]     @relation("TransferSourceHandler")
-  transferDestinationRecords  TransferRecord[]     @relation("TransferDestinationHandler")
+  id                         String             @id @default(uuid())
+  code                       String             @unique
+  name                       String
+  role                       PersonnelRole
+  phone                      String?
+  email                      String?
+  notes                      String?
+  baseId                     Int                @map("base_id")
+  isActive                   Boolean            @default(true) @map("is_active")
+  createdBy                  String?            @map("created_by")
+  updatedBy                  String?            @map("updated_by")
+  createdAt                  DateTime           @default(now()) @map("created_at")
+  updatedAt                  DateTime           @updatedAt @map("updated_at")
+  arrivalRecords             ArrivalRecord[]    @relation("ArrivalHandler")
+  inventoryLedgers           InventoryLedger[]  @relation("InventoryLedgerHandler")
+  consumptions               StockConsumption[] @relation("ConsumptionHandler")
+  base                       Base               @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator                    User?              @relation("PersonnelCreator", fields: [createdBy], references: [id])
+  updater                    User?              @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
+  transferSourceRecords      TransferRecord[]   @relation("TransferSourceHandler")
+  transferDestinationRecords TransferRecord[]   @relation("TransferDestinationHandler")
 
   @@index([code])
   @@index([name])
@@ -820,31 +822,31 @@ model ArrivalRecord {
 }
 
 model TransferRecord {
-  id                      String         @id @default(uuid())
-  transferDate            DateTime       @map("transfer_date") @db.Date
-  goodsId                 String         @map("goods_id")
-  sourceLocationId        Int            @map("source_location_id")
-  sourceHandlerId         String         @map("source_handler_id")      // 调出主播
-  destinationLocationId   Int            @map("destination_location_id")
-  destinationHandlerId    String         @map("destination_handler_id") // 调入主播
-  baseId                  Int            @map("base_id")
-  boxQuantity             Int            @default(0) @map("box_quantity")
-  packQuantity            Int            @default(0) @map("pack_quantity")
-  pieceQuantity           Int            @default(0) @map("piece_quantity")
-  status                  TransferStatus @default(COMPLETED)
-  notes                   String?
-  createdBy               String?        @map("created_by")
-  updatedBy               String?        @map("updated_by")
-  createdAt               DateTime       @default(now()) @map("created_at")
-  updatedAt               DateTime       @updatedAt @map("updated_at")
-  base                    Base           @relation(fields: [baseId], references: [id], onDelete: Cascade)
-  creator                 User?          @relation("TransferCreator", fields: [createdBy], references: [id])
-  destinationLocation     Location       @relation("TransferDestination", fields: [destinationLocationId], references: [id], onDelete: Cascade)
-  destinationHandler      Personnel      @relation("TransferDestinationHandler", fields: [destinationHandlerId], references: [id], onDelete: Cascade)
-  goods                   Goods          @relation(fields: [goodsId], references: [id], onDelete: Cascade)
-  sourceHandler           Personnel      @relation("TransferSourceHandler", fields: [sourceHandlerId], references: [id], onDelete: Cascade)
-  sourceLocation          Location       @relation("TransferSource", fields: [sourceLocationId], references: [id], onDelete: Cascade)
-  updater                 User?          @relation("TransferUpdater", fields: [updatedBy], references: [id])
+  id                    String         @id @default(uuid())
+  transferDate          DateTime       @map("transfer_date") @db.Date
+  goodsId               String         @map("goods_id")
+  sourceLocationId      Int            @map("source_location_id")
+  sourceHandlerId       String         @map("source_handler_id") // 调出主播
+  destinationLocationId Int            @map("destination_location_id")
+  destinationHandlerId  String         @map("destination_handler_id") // 调入主播
+  baseId                Int            @map("base_id")
+  boxQuantity           Int            @default(0) @map("box_quantity")
+  packQuantity          Int            @default(0) @map("pack_quantity")
+  pieceQuantity         Int            @default(0) @map("piece_quantity")
+  status                TransferStatus @default(COMPLETED)
+  notes                 String?
+  createdBy             String?        @map("created_by")
+  updatedBy             String?        @map("updated_by")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+  base                  Base           @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  creator               User?          @relation("TransferCreator", fields: [createdBy], references: [id])
+  destinationLocation   Location       @relation("TransferDestination", fields: [destinationLocationId], references: [id], onDelete: Cascade)
+  destinationHandler    Personnel      @relation("TransferDestinationHandler", fields: [destinationHandlerId], references: [id], onDelete: Cascade)
+  goods                 Goods          @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  sourceHandler         Personnel      @relation("TransferSourceHandler", fields: [sourceHandlerId], references: [id], onDelete: Cascade)
+  sourceLocation        Location       @relation("TransferSource", fields: [sourceLocationId], references: [id], onDelete: Cascade)
+  updater               User?          @relation("TransferUpdater", fields: [updatedBy], references: [id])
 
   @@index([transferDate])
   @@index([goodsId])
@@ -907,8 +909,8 @@ model InventoryLedger {
 }
 
 enum BaseType {
-  LIVE_BASE       // 直播基地
-  OFFLINE_REGION  // 线下区域
+  LIVE_BASE // 直播基地
+  OFFLINE_REGION // 线下区域
 }
 
 enum LocationType {
@@ -932,43 +934,43 @@ enum TransferStatus {
 
 // 点位订单状态
 enum PointOrderStatus {
-  PENDING      // 待处理（老板下单后）
-  CONFIRMED    // 已确认（客服确认）
-  SHIPPING     // 配送中（已发货）
-  DELIVERED    // 已送达
-  COMPLETED    // 已完成（货物入点位库存）
-  CANCELLED    // 已取消
+  PENDING // 待处理（老板下单后）
+  CONFIRMED // 已确认（客服确认）
+  SHIPPING // 配送中（已发货）
+  DELIVERED // 已送达
+  COMPLETED // 已完成（货物入点位库存）
+  CANCELLED // 已取消
 }
 
 // 付款状态
 enum PaymentStatus {
-  UNPAID       // 未付款
-  PARTIAL      // 部分付款
-  PAID         // 已付款
+  UNPAID // 未付款
+  PARTIAL // 部分付款
+  PAID // 已付款
 }
 
 // 点位（线下门店）
 model Point {
-  id              String           @id @default(uuid())
-  code            String           @unique                    // 点位编号：POINT-XXXXXXXXXXX
-  name            String                                      // 店铺名称
-  address         String?                                     // 详细地址
-  contactPerson   String?          @map("contact_person")     // 联系人
-  contactPhone    String?          @map("contact_phone")      // 联系电话
-  baseId          Int              @map("base_id")            // 所属大区
-  ownerId         String?          @map("owner_id")           // 点位老板（用户ID）
-  dealerId        String?          @map("dealer_id")          // 经销商（用户ID）
-  notes           String?
-  isActive        Boolean          @default(true) @map("is_active")
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
-  
-  base            Base             @relation(fields: [baseId], references: [id])
-  owner           User?            @relation("PointOwner", fields: [ownerId], references: [id])
-  dealer          User?            @relation("PointDealer", fields: [dealerId], references: [id])
-  pointOrders     PointOrder[]
-  pointInventory  PointInventory[]
-  pointGoods      PointGoods[]     // 该点位可采购的商品列表
+  id            String   @id @default(uuid())
+  code          String   @unique // 点位编号：POINT-XXXXXXXXXXX
+  name          String // 店铺名称
+  address       String? // 详细地址
+  contactPerson String?  @map("contact_person") // 联系人
+  contactPhone  String?  @map("contact_phone") // 联系电话
+  baseId        Int      @map("base_id") // 所属大区
+  ownerId       String?  @map("owner_id") // 点位老板（用户ID）
+  dealerId      String?  @map("dealer_id") // 经销商（用户ID）
+  notes         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  base           Base             @relation(fields: [baseId], references: [id])
+  owner          User?            @relation("PointOwner", fields: [ownerId], references: [id])
+  dealer         User?            @relation("PointDealer", fields: [dealerId], references: [id])
+  pointOrders    PointOrder[]
+  pointInventory PointInventory[]
+  pointGoods     PointGoods[] // 该点位可采购的商品列表
 
   @@index([code])
   @@index([name])
@@ -986,9 +988,9 @@ model PointGoods {
   goodsId   String   @map("goods_id")
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
-  
-  point     Point    @relation(fields: [pointId], references: [id], onDelete: Cascade)
-  goods     Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+
+  point Point @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  goods Goods @relation(fields: [goodsId], references: [id], onDelete: Cascade)
 
   @@unique([pointId, goodsId])
   @@index([pointId])
@@ -998,47 +1000,47 @@ model PointGoods {
 
 // 点位订单
 model PointOrder {
-  id              String            @id @default(uuid())
-  code            String            @unique                    // 订单编号：PTO-XXXXXXXXXXX
-  pointId         String            @map("point_id")           // 下单点位
-  baseId          Int               @map("base_id")            // 所属大区
-  orderDate       DateTime          @map("order_date") @db.Date
-  totalAmount     Decimal           @default(0) @map("total_amount") @db.Decimal(12, 2)
-  status          PointOrderStatus  @default(PENDING)
-  
+  id          String           @id @default(uuid())
+  code        String           @unique // 订单编号：PTO-XXXXXXXXXXX
+  pointId     String           @map("point_id") // 下单点位
+  baseId      Int              @map("base_id") // 所属大区
+  orderDate   DateTime         @map("order_date") @db.Date
+  totalAmount Decimal          @default(0) @map("total_amount") @db.Decimal(12, 2)
+  status      PointOrderStatus @default(PENDING)
+
   // 付款信息（人工编辑）
-  paymentStatus   PaymentStatus     @default(UNPAID) @map("payment_status")
-  paidAmount      Decimal           @default(0) @map("paid_amount") @db.Decimal(12, 2)
-  paymentNotes    String?           @map("payment_notes")      // 付款备注
-  
+  paymentStatus PaymentStatus @default(UNPAID) @map("payment_status")
+  paidAmount    Decimal       @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  paymentNotes  String?       @map("payment_notes") // 付款备注
+
   // 配送信息
-  shippingAddress String?           @map("shipping_address")
-  shippingPhone   String?           @map("shipping_phone")
-  trackingNumber  String?           @map("tracking_number")    // 物流单号
-  deliveryPerson  String?           @map("delivery_person")    // 送货员
-  deliveryPhone   String?           @map("delivery_phone")     // 送货员电话
-  
+  shippingAddress String? @map("shipping_address")
+  shippingPhone   String? @map("shipping_phone")
+  trackingNumber  String? @map("tracking_number") // 物流单号
+  deliveryPerson  String? @map("delivery_person") // 送货员
+  deliveryPhone   String? @map("delivery_phone") // 送货员电话
+
   // 时间节点
-  confirmedAt     DateTime?         @map("confirmed_at")       // 客服确认时间
-  shippedAt       DateTime?         @map("shipped_at")         // 发货时间
-  deliveredAt     DateTime?         @map("delivered_at")       // 送达时间
-  completedAt     DateTime?         @map("completed_at")       // 完成时间
-  cancelledAt     DateTime?         @map("cancelled_at")       // 取消时间
-  
-  notes           String?                                      // 订单备注
-  customerNotes   String?           @map("customer_notes")     // 客户备注
-  staffNotes      String?           @map("staff_notes")        // 客服备注
-  
-  createdBy       String            @map("created_by")         // 下单人
-  confirmedBy     String?           @map("confirmed_by")       // 确认人（客服）
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  
-  point           Point             @relation(fields: [pointId], references: [id])
-  base            Base              @relation(fields: [baseId], references: [id])
-  creator         User              @relation("PointOrderCreator", fields: [createdBy], references: [id])
-  confirmer       User?             @relation("PointOrderConfirmer", fields: [confirmedBy], references: [id])
-  items           PointOrderItem[]
+  confirmedAt DateTime? @map("confirmed_at") // 客服确认时间
+  shippedAt   DateTime? @map("shipped_at") // 发货时间
+  deliveredAt DateTime? @map("delivered_at") // 送达时间
+  completedAt DateTime? @map("completed_at") // 完成时间
+  cancelledAt DateTime? @map("cancelled_at") // 取消时间
+
+  notes         String? // 订单备注
+  customerNotes String? @map("customer_notes") // 客户备注
+  staffNotes    String? @map("staff_notes") // 客服备注
+
+  createdBy   String   @map("created_by") // 下单人
+  confirmedBy String?  @map("confirmed_by") // 确认人（客服）
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  point     Point            @relation(fields: [pointId], references: [id])
+  base      Base             @relation(fields: [baseId], references: [id])
+  creator   User             @relation("PointOrderCreator", fields: [createdBy], references: [id])
+  confirmer User?            @relation("PointOrderConfirmer", fields: [confirmedBy], references: [id])
+  items     PointOrderItem[]
 
   @@index([code])
   @@index([pointId])
@@ -1052,26 +1054,26 @@ model PointOrder {
 
 // 点位订单明细
 model PointOrderItem {
-  id            String      @id @default(uuid())
-  pointOrderId  String      @map("point_order_id")
-  goodsId       String      @map("goods_id")
-  
+  id           String @id @default(uuid())
+  pointOrderId String @map("point_order_id")
+  goodsId      String @map("goods_id")
+
   // 订购数量（以盒为最小单位）
-  boxQuantity   Int         @default(0) @map("box_quantity")
-  packQuantity  Int         @default(0) @map("pack_quantity")   // 盒数
-  
+  boxQuantity  Int @default(0) @map("box_quantity")
+  packQuantity Int @default(0) @map("pack_quantity") // 盒数
+
   // 单价和总价
-  unitPrice     Decimal     @map("unit_price") @db.Decimal(12, 2)  // 单价/盒
-  totalPrice    Decimal     @map("total_price") @db.Decimal(12, 2)
-  
+  unitPrice  Decimal @map("unit_price") @db.Decimal(12, 2) // 单价/盒
+  totalPrice Decimal @map("total_price") @db.Decimal(12, 2)
+
   // 实际发货数量（客服可调整）
-  actualBoxQty  Int?        @map("actual_box_qty")
-  actualPackQty Int?        @map("actual_pack_qty")
-  
-  notes         String?
-  
-  pointOrder    PointOrder  @relation(fields: [pointOrderId], references: [id], onDelete: Cascade)
-  goods         Goods       @relation(fields: [goodsId], references: [id])
+  actualBoxQty  Int? @map("actual_box_qty")
+  actualPackQty Int? @map("actual_pack_qty")
+
+  notes String?
+
+  pointOrder PointOrder @relation(fields: [pointOrderId], references: [id], onDelete: Cascade)
+  goods      Goods      @relation(fields: [goodsId], references: [id])
 
   @@index([pointOrderId])
   @@index([goodsId])
@@ -1080,19 +1082,19 @@ model PointOrderItem {
 
 // 点位库存
 model PointInventory {
-  id            String   @id @default(uuid())
-  pointId       String   @map("point_id")
-  goodsId       String   @map("goods_id")
-  
+  id      String @id @default(uuid())
+  pointId String @map("point_id")
+  goodsId String @map("goods_id")
+
   // 库存数量
-  boxQuantity   Int      @default(0) @map("box_quantity")
-  packQuantity  Int      @default(0) @map("pack_quantity")
-  pieceQuantity Int      @default(0) @map("piece_quantity")
-  
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  
-  point         Point    @relation(fields: [pointId], references: [id], onDelete: Cascade)
-  goods         Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  boxQuantity   Int @default(0) @map("box_quantity")
+  packQuantity  Int @default(0) @map("pack_quantity")
+  pieceQuantity Int @default(0) @map("piece_quantity")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  point Point @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  goods Goods @relation(fields: [goodsId], references: [id], onDelete: Cascade)
 
   @@unique([pointId, goodsId])
   @@index([pointId])
@@ -1107,7 +1109,7 @@ model PointInventory {
 /// Casbin 策略存储表
 model CasbinRule {
   id    Int     @id @default(autoincrement())
-  ptype String  // 策略类型: p (policy) 或 g (grouping)
+  ptype String // 策略类型: p (policy) 或 g (grouping)
   v0    String? // 角色/用户
   v1    String? // 域(基地ID) 或 角色
   v2    String? // 资源 或 域
@@ -1123,21 +1125,21 @@ model CasbinRule {
 
 /// 数据权限规则表
 model DataPermissionRule {
-  id          String   @id @default(uuid())
-  roleId      String   @map("role_id")
-  
-  resource    String   // 资源类型: point, order, inventory
-  field       String   // 过滤字段: ownerId, dealerId, createdBy
-  operator    String   // 操作符: eq, in, contains
-  valueType   String   @map("value_type") // 值类型: currentUser, currentUserPoints, fixed
-  fixedValue  String?  @map("fixed_value") // 固定值（当 valueType 为 fixed 时）
-  
-  description String?  // 规则描述
+  id     String @id @default(uuid())
+  roleId String @map("role_id")
+
+  resource   String // 资源类型: point, order, inventory
+  field      String // 过滤字段: ownerId, dealerId, createdBy
+  operator   String // 操作符: eq, in, contains
+  valueType  String  @map("value_type") // 值类型: currentUser, currentUserPoints, fixed
+  fixedValue String? @map("fixed_value") // 固定值（当 valueType 为 fixed 时）
+
+  description String? // 规则描述
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, resource, field])
   @@index([roleId])
@@ -1148,19 +1150,19 @@ model DataPermissionRule {
 
 /// 字段权限表（控制哪些字段可见/可编辑）
 model FieldPermission {
-  id          String   @id @default(uuid())
-  roleId      String   @map("role_id")
-  
-  resource    String   // 资源类型
-  field       String   // 字段名
-  canRead     Boolean  @default(true) @map("can_read")
-  canWrite    Boolean  @default(true) @map("can_write")
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(uuid())
+  roleId String @map("role_id")
+
+  resource String // 资源类型
+  field    String // 字段名
+  canRead  Boolean @default(true) @map("can_read")
+  canWrite Boolean @default(true) @map("can_write")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
   @@unique([roleId, resource, field])
   @@index([roleId])
   @@index([resource])

@@ -387,6 +387,24 @@ export class AuthService {
         throw new AuthError(AuthErrorType.USER_NOT_FOUND, '用户不存在')
       }
 
+      // 从 Casbin 获取每个角色的权限
+      const { casbinService } = await import('./casbinService')
+      const rolesWithPermissions = await Promise.all(
+        user.userRoles.map(async (ur) => {
+          const policies = await casbinService.getRolePolicies(ur.role.name)
+          // 策略格式: [role, domain, resource, action, effect]
+          // 转换为权限字符串: resource:action
+          const permissions = policies.map(p => `${p[2]}:${p[3]}`)
+          
+          return {
+            id: ur.role.id,
+            name: ur.role.name,
+            description: ur.role.description,
+            permissions,
+          }
+        })
+      )
+
       return {
         id: user.id,
         userid: user.id, // 兼容前端期望的字段名
@@ -394,12 +412,7 @@ export class AuthService {
         name: user.name, // 前端期望的字段名
         displayName: user.name, // 保留原字段名
         email: user.email || '',
-        roles: user.userRoles.map(ur => ({
-          id: ur.role.id,
-          name: ur.role.name,
-          description: ur.role.description,
-          permissions: ur.role.permissions as string[] || [],
-        })),
+        roles: rolesWithPermissions,
         access: user.userRoles.length > 0 ? user.userRoles[0].role.name.toLowerCase() : 'guest', // 前端期望的access字段
         isActive: user.isActive,
         lastLoginAt: user.lastLoginAt,

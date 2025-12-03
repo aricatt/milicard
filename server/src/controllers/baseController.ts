@@ -9,16 +9,28 @@ import { BaseError, BaseErrorType } from '../types/base';
 export class BaseController {
   /**
    * 获取基地列表
+   * 根据用户角色层级过滤：
+   * - Level 0-1 (SUPER_ADMIN, ADMIN): 返回所有基地
+   * - Level 2+ (其他角色): 只返回用户关联的基地
    */
   static async getBaseList(req: Request, res: Response) {
     try {
       const { current = 1, pageSize = 10, name, code, type } = req.query;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '用户未认证',
+        });
+      }
       
       const params: any = {
         current: parseInt(current as string),
         pageSize: parseInt(pageSize as string),
         name: name as string,
         code: code as string,
+        userId, // 传递用户ID用于权限过滤
       };
       
       // 只有当 type 有值时才添加到参数中
