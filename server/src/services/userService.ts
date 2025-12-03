@@ -45,30 +45,59 @@ export class UserService {
 
     const where: any = {};
 
-    // 根据当前用户角色层级过滤
+    // 根据当前用户角色层级和关联基地过滤
     if (currentUserId) {
       const currentUserLevel = await this.getUserHighestRoleLevel(currentUserId);
       
-      logger.info('用户列表层级过滤', { 
+      // 获取当前用户关联的基地
+      const currentUserBases = await prisma.userBase.findMany({
+        where: { userId: currentUserId, isActive: true },
+        select: { baseId: true },
+      });
+      const currentUserBaseIds = currentUserBases.map(ub => ub.baseId);
+      
+      logger.info('用户列表过滤', { 
         currentUserId, 
         currentUserLevel,
-        willFilter: currentUserLevel > 1 
+        currentUserBaseIds,
+        willFilterByLevel: currentUserLevel > 1,
+        willFilterByBase: currentUserLevel > 1 && currentUserBaseIds.length > 0
       });
       
-      // 只能看到角色层级 >= 当前用户层级的用户（同级或更低权限）
       // Level 0-1 (SUPER_ADMIN, ADMIN) 可以看到所有用户
+      // Level > 1 的用户只能看到：
+      //   1. 角色层级 >= 当前用户层级的用户（同级或更低权限）
+      //   2. 与自己有相同关联基地的用户
       if (currentUserLevel > 1) {
-        where.userRoles = {
-          some: {
-            isActive: true,
-            role: {
-              level: { gte: currentUserLevel },
+        // 构建 AND 条件：同时满足层级和基地过滤
+        where.AND = [
+          // 条件1：角色层级过滤
+          {
+            userRoles: {
+              some: {
+                isActive: true,
+                role: {
+                  level: { gte: currentUserLevel },
+                },
+              },
             },
           },
-        };
+        ];
+        
+        // 条件2：基地过滤（如果当前用户有关联基地）
+        if (currentUserBaseIds.length > 0) {
+          where.AND.push({
+            userBases: {
+              some: {
+                isActive: true,
+                baseId: { in: currentUserBaseIds },
+              },
+            },
+          });
+        }
       }
     } else {
-      logger.warn('用户列表查询缺少 currentUserId，无法进行层级过滤');
+      logger.warn('用户列表查询缺少 currentUserId，无法进行过滤');
     }
 
     // 关键词搜索（用户名、姓名、手机号）
@@ -85,10 +114,18 @@ export class UserService {
       where.isActive = isActive;
     }
 
-    // 角色筛选（与层级过滤合并）
+    // 角色筛选
     if (roleId) {
-      if (where.userRoles) {
-        where.userRoles.some.roleId = roleId;
+      // 如果已有 AND 条件，添加到 AND 数组中
+      if (where.AND) {
+        where.AND.push({
+          userRoles: {
+            some: {
+              roleId,
+              isActive: true,
+            },
+          },
+        });
       } else {
         where.userRoles = {
           some: {
