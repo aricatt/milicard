@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Table, Tag, Button, Modal, Checkbox, message, Popconfirm, Spin, Tooltip } from 'antd';
-import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined } from '@ant-design/icons';
+import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space } from 'antd';
+import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { request } from '@umijs/max';
 
 interface RoleItem {
@@ -11,6 +11,9 @@ interface RoleItem {
   isSystem: boolean;
   createdAt: string;
   userCount?: number;
+  _count?: {
+    userRoles: number;
+  };
 }
 
 interface PermissionTreeNode {
@@ -20,16 +23,21 @@ interface PermissionTreeNode {
 }
 
 // 角色名称映射
-const getRoleLabel = (roleName: string) => {
+const getRoleLabel = (roleName: string, description?: string) => {
   const roleMap: Record<string, { label: string; color: string }> = {
-    ADMIN: { label: '系统管理员', color: 'red' },
+    SUPER_ADMIN: { label: '超级管理员', color: 'red' },
+    ADMIN: { label: '系统管理员', color: 'volcano' },
+    MANAGER: { label: '经理', color: 'blue' },
+    OPERATOR: { label: '操作员', color: 'green' },
+    VIEWER: { label: '查看者', color: 'cyan' },
     BASE_MANAGER: { label: '基地管理员', color: 'blue' },
     POINT_OWNER: { label: '点位老板', color: 'green' },
     CUSTOMER_SERVICE: { label: '客服', color: 'orange' },
     WAREHOUSE_KEEPER: { label: '仓管', color: 'purple' },
     ANCHOR: { label: '主播', color: 'cyan' },
   };
-  return roleMap[roleName] || { label: roleName, color: 'default' };
+  // 如果有映射则使用映射，否则使用描述或角色名
+  return roleMap[roleName] || { label: description || roleName, color: 'default' };
 };
 
 // 操作类型
@@ -47,11 +55,14 @@ const RolesPage: React.FC = () => {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [permissionModalVisible, setPermissionModalVisible] = useState(false);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
   const [currentRole, setCurrentRole] = useState<RoleItem | null>(null);
   const [modules, setModules] = useState<{ key: string; title: string }[]>([]);
   const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
   const [permissionLoading, setPermissionLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [createForm] = Form.useForm();
+  const { message, modal } = App.useApp();
 
   const fetchRoles = async () => {
     setLoading(true);
@@ -108,6 +119,58 @@ const RolesPage: React.FC = () => {
     setPermissionModalVisible(true);
     fetchRolePermissions(role.id);
   }, []);
+
+  // 创建角色
+  const handleCreateRole = async (values: { name: string; displayName: string; description?: string }) => {
+    setSaving(true);
+    try {
+      const result = await request('/api/v1/roles', {
+        method: 'POST',
+        data: {
+          name: values.name,
+          description: values.description || values.displayName,
+        },
+      });
+      if (result.success) {
+        message.success('创建角色成功');
+        setCreateModalVisible(false);
+        createForm.resetFields();
+        fetchRoles();
+      } else {
+        message.error(result.message || '创建角色失败');
+      }
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || '创建角色失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // 删除角色
+  const handleDeleteRole = async (role: RoleItem) => {
+    const userCount = role._count?.userRoles || role.userCount || 0;
+    if (userCount > 0) {
+      modal.warning({
+        title: '无法删除',
+        content: `该角色已分配给 ${userCount} 个用户，请先移除用户的角色分配后再删除。`,
+      });
+      return;
+    }
+
+    try {
+      const result = await request(`/api/v1/roles/${role.id}`, {
+        method: 'DELETE',
+      });
+      if (result.success) {
+        message.success('删除角色成功');
+        fetchRoles();
+      } else {
+        message.error(result.message || '删除角色失败');
+      }
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || '删除角色失败');
+    }
+  };
 
   const handleSavePermissions = async () => {
     if (!currentRole) return;
@@ -281,8 +344,8 @@ const RolesPage: React.FC = () => {
       dataIndex: 'name',
       key: 'label',
       width: 150,
-      render: (name: string) => {
-        const { label, color } = getRoleLabel(name);
+      render: (name: string, record: RoleItem) => {
+        const { label, color } = getRoleLabel(name, record.description);
         return <Tag color={color}>{label}</Tag>;
       },
     },
@@ -294,10 +357,10 @@ const RolesPage: React.FC = () => {
     },
     {
       title: '用户数',
-      dataIndex: 'userCount',
+      dataIndex: '_count',
       key: 'userCount',
       width: 80,
-      render: (count: number) => count || 0,
+      render: (_: any, record: RoleItem) => record._count?.userRoles ?? record.userCount ?? 0,
     },
     {
       title: '类型',
@@ -310,22 +373,53 @@ const RolesPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: 180,
       render: (_: any, record: RoleItem) => (
-        <Button
-          type="link"
-          icon={<SettingOutlined />}
-          onClick={() => handleConfigPermission(record)}
-        >
-          配置权限
-        </Button>
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            icon={<SettingOutlined />}
+            onClick={() => handleConfigPermission(record)}
+          >
+            配置权限
+          </Button>
+          {!record.isSystem && (
+            <Popconfirm
+              title="确定要删除该角色吗？"
+              description="删除后无法恢复"
+              onConfirm={() => handleDeleteRole(record)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button
+                type="link"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
       ),
     },
   ];
 
   return (
     <PageContainer header={{ title: '角色管理' }}>
-      <Card>
+      <Card
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateModalVisible(true)}
+          >
+            新建角色
+          </Button>
+        }
+      >
         <Table
           rowKey="id"
           columns={columns}
@@ -335,8 +429,64 @@ const RolesPage: React.FC = () => {
         />
       </Card>
 
+      {/* 新建角色弹窗 */}
       <Modal
-        title={`配置权限 - ${currentRole ? getRoleLabel(currentRole.name).label : ''}`}
+        title="新建角色"
+        open={createModalVisible}
+        onCancel={() => {
+          setCreateModalVisible(false);
+          createForm.resetFields();
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={createForm}
+          layout="vertical"
+          onFinish={handleCreateRole}
+        >
+          <Form.Item
+            name="name"
+            label="角色标识"
+            rules={[
+              { required: true, message: '请输入角色标识' },
+              { pattern: /^[A-Z][A-Z0-9_]*$/, message: '角色标识必须以大写字母开头，只能包含大写字母、数字和下划线' },
+            ]}
+            extra="例如：SALES_MANAGER、WAREHOUSE_ADMIN"
+          >
+            <Input placeholder="请输入角色标识（大写字母、数字、下划线）" />
+          </Form.Item>
+          <Form.Item
+            name="displayName"
+            label="角色名称"
+            rules={[{ required: true, message: '请输入角色名称' }]}
+          >
+            <Input placeholder="请输入角色名称，如：销售经理" />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="描述"
+          >
+            <Input.TextArea rows={3} placeholder="请输入角色描述（可选）" />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => {
+                setCreateModalVisible(false);
+                createForm.resetFields();
+              }}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit" loading={saving}>
+                创建
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`配置权限 - ${currentRole ? getRoleLabel(currentRole.name, currentRole.description).label : ''}`}
         open={permissionModalVisible}
         onCancel={() => setPermissionModalVisible(false)}
         width={700}

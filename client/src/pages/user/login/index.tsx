@@ -113,6 +113,7 @@ const LoginMessage: React.FC<{
 
 const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+  const [loginErrorMessage, setLoginErrorMessage] = useState<string>('');
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
   const { styles } = useStyles();
@@ -133,6 +134,9 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
+      // 清除之前的错误信息
+      setLoginErrorMessage('');
+      
       // 登录
       const msg = await login({ ...values, type });
       console.log('登录响应:', msg);
@@ -169,15 +173,19 @@ const Login: React.FC = () => {
         return;
       }
       console.log('登录失败:', msg);
-      // 如果失败去设置用户错误信息
+      // 如果失败，显示后端返回的错误信息
+      const errorMsg = msg.message || '登录失败，请重试';
+      setLoginErrorMessage(errorMsg);
       setUserLoginState({ status: 'error', type });
-    } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.failure',
-        defaultMessage: '登录失败，请重试！',
-      });
+    } catch (error: any) {
       console.log('登录异常:', error);
-      message.error(defaultLoginFailureMessage);
+      // 尝试从错误响应中获取具体信息
+      const errorMsg = error?.response?.data?.message 
+        || error?.data?.message 
+        || error?.message 
+        || '登录失败，请重试';
+      setLoginErrorMessage(errorMsg);
+      setUserLoginState({ status: 'error', type });
     }
   };
   const { status, type: loginType } = userLoginState;
@@ -249,9 +257,9 @@ const Login: React.FC = () => {
 
           {status === 'error' && loginType === 'account' && (
             <LoginMessage
-              content={intl.formatMessage({
+              content={loginErrorMessage || intl.formatMessage({
                 id: 'pages.login.accountLogin.errorMessage',
-                defaultMessage: '账户或密码错误(admin/ant.design)',
+                defaultMessage: '账户或密码错误',
               })}
             />
           )}

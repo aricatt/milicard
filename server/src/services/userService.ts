@@ -400,9 +400,148 @@ export class UserService {
   static async getRoleList() {
     const roles = await prisma.role.findMany({
       orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: { userRoles: true },
+        },
+      },
     });
 
     return roles;
+  }
+
+  /**
+   * 获取角色详情
+   */
+  static async getRoleById(roleId: string) {
+    const role = await prisma.role.findUnique({
+      where: { id: roleId },
+      include: {
+        _count: {
+          select: { userRoles: true },
+        },
+      },
+    });
+
+    if (!role) {
+      throw new Error('角色不存在');
+    }
+
+    return role;
+  }
+
+  /**
+   * 创建角色
+   */
+  static async createRole(data: {
+    name: string;
+    description?: string;
+    permissions?: string[];
+    isSystem?: boolean;
+  }) {
+    // 检查角色名是否已存在
+    const existing = await prisma.role.findUnique({
+      where: { name: data.name },
+    });
+
+    if (existing) {
+      throw new Error('角色名称已存在');
+    }
+
+    const role = await prisma.role.create({
+      data: {
+        name: data.name,
+        description: data.description || '',
+        permissions: data.permissions || [],
+        isSystem: data.isSystem || false,
+      },
+    });
+
+    logger.info('创建角色成功', { roleId: role.id, name: role.name });
+
+    return role;
+  }
+
+  /**
+   * 更新角色
+   */
+  static async updateRole(
+    roleId: string,
+    data: {
+      name?: string;
+      description?: string;
+      permissions?: string[];
+    }
+  ) {
+    const role = await prisma.role.findUnique({
+      where: { id: roleId },
+    });
+
+    if (!role) {
+      throw new Error('角色不存在');
+    }
+
+    // 系统角色不允许修改名称
+    if (role.isSystem && data.name && data.name !== role.name) {
+      throw new Error('系统角色不允许修改名称');
+    }
+
+    // 检查新名称是否与其他角色冲突
+    if (data.name && data.name !== role.name) {
+      const existing = await prisma.role.findUnique({
+        where: { name: data.name },
+      });
+      if (existing) {
+        throw new Error('角色名称已存在');
+      }
+    }
+
+    const updatedRole = await prisma.role.update({
+      where: { id: roleId },
+      data: {
+        name: data.name,
+        description: data.description,
+        permissions: data.permissions,
+      },
+    });
+
+    logger.info('更新角色成功', { roleId: updatedRole.id });
+
+    return updatedRole;
+  }
+
+  /**
+   * 删除角色
+   */
+  static async deleteRole(roleId: string) {
+    const role = await prisma.role.findUnique({
+      where: { id: roleId },
+      include: {
+        _count: {
+          select: { userRoles: true },
+        },
+      },
+    });
+
+    if (!role) {
+      throw new Error('角色不存在');
+    }
+
+    if (role.isSystem) {
+      throw new Error('系统角色不允许删除');
+    }
+
+    if (role._count.userRoles > 0) {
+      throw new Error(`该角色已分配给 ${role._count.userRoles} 个用户，请先移除用户的角色分配`);
+    }
+
+    await prisma.role.delete({
+      where: { id: roleId },
+    });
+
+    logger.info('删除角色成功', { roleId, name: role.name });
+
+    return { success: true };
   }
 
   /**

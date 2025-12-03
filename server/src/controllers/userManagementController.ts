@@ -270,4 +270,100 @@ export class UserManagementController {
     }
   }
 
+  /**
+   * 创建角色
+   * POST /api/v1/roles
+   */
+  static async createRole(req: Request, res: Response) {
+    try {
+      const { name, description, permissions } = req.body;
+
+      if (!name) {
+        return res.status(400).json({
+          success: false,
+          message: '角色名称不能为空',
+        });
+      }
+
+      const role = await UserService.createRole({
+        name,
+        description,
+        permissions,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: role,
+        message: '创建角色成功',
+      });
+    } catch (error) {
+      logger.error('创建角色失败', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '创建角色失败',
+      });
+    }
+  }
+
+  /**
+   * 更新角色
+   * PUT /api/v1/roles/:roleId
+   */
+  static async updateRole(req: Request, res: Response) {
+    try {
+      const { roleId } = req.params;
+      const { name, description, permissions } = req.body;
+
+      const role = await UserService.updateRole(roleId, {
+        name,
+        description,
+        permissions,
+      });
+
+      res.json({
+        success: true,
+        data: role,
+        message: '更新角色成功',
+      });
+    } catch (error) {
+      logger.error('更新角色失败', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '更新角色失败',
+      });
+    }
+  }
+
+  /**
+   * 删除角色
+   * DELETE /api/v1/roles/:roleId
+   */
+  static async deleteRole(req: Request, res: Response) {
+    try {
+      const { roleId } = req.params;
+
+      await UserService.deleteRole(roleId);
+
+      res.json({
+        success: true,
+        message: '删除角色成功',
+      });
+    } catch (error) {
+      logger.error('删除角色失败', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '删除角色失败',
+      });
+    }
+  }
+
 }

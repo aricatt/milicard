@@ -12,6 +12,9 @@ const router = Router();
 // 获取角色列表
 router.get('/', UserManagementController.getRoleList);
 
+// 创建角色
+router.post('/', UserManagementController.createRole);
+
 // 获取权限树（用于权限配置页面）
 router.get('/permission-tree', PermissionController.getPermissionTree);
 
@@ -29,5 +32,11 @@ router.post('/:roleId/permissions/reset', PermissionController.resetRolePermissi
 
 // 获取角色详情
 router.get('/:roleId', PermissionController.getRoleDetail);
+
+// 更新角色
+router.put('/:roleId', UserManagementController.updateRole);
+
+// 删除角色
+router.delete('/:roleId', UserManagementController.deleteRole);
 
 export default router;

@@ -22,18 +22,17 @@ beforeAll(async () => {
   // 连接数据库
   await prisma.$connect()
 
-  // 清理测试数据
-  await cleanupTestData()
+  // 注意：不再执行全局清理
+  // 每个测试文件应该负责清理自己创建的数据
 })
 
-// 每个测试后清理
-afterEach(async () => {
-  await cleanupTestData()
-})
+// 每个测试后清理 - 移除全局清理
+// afterEach 不应该清理整个数据库，这会破坏其他测试的数据
+// 每个测试文件应该在自己的 afterAll/afterEach 中清理自己的数据
 
 // 测试后清理
 afterAll(async () => {
-  await cleanupTestData()
+  // 不再执行全局清理，只断开连接
   await prisma.$disconnect()
 })
 
