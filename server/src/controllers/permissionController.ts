@@ -559,6 +559,7 @@ export class PermissionController {
 
   /**
    * 获取角色的权限列表（返回权限 key 数组）
+   * 直接从 Casbin 策略读取，不再使用 Role.permissions 字段
    */
   static async getRolePermissions(req: Request, res: Response): Promise<void> {
     try {
@@ -577,11 +578,13 @@ export class PermissionController {
         return
       }
 
-      // 获取角色权限
-      const permissions = await PermissionService.getPermissionsForRole(role.name)
+      // 使用 casbinService 获取角色权限策略
+      const { casbinService } = await import('../services/casbinService')
+      const policies = await casbinService.getRolePolicies(role.name)
       
-      // 转换为权限 key 数组：[[role, resource, action], ...] -> ['resource:action', ...]
-      const permissionKeys = permissions.map(p => `${p[1]}:${p[2]}`)
+      // 策略格式: [role, domain, resource, action, effect]
+      // 转换为权限 key 数组：['resource:action', ...]
+      const permissionKeys = policies.map(p => `${p[2]}:${p[3]}`)
 
       res.json({
         success: true,
@@ -606,6 +609,7 @@ export class PermissionController {
 
   /**
    * 批量更新角色权限
+   * 直接操作 Casbin 策略，不再使用 Role.permissions 字段
    */
   static async updateRolePermissions(req: Request, res: Response): Promise<void> {
     try {
@@ -633,25 +637,30 @@ export class PermissionController {
         return
       }
 
-      // 获取当前角色的所有权限
-      const currentPermissions = await PermissionService.getPermissionsForRole(role.name)
-      const currentKeys = new Set(currentPermissions.map(p => `${p[1]}:${p[2]}`))
+      // 使用 casbinService 获取当前角色的所有权限策略
+      const { casbinService } = await import('../services/casbinService')
+      const currentPolicies = await casbinService.getRolePolicies(role.name)
+      
+      // 当前权限格式: [role, domain, resource, action, effect]
+      // 转换为 key 格式: resource:action
+      const currentKeys = new Set(currentPolicies.map(p => `${p[2]}:${p[3]}`))
       const newKeys = new Set(permissions as string[])
 
       // 计算需要删除和添加的权限
       const toDelete = [...currentKeys].filter(k => !newKeys.has(k))
       const toAdd = [...newKeys].filter(k => !currentKeys.has(k))
 
-      // 删除权限
+      // 删除权限（从 Casbin）
       for (const key of toDelete) {
         const [resource, action] = key.split(':')
-        await PermissionService.deletePermissionForRole(role.name, resource, action)
+        await casbinService.removePolicy(role.name, '*', resource, action, 'allow')
       }
 
-      // 添加权限
+      // 添加权限（到 Casbin）
       for (const key of toAdd) {
         const [resource, action] = key.split(':')
-        await PermissionService.addPermissionForRole(role.name, resource, action)
+        // 使用通配符域 '*' 表示全局权限
+        await casbinService.addPolicy(role.name, '*', resource, action, 'allow')
       }
 
       logger.info('角色权限更新成功', {

@@ -266,6 +266,49 @@ class CasbinService {
       logger.info('Super admin policy initialized');
     }
   }
+
+  /**
+   * 完整初始化 Casbin 权限系统
+   * 在服务器启动时调用，确保：
+   * 1. 超级管理员和管理员有全部权限
+   * 2. 数据库中的用户角色同步到 Casbin
+   */
+  async initialize(): Promise<void> {
+    const e = await this.getEnforcer();
+    
+    // 1. 初始化超级管理员和管理员的全局权限
+    const adminRoles = ['SUPER_ADMIN', 'ADMIN'];
+    for (const role of adminRoles) {
+      const exists = await e.hasPolicy(role, '*', '*', '.*', 'allow');
+      if (!exists) {
+        await e.addPolicy(role, '*', '*', '.*', 'allow');
+        logger.info(`${role} global policy initialized`);
+      }
+    }
+
+    // 2. 同步数据库中的用户角色到 Casbin
+    const prisma = this.getPrisma();
+    const userRoles = await prisma.userRole.findMany({
+      where: { isActive: true },
+      include: { role: true }
+    });
+
+    let synced = 0;
+    for (const ur of userRoles) {
+      // 检查是否已存在
+      const exists = await e.hasGroupingPolicy(ur.userId, ur.role.name, '*');
+      if (!exists) {
+        await e.addGroupingPolicy(ur.userId, ur.role.name, '*');
+        synced++;
+      }
+    }
+
+    await e.savePolicy();
+    logger.info('Casbin initialized', { 
+      userRolesSynced: synced, 
+      totalUserRoles: userRoles.length 
+    });
+  }
 }
 
 export const casbinService = new CasbinService();

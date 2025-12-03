@@ -59,23 +59,41 @@ echo "Syncing database schema..."
 cd /app/server
 npx prisma db push --accept-data-loss
 
-# 首次运行时创建管理员账号
+# 首次运行时创建管理员账号和角色
 if [ "$FIRST_RUN" = true ]; then
-    echo "Creating admin user..."
+    echo "Creating admin user and roles..."
     node -e "
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
-async function createAdmin() {
-    const existingAdmin = await prisma.user.findUnique({
+async function createAdminWithRole() {
+    // 1. 创建 ADMIN 角色（如果不存在）
+    let adminRole = await prisma.role.findUnique({
+        where: { name: 'ADMIN' }
+    });
+    
+    if (!adminRole) {
+        adminRole = await prisma.role.create({
+            data: {
+                name: 'ADMIN',
+                description: '系统管理员',
+                isSystem: true,
+                permissions: []
+            }
+        });
+        console.log('ADMIN role created.');
+    }
+    
+    // 2. 创建 admin 用户（如果不存在）
+    let admin = await prisma.user.findUnique({
         where: { username: 'admin' }
     });
     
-    if (!existingAdmin) {
+    if (!admin) {
         const passwordHash = await bcrypt.hash('admin123', 12);
-        await prisma.user.create({
+        admin = await prisma.user.create({
             data: {
                 username: 'admin',
                 email: 'admin@milicard.com',
@@ -90,10 +108,29 @@ async function createAdmin() {
         console.log('Admin user already exists.');
     }
     
+    // 3. 分配 ADMIN 角色给 admin 用户（如果未分配）
+    const existingUserRole = await prisma.userRole.findFirst({
+        where: {
+            userId: admin.id,
+            roleId: adminRole.id
+        }
+    });
+    
+    if (!existingUserRole) {
+        await prisma.userRole.create({
+            data: {
+                userId: admin.id,
+                roleId: adminRole.id,
+                isActive: true
+            }
+        });
+        console.log('ADMIN role assigned to admin user.');
+    }
+    
     await prisma.\$disconnect();
 }
 
-createAdmin().catch(console.error);
+createAdminWithRole().catch(console.error);
 "
 fi
 

@@ -9,7 +9,7 @@ import { logger } from './utils/logger'
 import { errorHandler } from './middleware/errorHandler'
 import { notFoundHandler } from './middleware/notFoundHandler'
 import { requestLogger } from './middleware/requestLogger'
-import { PermissionService } from './services/permissionService'
+// PermissionService 已被 casbinService 替代
 
 // 加载环境变量
 dotenv.config()
@@ -122,12 +122,13 @@ if (process.env.NODE_ENV !== 'test') {
   logger.info(`📝 Environment: ${process.env.NODE_ENV}`)
   logger.info(`🔗 Health check: http://localhost:${PORT}/health`)
   
-  // 初始化权限系统
+  // 初始化 Casbin 权限系统
   try {
-    await PermissionService.initialize()
-    logger.info('🔐 权限系统初始化完成')
+    const { casbinService } = await import('./services/casbinService')
+    await casbinService.initialize()
+    logger.info('🔐 Casbin 权限系统初始化完成')
   } catch (error) {
-    logger.error('❌ 权限系统初始化失败', { error })
+    logger.error('❌ Casbin 权限系统初始化失败', { error })
     process.exit(1)
   }
   })
