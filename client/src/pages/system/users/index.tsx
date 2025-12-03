@@ -63,7 +63,7 @@ interface UserStats {
 
 const UsersPage: React.FC = () => {
   const { message } = App.useApp();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
@@ -227,15 +227,27 @@ const UsersPage: React.FC = () => {
   };
 
   // 角色名称映射
-  const getRoleLabel = (roleName: string) => {
+  const getRoleLabel = (roleName: string, description?: string) => {
     const roleMap: Record<string, { label: string; color: string }> = {
-      ADMIN: { label: '系统管理员', color: 'red' },
+      SUPER_ADMIN: { label: '超级管理员', color: 'red' },
+      ADMIN: { label: '系统管理员', color: 'volcano' },
+      MANAGER: { label: '经理', color: 'blue' },
+      OPERATOR: { label: '操作员', color: 'green' },
+      VIEWER: { label: '查看者', color: 'cyan' },
       BASE_MANAGER: { label: '基地管理员', color: 'blue' },
       POINT_OWNER: { label: '点位老板', color: 'green' },
       CUSTOMER_SERVICE: { label: '客服', color: 'orange' },
       WAREHOUSE_KEEPER: { label: '仓管', color: 'purple' },
+      ANCHOR: { label: '主播', color: 'cyan' },
     };
-    return roleMap[roleName] || { label: roleName, color: 'default' };
+    // 如果有映射则使用映射，否则使用描述或角色名
+    return roleMap[roleName] || { label: description || roleName, color: 'default' };
+  };
+
+  // 获取角色下拉选项显示文本（格式：角色标识 - 角色名称）
+  const getRoleOptionLabel = (role: RoleItem) => {
+    const { label } = getRoleLabel(role.name, role.description);
+    return `${role.name} - ${label}`;
   };
 
   // 表格列定义
@@ -272,7 +284,7 @@ const UsersPage: React.FC = () => {
       render: (_, record) => (
         <Space size={[0, 4]} wrap>
           {record.roles.map((role) => {
-            const { label, color } = getRoleLabel(role.name);
+            const { label, color } = getRoleLabel(role.name, role.description);
             return (
               <Tag key={role.id} color={color}>
                 {label}
@@ -500,7 +512,7 @@ const UsersPage: React.FC = () => {
           mode="multiple"
           placeholder="请选择角色"
           options={roles.map((role) => ({
-            label: getRoleLabel(role.name).label,
+            label: getRoleOptionLabel(role),
             value: role.id,
           }))}
         />
@@ -552,7 +564,7 @@ const UsersPage: React.FC = () => {
           mode="multiple"
           placeholder="请选择角色"
           options={roles.map((role) => ({
-            label: getRoleLabel(role.name).label,
+            label: getRoleOptionLabel(role),
             value: role.id,
           }))}
         />
