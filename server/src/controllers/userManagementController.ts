@@ -131,11 +131,13 @@ export class UserManagementController {
   /**
    * 更新用户
    * PUT /api/v1/users/:id
+   * 只能分配同级或更低级别的角色，只能分配自己有权限的基地
    */
   static async updateUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const { name, email, phone, isActive, password, roleIds, baseIds } = req.body;
+      const currentUserId = req.user?.id;
 
       const user = await UserService.updateUser(id, {
         name,
@@ -145,6 +147,7 @@ export class UserManagementController {
         password,
         roleIds,
         baseIds,
+        currentUserId, // 传递当前用户ID用于权限验证
       });
 
       res.json({

@@ -53,7 +53,7 @@ interface BaseContextType {
 }
 
 // 创建上下文
-const BaseContext = createContext<BaseContextType | undefined>(undefined);
+export const BaseContext = createContext<BaseContextType | undefined>(undefined);
 
 // 本地存储键名
 const STORAGE_KEY = 'milicard_current_base';

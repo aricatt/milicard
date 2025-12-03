@@ -345,9 +345,20 @@ export class UserService {
       password?: string;
       roleIds?: string[];
       baseIds?: number[];
+      currentUserId?: string; // 当前操作用户ID，用于权限验证
     }
   ) {
-    const { name, email, phone, isActive, password, roleIds, baseIds } = data;
+    const { name, email, phone, isActive, password, roleIds, baseIds, currentUserId } = data;
+
+    // 验证角色和基地分配权限
+    if (currentUserId) {
+      if (roleIds) {
+        await this.validateRoleAssignment(currentUserId, roleIds);
+      }
+      if (baseIds) {
+        await this.validateBaseAssignment(currentUserId, baseIds);
+      }
+    }
 
     // 检查用户是否存在
     const existingUser = await prisma.user.findUnique({
@@ -399,12 +410,6 @@ export class UserService {
         include: { role: true },
       });
 
-      // 禁用现有角色
-      await prisma.userRole.updateMany({
-        where: { userId: id, isActive: true },
-        data: { isActive: false },
-      });
-
       // 从 Casbin 移除旧角色
       for (const ur of existingRoles) {
         for (const baseId of baseIds) {
@@ -414,6 +419,11 @@ export class UserService {
         await casbinService.removeRoleForUser(id, ur.role.name, '*');
       }
 
+      // 删除现有角色关联（避免唯一约束冲突）
+      await prisma.userRole.deleteMany({
+        where: { userId: id },
+      });
+
       // 添加新角色
       if (roleIds.length > 0) {
         // 获取新角色信息
@@ -421,24 +431,15 @@ export class UserService {
           where: { id: { in: roleIds } },
         });
 
-        for (const roleId of roleIds) {
-          await prisma.userRole.upsert({
-            where: {
-              uk_user_role_active: {
-                userId: id,
-                roleId,
-                isActive: true,
-              },
-            },
-            update: { isActive: true },
-            create: {
-              userId: id,
-              roleId,
-              assignedBy: 'system',
-              isActive: true,
-            },
-          });
-        }
+        // 批量创建新角色关联
+        await prisma.userRole.createMany({
+          data: roleIds.map(roleId => ({
+            userId: id,
+            roleId,
+            assignedBy: 'system',
+            isActive: true,
+          })),
+        });
 
         // 同步到 Casbin
         for (const role of newRoles) {
@@ -458,30 +459,20 @@ export class UserService {
 
     // 更新基地
     if (baseIds !== undefined) {
-      // 禁用现有基地关联
-      await prisma.userBase.updateMany({
-        where: { userId: id, isActive: true },
-        data: { isActive: false },
+      // 删除现有基地关联
+      await prisma.userBase.deleteMany({
+        where: { userId: id },
       });
 
       // 添加新基地关联
       if (baseIds.length > 0) {
-        for (const baseId of baseIds) {
-          await prisma.userBase.upsert({
-            where: {
-              userId_baseId: {
-                userId: id,
-                baseId,
-              },
-            },
-            update: { isActive: true },
-            create: {
-              userId: id,
-              baseId,
-              isActive: true,
-            },
-          });
-        }
+        await prisma.userBase.createMany({
+          data: baseIds.map(baseId => ({
+            userId: id,
+            baseId,
+            isActive: true,
+          })),
+        });
       }
     }
 

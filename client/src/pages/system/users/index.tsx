@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
+import { BaseContext } from '@/contexts/BaseContext';
 import {
   PageContainer,
   ProTable,
@@ -52,6 +53,15 @@ interface RoleItem {
   id: string;
   name: string;
   description?: string;
+  level?: number;
+}
+
+// 基地类型定义
+interface BaseItem {
+  id: number;
+  code: string;
+  name: string;
+  type: string;
 }
 
 // 统计数据类型
@@ -69,7 +79,11 @@ const UsersPage: React.FC = () => {
   const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserItem | null>(null);
   const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [availableBases, setAvailableBases] = useState<BaseItem[]>([]);
   const [stats, setStats] = useState<UserStats>({ total: 0, active: 0, inactive: 0 });
+  
+  // 获取当前基地上下文
+  const { currentBase } = useContext(BaseContext);
 
   // 获取角色列表
   const fetchRoles = async () => {
@@ -80,6 +94,21 @@ const UsersPage: React.FC = () => {
       }
     } catch (error) {
       console.error('获取角色列表失败', error);
+    }
+  };
+
+  // 获取可用基地列表（当前用户有权限的基地）
+  const fetchAvailableBases = async () => {
+    try {
+      const result = await request('/api/v1/live-base/bases', { 
+        method: 'GET',
+        params: { pageSize: 100 }, // 获取所有可用基地
+      });
+      if (result.success) {
+        setAvailableBases(result.data || []);
+      }
+    } catch (error) {
+      console.error('获取可用基地列表失败', error);
     }
   };
 
@@ -98,6 +127,7 @@ const UsersPage: React.FC = () => {
   // 初始化加载
   React.useEffect(() => {
     fetchRoles();
+    fetchAvailableBases();
     fetchStats();
   }, []);
 
@@ -516,6 +546,18 @@ const UsersPage: React.FC = () => {
             value: role.id,
           }))}
         />
+        <ProFormSelect
+          name="baseIds"
+          label="关联基地"
+          mode="multiple"
+          placeholder="请选择关联基地"
+          initialValue={currentBase ? [currentBase.id] : []}
+          options={availableBases.map((base) => ({
+            label: `${base.name} (${base.code})`,
+            value: base.id,
+          }))}
+          extra="用户只能访问关联的基地数据"
+        />
       </ModalForm>
 
       {/* 编辑用户弹窗 */}
@@ -537,6 +579,7 @@ const UsersPage: React.FC = () => {
                 email: currentUser.email,
                 isActive: currentUser.isActive,
                 roleIds: currentUser.roles.map((r) => r.id),
+                baseIds: currentUser.bases.map((b) => b.id),
               }
             : {}
         }
@@ -567,6 +610,17 @@ const UsersPage: React.FC = () => {
             label: getRoleOptionLabel(role),
             value: role.id,
           }))}
+        />
+        <ProFormSelect
+          name="baseIds"
+          label="关联基地"
+          mode="multiple"
+          placeholder="请选择关联基地"
+          options={availableBases.map((base) => ({
+            label: `${base.name} (${base.code})`,
+            value: base.id,
+          }))}
+          extra="用户只能访问关联的基地数据"
         />
         <ProFormSwitch name="isActive" label="启用状态" />
       </ModalForm>
