@@ -2,12 +2,13 @@ import {
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
+import { history, useModel, request } from '@umijs/max';
 import type { MenuProps } from 'antd';
-import { Spin } from 'antd';
+import { Spin, Modal, Form, Input, message } from 'antd';
 import { createStyles } from 'antd-style';
-import React from 'react';
+import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import { outLogin } from '@/services/ant-design-pro/api';
 import { useBaseOptional } from '@/contexts/BaseContext';
@@ -48,6 +49,36 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
 }) => {
   // 安全地获取基地上下文，如果不在BaseProvider中则返回null
   const baseContext = useBaseOptional();
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [passwordForm] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
+
+  /**
+   * 修改密码
+   */
+  const handleChangePassword = async (values: { oldPassword: string; newPassword: string }) => {
+    setSubmitting(true);
+    try {
+      const result = await request('/api/v1/auth/password', {
+        method: 'PUT',
+        data: {
+          currentPassword: values.oldPassword,
+          newPassword: values.newPassword,
+        },
+      });
+      if (result.success) {
+        message.success('密码修改成功');
+        setPasswordModalVisible(false);
+        passwordForm.resetFields();
+      } else {
+        message.error(result.message || '修改密码失败');
+      }
+    } catch (error: any) {
+      message.error(error?.data?.message || '修改密码失败');
+    } finally {
+      setSubmitting(false);
+    }
+  };
   
   /**
    * 退出登录，并且将当前的 url 保存
@@ -89,6 +120,10 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
       loginOut();
       return;
     }
+    if (key === 'changePassword') {
+      setPasswordModalVisible(true);
+      return;
+    }
     history.push(`/account/${key}`);
   };
 
@@ -127,11 +162,16 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
             icon: <SettingOutlined />,
             label: '个人设置',
           },
-          {
-            type: 'divider' as const,
-          },
         ]
       : []),
+    {
+      key: 'changePassword',
+      icon: <LockOutlined />,
+      label: '修改密码',
+    },
+    {
+      type: 'divider' as const,
+    },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
@@ -140,14 +180,74 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({
   ];
 
   return (
-    <HeaderDropdown
-      menu={{
-        selectedKeys: [],
-        onClick: onMenuClick,
-        items: menuItems,
-      }}
-    >
-      {children}
-    </HeaderDropdown>
+    <>
+      <HeaderDropdown
+        menu={{
+          selectedKeys: [],
+          onClick: onMenuClick,
+          items: menuItems,
+        }}
+      >
+        {children}
+      </HeaderDropdown>
+
+      <Modal
+        title="修改密码"
+        open={passwordModalVisible}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
+        onOk={() => passwordForm.submit()}
+        confirmLoading={submitting}
+        destroyOnHidden
+      >
+        <Form
+          form={passwordForm}
+          layout="vertical"
+          onFinish={handleChangePassword}
+        >
+          <Form.Item
+            name="oldPassword"
+            label="旧密码"
+            rules={[{ required: true, message: '请输入旧密码' }]}
+          >
+            <Input.Password placeholder="请输入旧密码" autoComplete="current-password" />
+          </Form.Item>
+          <Form.Item
+            name="newPassword"
+            label="新密码"
+            rules={[
+              { required: true, message: '请输入新密码' },
+              { min: 8, message: '密码至少8个字符' },
+              {
+                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                message: '密码必须包含大写字母、小写字母和数字',
+              },
+            ]}
+          >
+            <Input.Password placeholder="请输入新密码（至少8位，含大小写字母和数字）" autoComplete="new-password" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="确认密码"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: '请确认新密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="请再次输入新密码" autoComplete="new-password" />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   );
 };
