@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tag, Popconfirm, message, Drawer, Descriptions, Tabs, Empty } from 'antd';
+import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { request } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
@@ -66,6 +66,7 @@ interface OrderItem {
 const PointsPage: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const { currentBase } = useBase();
+  const { message } = App.useApp();
   const [formVisible, setFormVisible] = useState(false);
   const [editingPoint, setEditingPoint] = useState<PointItem | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);

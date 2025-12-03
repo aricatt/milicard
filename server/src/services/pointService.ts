@@ -39,11 +39,15 @@ export interface UpdatePointData {
 export class PointService {
   /**
    * 生成点位编号
+   * 格式: POINT-XXXXXXXXXXX (11位随机字符)
    */
   static async generateCode(): Promise<string> {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `POINT-${timestamp}${random}`;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let randomPart = '';
+    for (let i = 0; i < 11; i++) {
+      randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `POINT-${randomPart}`;
   }
 
   /**

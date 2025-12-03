@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, Switch, message } from 'antd';
+import { Modal, Form, Input, Select, Switch, App } from 'antd';
 import { request } from '@umijs/max';
 
 interface PointFormProps {
@@ -25,6 +25,7 @@ const PointForm: React.FC<PointFormProps> = ({
   baseId,
 }) => {
   const [form] = Form.useForm();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
