@@ -32,7 +32,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { request, useModel } from '@umijs/max';
 
 // 用户类型定义
 interface UserItem {
@@ -44,8 +44,9 @@ interface UserItem {
   isActive: boolean;
   lastLoginAt?: string;
   createdAt: string;
-  roles: { id: string; name: string; description?: string }[];
+  roles: { id: string; name: string; description?: string; level?: number }[];
   bases: { id: number; code: string; name: string; type: string }[];
+  highestRoleLevel?: number; // 用户最高角色层级
 }
 
 // 角色类型定义
@@ -73,6 +74,8 @@ interface UserStats {
 
 const UsersPage: React.FC = () => {
   const { message } = App.useApp();
+  const { initialState } = useModel('@@initialState');
+  const currentLoginUser = initialState?.currentUser;
   const actionRef = useRef<ActionType>(null);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -81,9 +84,21 @@ const UsersPage: React.FC = () => {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [availableBases, setAvailableBases] = useState<BaseItem[]>([]);
   const [stats, setStats] = useState<UserStats>({ total: 0, active: 0, inactive: 0 });
+  const [currentUserLevel, setCurrentUserLevel] = useState<number>(999); // 当前登录用户的角色层级
   
   // 获取当前基地上下文
   const { currentBase } = useContext(BaseContext);
+  
+  // 计算当前登录用户的最高角色层级
+  React.useEffect(() => {
+    if (currentLoginUser?.roles) {
+      const levels = currentLoginUser.roles
+        .map((r: any) => r.level ?? 999)
+        .filter((l: number) => l !== undefined);
+      const minLevel = levels.length > 0 ? Math.min(...levels) : 999;
+      setCurrentUserLevel(minLevel);
+    }
+  }, [currentLoginUser]);
 
   // 获取角色列表
   const fetchRoles = async () => {
@@ -383,46 +398,68 @@ const UsersPage: React.FC = () => {
       valueType: 'option',
       width: 180,
       fixed: 'right',
-      render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => {
-            setCurrentUser(record);
-            setEditModalVisible(true);
-          }}
-        >
-          编辑
-        </Button>,
-        <Button
-          key="resetPassword"
-          type="link"
-          size="small"
-          icon={<KeyOutlined />}
-          onClick={() => {
-            setCurrentUser(record);
-            setResetPasswordModalVisible(true);
-          }}
-        >
-          重置密码
-        </Button>,
-        record.username !== 'admin' && (
-          <Popconfirm
-            key="delete"
-            title="确定要删除该用户吗？"
-            description="删除后用户将无法登录系统"
-            onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+      render: (_, record) => {
+        // 计算目标用户的最高角色层级
+        const targetUserLevel = record.roles.length > 0
+          ? Math.min(...record.roles.map(r => r.level ?? 999))
+          : 999;
+        
+        // 判断是否可以操作该用户
+        // Level 0-1 可以操作所有用户
+        // Level > 1 只能操作层级比自己低的用户（不能操作自己和同级）
+        const canOperate = currentUserLevel <= 1 || targetUserLevel > currentUserLevel;
+        
+        // 不能操作自己
+        const isSelf = record.id === currentLoginUser?.id;
+        
+        // 最终判断：可以操作且不是自己
+        const showActions = canOperate && !isSelf;
+        
+        if (!showActions) {
+          return <span style={{ color: '#999' }}>-</span>;
+        }
+        
+        return [
+          <Button
+            key="edit"
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setCurrentUser(record);
+              setEditModalVisible(true);
+            }}
           >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-              删除
-            </Button>
-          </Popconfirm>
-        ),
-      ],
+            编辑
+          </Button>,
+          <Button
+            key="resetPassword"
+            type="link"
+            size="small"
+            icon={<KeyOutlined />}
+            onClick={() => {
+              setCurrentUser(record);
+              setResetPasswordModalVisible(true);
+            }}
+          >
+            重置密码
+          </Button>,
+          record.username !== 'admin' && (
+            <Popconfirm
+              key="delete"
+              title="确定要删除该用户吗？"
+              description="删除后用户将无法登录系统"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+                删除
+              </Button>
+            </Popconfirm>
+          ),
+        ];
+      },
     },
   ];
 

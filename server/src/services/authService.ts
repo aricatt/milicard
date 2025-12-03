@@ -400,6 +400,7 @@ export class AuthService {
             id: ur.role.id,
             name: ur.role.name,
             description: ur.role.description,
+            level: ur.role.level,
             permissions,
           }
         })

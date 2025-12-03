@@ -147,7 +147,7 @@ export class UserService {
             where: { isActive: true },
             include: {
               role: {
-                select: { id: true, name: true, description: true },
+                select: { id: true, name: true, description: true, level: true },
               },
             },
           },
@@ -179,6 +179,7 @@ export class UserService {
         id: ur.role.id,
         name: ur.role.name,
         description: ur.role.description,
+        level: ur.role.level,
       })),
       bases: user.userBases.map((ub) => ({
         id: ub.base.id,
