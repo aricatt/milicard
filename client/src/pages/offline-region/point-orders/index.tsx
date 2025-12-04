@@ -270,6 +270,7 @@ const PointOrdersPage: React.FC = () => {
     },
     {
       title: '订单日期',
+      key: 'orderDateRange',
       dataIndex: 'orderDate',
       valueType: 'dateRange',
       hideInTable: true,

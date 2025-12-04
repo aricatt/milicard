@@ -675,7 +675,7 @@ const PointsPage: React.FC = () => {
         open={goodsModalVisible}
         onOk={handleSavePointGoods}
         onCancel={() => setGoodsModalVisible(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={goodsForm}
