@@ -66,6 +66,55 @@ const ACTIONS = [
   { key: 'export', label: '导出' },
 ];
 
+// 权限依赖关系配置
+// key: 主权限模块, value: 依赖的权限列表（建议同时开启）
+const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; description: string }> = {
+  purchase_order: {
+    permissions: ['supplier:read', 'goods:read'],
+    description: '采购管理需要查看供应商和商品列表',
+  },
+  arrival_order: {
+    permissions: ['purchase_order:read', 'goods:read', 'location:read'],
+    description: '到货管理需要查看采购单、商品和仓位',
+  },
+  stock_transfer: {
+    permissions: ['goods:read', 'location:read', 'inventory:read'],
+    description: '调货管理需要查看商品、仓位和库存',
+  },
+  stock_consumption: {
+    permissions: ['goods:read', 'personnel:read', 'inventory:read'],
+    description: '消耗管理需要查看商品、人员和库存',
+  },
+  anchor_profit: {
+    permissions: ['personnel:read', 'stock_consumption:read'],
+    description: '主播利润需要查看人员和消耗记录',
+  },
+  inventory: {
+    permissions: ['goods:read', 'location:read'],
+    description: '库存管理需要查看商品和仓位',
+  },
+  receivable: {
+    permissions: ['customer:read', 'goods:read'],
+    description: '应收管理需要查看客户和商品',
+  },
+};
+
+// 模块名称映射（用于显示友好名称）
+const MODULE_LABELS: Record<string, string> = {
+  purchase_order: '采购管理',
+  supplier: '供应商',
+  goods: '商品',
+  arrival_order: '到货管理',
+  location: '仓位',
+  stock_transfer: '调货管理',
+  inventory: '库存',
+  stock_consumption: '消耗管理',
+  personnel: '人员',
+  anchor_profit: '主播利润',
+  receivable: '应收管理',
+  customer: '客户',
+};
+
 const RolesPage: React.FC = () => {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -397,6 +446,52 @@ const RolesPage: React.FC = () => {
     return modules.some(m => canConfigurePermission(`${m.key}:${action}`));
   };
 
+  // 计算缺失的依赖权限
+  const missingDependencies = useMemo(() => {
+    const missing: { module: string; moduleName: string; missingPerms: { key: string; name: string }[]; description: string }[] = [];
+    
+    // 遍历所有已选中的权限，检查其依赖
+    const checkedModules = new Set<string>();
+    checkedKeys.forEach(key => {
+      const [module] = key.split(':');
+      checkedModules.add(module);
+    });
+    
+    // 检查每个有依赖的模块
+    checkedModules.forEach(module => {
+      const dep = PERMISSION_DEPENDENCIES[module];
+      if (!dep) return;
+      
+      // 检查该模块是否有任何非read权限被选中（如果只有read权限，可能不需要依赖）
+      const hasNonReadPermission = ACTIONS.some(
+        a => a.key !== 'read' && checkedKeys.has(`${module}:${a.key}`)
+      );
+      
+      // 如果有创建/编辑/删除等权限，才检查依赖
+      if (hasNonReadPermission || checkedKeys.has(`${module}:read`)) {
+        const missingPerms = dep.permissions
+          .filter(p => !checkedKeys.has(p))
+          .map(p => {
+            const [m, a] = p.split(':');
+            const moduleName = MODULE_LABELS[m] || m;
+            const actionName = ACTIONS.find(act => act.key === a)?.label || a;
+            return { key: p, name: `${moduleName}-${actionName}` };
+          });
+        
+        if (missingPerms.length > 0) {
+          missing.push({
+            module,
+            moduleName: MODULE_LABELS[module] || module,
+            missingPerms,
+            description: dep.description,
+          });
+        }
+      }
+    });
+    
+    return missing;
+  }, [checkedKeys]);
+
   // 权限矩阵表格列定义
   const permissionColumns = useMemo(() => [
     {
@@ -718,6 +813,49 @@ const RolesPage: React.FC = () => {
                     scroll={{ y: 350 }}
                     bordered
                   />
+                  {/* 权限依赖警告提示 */}
+                  {!isReadOnly && missingDependencies.length > 0 && (
+                    <Alert
+                      type="warning"
+                      showIcon
+                      style={{ marginTop: 12 }}
+                      message="权限依赖提示"
+                      description={
+                        <div>
+                          <p style={{ marginBottom: 8 }}>以下权限可能需要配合其他权限才能正常使用：</p>
+                          <ul style={{ margin: 0, paddingLeft: 20 }}>
+                            {missingDependencies.map(dep => (
+                              <li key={dep.module} style={{ marginBottom: 4 }}>
+                                <strong>{dep.moduleName}</strong>：建议开启{' '}
+                                {dep.missingPerms.map((p, i) => (
+                                  <span key={p.key}>
+                                    <Tag 
+                                      color="orange" 
+                                      style={{ cursor: 'pointer' }}
+                                      onClick={() => {
+                                        const newChecked = new Set(checkedKeys);
+                                        newChecked.add(p.key);
+                                        setCheckedKeys(newChecked);
+                                      }}
+                                    >
+                                      {p.name} +
+                                    </Tag>
+                                    {i < dep.missingPerms.length - 1 && ' '}
+                                  </span>
+                                ))}
+                                <span style={{ color: '#666', fontSize: 12, marginLeft: 4 }}>
+                                  ({dep.description})
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                          <p style={{ marginTop: 8, marginBottom: 0, color: '#666', fontSize: 12 }}>
+                            点击标签可快速添加对应权限
+                          </p>
+                        </div>
+                      }
+                    />
+                  )}
                   <div style={{ marginTop: 16, textAlign: 'right' }}>
                     <Space>
                       <Button onClick={() => setPermissionModalVisible(false)}>
