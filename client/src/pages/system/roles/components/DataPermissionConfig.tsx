@@ -246,7 +246,7 @@ const DataPermissionConfig: React.FC<Props> = ({ roleId, roleName, readOnly = fa
           form.resetFields();
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item

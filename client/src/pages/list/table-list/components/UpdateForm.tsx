@@ -38,7 +38,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
             bodyStyle={{
               padding: '32px 40px 48px',
             }}
-            destroyOnClose
+            destroyOnHidden
             title="规则配置"
             open={props.updateModalVisible}
             footer={submitter}

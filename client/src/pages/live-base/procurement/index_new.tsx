@@ -456,7 +456,7 @@ const ProcurementManagement: React.FC = () => {
         }}
         confirmLoading={createLoading}
         width={700}
-        destroyOnClose
+        destroyOnHidden
       >
         <ProcurementForm
           form={createForm}
@@ -480,7 +480,7 @@ const ProcurementManagement: React.FC = () => {
         }}
         confirmLoading={editLoading}
         width={700}
-        destroyOnClose
+        destroyOnHidden
       >
         <ProcurementForm
           form={editForm}

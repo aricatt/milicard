@@ -547,7 +547,7 @@ const UsersPage: React.FC = () => {
         open={createModalVisible}
         onOpenChange={setCreateModalVisible}
         onFinish={handleCreate}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
         width={500}
       >
         <ProFormText
@@ -621,7 +621,7 @@ const UsersPage: React.FC = () => {
           if (!visible) setCurrentUser(null);
         }}
         onFinish={handleUpdate}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
         width={500}
         initialValues={
           currentUser
@@ -686,7 +686,7 @@ const UsersPage: React.FC = () => {
           if (!visible) setCurrentUser(null);
         }}
         onFinish={handleResetPassword}
-        modalProps={{ destroyOnClose: true }}
+        modalProps={{ destroyOnHidden: true }}
         width={400}
       >
         <ProFormText.Password

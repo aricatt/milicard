@@ -582,7 +582,7 @@ const RolesPage: React.FC = () => {
           createForm.resetFields();
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={createForm}
@@ -652,7 +652,7 @@ const RolesPage: React.FC = () => {
         onCancel={() => setPermissionModalVisible(false)}
         width={800}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         {isReadOnly && (
           <Alert
