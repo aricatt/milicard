@@ -75,11 +75,11 @@ const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; descripti
   },
   arrival_order: {
     permissions: ['purchase_order:read', 'goods:read', 'location:read'],
-    description: '到货管理需要查看采购单、商品和仓位',
+    description: '到货管理需要查看采购单、商品和地点',
   },
   stock_transfer: {
     permissions: ['goods:read', 'location:read', 'inventory:read'],
-    description: '调货管理需要查看商品、仓位和库存',
+    description: '调货管理需要查看商品、地点和库存',
   },
   stock_consumption: {
     permissions: ['goods:read', 'personnel:read', 'inventory:read'],
@@ -91,7 +91,7 @@ const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; descripti
   },
   inventory: {
     permissions: ['goods:read', 'location:read'],
-    description: '库存管理需要查看商品和仓位',
+    description: '库存管理需要查看商品和地点',
   },
   receivable: {
     permissions: ['customer:read', 'goods:read'],
@@ -105,7 +105,7 @@ const MODULE_LABELS: Record<string, string> = {
   supplier: '供应商',
   goods: '商品',
   arrival_order: '到货管理',
-  location: '仓位',
+  location: '地点',
   stock_transfer: '调货管理',
   inventory: '库存',
   stock_consumption: '消耗管理',
