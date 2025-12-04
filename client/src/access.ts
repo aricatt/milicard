@@ -96,6 +96,12 @@ export default function access(
     canUpdatePoint: hasPermission(roles, 'point:update') || isAdmin(roles),
     canDeletePoint: hasPermission(roles, 'point:delete') || isAdmin(roles),
     
+    // 点位订单权限
+    canAccessPointOrder: hasPermission(roles, 'pointOrder:read') || isAdmin(roles),
+    canCreatePointOrder: hasPermission(roles, 'pointOrder:create') || isAdmin(roles),
+    canUpdatePointOrder: hasPermission(roles, 'pointOrder:update') || isAdmin(roles),
+    canDeletePointOrder: hasPermission(roles, 'pointOrder:delete') || isAdmin(roles),
+    
     // 订单管理权限
     canAccessOrder: hasPermission(roles, 'order:read') || isAdmin(roles),
     canCreateOrder: hasPermission(roles, 'order:create') || isAdmin(roles),

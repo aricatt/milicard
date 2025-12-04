@@ -289,4 +289,172 @@ export class PointController {
       });
     }
   }
+
+  /**
+   * 获取点位可采购商品列表
+   * GET /api/v1/bases/:baseId/points/:pointId/goods
+   */
+  static async getPointGoods(req: Request, res: Response) {
+    try {
+      const { pointId } = req.params;
+
+      const pointGoods = await PointService.getPointGoods(pointId);
+
+      res.json({
+        success: true,
+        data: pointGoods,
+      });
+    } catch (error) {
+      logger.error('获取点位可采购商品失败', {
+        error: error instanceof Error ? error.message : String(error),
+        pointId: req.params.pointId,
+      });
+
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : '获取点位可采购商品失败',
+      });
+    }
+  }
+
+  /**
+   * 添加点位可采购商品
+   * POST /api/v1/bases/:baseId/points/:pointId/goods
+   */
+  static async addPointGoods(req: Request, res: Response) {
+    try {
+      const { pointId } = req.params;
+      const { goodsId, maxBoxQuantity, maxPackQuantity, unitPrice } = req.body;
+
+      if (!goodsId) {
+        return res.status(400).json({
+          success: false,
+          message: '请选择商品',
+        });
+      }
+
+      const pointGoods = await PointService.addPointGoods(pointId, {
+        goodsId,
+        maxBoxQuantity,
+        maxPackQuantity,
+        unitPrice,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: pointGoods,
+        message: '添加成功',
+      });
+    } catch (error) {
+      logger.error('添加点位可采购商品失败', {
+        error: error instanceof Error ? error.message : String(error),
+        pointId: req.params.pointId,
+        body: req.body,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '添加失败',
+      });
+    }
+  }
+
+  /**
+   * 更新点位可采购商品
+   * PUT /api/v1/bases/:baseId/points/:pointId/goods/:goodsConfigId
+   */
+  static async updatePointGoods(req: Request, res: Response) {
+    try {
+      const { goodsConfigId } = req.params;
+      const { maxBoxQuantity, maxPackQuantity, unitPrice, isActive } = req.body;
+
+      const pointGoods = await PointService.updatePointGoods(goodsConfigId, {
+        maxBoxQuantity,
+        maxPackQuantity,
+        unitPrice,
+        isActive,
+      });
+
+      res.json({
+        success: true,
+        data: pointGoods,
+        message: '更新成功',
+      });
+    } catch (error) {
+      logger.error('更新点位可采购商品失败', {
+        error: error instanceof Error ? error.message : String(error),
+        goodsConfigId: req.params.goodsConfigId,
+        body: req.body,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '更新失败',
+      });
+    }
+  }
+
+  /**
+   * 删除点位可采购商品
+   * DELETE /api/v1/bases/:baseId/points/:pointId/goods/:goodsConfigId
+   */
+  static async deletePointGoods(req: Request, res: Response) {
+    try {
+      const { goodsConfigId } = req.params;
+
+      await PointService.deletePointGoods(goodsConfigId);
+
+      res.json({
+        success: true,
+        message: '删除成功',
+      });
+    } catch (error) {
+      logger.error('删除点位可采购商品失败', {
+        error: error instanceof Error ? error.message : String(error),
+        goodsConfigId: req.params.goodsConfigId,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '删除失败',
+      });
+    }
+  }
+
+  /**
+   * 批量设置点位可采购商品
+   * POST /api/v1/bases/:baseId/points/:pointId/goods/batch
+   */
+  static async batchSetPointGoods(req: Request, res: Response) {
+    try {
+      const { pointId } = req.params;
+      const { goodsIds } = req.body;
+
+      if (!Array.isArray(goodsIds)) {
+        return res.status(400).json({
+          success: false,
+          message: '商品ID列表格式错误',
+        });
+      }
+
+      const pointGoods = await PointService.batchSetPointGoods(pointId, goodsIds);
+
+      res.json({
+        success: true,
+        data: pointGoods,
+        message: '设置成功',
+      });
+    } catch (error) {
+      logger.error('批量设置点位可采购商品失败', {
+        error: error instanceof Error ? error.message : String(error),
+        pointId: req.params.pointId,
+        body: req.body,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '设置失败',
+      });
+    }
+  }
 }

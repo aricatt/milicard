@@ -2,9 +2,9 @@ import React, { useRef, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import { request, useAccess } from '@umijs/max';
+import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App, Modal, Form, Select, InputNumber, Switch } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, SettingOutlined } from '@ant-design/icons';
+import { request, useAccess, history } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import PointForm from './components/PointForm';
 
@@ -63,6 +63,31 @@ interface OrderItem {
   paymentStatus: string;
 }
 
+interface PointGoodsItem {
+  id: string;
+  goodsId: string;
+  maxBoxQuantity?: number;
+  maxPackQuantity?: number;
+  unitPrice?: number;
+  isActive: boolean;
+  goods: {
+    id: string;
+    code: string;
+    name: string;
+    retailPrice: number;
+    packPerBox: number;
+  };
+}
+
+// 商品选项接口
+interface GoodsOption {
+  id: string;
+  code: string;
+  name: string;
+  retailPrice: number;
+  packPerBox: number;
+}
+
 const PointsPage: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const { currentBase } = useBase();
@@ -74,7 +99,15 @@ const PointsPage: React.FC = () => {
   const [detailPoint, setDetailPoint] = useState<PointItem | null>(null);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [pointGoods, setPointGoods] = useState<PointGoodsItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  
+  // 可购商品编辑相关状态
+  const [goodsModalVisible, setGoodsModalVisible] = useState(false);
+  const [editingPointGoods, setEditingPointGoods] = useState<PointGoodsItem | null>(null);
+  const [allGoods, setAllGoods] = useState<GoodsOption[]>([]);
+  const [goodsLoading, setGoodsLoading] = useState(false);
+  const [goodsForm] = Form.useForm();
 
   // 获取点位列表
   const fetchPoints = async (params: any) => {
@@ -110,14 +143,16 @@ const PointsPage: React.FC = () => {
     setLoadingDetail(true);
 
     try {
-      // 获取库存和订单
-      const [inventoryRes, ordersRes] = await Promise.all([
+      // 获取库存、订单和可购商品
+      const [inventoryRes, ordersRes, goodsRes] = await Promise.all([
         request(`/api/v1/bases/${currentBase?.id}/points/${record.id}/inventory`),
         request(`/api/v1/bases/${currentBase?.id}/points/${record.id}/orders`),
+        request(`/api/v1/bases/${currentBase?.id}/points/${record.id}/goods`),
       ]);
 
       setInventory(inventoryRes.data || []);
       setOrders(ordersRes.data || []);
+      setPointGoods(goodsRes.data || []);
     } catch (error) {
       console.error('获取详情失败', error);
     } finally {
@@ -133,6 +168,100 @@ const PointsPage: React.FC = () => {
       });
       message.success('删除成功');
       actionRef.current?.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || '删除失败');
+    }
+  };
+
+  // 获取所有商品列表（用于添加可购商品）
+  const fetchAllGoods = async () => {
+    if (!currentBase?.id) return;
+    setGoodsLoading(true);
+    try {
+      const response = await request(`/api/v1/bases/${currentBase.id}/goods`, {
+        params: { pageSize: 500 },
+      });
+      if (response.success) {
+        setAllGoods(response.data || []);
+      }
+    } catch (error) {
+      console.error('获取商品列表失败', error);
+    } finally {
+      setGoodsLoading(false);
+    }
+  };
+
+  // 刷新点位可购商品列表
+  const refreshPointGoods = async () => {
+    if (!detailPoint?.id || !currentBase?.id) return;
+    try {
+      const response = await request(`/api/v1/bases/${currentBase.id}/points/${detailPoint.id}/goods`);
+      if (response.success) {
+        setPointGoods(response.data || []);
+      }
+    } catch (error) {
+      console.error('刷新可购商品失败', error);
+    }
+  };
+
+  // 打开添加/编辑可购商品弹窗
+  const handleOpenGoodsModal = (item?: PointGoodsItem) => {
+    if (!allGoods.length) {
+      fetchAllGoods();
+    }
+    setEditingPointGoods(item || null);
+    if (item) {
+      goodsForm.setFieldsValue({
+        goodsId: item.goodsId,
+        unitPrice: item.unitPrice,
+        maxBoxQuantity: item.maxBoxQuantity,
+        maxPackQuantity: item.maxPackQuantity,
+        isActive: item.isActive,
+      });
+    } else {
+      goodsForm.resetFields();
+      goodsForm.setFieldsValue({ isActive: true });
+    }
+    setGoodsModalVisible(true);
+  };
+
+  // 保存可购商品
+  const handleSavePointGoods = async () => {
+    try {
+      const values = await goodsForm.validateFields();
+      
+      if (editingPointGoods) {
+        // 更新
+        await request(`/api/v1/bases/${currentBase?.id}/points/${detailPoint?.id}/goods/${editingPointGoods.id}`, {
+          method: 'PUT',
+          data: values,
+        });
+        message.success('更新成功');
+      } else {
+        // 添加
+        await request(`/api/v1/bases/${currentBase?.id}/points/${detailPoint?.id}/goods`, {
+          method: 'POST',
+          data: values,
+        });
+        message.success('添加成功');
+      }
+      
+      setGoodsModalVisible(false);
+      refreshPointGoods();
+    } catch (error: any) {
+      if (error.errorFields) return;
+      message.error(error?.data?.message || '操作失败');
+    }
+  };
+
+  // 删除可购商品
+  const handleDeletePointGoods = async (id: string) => {
+    try {
+      await request(`/api/v1/bases/${currentBase?.id}/points/${detailPoint?.id}/goods/${id}`, {
+        method: 'DELETE',
+      });
+      message.success('删除成功');
+      refreshPointGoods();
     } catch (error: any) {
       message.error(error?.data?.message || '删除失败');
     }
@@ -320,6 +449,7 @@ const PointsPage: React.FC = () => {
           setDetailPoint(null);
           setInventory([]);
           setOrders([]);
+          setPointGoods([]);
         }}
       >
         {detailPoint && (
@@ -390,9 +520,23 @@ const PointsPage: React.FC = () => {
                 label: '历史订单',
                 children: loadingDetail ? (
                   <div style={{ textAlign: 'center', padding: 40 }}>加载中...</div>
-                ) : orders.length === 0 ? (
-                  <Empty description="暂无订单数据" />
                 ) : (
+                  <div>
+                    <div style={{ marginBottom: 16, textAlign: 'right' }}>
+                      <Button
+                        type="primary"
+                        icon={<ShoppingCartOutlined />}
+                        onClick={() => {
+                          // 跳转到点位订单页面，并带上点位ID
+                          history.push(`/offline-region/point-orders?pointId=${detailPoint?.id}`);
+                        }}
+                      >
+                        新建订单
+                      </Button>
+                    </div>
+                    {orders.length === 0 ? (
+                      <Empty description="暂无订单数据" />
+                    ) : (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: '#fafafa' }}>
@@ -427,12 +571,183 @@ const PointsPage: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'goods',
+                label: '可购商品',
+                children: loadingDetail ? (
+                  <div style={{ textAlign: 'center', padding: 40 }}>加载中...</div>
+                ) : (
+                  <div>
+                    <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#666', fontSize: 12 }}>
+                        配置该点位可以采购的商品及数量限制。未配置时，下单无法选择商品。
+                      </span>
+                      <Button 
+                        type="primary" 
+                        icon={<PlusOutlined />} 
+                        size="small"
+                        onClick={() => handleOpenGoodsModal()}
+                      >
+                        添加商品
+                      </Button>
+                    </div>
+                    {pointGoods.length === 0 ? (
+                      <Empty description="暂未配置可购商品" />
+                    ) : (
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ background: '#fafafa' }}>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>商品名称</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>单价/箱</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>单价/盒</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>最大箱数</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>最大盒数</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>状态</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0', width: 100 }}>操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pointGoods.map((pg) => {
+                            const boxPrice = pg.unitPrice || Number(pg.goods.retailPrice);
+                            const packPrice = boxPrice / (pg.goods.packPerBox || 1);
+                            return (
+                              <tr key={pg.id}>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>{pg.goods.name}</td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'right' }}>
+                                  {boxPrice.toFixed(2)}
+                                </td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'right' }}>
+                                  {packPrice.toFixed(2)}
+                                </td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
+                                  {pg.maxBoxQuantity ?? '不限'}
+                                </td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
+                                  {pg.maxPackQuantity ?? '不限'}
+                                </td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
+                                  <Tag color={pg.isActive ? 'green' : 'default'}>
+                                    {pg.isActive ? '启用' : '停用'}
+                                  </Tag>
+                                </td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
+                                  <Space size="small">
+                                    <Button 
+                                      type="link" 
+                                      size="small" 
+                                      icon={<EditOutlined />}
+                                      onClick={() => handleOpenGoodsModal(pg)}
+                                    />
+                                    <Popconfirm
+                                      title="确定删除该商品配置吗？"
+                                      onConfirm={() => handleDeletePointGoods(pg.id)}
+                                    >
+                                      <Button 
+                                        type="link" 
+                                        size="small" 
+                                        danger 
+                                        icon={<DeleteOutlined />}
+                                      />
+                                    </Popconfirm>
+                                  </Space>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 ),
               },
             ]}
           />
         )}
       </Drawer>
+
+      {/* 可购商品编辑弹窗 */}
+      <Modal
+        title={editingPointGoods ? '编辑可购商品' : '添加可购商品'}
+        open={goodsModalVisible}
+        onOk={handleSavePointGoods}
+        onCancel={() => setGoodsModalVisible(false)}
+        destroyOnClose
+      >
+        <Form
+          form={goodsForm}
+          layout="vertical"
+        >
+          <Form.Item
+            name="goodsId"
+            label="选择商品"
+            rules={[{ required: true, message: '请选择商品' }]}
+          >
+            <Select
+              showSearch
+              placeholder="搜索并选择商品"
+              loading={goodsLoading}
+              disabled={!!editingPointGoods}
+              optionFilterProp="label"
+              options={allGoods
+                .filter(g => !pointGoods.some(pg => pg.goodsId === g.id) || editingPointGoods?.goodsId === g.id)
+                .map(g => ({
+                  value: g.id,
+                  label: `${g.name} (${Number(g.retailPrice).toFixed(2)}/箱)`,
+                }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="unitPrice"
+            label="专属单价/箱"
+            tooltip="留空则使用商品默认价格"
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={0}
+              step={0.01}
+              precision={2}
+              placeholder="留空使用默认价格"
+                          />
+          </Form.Item>
+
+          <Form.Item
+            name="maxBoxQuantity"
+            label="最大可购箱数"
+            tooltip="留空表示不限制"
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={1}
+              placeholder="不限制"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="maxPackQuantity"
+            label="最大可购盒数"
+            tooltip="留空表示不限制"
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={1}
+              placeholder="不限制"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="isActive"
+            label="启用状态"
+            valuePropName="checked"
+          >
+            <Switch checkedChildren="启用" unCheckedChildren="停用" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 };

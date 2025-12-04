@@ -30,6 +30,7 @@ export default {
   'menu.offline-region.sub-districts': '小区/仓库',
   'menu.offline-region.warehouse-keepers': '仓管',
   'menu.offline-region.points': '点位管理',
+  'menu.offline-region.point-orders': '点位订单',
   'menu.offline-region.suppliers': '供应商',
   'menu.offline-region.products': '商品',
   'menu.offline-region.procurement': '采购',

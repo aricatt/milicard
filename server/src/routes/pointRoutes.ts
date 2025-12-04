@@ -61,4 +61,35 @@ router.get('/:baseId/points/:pointId/orders',
   PointController.getOrders
 );
 
+// 点位可采购商品管理
+router.get('/:baseId/points/:pointId/goods', 
+  authenticateToken, 
+  checkPermission('point', 'read'),
+  PointController.getPointGoods
+);
+
+router.post('/:baseId/points/:pointId/goods/batch', 
+  authenticateToken, 
+  checkPermission('point', 'update'),
+  PointController.batchSetPointGoods
+);
+
+router.post('/:baseId/points/:pointId/goods', 
+  authenticateToken, 
+  checkPermission('point', 'update'),
+  PointController.addPointGoods
+);
+
+router.put('/:baseId/points/:pointId/goods/:goodsConfigId', 
+  authenticateToken, 
+  checkPermission('point', 'update'),
+  PointController.updatePointGoods
+);
+
+router.delete('/:baseId/points/:pointId/goods/:goodsConfigId', 
+  authenticateToken, 
+  checkPermission('point', 'update'),
+  PointController.deletePointGoods
+);
+
 export default router;

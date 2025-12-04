@@ -198,6 +198,14 @@ export default [
         component: './offline-region/points',
         access: 'canAccessPoint',
       },
+      // 点位订单
+      {
+        name: 'point-orders',
+        icon: 'shopping',
+        path: '/offline-region/point-orders',
+        component: './offline-region/point-orders',
+        access: 'canAccessPointOrder',
+      },
       // 供应商管理（复用直播基地）
       {
         name: 'suppliers',

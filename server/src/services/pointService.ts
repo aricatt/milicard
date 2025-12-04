@@ -499,4 +499,173 @@ export class PointService {
 
     return users;
   }
+
+  /**
+   * 获取点位可采购商品列表
+   */
+  static async getPointGoods(pointId: string) {
+    const pointGoods = await prisma.pointGoods.findMany({
+      where: { pointId },
+      include: {
+        goods: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            retailPrice: true,
+            packPerBox: true,
+            piecePerPack: true,
+            imageUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return pointGoods;
+  }
+
+  /**
+   * 添加点位可采购商品
+   */
+  static async addPointGoods(
+    pointId: string,
+    data: {
+      goodsId: string;
+      maxBoxQuantity?: number;
+      maxPackQuantity?: number;
+      unitPrice?: number;
+    }
+  ) {
+    // 检查是否已存在
+    const existing = await prisma.pointGoods.findUnique({
+      where: {
+        pointId_goodsId: {
+          pointId,
+          goodsId: data.goodsId,
+        },
+      },
+    });
+
+    if (existing) {
+      // 如果已存在但被禁用，则重新启用并更新
+      return prisma.pointGoods.update({
+        where: { id: existing.id },
+        data: {
+          isActive: true,
+          maxBoxQuantity: data.maxBoxQuantity,
+          maxPackQuantity: data.maxPackQuantity,
+          unitPrice: data.unitPrice,
+        },
+        include: {
+          goods: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              retailPrice: true,
+              packPerBox: true,
+            },
+          },
+        },
+      });
+    }
+
+    return prisma.pointGoods.create({
+      data: {
+        pointId,
+        goodsId: data.goodsId,
+        maxBoxQuantity: data.maxBoxQuantity,
+        maxPackQuantity: data.maxPackQuantity,
+        unitPrice: data.unitPrice,
+      },
+      include: {
+        goods: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            retailPrice: true,
+            packPerBox: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * 更新点位可采购商品
+   */
+  static async updatePointGoods(
+    id: string,
+    data: {
+      maxBoxQuantity?: number | null;
+      maxPackQuantity?: number | null;
+      unitPrice?: number | null;
+      isActive?: boolean;
+    }
+  ) {
+    return prisma.pointGoods.update({
+      where: { id },
+      data: {
+        maxBoxQuantity: data.maxBoxQuantity,
+        maxPackQuantity: data.maxPackQuantity,
+        unitPrice: data.unitPrice,
+        isActive: data.isActive,
+      },
+      include: {
+        goods: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            retailPrice: true,
+            packPerBox: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * 删除点位可采购商品
+   */
+  static async deletePointGoods(id: string) {
+    return prisma.pointGoods.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * 批量设置点位可采购商品
+   */
+  static async batchSetPointGoods(
+    pointId: string,
+    goodsIds: string[]
+  ) {
+    // 先将所有现有商品设为不可用
+    await prisma.pointGoods.updateMany({
+      where: { pointId },
+      data: { isActive: false },
+    });
+
+    // 批量添加或更新
+    for (const goodsId of goodsIds) {
+      await prisma.pointGoods.upsert({
+        where: {
+          pointId_goodsId: { pointId, goodsId },
+        },
+        create: {
+          pointId,
+          goodsId,
+          isActive: true,
+        },
+        update: {
+          isActive: true,
+        },
+      });
+    }
+
+    return this.getPointGoods(pointId);
+  }
 }

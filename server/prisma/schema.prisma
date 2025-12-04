@@ -983,11 +983,15 @@ model Point {
 
 // 点位可采购商品
 model PointGoods {
-  id        String   @id @default(uuid())
-  pointId   String   @map("point_id")
-  goodsId   String   @map("goods_id")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
+  id             String   @id @default(uuid())
+  pointId        String   @map("point_id")
+  goodsId        String   @map("goods_id")
+  maxBoxQuantity Int?     @map("max_box_quantity") // 最大可采购箱数（null表示不限制）
+  maxPackQuantity Int?    @map("max_pack_quantity") // 最大可采购盒数（null表示不限制）
+  unitPrice      Decimal? @map("unit_price") @db.Decimal(12, 2) // 该点位的专属单价（箱），null则使用商品默认价格
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   point Point @relation(fields: [pointId], references: [id], onDelete: Cascade)
   goods Goods @relation(fields: [goodsId], references: [id], onDelete: Cascade)
