@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { BaseController } from '../controllers/baseController';
 import { authenticateToken } from '../middleware/authMiddleware';
+import { checkSystemPermission } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -46,6 +47,7 @@ router.use(authenticateToken);
  *       403:
  *         description: 权限不足
  */
+// 基地列表对所有登录用户开放（用于基地选择）
 router.get('/', BaseController.getBaseList);
 
 /**
@@ -69,6 +71,7 @@ router.get('/', BaseController.getBaseList);
  *       404:
  *         description: 基地不存在
  */
+// 基地详情对所有登录用户开放
 router.get('/:id', BaseController.getBaseById);
 
 /**
@@ -103,7 +106,7 @@ router.get('/:id', BaseController.getBaseById);
  *       409:
  *         description: 基地编号已存在
  */
-router.post('/', BaseController.createBase);
+router.post('/', checkSystemPermission('base', 'create'), BaseController.createBase);
 
 /**
  * @swagger
@@ -141,7 +144,7 @@ router.post('/', BaseController.createBase);
  *       409:
  *         description: 基地编号已存在
  */
-router.put('/:id', BaseController.updateBase);
+router.put('/:id', checkSystemPermission('base', 'update'), BaseController.updateBase);
 
 /**
  * @swagger
@@ -164,6 +167,6 @@ router.put('/:id', BaseController.updateBase);
  *       404:
  *         description: 基地不存在
  */
-router.delete('/:id', BaseController.deleteBase);
+router.delete('/:id', checkSystemPermission('base', 'delete'), BaseController.deleteBase);
 
 export default router;

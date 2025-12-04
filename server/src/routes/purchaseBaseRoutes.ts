@@ -1,66 +1,67 @@
 import { Router } from 'express';
 import { PurchaseBaseController } from '../controllers/purchaseBaseController';
 import { authenticateToken } from '../middleware/authMiddleware';
+import { checkPermission } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
 /**
  * 基地采购路由 - 阿米巴模式
- * 所有路由都需要认证
+ * 所有路由都需要认证和权限检查
  */
 
 /**
  * 获取基地采购统计
  * GET /api/v1/bases/{baseId}/purchase-orders/stats
  */
-router.get('/:baseId/purchase-orders/stats', authenticateToken, PurchaseBaseController.getBasePurchaseStats);
+router.get('/:baseId/purchase-orders/stats', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getBasePurchaseStats);
 
 /**
  * 获取基地的采购订单列表
  * GET /api/v1/bases/{baseId}/purchase-orders
  */
-router.get('/:baseId/purchase-orders', authenticateToken, PurchaseBaseController.getBasePurchaseOrderList);
+router.get('/:baseId/purchase-orders', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getBasePurchaseOrderList);
 
 /**
  * 创建采购订单
  * POST /api/v1/bases/{baseId}/purchase-orders
  */
-router.post('/:baseId/purchase-orders', authenticateToken, PurchaseBaseController.createPurchaseOrder);
+router.post('/:baseId/purchase-orders', authenticateToken, checkPermission('purchase_order', 'create'), PurchaseBaseController.createPurchaseOrder);
 
 /**
  * 删除采购订单
  * DELETE /api/v1/bases/{baseId}/purchase-orders/:orderId
  */
-router.delete('/:baseId/purchase-orders/:orderId', authenticateToken, PurchaseBaseController.deletePurchaseOrder);
+router.delete('/:baseId/purchase-orders/:orderId', authenticateToken, checkPermission('purchase_order', 'delete'), PurchaseBaseController.deletePurchaseOrder);
 
 /**
  * 导入采购订单
  * POST /api/v1/bases/{baseId}/purchase-orders/import
  */
-router.post('/:baseId/purchase-orders/import', authenticateToken, PurchaseBaseController.importPurchaseOrder);
+router.post('/:baseId/purchase-orders/import', authenticateToken, checkPermission('purchase_order', 'create'), PurchaseBaseController.importPurchaseOrder);
 
 /**
  * 获取基地供应商列表
  * GET /api/v1/bases/{baseId}/suppliers
  */
-router.get('/:baseId/suppliers', authenticateToken, PurchaseBaseController.getBaseSuppliers);
+router.get('/:baseId/suppliers', authenticateToken, checkPermission('supplier', 'read'), PurchaseBaseController.getBaseSuppliers);
 
 /**
  * 创建基地供应商
  * POST /api/v1/bases/{baseId}/suppliers
  */
-router.post('/:baseId/suppliers', authenticateToken, PurchaseBaseController.createBaseSupplier);
+router.post('/:baseId/suppliers', authenticateToken, checkPermission('supplier', 'create'), PurchaseBaseController.createBaseSupplier);
 
 /**
  * 更新基地供应商
  * PUT /api/v1/bases/{baseId}/suppliers/:supplierId
  */
-router.put('/:baseId/suppliers/:supplierId', authenticateToken, PurchaseBaseController.updateBaseSupplier);
+router.put('/:baseId/suppliers/:supplierId', authenticateToken, checkPermission('supplier', 'update'), PurchaseBaseController.updateBaseSupplier);
 
 /**
  * 删除基地供应商
  * DELETE /api/v1/bases/{baseId}/suppliers/:supplierId
  */
-router.delete('/:baseId/suppliers/:supplierId', authenticateToken, PurchaseBaseController.deleteBaseSupplier);
+router.delete('/:baseId/suppliers/:supplierId', authenticateToken, checkPermission('supplier', 'delete'), PurchaseBaseController.deleteBaseSupplier);
 
 export default router;
