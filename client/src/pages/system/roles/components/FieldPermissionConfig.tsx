@@ -31,6 +31,7 @@ interface Resource {
 interface Props {
   roleId: string;
   roleName: string;
+  readOnly?: boolean;
 }
 
 // 资源定义（与后端保持一致）
@@ -174,7 +175,7 @@ const RESOURCES: Resource[] = [
   },
 ];
 
-const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
+const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName, readOnly = false }) => {
   const [selectedResource, setSelectedResource] = useState<string>('point');
   const [permissions, setPermissions] = useState<Map<string, FieldPermission>>(new Map());
   const [loading, setLoading] = useState(false);
@@ -311,6 +312,7 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
           <Checkbox
             checked={isAllChecked('canRead')}
             onChange={(e) => handleSelectAll('canRead', e.target.checked)}
+            disabled={readOnly}
           />
           可查看
         </Space>
@@ -324,6 +326,7 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
           <Checkbox
             checked={perm.canRead}
             onChange={(e) => updateFieldPermission(record.key, 'canRead', e.target.checked)}
+            disabled={readOnly}
           />
         );
       },
@@ -334,6 +337,7 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
           <Checkbox
             checked={isAllChecked('canWrite')}
             onChange={(e) => handleSelectAll('canWrite', e.target.checked)}
+            disabled={readOnly}
           />
           可编辑
         </Space>
@@ -346,7 +350,7 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
         return (
           <Checkbox
             checked={perm.canWrite}
-            disabled={!perm.canRead}
+            disabled={!perm.canRead || readOnly}
             onChange={(e) => updateFieldPermission(record.key, 'canWrite', e.target.checked)}
           />
         );
@@ -366,19 +370,21 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
             options={RESOURCES.map(r => ({ label: r.label, value: r.key }))}
           />
         </Space>
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          onClick={handleSave}
-          loading={saving}
-          disabled={!hasChanges}
-        >
-          保存
-        </Button>
+        {!readOnly && (
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={handleSave}
+            loading={saving}
+            disabled={!hasChanges}
+          >
+            保存
+          </Button>
+        )}
       </div>
 
       <div style={{ marginBottom: 8, color: '#666', fontSize: 12 }}>
-        配置 <strong>{roleName}</strong> 角色对 <strong>{currentResource?.label}</strong> 资源各字段的访问权限
+        {readOnly ? '查看' : '配置'} <strong>{roleName}</strong> 角色对 <strong>{currentResource?.label}</strong> 资源各字段的访问权限
       </div>
 
       {currentFields.length === 0 ? (

@@ -394,15 +394,16 @@ const UsersPage: React.FC = () => {
       width: 180,
       fixed: 'right',
       render: (_, record) => {
-        // 计算目标用户的最高角色层级
+        // 计算目标用户的最高角色层级（level 越小权限越高）
         const targetUserLevel = record.roles.length > 0
           ? Math.min(...record.roles.map(r => r.level ?? 999))
           : 999;
         
         // 判断是否可以操作该用户
-        // Level 0-1 可以操作所有用户
-        // Level > 1 只能操作层级比自己低的用户（不能操作自己和同级）
-        const canOperate = currentUserLevel <= 1 || targetUserLevel > currentUserLevel;
+        // 只能操作层级比自己低的用户（targetUserLevel > currentUserLevel）
+        // Level 0 (SUPER_ADMIN) 可以操作 Level 1+ 的用户
+        // Level 1 (ADMIN) 可以操作 Level 2+ 的用户
+        const canOperate = targetUserLevel > currentUserLevel;
         
         // 不能操作自己
         const isSelf = record.id === currentLoginUser?.id;

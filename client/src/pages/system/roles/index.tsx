@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space, Tabs, Select, InputNumber } from 'antd';
-import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined, PlusOutlined, DeleteOutlined, DatabaseOutlined, FormOutlined } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { Card, Table, Tag, Button, Modal, Checkbox, Popconfirm, Spin, Tooltip, Form, Input, App, Space, Tabs, Select, InputNumber, Alert } from 'antd';
+import { SettingOutlined, ReloadOutlined, CheckSquareOutlined, MinusSquareOutlined, PlusOutlined, DeleteOutlined, DatabaseOutlined, FormOutlined, EyeOutlined } from '@ant-design/icons';
+import { request, useModel } from '@umijs/max';
 import DataPermissionConfig from './components/DataPermissionConfig';
 import FieldPermissionConfig from './components/FieldPermissionConfig';
 
@@ -78,6 +78,34 @@ const RolesPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [createForm] = Form.useForm();
   const { message, modal } = App.useApp();
+  
+  // 获取当前登录用户信息
+  const { initialState } = useModel('@@initialState');
+  const currentLoginUser = initialState?.currentUser;
+  
+  // 计算当前用户的最高角色等级（level 越小权限越高）
+  const currentUserLevel = useMemo(() => {
+    if (!currentLoginUser?.roles || currentLoginUser.roles.length === 0) {
+      return 999; // 无角色时设为最低权限
+    }
+    return Math.min(...currentLoginUser.roles.map((r: any) => r.level ?? 999));
+  }, [currentLoginUser]);
+  
+  // 过滤后的角色列表（只显示 level >= 当前用户 level 的角色）
+  const filteredRoles = useMemo(() => {
+    return roles.filter(role => role.level >= currentUserLevel);
+  }, [roles, currentUserLevel]);
+  
+  // 判断是否可以编辑目标角色的权限（只能编辑 level > 当前用户 level 的角色）
+  const canEditRole = useCallback((role: RoleItem) => {
+    return role.level > currentUserLevel;
+  }, [currentUserLevel]);
+  
+  // 当前选中角色是否为只读模式
+  const isReadOnly = useMemo(() => {
+    if (!currentRole) return true;
+    return currentRole.level <= currentUserLevel;
+  }, [currentRole, currentUserLevel]);
 
   const fetchRoles = async () => {
     setLoading(true);
@@ -319,6 +347,7 @@ const RolesPage: React.FC = () => {
             checked={isRowAllChecked(record.key)}
             indeterminate={isRowIndeterminate(record.key)}
             onChange={() => toggleRow(record.key)}
+            disabled={isReadOnly}
           />
           <span>{title}</span>
         </div>
@@ -331,6 +360,7 @@ const RolesPage: React.FC = () => {
             checked={isColumnAllChecked(action.key)}
             indeterminate={isColumnIndeterminate(action.key)}
             onChange={() => toggleColumn(action.key)}
+            disabled={isReadOnly}
           />
           <div style={{ fontSize: 12 }}>{action.label}</div>
         </div>
@@ -343,10 +373,11 @@ const RolesPage: React.FC = () => {
         <Checkbox
           checked={checkedKeys.has(`${record.key}:${action.key}`)}
           onChange={() => togglePermission(record.key, action.key)}
+          disabled={isReadOnly}
         />
       ),
     })),
-  ], [modules, checkedKeys]);
+  ], [modules, checkedKeys, isReadOnly]);
 
   const columns = [
     {
@@ -406,36 +437,42 @@ const RolesPage: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 180,
-      render: (_: any, record: RoleItem) => (
-        <Space size="small">
-          <Button
-            type="link"
-            size="small"
-            icon={<SettingOutlined />}
-            onClick={() => handleConfigPermission(record)}
-          >
-            配置权限
-          </Button>
-          {!record.isSystem && (
-            <Popconfirm
-              title="确定要删除该角色吗？"
-              description="删除后无法恢复"
-              onConfirm={() => handleDeleteRole(record)}
-              okText="确定"
-              cancelText="取消"
-            >
+      render: (_: any, record: RoleItem) => {
+        const canEdit = canEditRole(record);
+        
+        return (
+          <Space size="small">
+            <Tooltip title={canEdit ? '配置权限' : '查看权限（只读）'}>
               <Button
                 type="link"
                 size="small"
-                danger
-                icon={<DeleteOutlined />}
+                icon={canEdit ? <SettingOutlined /> : <EyeOutlined />}
+                onClick={() => handleConfigPermission(record)}
               >
-                删除
+                {canEdit ? '配置权限' : '查看权限'}
               </Button>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
+            </Tooltip>
+            {!record.isSystem && canEdit && (
+              <Popconfirm
+                title="确定要删除该角色吗？"
+                description="删除后无法恢复"
+                onConfirm={() => handleDeleteRole(record)}
+                okText="确定"
+                cancelText="取消"
+              >
+                <Button
+                  type="link"
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                >
+                  删除
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -455,7 +492,7 @@ const RolesPage: React.FC = () => {
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={roles}
+          dataSource={filteredRoles}
           loading={loading}
           pagination={false}
         />
@@ -505,14 +542,16 @@ const RolesPage: React.FC = () => {
             name="level"
             label="角色等级"
             rules={[{ required: true, message: '请选择角色等级' }]}
-            extra="等级越低权限越高。Level 0-1 可访问所有基地，Level 2+ 只能访问关联基地"
-            initialValue={3}
+            extra="等级越低权限越高。只能创建比自己等级低的角色"
+            initialValue={Math.max(currentUserLevel + 1, 2)}
           >
             <Select
-              options={LEVEL_OPTIONS.map(l => ({
-                value: l.value,
-                label: `${l.label}`,
-              }))}
+              options={LEVEL_OPTIONS
+                .filter(l => l.value > currentUserLevel)
+                .map(l => ({
+                  value: l.value,
+                  label: `${l.label}`,
+                }))}
               placeholder="请选择角色等级"
             />
           </Form.Item>
@@ -533,13 +572,22 @@ const RolesPage: React.FC = () => {
       </Modal>
 
       <Modal
-        title={`配置权限 - ${currentRole ? getRoleLabel(currentRole.name, currentRole.description).label : ''}`}
+        title={`${isReadOnly ? '查看' : '配置'}权限 - ${currentRole ? getRoleLabel(currentRole.name, currentRole.description).label : ''}`}
         open={permissionModalVisible}
         onCancel={() => setPermissionModalVisible(false)}
         width={800}
         footer={null}
         destroyOnClose
       >
+        {isReadOnly && (
+          <Alert
+            message="只读模式"
+            description="您只能查看同级或更高级别角色的权限配置，无法修改。"
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
         <Tabs
           items={[
             {
@@ -557,27 +605,31 @@ const RolesPage: React.FC = () => {
               ) : (
                 <>
                   <div style={{ marginBottom: 12, display: 'flex', gap: 8 }}>
-                    <Tooltip title="全选所有权限">
-                      <Button size="small" icon={<CheckSquareOutlined />} onClick={selectAll}>
-                        全选
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="清空所有权限">
-                      <Button size="small" icon={<MinusSquareOutlined />} onClick={clearAll}>
-                        清空
-                      </Button>
-                    </Tooltip>
-                    <Popconfirm
-                      title="确定要重置为预设权限吗？"
-                      description="这将覆盖当前的所有权限配置"
-                      onConfirm={handleResetPermissions}
-                      okText="确定"
-                      cancelText="取消"
-                    >
-                      <Button size="small" icon={<ReloadOutlined />} loading={saving}>
-                        重置为预设
-                      </Button>
-                    </Popconfirm>
+                    {!isReadOnly && (
+                      <>
+                        <Tooltip title="全选所有权限">
+                          <Button size="small" icon={<CheckSquareOutlined />} onClick={selectAll}>
+                            全选
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="清空所有权限">
+                          <Button size="small" icon={<MinusSquareOutlined />} onClick={clearAll}>
+                            清空
+                          </Button>
+                        </Tooltip>
+                        <Popconfirm
+                          title="确定要重置为预设权限吗？"
+                          description="这将覆盖当前的所有权限配置"
+                          onConfirm={handleResetPermissions}
+                          okText="确定"
+                          cancelText="取消"
+                        >
+                          <Button size="small" icon={<ReloadOutlined />} loading={saving}>
+                            重置为预设
+                          </Button>
+                        </Popconfirm>
+                      </>
+                    )}
                     <span style={{ marginLeft: 'auto', color: '#999', fontSize: 12 }}>
                       已选 {checkedKeys.size} 项权限
                     </span>
@@ -594,11 +646,13 @@ const RolesPage: React.FC = () => {
                   <div style={{ marginTop: 16, textAlign: 'right' }}>
                     <Space>
                       <Button onClick={() => setPermissionModalVisible(false)}>
-                        取消
+                        {isReadOnly ? '关闭' : '取消'}
                       </Button>
-                      <Button type="primary" loading={saving} onClick={handleSavePermissions}>
-                        保存功能权限
-                      </Button>
+                      {!isReadOnly && (
+                        <Button type="primary" loading={saving} onClick={handleSavePermissions}>
+                          保存功能权限
+                        </Button>
+                      )}
                     </Space>
                   </div>
                 </>
@@ -616,6 +670,7 @@ const RolesPage: React.FC = () => {
                 <DataPermissionConfig
                   roleId={currentRole.id}
                   roleName={getRoleLabel(currentRole.name, currentRole.description).label}
+                  readOnly={isReadOnly}
                 />
               ) : null,
             },
@@ -631,6 +686,7 @@ const RolesPage: React.FC = () => {
                 <FieldPermissionConfig
                   roleId={currentRole.id}
                   roleName={getRoleLabel(currentRole.name, currentRole.description).label}
+                  readOnly={isReadOnly}
                 />
               ) : null,
             },

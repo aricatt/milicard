@@ -32,9 +32,10 @@ interface Metadata {
 interface Props {
   roleId: string;
   roleName: string;
+  readOnly?: boolean;
 }
 
-const DataPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
+const DataPermissionConfig: React.FC<Props> = ({ roleId, roleName, readOnly = false }) => {
   const [rules, setRules] = useState<DataPermissionRule[]>([]);
   const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [loading, setLoading] = useState(false);
@@ -192,7 +193,7 @@ const DataPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
         <Tag color={isActive ? 'green' : 'default'}>{isActive ? '启用' : '禁用'}</Tag>
       ),
     },
-    {
+    ...(!readOnly ? [{
       title: '操作',
       key: 'action',
       width: 80,
@@ -208,18 +209,20 @@ const DataPermissionConfig: React.FC<Props> = ({ roleId, roleName }) => {
           </Button>
         </Popconfirm>
       ),
-    },
+    }] : []),
   ];
 
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: '#666' }}>
-          配置 <strong>{roleName}</strong> 角色的数据访问范围
+          {readOnly ? '查看' : '配置'} <strong>{roleName}</strong> 角色的数据访问范围
         </span>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
-          添加规则
-        </Button>
+        {!readOnly && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}>
+            添加规则
+          </Button>
+        )}
       </div>
 
       {rules.length === 0 ? (

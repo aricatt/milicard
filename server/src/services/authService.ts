@@ -195,6 +195,20 @@ export class AuthService {
         data: { lastLoginAt: new Date() }
       })
 
+      // 同步用户角色到 Casbin（确保权限检查生效）
+      try {
+        const { casbinService } = await import('./casbinService')
+        for (const userRole of user.userRoles) {
+          // 为用户分配全局角色（系统级权限）
+          await casbinService.addRoleForUser(user.id, userRole.role.name, '*')
+        }
+      } catch (casbinError) {
+        logger.warn('同步 Casbin 角色失败，但不影响登录', {
+          userId: user.id,
+          error: casbinError instanceof Error ? casbinError.message : String(casbinError)
+        })
+      }
+
       // 生成令牌
       const tokenPair = JwtService.generateTokenPair({
         userId: user.id,

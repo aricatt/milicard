@@ -84,6 +84,68 @@ export const checkPermission = (resource: string, action: string) => {
 }
 
 /**
+ * 系统级权限检查中间件（不需要 baseId）
+ * 用于系统管理功能，如用户管理、角色管理等
+ * @param resource 资源名称（如 'role', 'user'）
+ * @param action 操作名称（如 'read', 'create', 'update', 'delete'）
+ */
+export const checkSystemPermission = (resource: string, action: string) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user?.id
+
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: '未登录',
+          code: 'AUTHENTICATION_REQUIRED'
+        })
+        return
+      }
+
+      // 使用 '*' 作为全局域检查系统级权限
+      const hasPermission = await casbinService.checkPermission(
+        userId,
+        '*',
+        resource,
+        action
+      )
+
+      if (hasPermission) {
+        next()
+        return
+      }
+
+      logger.warn('系统权限检查失败', {
+        userId,
+        resource,
+        action,
+        ip: req.ip,
+        path: req.path
+      })
+
+      res.status(403).json({
+        success: false,
+        message: '没有权限执行此操作',
+        code: 'PERMISSION_DENIED',
+        requiredPermission: `${resource}:${action}`
+      })
+    } catch (error) {
+      logger.error('系统权限检查异常', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: req.user?.id,
+        path: req.path
+      })
+
+      res.status(500).json({
+        success: false,
+        message: '权限检查失败'
+      })
+    }
+  }
+}
+
+/**
  * 数据权限注入中间件（基于 Casbin）
  * 将数据过滤条件注入到 req.permissionContext
  */
