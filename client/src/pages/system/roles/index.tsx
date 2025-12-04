@@ -79,6 +79,9 @@ const RolesPage: React.FC = () => {
   const [createForm] = Form.useForm();
   const { message, modal } = App.useApp();
   
+  // 当前用户拥有的权限集合
+  const [currentUserPermissions, setCurrentUserPermissions] = useState<Set<string>>(new Set());
+  
   // 获取当前登录用户信息
   const { initialState } = useModel('@@initialState');
   const currentLoginUser = initialState?.currentUser;
@@ -106,6 +109,13 @@ const RolesPage: React.FC = () => {
     if (!currentRole) return true;
     return currentRole.level <= currentUserLevel;
   }, [currentRole, currentUserLevel]);
+  
+  // 判断某个权限是否可以被当前用户配置（只能配置自己拥有的权限）
+  const canConfigurePermission = useCallback((permissionKey: string) => {
+    // 超级管理员可以配置所有权限
+    if (currentUserLevel === 0) return true;
+    return currentUserPermissions.has(permissionKey);
+  }, [currentUserPermissions, currentUserLevel]);
 
   const fetchRoles = async () => {
     setLoading(true);
@@ -152,10 +162,35 @@ const RolesPage: React.FC = () => {
     }
   };
 
+  // 获取当前用户的所有权限（合并所有角色的权限）
+  const fetchCurrentUserPermissions = async () => {
+    if (!currentLoginUser?.roles || currentLoginUser.roles.length === 0) {
+      setCurrentUserPermissions(new Set());
+      return;
+    }
+    
+    try {
+      const allPermissions = new Set<string>();
+      
+      // 获取当前用户所有角色的权限
+      for (const role of currentLoginUser.roles) {
+        const result = await request(`/api/v1/roles/${role.id}/permissions`, { method: 'GET' });
+        if (result.success && result.data.permissions) {
+          result.data.permissions.forEach((perm: string) => allPermissions.add(perm));
+        }
+      }
+      
+      setCurrentUserPermissions(allPermissions);
+    } catch (error) {
+      console.error('获取当前用户权限失败', error);
+    }
+  };
+
   useEffect(() => {
     fetchRoles();
     fetchPermissionTree();
-  }, []);
+    fetchCurrentUserPermissions();
+  }, [currentLoginUser]);
 
   const handleConfigPermission = useCallback((role: RoleItem) => {
     setCurrentRole(role);
@@ -264,6 +299,9 @@ const RolesPage: React.FC = () => {
   // 切换单个权限
   const togglePermission = (module: string, action: string) => {
     const key = `${module}:${action}`;
+    // 检查是否有权限配置
+    if (!canConfigurePermission(key)) return;
+    
     const newChecked = new Set(checkedKeys);
     if (newChecked.has(key)) {
       newChecked.delete(key);
@@ -273,10 +311,16 @@ const RolesPage: React.FC = () => {
     setCheckedKeys(newChecked);
   };
 
-  // 切换整行（模块的所有操作）
+  // 切换整行（模块的所有操作）- 只切换用户有权限的项
   const toggleRow = (module: string) => {
     const newChecked = new Set(checkedKeys);
-    const rowKeys = ACTIONS.map(a => `${module}:${a.key}`);
+    // 只处理用户有权限配置的项
+    const rowKeys = ACTIONS
+      .map(a => `${module}:${a.key}`)
+      .filter(k => canConfigurePermission(k));
+    
+    if (rowKeys.length === 0) return;
+    
     const allChecked = rowKeys.every(k => newChecked.has(k));
     
     if (allChecked) {
@@ -287,10 +331,16 @@ const RolesPage: React.FC = () => {
     setCheckedKeys(newChecked);
   };
 
-  // 切换整列（所有模块的某个操作）
+  // 切换整列（所有模块的某个操作）- 只切换用户有权限的项
   const toggleColumn = (action: string) => {
     const newChecked = new Set(checkedKeys);
-    const colKeys = modules.map(m => `${m.key}:${action}`);
+    // 只处理用户有权限配置的项
+    const colKeys = modules
+      .map(m => `${m.key}:${action}`)
+      .filter(k => canConfigurePermission(k));
+    
+    if (colKeys.length === 0) return;
+    
     const allChecked = colKeys.every(k => newChecked.has(k));
     
     if (allChecked) {
@@ -301,14 +351,18 @@ const RolesPage: React.FC = () => {
     setCheckedKeys(newChecked);
   };
 
-  // 全选/清空
+  // 全选/清空 - 只操作用户有权限的项
   const selectAll = () => {
-    const allKeys = modules.flatMap(m => ACTIONS.map(a => `${m.key}:${a.key}`));
+    const allKeys = modules
+      .flatMap(m => ACTIONS.map(a => `${m.key}:${a.key}`))
+      .filter(k => canConfigurePermission(k));
     setCheckedKeys(new Set(allKeys));
   };
 
   const clearAll = () => {
-    setCheckedKeys(new Set());
+    // 清空时，保留用户无权配置的已选项（不能取消别人配置的权限）
+    const keysToKeep = Array.from(checkedKeys).filter(k => !canConfigurePermission(k));
+    setCheckedKeys(new Set(keysToKeep));
   };
 
   // 检查行是否全选
@@ -333,6 +387,16 @@ const RolesPage: React.FC = () => {
     return checked > 0 && checked < modules.length;
   };
 
+  // 检查行内是否有可配置的权限
+  const hasConfigurablePermissionInRow = (module: string) => {
+    return ACTIONS.some(a => canConfigurePermission(`${module}:${a.key}`));
+  };
+
+  // 检查列内是否有可配置的权限
+  const hasConfigurablePermissionInColumn = (action: string) => {
+    return modules.some(m => canConfigurePermission(`${m.key}:${action}`));
+  };
+
   // 权限矩阵表格列定义
   const permissionColumns = useMemo(() => [
     {
@@ -341,17 +405,22 @@ const RolesPage: React.FC = () => {
       key: 'title',
       width: 120,
       fixed: 'left' as const,
-      render: (title: string, record: { key: string; title: string }) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Checkbox
-            checked={isRowAllChecked(record.key)}
-            indeterminate={isRowIndeterminate(record.key)}
-            onChange={() => toggleRow(record.key)}
-            disabled={isReadOnly}
-          />
-          <span>{title}</span>
-        </div>
-      ),
+      render: (title: string, record: { key: string; title: string }) => {
+        const canConfigureRow = hasConfigurablePermissionInRow(record.key);
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Tooltip title={!canConfigureRow && !isReadOnly ? '您没有该模块的任何权限，无法配置' : undefined}>
+              <Checkbox
+                checked={isRowAllChecked(record.key)}
+                indeterminate={isRowIndeterminate(record.key)}
+                onChange={() => toggleRow(record.key)}
+                disabled={isReadOnly || !canConfigureRow}
+              />
+            </Tooltip>
+            <span style={{ color: !canConfigureRow && !isReadOnly ? '#999' : undefined }}>{title}</span>
+          </div>
+        );
+      },
     },
     ...ACTIONS.map(action => ({
       title: (
@@ -360,7 +429,7 @@ const RolesPage: React.FC = () => {
             checked={isColumnAllChecked(action.key)}
             indeterminate={isColumnIndeterminate(action.key)}
             onChange={() => toggleColumn(action.key)}
-            disabled={isReadOnly}
+            disabled={isReadOnly || !hasConfigurablePermissionInColumn(action.key)}
           />
           <div style={{ fontSize: 12 }}>{action.label}</div>
         </div>
@@ -369,15 +438,21 @@ const RolesPage: React.FC = () => {
       key: action.key,
       width: 70,
       align: 'center' as const,
-      render: (_: any, record: { key: string }) => (
-        <Checkbox
-          checked={checkedKeys.has(`${record.key}:${action.key}`)}
-          onChange={() => togglePermission(record.key, action.key)}
-          disabled={isReadOnly}
-        />
-      ),
+      render: (_: any, record: { key: string }) => {
+        const permKey = `${record.key}:${action.key}`;
+        const canConfigure = canConfigurePermission(permKey);
+        return (
+          <Tooltip title={!canConfigure && !isReadOnly ? '您没有此权限，无法授予他人' : undefined}>
+            <Checkbox
+              checked={checkedKeys.has(permKey)}
+              onChange={() => togglePermission(record.key, action.key)}
+              disabled={isReadOnly || !canConfigure}
+            />
+          </Tooltip>
+        );
+      },
     })),
-  ], [modules, checkedKeys, isReadOnly]);
+  ], [modules, checkedKeys, isReadOnly, currentUserPermissions, currentUserLevel]);
 
   const columns = [
     {

@@ -615,6 +615,7 @@ export class PermissionController {
     try {
       const { roleId } = req.params
       const { permissions } = req.body  // 权限 key 数组：['module:action', ...]
+      const currentUserId = req.user?.id
 
       if (!Array.isArray(permissions)) {
         res.status(400).json({
@@ -637,8 +638,51 @@ export class PermissionController {
         return
       }
 
-      // 使用 casbinService 获取当前角色的所有权限策略
+      // 获取当前用户的角色等级
+      const currentUserRoles = await prisma.userRole.findMany({
+        where: { userId: currentUserId, isActive: true },
+        include: { role: true }
+      })
+      const currentUserLevel = currentUserRoles.length > 0
+        ? Math.min(...currentUserRoles.map(ur => ur.role.level))
+        : 999
+
+      // 检查目标角色等级：只能配置比自己等级低的角色
+      if (role.level <= currentUserLevel) {
+        res.status(403).json({
+          success: false,
+          message: '无法配置同级或更高级别角色的权限'
+        })
+        return
+      }
+
+      // 获取当前用户拥有的所有权限（用于验证）
       const { casbinService } = await import('../services/casbinService')
+      let currentUserPermissions = new Set<string>()
+      
+      // 超级管理员（level 0）可以配置所有权限
+      if (currentUserLevel > 0) {
+        for (const ur of currentUserRoles) {
+          const policies = await casbinService.getRolePolicies(ur.role.name)
+          policies.forEach(p => currentUserPermissions.add(`${p[2]}:${p[3]}`))
+        }
+        
+        // 验证用户只能配置自己拥有的权限
+        const unauthorizedPermissions = (permissions as string[]).filter(
+          perm => !currentUserPermissions.has(perm)
+        )
+        
+        if (unauthorizedPermissions.length > 0) {
+          res.status(403).json({
+            success: false,
+            message: '无法授予您没有的权限',
+            data: { unauthorizedPermissions }
+          })
+          return
+        }
+      }
+
+      // 使用 casbinService 获取当前角色的所有权限策略
       const currentPolicies = await casbinService.getRolePolicies(role.name)
       
       // 当前权限格式: [role, domain, resource, action, effect]
