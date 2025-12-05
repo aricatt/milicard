@@ -63,6 +63,7 @@ import devRoutes from './routes/devRoutes'
 import pointRoutes from './routes/pointRoutes'
 import pointOrderRoutes from './routes/pointOrderRoutes'
 import dataPermissionRoutes from './routes/dataPermissionRoutes'
+import stockOutRoutes from './routes/stockOutRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
@@ -88,6 +89,7 @@ app.use('/api/v1/roles', roleRoutes)
 app.use('/api/v1/data-permissions', dataPermissionRoutes)
 app.use('/api/v1/bases', pointRoutes)
 app.use('/api/v1/bases', pointOrderRoutes)
+app.use('/api/v1/bases', stockOutRoutes)
 
 // 开发环境路由（仅在开发环境下启用）
 if (process.env.NODE_ENV === 'development') {

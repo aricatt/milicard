@@ -143,7 +143,7 @@ export default [
         name: 'stock-out',
         icon: 'export',
         path: '/live-base/stock-out',
-        component: './live-base/sales',
+        component: './live-base/stock-out',
         access: 'canAccessStockOut',
       },
       // 应收管理

@@ -88,7 +88,7 @@ const TYPE_MAP: Record<StockOutType, { text: string; color: string; icon: React.
 };
 
 /**
- * 线下区域出库管理页面
+ * 直播基地出库管理页面
  */
 const StockOutPage: React.FC = () => {
   const { currentBase, initialized } = useBase();
@@ -591,7 +591,7 @@ const StockOutPage: React.FC = () => {
       </Form.Item>
 
       <Form.Item label="目标名称" name="targetName">
-        <Input placeholder="请输入目标名称（如点位名、客户名等）" />
+        <Input placeholder="请输入目标名称（如客户名、直播间等）" />
       </Form.Item>
 
       <Space style={{ width: '100%' }} size="middle">

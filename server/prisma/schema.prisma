@@ -28,7 +28,7 @@ model User {
   arrivalOrders        ArrivalOrder[]      @relation("ArrivalOrderCreator")
   createdArrivals      ArrivalRecord[]     @relation("ArrivalCreator")
   updatedArrivals      ArrivalRecord[]     @relation("ArrivalUpdater")
-  distributionOrders   DistributionOrder[] @relation("DistributionOrderCreator")
+  stockOuts            StockOut[]          @relation("StockOutCreator")
   createdGoods         Goods[]             @relation("GoodsCreator")
   updatedGoods         Goods[]             @relation("GoodsUpdater")
   createdLedgers       InventoryLedger[]   @relation("InventoryLedgerCreator")
@@ -38,10 +38,7 @@ model User {
   createdPersonnel     Personnel[]         @relation("PersonnelCreator")
   updatedPersonnel     Personnel[]         @relation("PersonnelUpdater")
   purchaseOrders       PurchaseOrder[]     @relation("PurchaseOrderCreator")
-  receivablePayments   ReceivablePayment[] @relation("ReceivablePaymentCreator")
-  receivables          Receivable[]        @relation("ReceivableCreator")
   stockConsumptions    StockConsumption[]  @relation("StockConsumptionCreator")
-  stockOutOrders       StockOutOrder[]     @relation("StockOutOrderCreator")
   transferOrders       TransferOrder[]     @relation("TransferOrderCreator")
   createdTransfers     TransferRecord[]    @relation("TransferCreator")
   updatedTransfers     TransferRecord[]    @relation("TransferUpdater")
@@ -127,7 +124,7 @@ model Location {
   base                 Base               @relation(fields: [baseId], references: [id])
   purchaseOrders       PurchaseOrder[]    @relation("PurchaseOrderTarget")
   stockConsumptions    StockConsumption[]
-  stockOutOrders       StockOutOrder[]
+  stockOuts            StockOut[]
   transferOrdersFrom   TransferOrder[]    @relation("TransferOrderFrom")
   transferOrdersTo     TransferOrder[]    @relation("TransferOrderTo")
   transferDestinations TransferRecord[]   @relation("TransferDestination")
@@ -167,8 +164,6 @@ model Customer {
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
   base               Base?               @relation(fields: [baseId], references: [id])
-  distributionOrders DistributionOrder[]
-  receivables        Receivable[]
 
   @@index([phone])
   @@index([isActive])
@@ -199,7 +194,6 @@ model Goods {
   updatedBy              String?                 @map("updated_by")
   arrivalOrderItems      ArrivalOrderItem[]
   arrivalRecords         ArrivalRecord[]
-  distributionOrderItems DistributionOrderItem[]
   base                   Base                    @relation(fields: [baseId], references: [id], onDelete: Cascade)
   creator                User?                   @relation("GoodsCreator", fields: [createdBy], references: [id])
   updater                User?                   @relation("GoodsUpdater", fields: [updatedBy], references: [id])
@@ -207,7 +201,7 @@ model Goods {
   inventoryLedgers       InventoryLedger[]
   purchaseOrderItems     PurchaseOrderItem[]
   stockConsumptions      StockConsumption[]
-  stockOutOrderItems     StockOutOrderItem[]
+  stockOuts              StockOut[]
   transferOrderItems     TransferOrderItem[]
   transferRecords        TransferRecord[]
   // 点位订单系统关联
@@ -403,84 +397,45 @@ model StockConsumption {
   @@map("stock_consumption")
 }
 
-model DistributionOrder {
-  id              String                  @id @default(uuid())
-  code            String                  @unique
-  customerId      String                  @map("customer_id")
-  totalAmount     Decimal                 @default(0) @map("total_amount") @db.Decimal(12, 2)
-  discountPercent Decimal                 @default(0) @map("discount_percent") @db.Decimal(5, 2)
-  finalAmount     Decimal                 @default(0) @map("final_amount") @db.Decimal(12, 2)
-  orderDate       DateTime                @map("order_date") @db.Date
-  notes           String?
-  createdBy       String                  @map("created_by")
-  createdAt       DateTime                @default(now()) @map("created_at")
-  updatedAt       DateTime                @updatedAt @map("updated_at")
-  items           DistributionOrderItem[]
-  creator         User                    @relation("DistributionOrderCreator", fields: [createdBy], references: [id])
-  customer        Customer                @relation(fields: [customerId], references: [id])
-  receivables     Receivable[]
-  stockOutOrders  StockOutOrder[]
-
-  @@index([code])
-  @@index([customerId])
-  @@index([orderDate])
-  @@index([createdBy])
-  @@map("distribution_orders")
+/// 出库类型
+enum StockOutType {
+  POINT_ORDER  // 点位发货（自动创建）
+  TRANSFER     // 跨基地调货（预留）
+  MANUAL       // 手动出库
 }
 
-model DistributionOrderItem {
-  id                  String            @id @default(uuid())
-  distributionOrderId String            @map("distribution_order_id")
-  goodsId             String            @map("goods_id")
-  quantity            Int
-  unitPrice           Decimal           @map("unit_price") @db.Decimal(12, 2)
-  discountPercent     Decimal           @default(0) @map("discount_percent") @db.Decimal(5, 2)
-  finalUnitPrice      Decimal           @map("final_unit_price") @db.Decimal(12, 2)
-  totalPrice          Decimal           @map("total_price") @db.Decimal(12, 2)
-  pendingQuantity     Int               @map("pending_quantity")
-  notes               String?
-  distributionOrder   DistributionOrder @relation(fields: [distributionOrderId], references: [id], onDelete: Cascade)
-  goods               Goods             @relation(fields: [goodsId], references: [id])
+/// 出库记录（单商品单记录）
+model StockOut {
+  id               String       @id @default(uuid())
+  baseId           Int          @map("base_id")
+  date             DateTime     @db.Date
+  goodsId          String       @map("goods_id")
+  type             StockOutType @default(MANUAL)
+  targetName       String?      @map("target_name")      // 目标名称（点位名/基地名等）
+  relatedOrderId   String?      @map("related_order_id") // 关联订单ID（点位订单等）
+  relatedOrderCode String?      @map("related_order_code") // 关联订单编号
+  locationId       Int          @map("location_id")      // 出库仓库
+  boxQuantity      Int          @default(0) @map("box_quantity")   // 出库/箱
+  packQuantity     Int          @default(0) @map("pack_quantity")  // 出库/盒
+  pieceQuantity    Int          @default(0) @map("piece_quantity") // 出库/包
+  remark           String?
+  createdBy        String       @map("created_by")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
 
-  @@index([distributionOrderId])
+  base     Base     @relation(fields: [baseId], references: [id])
+  goods    Goods    @relation(fields: [goodsId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+  creator  User     @relation("StockOutCreator", fields: [createdBy], references: [id])
+
+  @@index([baseId])
+  @@index([date])
   @@index([goodsId])
-  @@map("distribution_order_items")
-}
-
-model StockOutOrder {
-  id                  String              @id @default(uuid())
-  code                String              @unique
-  distributionOrderId String              @map("distribution_order_id")
-  locationId          Int                 @map("location_id")
-  outDate             DateTime            @map("out_date") @db.Date
-  notes               String?
-  createdBy           String              @map("created_by")
-  createdAt           DateTime            @default(now()) @map("created_at")
-  items               StockOutOrderItem[]
-  creator             User                @relation("StockOutOrderCreator", fields: [createdBy], references: [id])
-  distributionOrder   DistributionOrder   @relation(fields: [distributionOrderId], references: [id])
-  location            Location            @relation(fields: [locationId], references: [id])
-
-  @@index([code])
-  @@index([distributionOrderId])
+  @@index([type])
   @@index([locationId])
-  @@index([outDate])
-  @@map("stock_out_orders")
-}
-
-model StockOutOrderItem {
-  id              String        @id @default(uuid())
-  stockOutOrderId String        @map("stock_out_order_id")
-  goodsId         String        @map("goods_id")
-  quantity        Int
-  pendingBefore   Int           @map("pending_before")
-  notes           String?
-  goods           Goods         @relation(fields: [goodsId], references: [id])
-  stockOutOrder   StockOutOrder @relation(fields: [stockOutOrderId], references: [id], onDelete: Cascade)
-
-  @@index([stockOutOrderId])
-  @@index([goodsId])
-  @@map("stock_out_order_items")
+  @@index([relatedOrderId])
+  @@index([baseId, date])
+  @@map("stock_outs")
 }
 
 model AnchorProfit {
@@ -511,46 +466,6 @@ model AnchorProfit {
   @@index([profitDate])
   @@index([consumptionId])
   @@map("anchor_profits")
-}
-
-model Receivable {
-  id                  String              @id @default(uuid())
-  distributionOrderId String              @map("distribution_order_id")
-  customerId          String              @map("customer_id")
-  totalAmount         Decimal             @map("total_amount") @db.Decimal(12, 2)
-  receivedAmount      Decimal             @default(0) @map("received_amount") @db.Decimal(12, 2)
-  pendingAmount       Decimal             @map("pending_amount") @db.Decimal(12, 2)
-  dueDate             DateTime?           @map("due_date") @db.Date
-  notes               String?
-  createdBy           String              @map("created_by")
-  createdAt           DateTime            @default(now()) @map("created_at")
-  updatedAt           DateTime            @updatedAt @map("updated_at")
-  payments            ReceivablePayment[]
-  creator             User                @relation("ReceivableCreator", fields: [createdBy], references: [id])
-  customer            Customer            @relation(fields: [customerId], references: [id])
-  distributionOrder   DistributionOrder   @relation(fields: [distributionOrderId], references: [id])
-
-  @@index([distributionOrderId])
-  @@index([customerId])
-  @@index([dueDate])
-  @@map("receivables")
-}
-
-model ReceivablePayment {
-  id            String     @id @default(uuid())
-  receivableId  String     @map("receivable_id")
-  paymentAmount Decimal    @map("payment_amount") @db.Decimal(12, 2)
-  paymentDate   DateTime   @map("payment_date") @db.Date
-  paymentMethod String?    @map("payment_method")
-  notes         String?
-  createdBy     String     @map("created_by")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  creator       User       @relation("ReceivablePaymentCreator", fields: [createdBy], references: [id])
-  receivable    Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
-
-  @@index([receivableId])
-  @@index([paymentDate])
-  @@map("receivable_payments")
 }
 
 model Payable {
@@ -683,6 +598,7 @@ model Base {
   transferRecords  TransferRecord[]
   userBases        UserBase[]
   defaultUsers     User[]             @relation("UserDefaultBase")
+  stockOuts        StockOut[]
   // 点位订单系统关联
   points           Point[]
   pointOrders      PointOrder[]
