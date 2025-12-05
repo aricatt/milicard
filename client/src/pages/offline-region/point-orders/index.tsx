@@ -214,9 +214,9 @@ const PointOrdersPage: React.FC = () => {
     }
   };
 
-  // 获取仓库列表
-  const fetchWarehouses = async () => {
-    if (!currentBase?.id) return;
+  // 获取仓库列表，返回默认仓库ID
+  const fetchWarehouses = async (): Promise<number | null> => {
+    if (!currentBase?.id) return null;
     try {
       const response = await request(`/api/v1/bases/${currentBase.id}/locations`, {
         params: { pageSize: 100, type: 'MAIN_WAREHOUSE,WAREHOUSE' },
@@ -229,17 +229,22 @@ const PointOrdersPage: React.FC = () => {
         setWarehouses(warehouseList);
         // 默认选择总仓库
         const mainWarehouse = warehouseList.find((w: any) => w.type === 'MAIN_WAREHOUSE');
+        let defaultWarehouseId: number | null = null;
         if (mainWarehouse) {
-          setSelectedWarehouse(mainWarehouse.id);
-          shipForm.setFieldValue('locationId', mainWarehouse.id);
+          defaultWarehouseId = mainWarehouse.id;
         } else if (warehouseList.length > 0) {
-          setSelectedWarehouse(warehouseList[0].id);
-          shipForm.setFieldValue('locationId', warehouseList[0].id);
+          defaultWarehouseId = warehouseList[0].id;
         }
+        if (defaultWarehouseId) {
+          setSelectedWarehouse(defaultWarehouseId);
+          shipForm.setFieldValue('locationId', defaultWarehouseId);
+        }
+        return defaultWarehouseId;
       }
     } catch (error) {
       console.error('获取仓库列表失败', error);
     }
+    return null;
   };
 
   // 获取订单商品库存信息
@@ -271,11 +276,11 @@ const PointOrdersPage: React.FC = () => {
   const handleOpenShipModal = async () => {
     shipForm.resetFields();
     setOrderInventory([]);
-    await fetchWarehouses();
     setShipModalVisible(true);
-    // 获取默认仓库的库存
-    if (selectedWarehouse) {
-      fetchOrderInventory(selectedWarehouse);
+    // 获取仓库列表并获取默认仓库的库存
+    const defaultWarehouseId = await fetchWarehouses();
+    if (defaultWarehouseId) {
+      fetchOrderInventory(defaultWarehouseId);
     }
   };
 
