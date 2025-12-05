@@ -711,4 +711,170 @@ export class PointOrderService {
 
     return goods;
   }
+
+  /**
+   * 发货
+   */
+  static async ship(
+    id: string,
+    data: {
+      deliveryPerson?: string;
+      deliveryPhone?: string;
+      trackingNumber?: string;
+    }
+  ) {
+    const existing = await prisma.pointOrder.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('订单不存在');
+    }
+
+    if (existing.status !== 'CONFIRMED') {
+      throw new Error('只有已确认的订单才能发货');
+    }
+
+    const order = await prisma.pointOrder.update({
+      where: { id },
+      data: {
+        status: 'SHIPPING',
+        shippedAt: new Date(),
+        deliveryPerson: data.deliveryPerson,
+        deliveryPhone: data.deliveryPhone,
+        trackingNumber: data.trackingNumber,
+      },
+      include: {
+        point: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    logger.info('订单发货成功', { orderId: id });
+
+    return order;
+  }
+
+  /**
+   * 确认送达
+   */
+  static async deliver(id: string) {
+    const existing = await prisma.pointOrder.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('订单不存在');
+    }
+
+    if (existing.status !== 'SHIPPING') {
+      throw new Error('只有配送中的订单才能确认送达');
+    }
+
+    const order = await prisma.pointOrder.update({
+      where: { id },
+      data: {
+        status: 'DELIVERED',
+        deliveredAt: new Date(),
+      },
+      include: {
+        point: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    logger.info('订单送达确认成功', { orderId: id });
+
+    return order;
+  }
+
+  /**
+   * 确认收款
+   */
+  static async confirmPayment(
+    id: string,
+    data: {
+      amount: number;
+      paymentMethod?: string;
+      notes?: string;
+    }
+  ) {
+    const existing = await prisma.pointOrder.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('订单不存在');
+    }
+
+    // 已确认及之后的状态都可以收款（支持先款后货）
+    if (!['CONFIRMED', 'SHIPPING', 'DELIVERED', 'COMPLETED'].includes(existing.status)) {
+      throw new Error('只有已确认及之后状态的订单才能收款');
+    }
+
+    const newPaidAmount = Number(existing.paidAmount) + data.amount;
+    const totalAmount = Number(existing.totalAmount);
+
+    // 计算付款状态
+    let paymentStatus: 'UNPAID' | 'PARTIAL' | 'PAID';
+    if (newPaidAmount <= 0) {
+      paymentStatus = 'UNPAID';
+    } else if (newPaidAmount >= totalAmount) {
+      paymentStatus = 'PAID';
+    } else {
+      paymentStatus = 'PARTIAL';
+    }
+
+    // 构建付款备注
+    const paymentNote = `${new Date().toLocaleString('zh-CN')} 收款 ${data.amount} 元${data.paymentMethod ? `（${data.paymentMethod}）` : ''}${data.notes ? `，${data.notes}` : ''}`;
+    const paymentNotes = existing.paymentNotes 
+      ? `${existing.paymentNotes}\n${paymentNote}`
+      : paymentNote;
+
+    const order = await prisma.pointOrder.update({
+      where: { id },
+      data: {
+        paidAmount: newPaidAmount,
+        paymentStatus,
+        paymentNotes,
+      },
+      include: {
+        point: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    logger.info('订单收款确认成功', { orderId: id, amount: data.amount, newPaidAmount });
+
+    return order;
+  }
+
+  /**
+   * 完成订单
+   */
+  static async complete(id: string) {
+    const existing = await prisma.pointOrder.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('订单不存在');
+    }
+
+    if (existing.status !== 'DELIVERED') {
+      throw new Error('只有已送达的订单才能完成');
+    }
+
+    const order = await prisma.pointOrder.update({
+      where: { id },
+      data: {
+        status: 'COMPLETED',
+        completedAt: new Date(),
+      },
+      include: {
+        point: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    logger.info('订单完成', { orderId: id });
+
+    return order;
+  }
 }

@@ -306,4 +306,141 @@ export class PointOrderController {
       });
     }
   }
+
+  /**
+   * 发货
+   * POST /api/v1/bases/:baseId/point-orders/:orderId/ship
+   */
+  static async ship(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const { deliveryPerson, deliveryPhone, trackingNumber } = req.body;
+
+      const order = await PointOrderService.ship(orderId, {
+        deliveryPerson,
+        deliveryPhone,
+        trackingNumber,
+      });
+
+      res.json({
+        success: true,
+        message: '发货成功',
+        data: order,
+      });
+    } catch (error) {
+      logger.error('发货失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      const statusCode = error instanceof Error && error.message === '订单不存在' ? 404 : 400;
+
+      res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : '发货失败',
+      });
+    }
+  }
+
+  /**
+   * 确认送达
+   * POST /api/v1/bases/:baseId/point-orders/:orderId/deliver
+   */
+  static async deliver(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+
+      const order = await PointOrderService.deliver(orderId);
+
+      res.json({
+        success: true,
+        message: '确认送达成功',
+        data: order,
+      });
+    } catch (error) {
+      logger.error('确认送达失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      const statusCode = error instanceof Error && error.message === '订单不存在' ? 404 : 400;
+
+      res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : '确认送达失败',
+      });
+    }
+  }
+
+  /**
+   * 确认收款
+   * POST /api/v1/bases/:baseId/point-orders/:orderId/payment
+   */
+  static async confirmPayment(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const { amount, paymentMethod, notes } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: '收款金额必须大于0',
+        });
+      }
+
+      const order = await PointOrderService.confirmPayment(orderId, {
+        amount: Number(amount),
+        paymentMethod,
+        notes,
+      });
+
+      res.json({
+        success: true,
+        message: '收款确认成功',
+        data: order,
+      });
+    } catch (error) {
+      logger.error('收款确认失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      const statusCode = error instanceof Error && error.message === '订单不存在' ? 404 : 400;
+
+      res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : '收款确认失败',
+      });
+    }
+  }
+
+  /**
+   * 完成订单
+   * POST /api/v1/bases/:baseId/point-orders/:orderId/complete
+   */
+  static async complete(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+
+      const order = await PointOrderService.complete(orderId);
+
+      res.json({
+        success: true,
+        message: '订单已完成',
+        data: order,
+      });
+    } catch (error) {
+      logger.error('完成订单失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      const statusCode = error instanceof Error && error.message === '订单不存在' ? 404 : 400;
+
+      res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : '完成订单失败',
+      });
+    }
+  }
 }

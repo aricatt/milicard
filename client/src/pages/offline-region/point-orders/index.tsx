@@ -2,8 +2,8 @@ import React, { useRef, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Card, Statistic, Row, Col, App, Divider, Table } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Card, Statistic, Row, Col, App, Divider, Table, Modal, Form, Input, InputNumber, Select } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, CarOutlined, CheckCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import { request, useAccess, history } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import OrderForm from './components/OrderForm';
@@ -35,8 +35,16 @@ interface OrderItem {
   paidAmount: number;
   shippingAddress?: string;
   shippingPhone?: string;
+  trackingNumber?: string;
+  deliveryPerson?: string;
+  deliveryPhone?: string;
   customerNotes?: string;
   staffNotes?: string;
+  paymentNotes?: string;
+  confirmedAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  completedAt?: string;
   createdAt: string;
   point: {
     id: string;
@@ -88,6 +96,14 @@ interface OrderStats {
   unpaidAmount: number;
 }
 
+// 收款方式
+const PAYMENT_METHODS = [
+  { value: '现金', label: '现金' },
+  { value: '微信', label: '微信' },
+  { value: '支付宝', label: '支付宝' },
+  { value: '银行转账', label: '银行转账' },
+];
+
 const PointOrdersPage: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const { currentBase } = useBase();
@@ -98,6 +114,14 @@ const PointOrdersPage: React.FC = () => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailOrder, setDetailOrder] = useState<OrderItem | null>(null);
   const [stats, setStats] = useState<OrderStats | null>(null);
+  
+  // 发货弹窗
+  const [shipModalVisible, setShipModalVisible] = useState(false);
+  const [shipForm] = Form.useForm();
+  
+  // 收款弹窗
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const [paymentForm] = Form.useForm();
 
   // 获取统计数据
   const fetchStats = async () => {
@@ -183,6 +207,93 @@ const PointOrdersPage: React.FC = () => {
       actionRef.current?.reload();
     } catch (error: any) {
       message.error(error?.data?.message || '状态更新失败');
+    }
+  };
+
+  // 打开发货弹窗
+  const handleOpenShipModal = () => {
+    shipForm.resetFields();
+    setShipModalVisible(true);
+  };
+
+  // 发货
+  const handleShip = async () => {
+    if (!detailOrder) return;
+    try {
+      const values = await shipForm.validateFields();
+      await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/ship`, {
+        method: 'POST',
+        data: values,
+      });
+      message.success('发货成功');
+      setShipModalVisible(false);
+      setDetailVisible(false);
+      actionRef.current?.reload();
+    } catch (error: any) {
+      if (error.errorFields) return;
+      message.error(error?.data?.message || '发货失败');
+    }
+  };
+
+  // 确认送达
+  const handleDeliver = async () => {
+    if (!detailOrder) return;
+    try {
+      await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/deliver`, {
+        method: 'POST',
+      });
+      message.success('确认送达成功');
+      setDetailVisible(false);
+      actionRef.current?.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || '确认送达失败');
+    }
+  };
+
+  // 打开收款弹窗
+  const handleOpenPaymentModal = () => {
+    if (!detailOrder) return;
+    const unpaid = Number(detailOrder.totalAmount) - Number(detailOrder.paidAmount);
+    paymentForm.resetFields();
+    paymentForm.setFieldsValue({ amount: unpaid > 0 ? unpaid : 0 });
+    setPaymentModalVisible(true);
+  };
+
+  // 确认收款
+  const handleConfirmPayment = async () => {
+    if (!detailOrder) return;
+    try {
+      const values = await paymentForm.validateFields();
+      await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/payment`, {
+        method: 'POST',
+        data: values,
+      });
+      message.success('收款确认成功');
+      setPaymentModalVisible(false);
+      // 刷新详情
+      const response = await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}`);
+      if (response.success) {
+        setDetailOrder(response.data);
+      }
+      actionRef.current?.reload();
+    } catch (error: any) {
+      if (error.errorFields) return;
+      message.error(error?.data?.message || '收款确认失败');
+    }
+  };
+
+  // 完成订单
+  const handleComplete = async () => {
+    if (!detailOrder) return;
+    try {
+      await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/complete`, {
+        method: 'POST',
+      });
+      message.success('订单已完成');
+      setDetailVisible(false);
+      actionRef.current?.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || '完成订单失败');
     }
   };
 
@@ -485,7 +596,14 @@ const PointOrdersPage: React.FC = () => {
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label="已付金额">
-                {Number(detailOrder.paidAmount).toFixed(2)}
+                <span style={{ color: Number(detailOrder.paidAmount) >= Number(detailOrder.totalAmount) ? '#52c41a' : '#fa8c16' }}>
+                  {Number(detailOrder.paidAmount).toFixed(2)}
+                </span>
+                {Number(detailOrder.paidAmount) < Number(detailOrder.totalAmount) && (
+                  <span style={{ color: '#999', marginLeft: 8 }}>
+                    (待收: {(Number(detailOrder.totalAmount) - Number(detailOrder.paidAmount)).toFixed(2)})
+                  </span>
+                )}
               </Descriptions.Item>
               <Descriptions.Item label="收货地址" span={2}>
                 {detailOrder.shippingAddress || '-'}
@@ -494,13 +612,46 @@ const PointOrdersPage: React.FC = () => {
                 {detailOrder.shippingPhone || '-'}
               </Descriptions.Item>
               <Descriptions.Item label="下单人">{detailOrder.creator.name}</Descriptions.Item>
-              <Descriptions.Item label="客户备注" span={2}>
-                {detailOrder.customerNotes || '-'}
-              </Descriptions.Item>
-              <Descriptions.Item label="客服备注" span={2}>
-                {detailOrder.staffNotes || '-'}
-              </Descriptions.Item>
             </Descriptions>
+
+            {/* 物流信息 */}
+            {(detailOrder.status === 'SHIPPING' || detailOrder.status === 'DELIVERED' || detailOrder.status === 'COMPLETED') && (
+              <>
+                <Divider orientation="left">物流信息</Divider>
+                <Descriptions column={2} bordered size="small">
+                  <Descriptions.Item label="送货员">{detailOrder.deliveryPerson || '-'}</Descriptions.Item>
+                  <Descriptions.Item label="送货员电话">{detailOrder.deliveryPhone || '-'}</Descriptions.Item>
+                  <Descriptions.Item label="物流单号" span={2}>{detailOrder.trackingNumber || '-'}</Descriptions.Item>
+                  <Descriptions.Item label="发货时间">{detailOrder.shippedAt ? new Date(detailOrder.shippedAt).toLocaleString('zh-CN') : '-'}</Descriptions.Item>
+                  <Descriptions.Item label="送达时间">{detailOrder.deliveredAt ? new Date(detailOrder.deliveredAt).toLocaleString('zh-CN') : '-'}</Descriptions.Item>
+                </Descriptions>
+              </>
+            )}
+
+            {/* 付款记录 */}
+            {detailOrder.paymentNotes && (
+              <>
+                <Divider orientation="left">收款记录</Divider>
+                <div style={{ background: '#fafafa', padding: 12, borderRadius: 4, whiteSpace: 'pre-wrap' }}>
+                  {detailOrder.paymentNotes}
+                </div>
+              </>
+            )}
+
+            {/* 备注信息 */}
+            {(detailOrder.customerNotes || detailOrder.staffNotes) && (
+              <>
+                <Divider orientation="left">备注</Divider>
+                <Descriptions column={1} bordered size="small">
+                  {detailOrder.customerNotes && (
+                    <Descriptions.Item label="客户备注">{detailOrder.customerNotes}</Descriptions.Item>
+                  )}
+                  {detailOrder.staffNotes && (
+                    <Descriptions.Item label="客服备注">{detailOrder.staffNotes}</Descriptions.Item>
+                  )}
+                </Descriptions>
+              </>
+            )}
 
             <Divider orientation="left">商品明细</Divider>
             <Table
@@ -525,33 +676,152 @@ const PointOrdersPage: React.FC = () => {
             />
 
             {/* 操作按钮 */}
-            {detailOrder.status === 'PENDING' && (
-              <div style={{ marginTop: 24, textAlign: 'right' }}>
-                <Space>
-                  <Button
-                    onClick={() => {
-                      setDetailVisible(false);
-                      setEditingOrder(detailOrder);
-                      setFormVisible(true);
-                    }}
-                  >
-                    编辑订单
-                  </Button>
+            <div style={{ marginTop: 24, textAlign: 'right' }}>
+              <Space>
+                {/* 待确认状态：编辑、确认 */}
+                {detailOrder.status === 'PENDING' && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        setDetailVisible(false);
+                        setEditingOrder(detailOrder);
+                        setFormVisible(true);
+                      }}
+                    >
+                      编辑订单
+                    </Button>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        handleUpdateStatus(detailOrder.id, 'CONFIRMED');
+                        setDetailVisible(false);
+                      }}
+                    >
+                      确认订单
+                    </Button>
+                  </>
+                )}
+
+                {/* 已确认状态：发货 */}
+                {detailOrder.status === 'CONFIRMED' && (
                   <Button
                     type="primary"
-                    onClick={() => {
-                      handleUpdateStatus(detailOrder.id, 'CONFIRMED');
-                      setDetailVisible(false);
-                    }}
+                    icon={<CarOutlined />}
+                    onClick={handleOpenShipModal}
                   >
-                    确认订单
+                    发货
                   </Button>
-                </Space>
-              </div>
-            )}
+                )}
+
+                {/* 配送中状态：确认送达 */}
+                {detailOrder.status === 'SHIPPING' && (
+                  <Popconfirm
+                    title="确定货物已送达？"
+                    onConfirm={handleDeliver}
+                  >
+                    <Button type="primary" icon={<CheckCircleOutlined />}>
+                      确认送达
+                    </Button>
+                  </Popconfirm>
+                )}
+
+                {/* 已确认及之后状态：收款（未全额付款时显示，支持先款后货） */}
+                {['CONFIRMED', 'SHIPPING', 'DELIVERED', 'COMPLETED'].includes(detailOrder.status) && 
+                  Number(detailOrder.paidAmount) < Number(detailOrder.totalAmount) && (
+                  <Button
+                    type="primary"
+                    icon={<DollarOutlined />}
+                    onClick={handleOpenPaymentModal}
+                  >
+                    确认收款
+                  </Button>
+                )}
+
+                {/* 已送达状态：完成订单 */}
+                {detailOrder.status === 'DELIVERED' && (
+                  <Popconfirm
+                    title="确定完成此订单？"
+                    onConfirm={handleComplete}
+                  >
+                    <Button type="primary">完成订单</Button>
+                  </Popconfirm>
+                )}
+              </Space>
+            </div>
           </>
         )}
       </Drawer>
+
+      {/* 发货弹窗 */}
+      <Modal
+        title="发货"
+        open={shipModalVisible}
+        onOk={handleShip}
+        onCancel={() => setShipModalVisible(false)}
+        okText="确认发货"
+      >
+        <Form form={shipForm} layout="vertical">
+          <Form.Item
+            name="deliveryPerson"
+            label="送货员姓名"
+          >
+            <Input placeholder="请输入送货员姓名" />
+          </Form.Item>
+          <Form.Item
+            name="deliveryPhone"
+            label="送货员电话"
+          >
+            <Input placeholder="请输入送货员电话" />
+          </Form.Item>
+          <Form.Item
+            name="trackingNumber"
+            label="物流单号"
+          >
+            <Input placeholder="自配送可不填" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 收款弹窗 */}
+      <Modal
+        title="确认收款"
+        open={paymentModalVisible}
+        onOk={handleConfirmPayment}
+        onCancel={() => setPaymentModalVisible(false)}
+        okText="确认收款"
+      >
+        <Form form={paymentForm} layout="vertical">
+          <Form.Item
+            name="amount"
+            label="收款金额"
+            rules={[{ required: true, message: '请输入收款金额' }]}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={0.01}
+              step={0.01}
+              precision={2}
+              placeholder="请输入收款金额"
+            />
+          </Form.Item>
+          <Form.Item
+            name="paymentMethod"
+            label="收款方式"
+          >
+            <Select
+              placeholder="请选择收款方式"
+              options={PAYMENT_METHODS}
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item
+            name="notes"
+            label="备注"
+          >
+            <Input.TextArea rows={2} placeholder="收款备注" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 };

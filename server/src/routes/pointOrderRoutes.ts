@@ -66,4 +66,32 @@ router.delete('/:baseId/point-orders/:orderId',
   PointOrderController.delete
 );
 
+// 发货
+router.post('/:baseId/point-orders/:orderId/ship',
+  authenticateToken,
+  checkPermission('pointOrder', 'update'),
+  PointOrderController.ship
+);
+
+// 确认送达
+router.post('/:baseId/point-orders/:orderId/deliver',
+  authenticateToken,
+  checkPermission('pointOrder', 'update'),
+  PointOrderController.deliver
+);
+
+// 确认收款
+router.post('/:baseId/point-orders/:orderId/payment',
+  authenticateToken,
+  checkPermission('pointOrder', 'update'),
+  PointOrderController.confirmPayment
+);
+
+// 完成订单
+router.post('/:baseId/point-orders/:orderId/complete',
+  authenticateToken,
+  checkPermission('pointOrder', 'update'),
+  PointOrderController.complete
+);
+
 export default router;
