@@ -348,13 +348,26 @@ export class PointOrderController {
   static async ship(req: Request, res: Response) {
     try {
       const { orderId } = req.params;
-      const { deliveryPerson, deliveryPhone, trackingNumber } = req.body;
+      const { deliveryPerson, deliveryPhone, trackingNumber, locationId } = req.body;
+      const userId = (req as any).user?.id;
 
-      const order = await PointOrderService.ship(orderId, {
-        deliveryPerson,
-        deliveryPhone,
-        trackingNumber,
-      });
+      if (!locationId) {
+        return res.status(400).json({
+          success: false,
+          message: '请选择出库仓库',
+        });
+      }
+
+      const order = await PointOrderService.ship(
+        orderId,
+        {
+          deliveryPerson,
+          deliveryPhone,
+          trackingNumber,
+          locationId: Number(locationId),
+        },
+        userId
+      );
 
       res.json({
         success: true,
@@ -372,6 +385,44 @@ export class PointOrderController {
       res.status(statusCode).json({
         success: false,
         message: error instanceof Error ? error.message : '发货失败',
+      });
+    }
+  }
+
+  /**
+   * 获取订单商品库存信息
+   * GET /api/v1/bases/:baseId/point-orders/:orderId/inventory
+   */
+  static async getOrderInventory(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const { locationId } = req.query;
+
+      if (!locationId) {
+        return res.status(400).json({
+          success: false,
+          message: '请提供仓库ID',
+        });
+      }
+
+      const inventory = await PointOrderService.getOrderInventory(
+        orderId,
+        Number(locationId)
+      );
+
+      res.json({
+        success: true,
+        data: inventory,
+      });
+    } catch (error) {
+      logger.error('获取订单库存信息失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '获取订单库存信息失败',
       });
     }
   }

@@ -75,6 +75,13 @@ router.post('/:baseId/point-orders/:orderId/confirm',
   PointOrderController.confirm
 );
 
+// 获取订单商品库存信息（发货前查询）
+router.get('/:baseId/point-orders/:orderId/inventory',
+  authenticateToken,
+  checkPermission('point_order', 'read'),
+  PointOrderController.getOrderInventory
+);
+
 // 发货（官方人员）
 router.post('/:baseId/point-orders/:orderId/ship',
   authenticateToken,

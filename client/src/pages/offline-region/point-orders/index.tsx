@@ -118,6 +118,10 @@ const PointOrdersPage: React.FC = () => {
   // 发货弹窗
   const [shipModalVisible, setShipModalVisible] = useState(false);
   const [shipForm] = Form.useForm();
+  const [warehouses, setWarehouses] = useState<{ id: number; name: string; type: string }[]>([]);
+  const [selectedWarehouse, setSelectedWarehouse] = useState<number | null>(null);
+  const [orderInventory, setOrderInventory] = useState<any[]>([]);
+  const [loadingInventory, setLoadingInventory] = useState(false);
   
   // 收款弹窗
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
@@ -210,10 +214,69 @@ const PointOrdersPage: React.FC = () => {
     }
   };
 
+  // 获取仓库列表
+  const fetchWarehouses = async () => {
+    if (!currentBase?.id) return;
+    try {
+      const response = await request(`/api/v1/bases/${currentBase.id}/locations`, {
+        params: { pageSize: 100, type: 'MAIN_WAREHOUSE,WAREHOUSE' },
+      });
+      if (response.success) {
+        // 过滤出仓库类型
+        const warehouseList = (response.data || []).filter(
+          (loc: any) => loc.type === 'MAIN_WAREHOUSE' || loc.type === 'WAREHOUSE'
+        );
+        setWarehouses(warehouseList);
+        // 默认选择总仓库
+        const mainWarehouse = warehouseList.find((w: any) => w.type === 'MAIN_WAREHOUSE');
+        if (mainWarehouse) {
+          setSelectedWarehouse(mainWarehouse.id);
+          shipForm.setFieldValue('locationId', mainWarehouse.id);
+        } else if (warehouseList.length > 0) {
+          setSelectedWarehouse(warehouseList[0].id);
+          shipForm.setFieldValue('locationId', warehouseList[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('获取仓库列表失败', error);
+    }
+  };
+
+  // 获取订单商品库存信息
+  const fetchOrderInventory = async (locationId: number) => {
+    if (!currentBase?.id || !detailOrder?.id) return;
+    setLoadingInventory(true);
+    try {
+      const response = await request(
+        `/api/v1/bases/${currentBase.id}/point-orders/${detailOrder.id}/inventory`,
+        { params: { locationId } }
+      );
+      if (response.success) {
+        setOrderInventory(response.data || []);
+      }
+    } catch (error) {
+      console.error('获取库存信息失败', error);
+    } finally {
+      setLoadingInventory(false);
+    }
+  };
+
+  // 仓库选择变化
+  const handleWarehouseChange = (locationId: number) => {
+    setSelectedWarehouse(locationId);
+    fetchOrderInventory(locationId);
+  };
+
   // 打开发货弹窗
-  const handleOpenShipModal = () => {
+  const handleOpenShipModal = async () => {
     shipForm.resetFields();
+    setOrderInventory([]);
+    await fetchWarehouses();
     setShipModalVisible(true);
+    // 获取默认仓库的库存
+    if (selectedWarehouse) {
+      fetchOrderInventory(selectedWarehouse);
+    }
   };
 
   // 发货
@@ -221,6 +284,20 @@ const PointOrdersPage: React.FC = () => {
     if (!detailOrder) return;
     try {
       const values = await shipForm.validateFields();
+      
+      // 检查是否选择了仓库
+      if (!values.locationId) {
+        message.error('请选择出库仓库');
+        return;
+      }
+      
+      // 检查库存是否充足
+      const insufficientItems = orderInventory.filter(item => !item.sufficient);
+      if (insufficientItems.length > 0) {
+        message.error(`库存不足，无法发货：${insufficientItems.map(i => i.goodsName).join('、')}`);
+        return;
+      }
+      
       await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/ship`, {
         method: 'POST',
         data: values,
@@ -803,20 +880,83 @@ const PointOrdersPage: React.FC = () => {
         onOk={handleShip}
         onCancel={() => setShipModalVisible(false)}
         okText="确认发货"
+        width={700}
       >
         <Form form={shipForm} layout="vertical">
           <Form.Item
-            name="deliveryPerson"
-            label="送货员姓名"
+            name="locationId"
+            label="出库仓库"
+            rules={[{ required: true, message: '请选择出库仓库' }]}
           >
-            <Input placeholder="请输入送货员姓名" />
+            <Select
+              placeholder="请选择出库仓库"
+              onChange={handleWarehouseChange}
+            >
+              {warehouses.map(w => (
+                <Select.Option key={w.id} value={w.id}>
+                  {w.name} {w.type === 'MAIN_WAREHOUSE' ? '(总仓库)' : ''}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
-          <Form.Item
-            name="deliveryPhone"
-            label="送货员电话"
-          >
-            <Input placeholder="请输入送货员电话" />
-          </Form.Item>
+
+          {/* 商品库存信息 */}
+          {selectedWarehouse && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, fontWeight: 'bold' }}>商品库存情况：</div>
+              <Table
+                size="small"
+                loading={loadingInventory}
+                dataSource={orderInventory}
+                rowKey="goodsId"
+                pagination={false}
+                columns={[
+                  { title: '商品', dataIndex: 'goodsName', width: 150 },
+                  { 
+                    title: '需要', 
+                    key: 'required',
+                    width: 100,
+                    render: (_, record) => `${record.requiredBox}箱${record.requiredPack}盒`
+                  },
+                  { 
+                    title: '库存', 
+                    key: 'available',
+                    width: 100,
+                    render: (_, record) => `${record.availableBox}箱${record.availablePack}盒`
+                  },
+                  { 
+                    title: '状态', 
+                    key: 'status',
+                    width: 80,
+                    render: (_, record) => (
+                      <Tag color={record.sufficient ? 'green' : 'red'}>
+                        {record.sufficient ? '充足' : '不足'}
+                      </Tag>
+                    )
+                  },
+                ]}
+              />
+            </div>
+          )}
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="deliveryPerson"
+                label="送货员姓名"
+              >
+                <Input placeholder="请输入送货员姓名" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="deliveryPhone"
+                label="送货员电话"
+              >
+                <Input placeholder="请输入送货员电话" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item
             name="trackingNumber"
             label="物流单号"

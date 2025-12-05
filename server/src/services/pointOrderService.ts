@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma, PointOrderStatus, PaymentStatus } from '@prisma/client';
 import { logger } from '../utils/logger';
+import { StockService } from './stockService';
 
 const prisma = new PrismaClient();
 
@@ -762,10 +763,29 @@ export class PointOrderService {
       deliveryPerson?: string;
       deliveryPhone?: string;
       trackingNumber?: string;
-    }
+      locationId: number; // 出库仓库ID
+    },
+    userId: string // 操作人ID
   ) {
+    // 获取订单及其商品明细
     const existing = await prisma.pointOrder.findUnique({
       where: { id },
+      include: {
+        items: {
+          include: {
+            goods: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                packPerBox: true,
+                piecePerPack: true,
+              },
+            },
+          },
+        },
+        point: { select: { id: true, code: true, name: true } },
+      },
     });
 
     if (!existing) {
@@ -776,23 +796,142 @@ export class PointOrderService {
       throw new Error('只有已确认的订单才能发货');
     }
 
-    const order = await prisma.pointOrder.update({
-      where: { id },
-      data: {
-        status: 'SHIPPING',
-        shippedAt: new Date(),
-        deliveryPerson: data.deliveryPerson,
-        deliveryPhone: data.deliveryPhone,
-        trackingNumber: data.trackingNumber,
-      },
-      include: {
-        point: { select: { id: true, code: true, name: true } },
+    // 验证仓库是否存在且属于该基地
+    const location = await prisma.location.findFirst({
+      where: {
+        id: data.locationId,
+        baseId: existing.baseId,
+        isActive: true,
       },
     });
 
-    logger.info('订单发货成功', { orderId: id });
+    if (!location) {
+      throw new Error('仓库不存在或不属于该基地');
+    }
 
-    return order;
+    // 使用统一库存服务检查库存是否充足
+    const stockCheckItems = existing.items.map(item => ({
+      goodsId: item.goodsId,
+      boxQuantity: item.boxQuantity,
+      packQuantity: item.packQuantity,
+    }));
+
+    const stockCheck = await StockService.batchCheckStock(
+      existing.baseId,
+      data.locationId,
+      stockCheckItems
+    );
+
+    if (!stockCheck.allSufficient) {
+      const insufficientItems = stockCheck.details
+        .filter(d => !d.sufficient)
+        .map(d => `${d.goodsName}: 需要 ${d.requiredBox}箱${d.requiredPack}盒，库存仅 ${d.availableBox}箱${d.availablePack}盒`);
+      
+      throw new Error(`库存不足:\n${insufficientItems.join('\n')}`);
+    }
+
+    // 使用事务处理发货、创建出库记录
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. 更新订单状态
+      const order = await tx.pointOrder.update({
+        where: { id },
+        data: {
+          status: 'SHIPPING',
+          shippedAt: new Date(),
+          deliveryPerson: data.deliveryPerson,
+          deliveryPhone: data.deliveryPhone,
+          trackingNumber: data.trackingNumber,
+        },
+        include: {
+          point: { select: { id: true, code: true, name: true } },
+        },
+      });
+
+      // 2. 创建出库记录
+      for (const item of existing.items) {
+        await tx.stockOut.create({
+          data: {
+            baseId: existing.baseId,
+            date: new Date(),
+            goodsId: item.goodsId,
+            type: 'POINT_ORDER',
+            targetName: existing.point?.name || '点位发货',
+            relatedOrderId: existing.id,
+            relatedOrderCode: existing.code,
+            locationId: data.locationId,
+            boxQuantity: item.boxQuantity,
+            packQuantity: item.packQuantity,
+            pieceQuantity: 0,
+            remark: `点位订单 ${existing.code} 发货`,
+            createdBy: userId,
+          },
+        });
+      }
+
+      return order;
+    });
+
+    logger.info('订单发货成功', {
+      orderId: id,
+      locationId: data.locationId,
+      itemCount: existing.items.length,
+    });
+
+    return result;
+  }
+
+  /**
+   * 获取订单商品的库存信息（用于发货前显示）
+   */
+  static async getOrderInventory(orderId: string, locationId: number) {
+    const order = await prisma.pointOrder.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            goods: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                packPerBox: true,
+                piecePerPack: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new Error('订单不存在');
+    }
+
+    const inventoryInfo = [];
+
+    for (const item of order.items) {
+      // 使用统一库存服务查询库存
+      const stock = await StockService.getStock(order.baseId, item.goodsId, locationId);
+
+      const packPerBox = item.goods.packPerBox || 1;
+      const requiredPacks = item.boxQuantity * packPerBox + item.packQuantity;
+
+      inventoryInfo.push({
+        goodsId: item.goodsId,
+        goodsCode: item.goods.code,
+        goodsName: item.goods.name,
+        packPerBox,
+        requiredBox: item.boxQuantity,
+        requiredPack: item.packQuantity,
+        requiredTotal: requiredPacks,
+        availableBox: stock.currentBox,
+        availablePack: stock.currentPack,
+        availableTotal: stock.totalPacks,
+        sufficient: stock.totalPacks >= requiredPacks,
+      });
+    }
+
+    return inventoryInfo;
   }
 
   /**
