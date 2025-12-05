@@ -38,6 +38,13 @@ const ACTION_NAMES: Record<string, string> = {
   manage: '管理',
   export: '导出',
   import: '导入',
+  // 点位订单专用操作
+  confirm: '确认订单',
+  ship: '发货',
+  deliver: '确认送达',
+  payment: '确认收款',
+  complete: '完成订单',
+  receive: '确认收货',
 }
 
 // 权限树节点类型

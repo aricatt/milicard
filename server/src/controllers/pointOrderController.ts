@@ -255,8 +255,11 @@ export class PointOrderController {
     try {
       const baseId = parseInt(req.params.baseId, 10);
       const { keyword } = req.query;
+      
+      // 从权限中间件获取数据过滤条件（点位老板只能看到自己的点位）
+      const dataFilter = req.permissionContext?.dataFilter || {};
 
-      const points = await PointOrderService.getAvailablePoints(baseId, keyword as string);
+      const points = await PointOrderService.getAvailablePoints(baseId, keyword as string, dataFilter);
 
       res.json({
         success: true,
@@ -303,6 +306,37 @@ export class PointOrderController {
       res.status(500).json({
         success: false,
         message: error instanceof Error ? error.message : '获取可选商品列表失败',
+      });
+    }
+  }
+
+  /**
+   * 确认订单（官方人员）
+   * POST /api/v1/bases/:baseId/point-orders/:orderId/confirm
+   */
+  static async confirm(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const userId = (req as any).user?.id;
+
+      const order = await PointOrderService.confirm(orderId, userId);
+
+      res.json({
+        success: true,
+        message: '订单确认成功',
+        data: order,
+      });
+    } catch (error) {
+      logger.error('确认订单失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      const statusCode = error instanceof Error && error.message === '订单不存在' ? 404 : 400;
+
+      res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : '确认订单失败',
       });
     }
   }
@@ -440,6 +474,37 @@ export class PointOrderController {
       res.status(statusCode).json({
         success: false,
         message: error instanceof Error ? error.message : '完成订单失败',
+      });
+    }
+  }
+
+  /**
+   * 确认收货（点位老板）
+   * POST /api/v1/bases/:baseId/point-orders/:orderId/receive
+   */
+  static async receive(req: Request, res: Response) {
+    try {
+      const { orderId } = req.params;
+      const userId = (req as any).user?.id;
+
+      const order = await PointOrderService.receive(orderId, userId);
+
+      res.json({
+        success: true,
+        message: '确认收货成功',
+        data: order,
+      });
+    } catch (error) {
+      logger.error('确认收货失败', {
+        error: error instanceof Error ? error.message : String(error),
+        orderId: req.params.orderId,
+      });
+
+      const statusCode = error instanceof Error && error.message === '订单不存在' ? 404 : 400;
+
+      res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : '确认收货失败',
       });
     }
   }

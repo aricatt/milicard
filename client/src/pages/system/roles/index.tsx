@@ -55,8 +55,8 @@ const getRoleLabel = (roleName: string, description?: string) => {
   return roleMap[roleName] || { label: description || roleName, color: 'default' };
 };
 
-// 操作类型
-const ACTIONS = [
+// 一级权限：基础数据操作（适用于所有模块，矩阵展示）
+const BASE_ACTIONS = [
   { key: 'read', label: '查看' },
   { key: 'create', label: '新增' },
   { key: 'update', label: '编辑' },
@@ -65,6 +65,30 @@ const ACTIONS = [
   { key: 'import', label: '导入' },
   { key: 'export', label: '导出' },
 ];
+
+// 二级权限：业务流程操作（按模块分组，单独展示）
+const WORKFLOW_PERMISSIONS: {
+  module: string;
+  moduleName: string;
+  actions: { key: string; label: string; description?: string }[];
+}[] = [
+  {
+    module: 'point_order',
+    moduleName: '点位订单',
+    actions: [
+      { key: 'confirm', label: '确认订单', description: '客服确认订单有效性' },
+      { key: 'ship', label: '发货', description: '记录发货信息' },
+      { key: 'deliver', label: '确认送达', description: '官方确认货物已送达' },
+      { key: 'payment', label: '确认收款', description: '记录收款信息' },
+      { key: 'complete', label: '完成订单', description: '官方完成订单' },
+      { key: 'receive', label: '确认收货', description: '点位老板确认收货' },
+    ],
+  },
+  // 未来可以添加其他模块的业务流程权限
+];
+
+// 一级权限矩阵使用的操作列表
+const ACTIONS = BASE_ACTIONS;
 
 // 权限依赖关系配置
 // key: 主权限模块, value: 依赖的权限列表（建议同时开启）
@@ -360,10 +384,10 @@ const RolesPage: React.FC = () => {
     setCheckedKeys(newChecked);
   };
 
-  // 切换整行（模块的所有操作）- 只切换用户有权限的项
+  // 切换整行（模块的所有基础操作）- 只切换用户有权限的项
   const toggleRow = (module: string) => {
     const newChecked = new Set(checkedKeys);
-    // 只处理用户有权限配置的项
+    // 只处理基础操作且用户有权限配置的项
     const rowKeys = ACTIONS
       .map(a => `${module}:${a.key}`)
       .filter(k => canConfigurePermission(k));
@@ -400,12 +424,17 @@ const RolesPage: React.FC = () => {
     setCheckedKeys(newChecked);
   };
 
-  // 全选/清空 - 只操作用户有权限的项
+  // 全选/清空 - 只操作用户有权限的项（包括基础权限和业务流程权限）
   const selectAll = () => {
-    const allKeys = modules
+    // 基础权限
+    const baseKeys = modules
       .flatMap(m => ACTIONS.map(a => `${m.key}:${a.key}`))
       .filter(k => canConfigurePermission(k));
-    setCheckedKeys(new Set(allKeys));
+    // 业务流程权限
+    const workflowKeys = WORKFLOW_PERMISSIONS
+      .flatMap(wp => wp.actions.map(a => `${wp.module}:${a.key}`))
+      .filter(k => canConfigurePermission(k));
+    setCheckedKeys(new Set([...baseKeys, ...workflowKeys]));
   };
 
   const clearAll = () => {
@@ -414,12 +443,12 @@ const RolesPage: React.FC = () => {
     setCheckedKeys(new Set(keysToKeep));
   };
 
-  // 检查行是否全选
+  // 检查行是否全选（只检查基础操作）
   const isRowAllChecked = (module: string) => {
     return ACTIONS.every(a => checkedKeys.has(`${module}:${a.key}`));
   };
 
-  // 检查行是否部分选中
+  // 检查行是否部分选中（只检查基础操作）
   const isRowIndeterminate = (module: string) => {
     const checked = ACTIONS.filter(a => checkedKeys.has(`${module}:${a.key}`)).length;
     return checked > 0 && checked < ACTIONS.length;
@@ -534,6 +563,7 @@ const RolesPage: React.FC = () => {
       width: 70,
       align: 'center' as const,
       render: (_: any, record: { key: string }) => {
+        // 一级权限矩阵只显示基础操作，所有模块都支持
         const permKey = `${record.key}:${action.key}`;
         const canConfigure = canConfigurePermission(permKey);
         return (
@@ -810,9 +840,62 @@ const RolesPage: React.FC = () => {
                     dataSource={modules}
                     pagination={false}
                     size="small"
-                    scroll={{ y: 350 }}
+                    scroll={{ y: 300 }}
                     bordered
                   />
+                  
+                  {/* 二级权限：业务流程权限 */}
+                  {WORKFLOW_PERMISSIONS.length > 0 && (
+                    <div style={{ marginTop: 16 }}>
+                      <div style={{ 
+                        fontSize: 14, 
+                        fontWeight: 500, 
+                        marginBottom: 12,
+                        color: '#1890ff',
+                        borderLeft: '3px solid #1890ff',
+                        paddingLeft: 8
+                      }}>
+                        业务流程权限
+                      </div>
+                      {WORKFLOW_PERMISSIONS.map(wp => (
+                        <div 
+                          key={wp.module} 
+                          style={{ 
+                            marginBottom: 12, 
+                            padding: '12px 16px',
+                            background: '#fafafa',
+                            borderRadius: 6,
+                            border: '1px solid #f0f0f0'
+                          }}
+                        >
+                          <div style={{ fontWeight: 500, marginBottom: 8, color: '#333' }}>
+                            {wp.moduleName}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}>
+                            {wp.actions.map(action => {
+                              const permKey = `${wp.module}:${action.key}`;
+                              const canConfigure = canConfigurePermission(permKey);
+                              return (
+                                <Tooltip 
+                                  key={action.key} 
+                                  title={action.description || (!canConfigure && !isReadOnly ? '您没有此权限，无法授予他人' : undefined)}
+                                >
+                                  <Checkbox
+                                    checked={checkedKeys.has(permKey)}
+                                    onChange={() => togglePermission(wp.module, action.key)}
+                                    disabled={isReadOnly || !canConfigure}
+                                  >
+                                    {action.label}
+                                  </Checkbox>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* 权限依赖警告提示 */}
                   {!isReadOnly && missingDependencies.length > 0 && (
                     <Alert

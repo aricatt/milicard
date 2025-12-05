@@ -96,11 +96,21 @@ export default function access(
     canUpdatePoint: hasPermission(roles, 'point:update') || isAdmin(roles),
     canDeletePoint: hasPermission(roles, 'point:delete') || isAdmin(roles),
     
-    // 点位订单权限
-    canAccessPointOrder: hasPermission(roles, 'pointOrder:read') || isAdmin(roles),
-    canCreatePointOrder: hasPermission(roles, 'pointOrder:create') || isAdmin(roles),
-    canUpdatePointOrder: hasPermission(roles, 'pointOrder:update') || isAdmin(roles),
-    canDeletePointOrder: hasPermission(roles, 'pointOrder:delete') || isAdmin(roles),
+    // 点位订单权限（注意：后端使用下划线命名 point_order）
+    canAccessPointOrder: hasPermission(roles, 'point_order:read') || isAdmin(roles),
+    canCreatePointOrder: hasPermission(roles, 'point_order:create') || isAdmin(roles),
+    canUpdatePointOrder: hasPermission(roles, 'point_order:update') || isAdmin(roles),
+    canDeletePointOrder: hasPermission(roles, 'point_order:delete') || isAdmin(roles),
+    // 点位订单细分权限（官方人员操作）
+    canConfirmPointOrder: hasPermission(roles, 'point_order:confirm') || isAdmin(roles),  // 确认订单
+    canShipPointOrder: hasPermission(roles, 'point_order:ship') || isAdmin(roles),        // 发货
+    canDeliverPointOrder: hasPermission(roles, 'point_order:deliver') || isAdmin(roles),  // 确认送达（官方）
+    canPaymentPointOrder: hasPermission(roles, 'point_order:payment') || isAdmin(roles),  // 确认收款
+    canCompletePointOrder: hasPermission(roles, 'point_order:complete') || isAdmin(roles),// 完成订单
+    // 点位老板操作
+    canReceivePointOrder: hasPermission(roles, 'point_order:receive') || isAdmin(roles),  // 确认收货（点位老板）
+    // 合并权限：确认送达或确认收货（任一权限即可操作）
+    canDeliverOrReceivePointOrder: hasPermission(roles, 'point_order:deliver') || hasPermission(roles, 'point_order:receive') || isAdmin(roles),
     
     // 订单管理权限
     canAccessOrder: hasPermission(roles, 'order:read') || isAdmin(roles),

@@ -587,11 +587,19 @@ export class PointOrderService {
 
   /**
    * 获取可选点位列表（用于下单时选择）
+   * @param baseId 基地ID
+   * @param keyword 搜索关键词
+   * @param dataFilter 数据权限过滤条件（如点位老板只能看到自己的点位）
    */
-  static async getAvailablePoints(baseId: number, keyword?: string) {
+  static async getAvailablePoints(
+    baseId: number, 
+    keyword?: string, 
+    dataFilter: Record<string, any> = {}
+  ) {
     const where: Prisma.PointWhereInput = {
       baseId,
       isActive: true,
+      ...dataFilter, // 应用数据权限过滤条件
     };
 
     if (keyword) {
@@ -710,6 +718,39 @@ export class PointOrderService {
     });
 
     return goods;
+  }
+
+  /**
+   * 确认订单（官方人员）
+   */
+  static async confirm(id: string, userId: string) {
+    const existing = await prisma.pointOrder.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('订单不存在');
+    }
+
+    if (existing.status !== 'PENDING') {
+      throw new Error('只有待确认的订单才能确认');
+    }
+
+    const order = await prisma.pointOrder.update({
+      where: { id },
+      data: {
+        status: 'CONFIRMED',
+        confirmedAt: new Date(),
+        confirmer: { connect: { id: userId } },
+      },
+      include: {
+        point: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    logger.info('订单确认成功', { orderId: id, confirmedBy: userId });
+
+    return order;
   }
 
   /**
@@ -874,6 +915,51 @@ export class PointOrderService {
     });
 
     logger.info('订单完成', { orderId: id });
+
+    return order;
+  }
+
+  /**
+   * 确认收货（点位老板）
+   * 点位老板确认收到货物，订单状态从"配送中"变为"已完成"
+   * 与"确认送达"类似，但由点位老板操作，且直接完成订单
+   */
+  static async receive(id: string, userId: string) {
+    const existing = await prisma.pointOrder.findUnique({
+      where: { id },
+      include: {
+        point: true,
+      },
+    });
+
+    if (!existing) {
+      throw new Error('订单不存在');
+    }
+
+    // 配送中或已送达状态都可以确认收货
+    if (!['SHIPPING', 'DELIVERED'].includes(existing.status)) {
+      throw new Error('只有配送中或已送达的订单才能确认收货');
+    }
+
+    // TODO: 可以在这里校验 userId 是否是该点位的老板
+    // if (existing.point.ownerId !== userId) {
+    //   throw new Error('只有点位老板才能确认收货');
+    // }
+
+    const order = await prisma.pointOrder.update({
+      where: { id },
+      data: {
+        status: 'COMPLETED',
+        completedAt: new Date(),
+        // 如果还没有送达时间，也记录一下
+        deliveredAt: existing.deliveredAt || new Date(),
+      },
+      include: {
+        point: { select: { id: true, code: true, name: true } },
+      },
+    });
+
+    logger.info('点位老板确认收货', { orderId: id, receivedBy: userId });
 
     return order;
   }

@@ -282,7 +282,7 @@ const PointOrdersPage: React.FC = () => {
     }
   };
 
-  // 完成订单
+  // 完成订单（官方人员）
   const handleComplete = async () => {
     if (!detailOrder) return;
     try {
@@ -294,6 +294,36 @@ const PointOrdersPage: React.FC = () => {
       actionRef.current?.reload();
     } catch (error: any) {
       message.error(error?.data?.message || '完成订单失败');
+    }
+  };
+
+  // 确认订单（官方人员，使用新API）
+  const handleConfirm = async () => {
+    if (!detailOrder) return;
+    try {
+      await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/confirm`, {
+        method: 'POST',
+      });
+      message.success('订单确认成功');
+      setDetailVisible(false);
+      actionRef.current?.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || '确认订单失败');
+    }
+  };
+
+  // 确认收货（点位老板）
+  const handleReceive = async () => {
+    if (!detailOrder) return;
+    try {
+      await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/receive`, {
+        method: 'POST',
+      });
+      message.success('确认收货成功');
+      setDetailVisible(false);
+      actionRef.current?.reload();
+    } catch (error: any) {
+      message.error(error?.data?.message || '确认收货失败');
     }
   };
 
@@ -408,27 +438,37 @@ const PointOrdersPage: React.FC = () => {
             详情
           </Button>
           {record.status === 'PENDING' && access.canUpdatePointOrder && (
-            <>
-              <Button
-                type="link"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => {
-                  setEditingOrder(record);
-                  setFormVisible(true);
-                }}
-              >
-                编辑
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setEditingOrder(record);
+                setFormVisible(true);
+              }}
+            >
+              编辑
+            </Button>
+          )}
+          {record.status === 'PENDING' && access.canConfirmPointOrder && (
+            <Popconfirm
+              title="确定要确认此订单吗？"
+              onConfirm={async () => {
+                try {
+                  await request(`/api/v1/bases/${currentBase?.id}/point-orders/${record.id}/confirm`, {
+                    method: 'POST',
+                  });
+                  message.success('订单确认成功');
+                  actionRef.current?.reload();
+                } catch (error: any) {
+                  message.error(error?.data?.message || '确认订单失败');
+                }
+              }}
+            >
+              <Button type="link" size="small">
+                确认
               </Button>
-              <Popconfirm
-                title="确定要确认此订单吗？"
-                onConfirm={() => handleUpdateStatus(record.id, 'CONFIRMED')}
-              >
-                <Button type="link" size="small">
-                  确认
-                </Button>
-              </Popconfirm>
-            </>
+            </Popconfirm>
           )}
           {['PENDING', 'CANCELLED'].includes(record.status) && access.canDeletePointOrder && (
             <Popconfirm
@@ -678,32 +718,35 @@ const PointOrdersPage: React.FC = () => {
             {/* 操作按钮 */}
             <div style={{ marginTop: 24, textAlign: 'right' }}>
               <Space>
-                {/* 待确认状态：编辑、确认 */}
+                {/* 待确认状态：编辑（点位老板+官方）、确认（官方） */}
                 {detailOrder.status === 'PENDING' && (
                   <>
-                    <Button
-                      onClick={() => {
-                        setDetailVisible(false);
-                        setEditingOrder(detailOrder);
-                        setFormVisible(true);
-                      }}
-                    >
-                      编辑订单
-                    </Button>
-                    <Button
-                      type="primary"
-                      onClick={() => {
-                        handleUpdateStatus(detailOrder.id, 'CONFIRMED');
-                        setDetailVisible(false);
-                      }}
-                    >
-                      确认订单
-                    </Button>
+                    {access.canUpdatePointOrder && (
+                      <Button
+                        onClick={() => {
+                          setDetailVisible(false);
+                          setEditingOrder(detailOrder);
+                          setFormVisible(true);
+                        }}
+                      >
+                        编辑订单
+                      </Button>
+                    )}
+                    {access.canConfirmPointOrder && (
+                      <Popconfirm
+                        title="确定要确认此订单吗？"
+                        onConfirm={handleConfirm}
+                      >
+                        <Button type="primary">
+                          确认订单
+                        </Button>
+                      </Popconfirm>
+                    )}
                   </>
                 )}
 
-                {/* 已确认状态：发货 */}
-                {detailOrder.status === 'CONFIRMED' && (
+                {/* 已确认状态：发货（官方） */}
+                {detailOrder.status === 'CONFIRMED' && access.canShipPointOrder && (
                   <Button
                     type="primary"
                     icon={<CarOutlined />}
@@ -713,20 +756,21 @@ const PointOrdersPage: React.FC = () => {
                   </Button>
                 )}
 
-                {/* 配送中状态：确认送达 */}
-                {detailOrder.status === 'SHIPPING' && (
+                {/* 配送中/已送达状态：确认送达/收货（合并按钮，根据权限显示不同文案） */}
+                {['SHIPPING', 'DELIVERED'].includes(detailOrder.status) && access.canDeliverOrReceivePointOrder && (
                   <Popconfirm
-                    title="确定货物已送达？"
-                    onConfirm={handleDeliver}
+                    title={access.canReceivePointOrder ? "确定已收到货物？" : "确定货物已送达？"}
+                    onConfirm={access.canReceivePointOrder ? handleReceive : handleDeliver}
                   >
                     <Button type="primary" icon={<CheckCircleOutlined />}>
-                      确认送达
+                      {access.canReceivePointOrder ? '确认收货' : '确认送达'}
                     </Button>
                   </Popconfirm>
                 )}
 
-                {/* 已确认及之后状态：收款（未全额付款时显示，支持先款后货） */}
+                {/* 已确认及之后状态：收款（官方，未全额付款时显示） */}
                 {['CONFIRMED', 'SHIPPING', 'DELIVERED', 'COMPLETED'].includes(detailOrder.status) && 
+                  access.canPaymentPointOrder &&
                   Number(detailOrder.paidAmount) < Number(detailOrder.totalAmount) && (
                   <Button
                     type="primary"
@@ -737,13 +781,13 @@ const PointOrdersPage: React.FC = () => {
                   </Button>
                 )}
 
-                {/* 已送达状态：完成订单 */}
-                {detailOrder.status === 'DELIVERED' && (
+                {/* 已送达状态：完成订单（官方） */}
+                {detailOrder.status === 'DELIVERED' && access.canCompletePointOrder && (
                   <Popconfirm
                     title="确定完成此订单？"
                     onConfirm={handleComplete}
                   >
-                    <Button type="primary">完成订单</Button>
+                    <Button>完成订单</Button>
                   </Popconfirm>
                 )}
               </Space>

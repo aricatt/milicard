@@ -8,7 +8,14 @@ export enum PermissionAction {
   DELETE = 'delete',
   MANAGE = 'manage', // 完全管理权限
   EXPORT = 'export',
-  IMPORT = 'import'
+  IMPORT = 'import',
+  // 点位订单专用操作
+  CONFIRM = 'confirm',   // 确认订单（官方）
+  SHIP = 'ship',         // 发货（官方）
+  DELIVER = 'deliver',   // 确认送达（官方）
+  PAYMENT = 'payment',   // 确认收款（官方）
+  COMPLETE = 'complete', // 完成订单（官方）
+  RECEIVE = 'receive',   // 确认收货（点位老板）
 }
 
 // 资源模块类型
