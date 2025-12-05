@@ -146,6 +146,14 @@ export default [
         component: './live-base/stock-out',
         access: 'canAccessStockOut',
       },
+      // 实时库存
+      {
+        name: 'real-time-stock',
+        icon: 'database',
+        path: '/live-base/real-time-stock',
+        component: './live-base/real-time-stock',
+        access: 'canAccessStock',
+      },
       // 应收管理
       {
         name: 'receivables',
@@ -253,6 +261,14 @@ export default [
         path: '/offline-region/stock-out',
         component: './offline-region/stock-out',
         access: 'canAccessStockOut',
+      },
+      // 实时库存
+      {
+        name: 'real-time-stock',
+        icon: 'database',
+        path: '/offline-region/real-time-stock',
+        component: './offline-region/real-time-stock',
+        access: 'canAccessStock',
       },
       // 应收管理
       {

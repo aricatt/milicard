@@ -442,4 +442,200 @@ export class StockService {
 
     return warehouses;
   }
+
+  /**
+   * 获取基地所有商品的实时库存汇总
+   * 按商品汇总所有仓库的库存
+   */
+  static async getBaseRealTimeStock(
+    baseId: number,
+    params?: {
+      goodsName?: string;
+      goodsCode?: string;
+      locationId?: number;
+      current?: number;
+      pageSize?: number;
+    }
+  ): Promise<{
+    data: {
+      goodsId: string;
+      goodsCode: string;
+      goodsName: string;
+      packPerBox: number;
+      piecePerPack: number;
+      // 库存数量
+      stockBox: number;
+      stockPack: number;
+      stockPiece: number;
+      // 平均价格
+      avgPricePerBox: number;
+      avgPricePerPack: number;
+      avgPricePerPiece: number;
+      // 总价值
+      totalValue: number;
+    }[];
+    total: number;
+  }> {
+    try {
+      const { goodsName, goodsCode, locationId, current = 1, pageSize = 20 } = params || {};
+
+      // 构建商品查询条件
+      const goodsWhere: any = { baseId, isActive: true };
+      if (goodsName) {
+        goodsWhere.name = { contains: goodsName, mode: 'insensitive' };
+      }
+      if (goodsCode) {
+        goodsWhere.code = { contains: goodsCode, mode: 'insensitive' };
+      }
+
+      // 获取商品列表（分页）
+      const [allGoods, total] = await Promise.all([
+        prisma.goods.findMany({
+          where: goodsWhere,
+          skip: (current - 1) * pageSize,
+          take: pageSize,
+          orderBy: { code: 'asc' },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            packPerBox: true,
+            piecePerPack: true,
+          },
+        }),
+        prisma.goods.count({ where: goodsWhere }),
+      ]);
+
+      // 获取仓库列表
+      let locations: { id: number }[];
+      if (locationId) {
+        locations = [{ id: locationId }];
+      } else {
+        locations = await prisma.location.findMany({
+          where: { baseId, isActive: true, type: { in: ['MAIN_WAREHOUSE', 'WAREHOUSE'] } },
+          select: { id: true },
+        });
+      }
+
+      const results = [];
+
+      for (const goods of allGoods) {
+        let totalBox = 0;
+        let totalPack = 0;
+        let totalPiece = 0;
+
+        // 汇总所有仓库的库存
+        for (const loc of locations) {
+          const stock = await this.getStock(baseId, goods.id, loc.id);
+          totalBox += stock.currentBox;
+          totalPack += stock.currentPack;
+          totalPiece += stock.currentPiece;
+        }
+
+        // 获取平均成本
+        const inventory = await prisma.inventory.findFirst({
+          where: { goodsId: goods.id, baseId },
+          select: { averageCost: true },
+        });
+
+        const packPerBox = goods.packPerBox || 1;
+        const piecePerPack = goods.piecePerPack || 1;
+        const avgCostPerBox = Number(inventory?.averageCost || 0);
+        const avgCostPerPack = avgCostPerBox / packPerBox;
+        const avgCostPerPiece = avgCostPerPack / piecePerPack;
+
+        // 计算总价值（转换为箱计算）
+        const totalBoxEquivalent = totalBox + totalPack / packPerBox + totalPiece / (packPerBox * piecePerPack);
+        const totalValue = totalBoxEquivalent * avgCostPerBox;
+
+        results.push({
+          goodsId: goods.id,
+          goodsCode: goods.code,
+          goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
+          packPerBox,
+          piecePerPack,
+          stockBox: totalBox,
+          stockPack: totalPack,
+          stockPiece: totalPiece,
+          avgPricePerBox: Math.round(avgCostPerBox * 100) / 100,
+          avgPricePerPack: Math.round(avgCostPerPack * 100) / 100,
+          avgPricePerPiece: Math.round(avgCostPerPiece * 100) / 100,
+          totalValue: Math.round(totalValue * 100) / 100,
+        });
+      }
+
+      return { data: results, total };
+    } catch (error) {
+      logger.error('获取基地实时库存失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * 获取基地实时库存统计
+   */
+  static async getBaseStockStats(baseId: number): Promise<{
+    totalGoods: number;
+    totalValue: number;
+    lowStockCount: number;
+  }> {
+    try {
+      // 获取所有商品
+      const allGoods = await prisma.goods.findMany({
+        where: { baseId, isActive: true },
+        select: { id: true, packPerBox: true, piecePerPack: true },
+      });
+
+      // 获取所有仓库
+      const locations = await prisma.location.findMany({
+        where: { baseId, isActive: true, type: { in: ['MAIN_WAREHOUSE', 'WAREHOUSE'] } },
+        select: { id: true },
+      });
+
+      let totalValue = 0;
+      let lowStockCount = 0;
+
+      for (const goods of allGoods) {
+        let totalBox = 0;
+        let totalPack = 0;
+
+        for (const loc of locations) {
+          const stock = await this.getStock(baseId, goods.id, loc.id);
+          totalBox += stock.currentBox;
+          totalPack += stock.currentPack;
+        }
+
+        // 获取平均成本
+        const inventory = await prisma.inventory.findFirst({
+          where: { goodsId: goods.id, baseId },
+          select: { averageCost: true },
+        });
+
+        const packPerBox = goods.packPerBox || 1;
+        const avgCostPerBox = Number(inventory?.averageCost || 0);
+        const totalBoxEquivalent = totalBox + totalPack / packPerBox;
+        totalValue += totalBoxEquivalent * avgCostPerBox;
+
+        // 库存低于5箱视为低库存
+        if (totalBoxEquivalent < 5) {
+          lowStockCount++;
+        }
+      }
+
+      return {
+        totalGoods: allGoods.length,
+        totalValue: Math.round(totalValue * 100) / 100,
+        lowStockCount,
+      };
+    } catch (error) {
+      logger.error('获取基地库存统计失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId,
+      });
+      throw error;
+    }
+  }
 }

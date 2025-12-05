@@ -23,6 +23,7 @@ export default {
   'menu.live-base.inventory-consumption': '库存和消耗',
   'menu.live-base.anchor-profit': '主播利润',
   'menu.live-base.stock-out': '出库',
+  'menu.live-base.real-time-stock': '实时库存',
   'menu.live-base.receivables': '应收',
   // 线下区域
   'menu.offline-region': '线下区域',
@@ -37,6 +38,7 @@ export default {
   'menu.offline-region.arrivals': '到货',
   'menu.offline-region.inventory-consumption': '库存和消耗',
   'menu.offline-region.stock-out': '出库',
+  'menu.offline-region.real-time-stock': '实时库存',
   'menu.offline-region.receivables': '应收',
   'menu.offline-region.location-profit': '点位利润',
   // 系统管理

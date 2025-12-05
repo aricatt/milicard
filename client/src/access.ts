@@ -135,6 +135,7 @@ export default function access(
     canAccessBases: hasPermission(roles, 'base:read') || isAdmin(roles),
     canAccessAnchorProfit: hasPermission(roles, 'anchor_profit:read') || isAdmin(roles),
     canAccessStockOut: hasPermission(roles, 'stock_out:read') || isAdmin(roles),
+    canAccessStock: hasPermission(roles, 'stock:read') || hasPermission(roles, 'inventory:read') || isAdmin(roles),
     canAccessReceivables: hasPermission(roles, 'receivable:read') || isAdmin(roles),
     
     // 通用权限检查函数
