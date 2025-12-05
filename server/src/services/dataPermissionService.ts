@@ -25,6 +25,23 @@ export interface FieldPermissions {
 
 class DataPermissionService {
   /**
+   * 检查用户是否拥有管理员级别权限（基于角色的 level 属性）
+   * level <= 1 的角色被视为管理员（0=超级管理员，1=管理员）
+   */
+  private async isAdminRole(roles: string[]): Promise<boolean> {
+    if (roles.length === 0) return false;
+    
+    const adminRoles = await prisma.role.findMany({
+      where: {
+        name: { in: roles },
+        level: { lte: 1 }, // level 0 或 1 视为管理员
+      },
+    });
+    
+    return adminRoles.length > 0;
+  }
+
+  /**
    * 获取数据过滤条件
    * 根据用户角色生成 Prisma where 条件
    */
@@ -32,8 +49,8 @@ class DataPermissionService {
     ctx: PermissionContext,
     resource: string
   ): Promise<DataFilter> {
-    // 超级管理员和管理员不过滤
-    if (ctx.roles.includes('SUPER_ADMIN') || ctx.roles.includes('ADMIN')) {
+    // 管理员级别角色不过滤数据
+    if (await this.isAdminRole(ctx.roles)) {
       return {};
     }
 
@@ -159,8 +176,8 @@ class DataPermissionService {
     ctx: PermissionContext,
     resource: string
   ): Promise<FieldPermissions> {
-    // 超级管理员和管理员拥有所有字段权限
-    if (ctx.roles.includes('SUPER_ADMIN') || ctx.roles.includes('ADMIN')) {
+    // 管理员级别角色拥有所有字段权限
+    if (await this.isAdminRole(ctx.roles)) {
       return { readable: ['*'], writable: ['*'] };
     }
 

@@ -275,19 +275,23 @@ class CasbinService {
    */
   async initialize(): Promise<void> {
     const e = await this.getEnforcer();
+    const prisma = this.getPrisma();
     
-    // 1. 初始化超级管理员和管理员的全局权限
-    const adminRoles = ['SUPER_ADMIN', 'ADMIN'];
+    // 1. 初始化管理员级别角色的全局权限（基于 level 属性，level <= 1 视为管理员）
+    const adminRoles = await prisma.role.findMany({
+      where: { level: { lte: 1 } },
+      select: { name: true },
+    });
+    
     for (const role of adminRoles) {
-      const exists = await e.hasPolicy(role, '*', '*', '.*', 'allow');
+      const exists = await e.hasPolicy(role.name, '*', '*', '.*', 'allow');
       if (!exists) {
-        await e.addPolicy(role, '*', '*', '.*', 'allow');
-        logger.info(`${role} global policy initialized`);
+        await e.addPolicy(role.name, '*', '*', '.*', 'allow');
+        logger.info(`${role.name} global policy initialized (level-based admin)`);
       }
     }
 
     // 2. 同步数据库中的用户角色到 Casbin
-    const prisma = this.getPrisma();
     const userRoles = await prisma.userRole.findMany({
       where: { isActive: true },
       include: { role: true }

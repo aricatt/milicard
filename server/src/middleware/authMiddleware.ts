@@ -175,20 +175,52 @@ export const requireRoles = (...requiredRoles: string[]) => {
 }
 
 /**
- * 超级管理员权限中间件
+ * 检查用户是否拥有管理员级别权限（基于角色的 level 属性）
  */
-export const requireSuperAdmin = requireRoles('SUPER_ADMIN')
+export const isAdminUser = async (roles: string[]): Promise<boolean> => {
+  if (roles.length === 0) return false;
+  
+  const adminRoles = await prisma.role.findMany({
+    where: {
+      name: { in: roles },
+      level: { lte: 1 }, // level 0 或 1 视为管理员
+    },
+  });
+  
+  return adminRoles.length > 0;
+}
 
 /**
- * 管理员权限中间件（超级管理员或普通管理员）
+ * 管理员权限中间件（基于角色 level 属性）
  */
-export const requireAdmin = requireRoles('SUPER_ADMIN', 'ADMIN')
+export const requireAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: '需要身份认证',
+      code: AuthErrorType.INVALID_TOKEN
+    })
+    return
+  }
+
+  const isAdmin = await isAdminUser(req.user.roles)
+  if (!isAdmin) {
+    res.status(403).json({
+      success: false,
+      message: '需要管理员权限',
+      code: AuthErrorType.INSUFFICIENT_PERMISSIONS
+    })
+    return
+  }
+
+  next()
+}
 
 /**
  * 检查用户是否可以访问指定用户的资源
  */
 export const requireSelfOrAdmin = (userIdParam: string = 'userId') => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (!req.user) {
       res.status(401).json({
         success: false,
@@ -200,7 +232,7 @@ export const requireSelfOrAdmin = (userIdParam: string = 'userId') => {
 
     const targetUserId = req.params[userIdParam]
     const currentUserId = req.user.id
-    const isAdmin = req.user.roles.includes('SUPER_ADMIN') || req.user.roles.includes('ADMIN')
+    const isAdmin = await isAdminUser(req.user.roles)
 
     if (targetUserId !== currentUserId && !isAdmin) {
       logger.warn('尝试访问其他用户资源', {

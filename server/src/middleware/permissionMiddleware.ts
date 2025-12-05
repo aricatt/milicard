@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { PermissionService } from '../services/permissionService'
 import { casbinService } from '../services/casbinService'
 import { dataPermissionService } from '../services/dataPermissionService'
+import { prisma } from '../utils/database'
 import {
   PermissionMiddlewareOptions,
   PermissionError,
@@ -446,16 +447,101 @@ export const requireRole = (role: string) => {
 }
 
 /**
- * 超级管理员权限中间件
+ * 检查用户是否拥有管理员级别权限（基于角色的 level 属性）
+ * level <= 1 的角色被视为管理员（0=超级管理员，1=管理员）
  */
-export const requireSuperAdmin = requireRole('SUPER_ADMIN')
+async function isAdminRole(roles: string[]): Promise<boolean> {
+  if (roles.length === 0) return false;
+  
+  const adminRoles = await prisma.role.findMany({
+    where: {
+      name: { in: roles },
+      level: { lte: 1 },
+    },
+  });
+  
+  return adminRoles.length > 0;
+}
 
 /**
- * 管理员权限中间件（超级管理员或普通管理员）
+ * 超级管理员权限中间件（基于角色 level = 0）
  */
-export const requireAdmin = requireAnyPermission([
-  'system:manage' as PermissionString
-])
+export const requireSuperAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: '需要身份认证',
+        code: 'AUTHENTICATION_REQUIRED'
+      })
+      return
+    }
+
+    const superAdminRoles = await prisma.role.findMany({
+      where: {
+        name: { in: req.user.roles },
+        level: 0, // 只有 level 0 是超级管理员
+      },
+    });
+
+    if (superAdminRoles.length > 0) {
+      next()
+      return
+    }
+
+    res.status(403).json({
+      success: false,
+      message: '需要超级管理员权限',
+      code: PermissionErrorType.INSUFFICIENT_PERMISSION
+    })
+  } catch (error) {
+    logger.error('超级管理员检查异常', {
+      error: error instanceof Error ? error.message : String(error),
+      userId: req.user?.id
+    })
+    res.status(500).json({
+      success: false,
+      message: '权限检查异常'
+    })
+  }
+}
+
+/**
+ * 管理员权限中间件（基于角色 level <= 1）
+ */
+export const requireAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: '需要身份认证',
+        code: 'AUTHENTICATION_REQUIRED'
+      })
+      return
+    }
+
+    const isAdmin = await isAdminRole(req.user.roles)
+    if (isAdmin) {
+      next()
+      return
+    }
+
+    res.status(403).json({
+      success: false,
+      message: '需要管理员权限',
+      code: PermissionErrorType.INSUFFICIENT_PERMISSION
+    })
+  } catch (error) {
+    logger.error('管理员检查异常', {
+      error: error instanceof Error ? error.message : String(error),
+      userId: req.user?.id
+    })
+    res.status(500).json({
+      success: false,
+      message: '权限检查异常'
+    })
+  }
+}
 
 /**
  * 检查资源所有权
