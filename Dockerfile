@@ -19,6 +19,8 @@ RUN npx prisma generate
 COPY server/ ./
 # 忽略 TypeScript 类型错误，仍然生成 JS 文件
 RUN npx tsc || true
+# 单独编译 seed.ts
+RUN mkdir -p dist/prisma && npx tsc prisma/seed.ts --outDir dist/prisma --esModuleInterop --skipLibCheck || true
 
 # 最终镜像
 FROM ubuntu:22.04

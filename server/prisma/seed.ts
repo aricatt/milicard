@@ -124,6 +124,83 @@ async function main() {
 
   console.log('✅ 默认管理员用户创建完成')
 
+  // 初始化 Casbin 策略
+  console.log('🔐 初始化 Casbin 权限策略...')
+
+  // 1. 为 SUPER_ADMIN 角色添加全局权限策略
+  const existingSuperAdminPolicy = await prisma.casbinRule.findFirst({
+    where: { ptype: 'p', v0: 'SUPER_ADMIN', v1: '*', v2: '*' }
+  })
+
+  if (!existingSuperAdminPolicy) {
+    await prisma.casbinRule.create({
+      data: {
+        ptype: 'p',
+        v0: 'SUPER_ADMIN',
+        v1: '*',      // 所有基地
+        v2: '*',      // 所有资源
+        v3: '*',      // 所有操作
+        v4: 'allow'
+      }
+    })
+    console.log('   ✅ SUPER_ADMIN 全局权限策略已创建')
+  }
+
+  // 2. 将 superadmin 用户添加到 SUPER_ADMIN 角色（Casbin g 策略）
+  const existingSuperAdminGroup = await prisma.casbinRule.findFirst({
+    where: { ptype: 'g', v0: superAdminUser.id, v1: 'SUPER_ADMIN' }
+  })
+
+  if (!existingSuperAdminGroup) {
+    await prisma.casbinRule.create({
+      data: {
+        ptype: 'g',
+        v0: superAdminUser.id,
+        v1: 'SUPER_ADMIN',
+        v2: '*'       // 所有基地
+      }
+    })
+    console.log('   ✅ superadmin 用户已添加到 SUPER_ADMIN 角色')
+  }
+
+  // 3. 为 ADMIN 角色添加全局权限策略
+  const existingAdminPolicy = await prisma.casbinRule.findFirst({
+    where: { ptype: 'p', v0: 'ADMIN', v1: '*', v2: '*' }
+  })
+
+  if (!existingAdminPolicy) {
+    await prisma.casbinRule.create({
+      data: {
+        ptype: 'p',
+        v0: 'ADMIN',
+        v1: '*',      // 所有基地
+        v2: '*',      // 所有资源
+        v3: '*',      // 所有操作
+        v4: 'allow'
+      }
+    })
+    console.log('   ✅ ADMIN 全局权限策略已创建')
+  }
+
+  // 4. 将 admin 用户添加到 ADMIN 角色（Casbin g 策略）
+  const existingAdminGroup = await prisma.casbinRule.findFirst({
+    where: { ptype: 'g', v0: adminUser.id, v1: 'ADMIN' }
+  })
+
+  if (!existingAdminGroup) {
+    await prisma.casbinRule.create({
+      data: {
+        ptype: 'g',
+        v0: adminUser.id,
+        v1: 'ADMIN',
+        v2: '*'       // 所有基地
+      }
+    })
+    console.log('   ✅ admin 用户已添加到 ADMIN 角色')
+  }
+
+  console.log('✅ Casbin 权限策略初始化完成')
+
   console.log('🎉 数据库种子数据初始化完成！')
   console.log('📋 默认账号：')
   console.log('   超级管理员：superadmin / superAdmin123')
