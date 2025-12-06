@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Empty, Spin, Modal, Form, Input, Select, Typography, Space, Tag, App, Alert } from 'antd';
-import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
-import { history, request, useAccess } from '@umijs/max';
+import { PlusOutlined, HomeOutlined, EnvironmentOutlined, PhoneOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { history, request, useAccess, useModel } from '@umijs/max';
+import { outLogin } from '@/services/ant-design-pro/api';
 import { BaseInfo, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
 import type { ColumnsType } from 'antd/es/table';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
@@ -16,6 +17,7 @@ const STORAGE_KEY = 'milicard_current_base';
 const BaseSelectorContent: React.FC = () => {
   const { message } = App.useApp();
   const access = useAccess();
+  const { initialState } = useModel('@@initialState');
   const [baseList, setBaseList] = useState<BaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -59,7 +61,8 @@ const BaseSelectorContent: React.FC = () => {
       const targetPath = base.type === BaseType.OFFLINE_REGION 
         ? '/offline-region/sub-districts' 
         : '/live-base/locations';
-      window.location.href = targetPath;
+      // 使用完整 URL 确保端口号不丢失
+      window.location.href = `${window.location.origin}${targetPath}`;
     }, 100);
   };
 
@@ -153,8 +156,36 @@ const BaseSelectorContent: React.FC = () => {
     },
   ];
 
+  // 退出登录
+  const handleLogout = async () => {
+    try {
+      await outLogin();
+    } catch (error) {
+      // 忽略错误
+    }
+    localStorage.removeItem('token');
+    localStorage.removeItem(STORAGE_KEY);
+    history.push('/user/login');
+  };
+
   return (
     <div className={styles.baseSelectorContainer}>
+      {/* 右上角用户信息和退出按钮 */}
+      <div className={styles.topBar}>
+        <Space>
+          <UserOutlined />
+          <Text>{initialState?.currentUser?.name || initialState?.currentUser?.username || '用户'}</Text>
+          <Button 
+            type="text" 
+            icon={<LogoutOutlined />} 
+            onClick={handleLogout}
+            danger
+          >
+            退出登录
+          </Button>
+        </Space>
+      </div>
+
       <div className={styles.header}>
         <Title level={2}>选择基地</Title>
         <Text type="secondary">
