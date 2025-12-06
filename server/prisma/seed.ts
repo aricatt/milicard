@@ -128,8 +128,9 @@ async function main() {
   console.log('🔐 初始化 Casbin 权限策略...')
 
   // 1. 为 SUPER_ADMIN 角色添加全局权限策略
+  // 注意：v2 使用 * 配合 keyMatch2，v3 使用 .* 配合 regexMatch
   const existingSuperAdminPolicy = await prisma.casbinRule.findFirst({
-    where: { ptype: 'p', v0: 'SUPER_ADMIN', v1: '*', v2: '*' }
+    where: { ptype: 'p', v0: 'SUPER_ADMIN', v1: '*', v2: '*', v3: '.*' }
   })
 
   if (!existingSuperAdminPolicy) {
@@ -138,8 +139,8 @@ async function main() {
         ptype: 'p',
         v0: 'SUPER_ADMIN',
         v1: '*',      // 所有基地
-        v2: '*',      // 所有资源
-        v3: '*',      // 所有操作
+        v2: '*',      // 所有资源 (keyMatch2)
+        v3: '.*',     // 所有操作 (regexMatch 需要正则语法)
         v4: 'allow'
       }
     })
@@ -165,7 +166,7 @@ async function main() {
 
   // 3. 为 ADMIN 角色添加全局权限策略
   const existingAdminPolicy = await prisma.casbinRule.findFirst({
-    where: { ptype: 'p', v0: 'ADMIN', v1: '*', v2: '*' }
+    where: { ptype: 'p', v0: 'ADMIN', v1: '*', v2: '*', v3: '.*' }
   })
 
   if (!existingAdminPolicy) {
@@ -174,8 +175,8 @@ async function main() {
         ptype: 'p',
         v0: 'ADMIN',
         v1: '*',      // 所有基地
-        v2: '*',      // 所有资源
-        v3: '*',      // 所有操作
+        v2: '*',      // 所有资源 (keyMatch2)
+        v3: '.*',     // 所有操作 (regexMatch 需要正则语法)
         v4: 'allow'
       }
     })
