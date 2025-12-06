@@ -10,6 +10,11 @@
  * @param icon 配置路由的图标，取值参考 https://ant.design/components/icon-cn， 注意去除风格后缀和大小写，如想要配置图标为 <StepBackwardOutlined /> 则取值应为 stepBackward 或 StepBackward，如想要配置图标为 <UserOutlined /> 则取值应为 user 或者 User
  * @doc https://umijs.org/docs/guides/routes
  */
+
+// 环境变量：生产环境隐藏模板参考菜单
+const { REACT_APP_ENV = 'dev' } = process.env;
+const isProduction = REACT_APP_ENV === 'prod';
+
 export default [
   {
     path: '/user',
@@ -288,7 +293,8 @@ export default [
       },
     ],
   },
-  {
+  // 模板参考 - 仅在非生产环境显示
+  ...(!isProduction ? [{
     name: 'template-reference',
     icon: 'fileText',
     path: '/template-reference',
@@ -547,7 +553,7 @@ export default [
         ],
       },
     ],
-  },
+  }] : []),
   // 系统管理
   {
     path: '/system',

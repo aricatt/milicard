@@ -15,7 +15,7 @@ const Settings: ProLayoutProps & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'MiLiCard',  // 左上角标题
+  title: '',  // 左上角标题
   pwa: true,
   logo: '/mili.svg',  // 可替换为自己的 logo，放在 client/public/logo.svg
   iconfontUrl: '',
