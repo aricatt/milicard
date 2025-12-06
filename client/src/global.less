@@ -50,6 +50,12 @@ body,
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+/* 全局缩放 - 调整整体元素比例 */
+/* 可根据需要调整 zoom 值：0.9 = 90%, 0.85 = 85% */
+html {
+  zoom: 0.9;
+}
+
 .colorWeak {
   filter: invert(80%);
 }
@@ -76,7 +82,13 @@ ol {
   list-style: none;
 }
 
+/* 移动端响应式适配 */
 @media (max-width: 768px) {
+  /* 移动端取消全局缩放 */
+  html {
+    zoom: 1;
+  }
+
   .ant-table {
     width: 100%;
     overflow-x: auto;
@@ -90,5 +102,27 @@ ol {
         }
       }
     }
+  }
+
+  /* 移动端表单优化 */
+  .ant-form-item-label {
+    padding-bottom: 4px;
+  }
+
+  /* 移动端卡片间距 */
+  .ant-card {
+    margin-bottom: 12px;
+  }
+
+  /* 移动端按钮组 */
+  .ant-space {
+    flex-wrap: wrap;
+  }
+
+  /* 移动端 ProTable 工具栏 */
+  .ant-pro-table-list-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }

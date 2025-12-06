@@ -15,9 +15,9 @@ const Settings: ProLayoutProps & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'Ant Design Pro',
+  title: 'MiLiCard',  // 左上角标题
   pwa: true,
-  logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
+  logo: '/mili.svg',  // 可替换为自己的 logo，放在 client/public/logo.svg
   iconfontUrl: '',
   token: {
     // 参见ts声明，demo 见文档，通过token 修改样式
