@@ -40,6 +40,7 @@ export default {
   'menu.offline-region.inventory-consumption': '库存和消耗',
   'menu.offline-region.stock-out': '出库',
   'menu.offline-region.real-time-stock': '实时库存',
+  'menu.offline-region.payables': '应付',
   'menu.offline-region.receivables': '应收',
   'menu.offline-region.location-profit': '点位利润',
   // 系统管理

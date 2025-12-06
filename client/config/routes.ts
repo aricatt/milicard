@@ -283,6 +283,14 @@ export default [
         component: './offline-region/real-time-stock',
         access: 'canAccessStock',
       },
+      // 应付管理（复用直播基地）
+      {
+        name: 'payables',
+        icon: 'wallet',
+        path: '/offline-region/payables',
+        component: './live-base/payables',
+        access: 'canAccessPayables',
+      },
       // 应收管理
       {
         name: 'receivables',

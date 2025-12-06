@@ -286,7 +286,6 @@ const PayablesPage: React.FC = () => {
               title="应付总金额"
               value={stats.totalPayable}
               precision={2}
-              prefix="¥"
               valueStyle={{ color: '#1890ff' }}
             />
           </Col>
@@ -295,7 +294,6 @@ const PayablesPage: React.FC = () => {
               title="已付金额"
               value={stats.totalPaid}
               precision={2}
-              prefix="¥"
               valueStyle={{ color: '#52c41a' }}
             />
           </Col>
@@ -304,7 +302,6 @@ const PayablesPage: React.FC = () => {
               title="未付金额"
               value={stats.totalUnpaid}
               precision={2}
-              prefix="¥"
               valueStyle={{ color: stats.totalUnpaid > 0 ? '#ff4d4f' : '#52c41a' }}
               suffix={
                 stats.totalUnpaid > 0 ? (
@@ -346,7 +343,7 @@ const PayablesPage: React.FC = () => {
         onCancel={() => setPaymentModalVisible(false)}
         confirmLoading={paymentLoading}
         width={500}
-        destroyOnClose
+        destroyOnHidden
       >
         {currentPayable && (
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
