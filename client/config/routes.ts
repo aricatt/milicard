@@ -159,6 +159,14 @@ export default [
         component: './live-base/real-time-stock',
         access: 'canAccessStock',
       },
+      // 应付管理
+      {
+        name: 'payables',
+        icon: 'wallet',
+        path: '/live-base/payables',
+        component: './live-base/payables',
+        access: 'canAccessPayables',
+      },
       // 应收管理
       {
         name: 'receivables',

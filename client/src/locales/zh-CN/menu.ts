@@ -24,6 +24,7 @@ export default {
   'menu.live-base.anchor-profit': '主播利润',
   'menu.live-base.stock-out': '出库',
   'menu.live-base.real-time-stock': '实时库存',
+  'menu.live-base.payables': '应付',
   'menu.live-base.receivables': '应收',
   // 线下区域
   'menu.offline-region': '线下区域',
