@@ -42,7 +42,10 @@ export default {
   'menu.offline-region.real-time-stock': '实时库存',
   'menu.offline-region.payables': '应付',
   'menu.offline-region.receivables': '应收',
-  'menu.offline-region.location-profit': '点位利润',
+  'menu.offline-region.point-info': '点位信息',
+  'menu.offline-region.point-info.points': '点位管理',
+  'menu.offline-region.point-info.point-orders': '点位订单',
+  'menu.offline-region.point-info.location-profit': '点位利润',
   // 系统管理
   'menu.system': '系统管理',
   'menu.system.users': '用户管理',

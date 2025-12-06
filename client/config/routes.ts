@@ -211,22 +211,6 @@ export default [
         component: './offline-region/warehouse-keepers',
         access: 'canAccessPersonnel',
       },
-      // 点位管理
-      {
-        name: 'points',
-        icon: 'pushpin',
-        path: '/offline-region/points',
-        component: './offline-region/points',
-        access: 'canAccessPoint',
-      },
-      // 点位订单
-      {
-        name: 'point-orders',
-        icon: 'shopping',
-        path: '/offline-region/point-orders',
-        component: './offline-region/point-orders',
-        access: 'canAccessPointOrder',
-      },
       // 供应商管理（复用直播基地）
       {
         name: 'suppliers',
@@ -299,13 +283,41 @@ export default [
         component: './offline-region/receivables',
         access: 'canAccessReceivables',
       },
-      // 点位利润
+      // 点位信息（子菜单）
       {
-        name: 'location-profit',
-        icon: 'dollarCircle',
-        path: '/offline-region/location-profit',
-        component: './offline-region/location-profit',
-        access: 'canAccessAnchorProfit',
+        name: 'point-info',
+        icon: 'environment',
+        path: '/offline-region/point-info',
+        routes: [
+          {
+            path: '/offline-region/point-info',
+            redirect: '/offline-region/point-info/points',
+          },
+          // 点位管理
+          {
+            name: 'points',
+            icon: 'pushpin',
+            path: '/offline-region/point-info/points',
+            component: './offline-region/points',
+            access: 'canAccessPoint',
+          },
+          // 点位订单
+          {
+            name: 'point-orders',
+            icon: 'shopping',
+            path: '/offline-region/point-info/point-orders',
+            component: './offline-region/point-orders',
+            access: 'canAccessPointOrder',
+          },
+          // 点位利润
+          {
+            name: 'location-profit',
+            icon: 'dollarCircle',
+            path: '/offline-region/point-info/location-profit',
+            component: './offline-region/location-profit',
+            access: 'canAccessAnchorProfit',
+          },
+        ],
       },
     ],
   },
