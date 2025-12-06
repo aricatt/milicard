@@ -213,22 +213,22 @@ const Login: React.FC = () => {
             minWidth: 280,
             maxWidth: '75vw',
           }}
-          logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle={intl.formatMessage({
-            id: 'pages.layouts.userLayout.title',
-          })}
+          logo={<img alt="logo" src="/mili.svg" />}
+          title="MiLi System"
+          // subTitle={intl.formatMessage({
+          //   id: 'pages.layouts.userLayout.title',
+          // })}
           initialValues={{
             autoLogin: true,
           }}
-          actions={[
-            <FormattedMessage
-              key="loginWith"
-              id="pages.login.loginWith"
-              defaultMessage="其他登录方式"
-            />,
-            <ActionIcons key="icons" />,
-          ]}
+          // actions={[
+          //   <FormattedMessage
+          //     key="loginWith"
+          //     id="pages.login.loginWith"
+          //     defaultMessage="其他登录方式"
+          //   />,
+          //   <ActionIcons key="icons" />,
+          // ]}
           onFinish={async (values) => {
             await handleSubmit(values as API.LoginParams);
           }}
@@ -245,13 +245,13 @@ const Login: React.FC = () => {
                   defaultMessage: '账户密码登录',
                 }),
               },
-              {
-                key: 'mobile',
-                label: intl.formatMessage({
-                  id: 'pages.login.phoneLogin.tab',
-                  defaultMessage: '手机号登录',
-                }),
-              },
+              // {
+              //   key: 'mobile',
+              //   label: intl.formatMessage({
+              //     id: 'pages.login.phoneLogin.tab',
+              //     defaultMessage: '手机号登录',
+              //   }),
+              // },
             ]}
           />
 
@@ -396,7 +396,7 @@ const Login: React.FC = () => {
               />
             </>
           )}
-          <div
+          {/* <div
             style={{
               marginBottom: 24,
             }}
@@ -417,7 +417,7 @@ const Login: React.FC = () => {
                 defaultMessage="忘记密码"
               />
             </a>
-          </div>
+          </div> */}
         </LoginForm>
       </div>
       <Footer />
