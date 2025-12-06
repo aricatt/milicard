@@ -98,8 +98,10 @@ Write-Host "  Volume:      $VOLUME_NAME"
 Write-Host "=========================================="
 
 # 构建镜像
-Write-Host "Building Docker image..." -ForegroundColor Green
-docker build -t "${IMAGE_NAME}:${Env}" .
+# BUILD_ENV: staging 显示模板参考菜单，production(prod) 隐藏
+$BUILD_ENV = if ($Env -eq "production") { "prod" } else { "staging" }
+Write-Host "Building Docker image (BUILD_ENV=$BUILD_ENV)..." -ForegroundColor Green
+docker build --build-arg BUILD_ENV=$BUILD_ENV -t "${IMAGE_NAME}:${Env}" .
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Docker build failed" -ForegroundColor Red
     exit 1

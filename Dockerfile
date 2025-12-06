@@ -1,11 +1,15 @@
 # 多阶段构建 - 阶段1: 构建前端
 FROM node:20-alpine AS frontend-builder
 
+# 构建参数：环境类型（dev/staging/prod）
+ARG BUILD_ENV=prod
+
 WORKDIR /app/client
 COPY client/package*.json ./
 RUN npm ci --registry=https://registry.npmmirror.com --legacy-peer-deps
 COPY client/ ./
-RUN npm run build
+# 生产环境构建时设置环境变量，隐藏模板参考菜单
+RUN REACT_APP_ENV=${BUILD_ENV} npm run build
 
 # 多阶段构建 - 阶段2: 构建后端
 FROM node:20-alpine AS backend-builder
