@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, DatePicker, Select, InputNumber, Row, Col } from 'antd';
+import { Form, DatePicker, Select, InputNumber, Row, Col, Tag } from 'antd';
 import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
 import type { GoodsOption, SupplierOption, ProcurementFormValues } from './types';
@@ -216,16 +216,44 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
             label="应付金额/箱"
             shouldUpdate={(prev, curr) =>
               prev.unitPriceBox !== curr.unitPriceBox ||
-              prev.purchaseBoxQty !== curr.purchaseBoxQty
+              prev.purchaseBoxQty !== curr.purchaseBoxQty ||
+              prev.retailPrice !== curr.retailPrice
             }
           >
             {({ getFieldValue }) => {
               const unitPrice = getFieldValue('unitPriceBox') || 0;
               const qty = getFieldValue('purchaseBoxQty') || 0;
+              const retailPrice = getFieldValue('retailPrice') || 0;
               const amount = unitPrice * qty;
+              
+              // 计算折扣
+              let discountTag = null;
+              if (unitPrice > 0 && retailPrice > 0) {
+                const discount = unitPrice / retailPrice;
+                const discountPercent = (discount * 100).toFixed(1);
+                
+                let color = 'green';
+                if (discount >= 1) {
+                  color = 'red';
+                } else if (discount >= 0.9) {
+                  color = 'orange';
+                } else if (discount >= 0.8) {
+                  color = 'blue';
+                }
+                
+                discountTag = (
+                  <Tag color={color} style={{ marginLeft: 8, fontSize: 12 }}>
+                    {discountPercent}%
+                  </Tag>
+                );
+              }
+              
               return (
-                <div style={{ lineHeight: '32px', fontWeight: 'bold', color: '#1890ff' }}>
-                  {amount.toFixed(2)}
+                <div style={{ lineHeight: '32px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                    {amount.toFixed(2)}
+                  </span>
+                  {discountTag}
                 </div>
               );
             }}

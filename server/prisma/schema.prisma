@@ -54,6 +54,8 @@ model User {
   dealerPoints         Point[]             @relation("PointDealer")
   createdPointOrders   PointOrder[]        @relation("PointOrderCreator")
   confirmedPointOrders PointOrder[]        @relation("PointOrderConfirmer")
+  // 点位利润
+  createdLocationProfits LocationProfit[]  @relation("LocationProfitCreator")
 
   @@index([username])
   @@index([email])
@@ -602,6 +604,8 @@ model Base {
   // 点位订单系统关联
   points           Point[]
   pointOrders      PointOrder[]
+  // 点位利润
+  locationProfits  LocationProfit[]
 
   @@index([code])
   @@index([name])
@@ -887,6 +891,7 @@ model Point {
   pointOrders    PointOrder[]
   pointInventory PointInventory[]
   pointGoods     PointGoods[] // 该点位可采购的商品列表
+  locationProfits LocationProfit[] // 点位利润记录
 
   @@index([code])
   @@index([name])
@@ -1020,6 +1025,39 @@ model PointInventory {
   @@index([pointId])
   @@index([goodsId])
   @@map("point_inventory")
+}
+
+// ==================== 点位利润统计 ====================
+
+// 点位利润记录
+model LocationProfit {
+  id      String @id @default(uuid())
+  pointId String @map("point_id")
+  baseId  Int    @map("base_id")
+
+  // 统计日期范围
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+
+  // 金额统计
+  totalSalesAmount Decimal @map("total_sales_amount") @db.Decimal(12, 2) // 拿货金额（销售总额）
+  totalCostAmount  Decimal @map("total_cost_amount") @db.Decimal(12, 2)  // 采购成本
+  profitAmount     Decimal @map("profit_amount") @db.Decimal(12, 2)      // 利润金额
+  profitRate       Decimal @map("profit_rate") @db.Decimal(8, 4)         // 利润率 (%)
+
+  notes     String?
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  point   Point @relation(fields: [pointId], references: [id])
+  base    Base  @relation(fields: [baseId], references: [id])
+  creator User  @relation("LocationProfitCreator", fields: [createdBy], references: [id])
+
+  @@index([pointId])
+  @@index([baseId])
+  @@index([startDate, endDate])
+  @@index([createdAt])
+  @@map("location_profits")
 }
 
 // ============================================
