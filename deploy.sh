@@ -7,6 +7,21 @@ set -e
 # 选项:
 #   --systemd    安装为系统服务（推荐，防止用户会话超时导致容器停止）
 #   --user       作为用户容器运行（默认，但可能因会话超时而停止）
+#
+# 数据库安全策略:
+#   - staging 环境: 使用 db push（灵活，适合开发）
+#   - production 环境: 使用 migrate deploy（安全，自动备份）
+#
+# 生产环境部署流程:
+#   1. 本地开发: 修改 schema.prisma
+#   2. 创建迁移: ./scripts/create-migration.sh <迁移名称>
+#   3. 提交代码: git add . && git commit
+#   4. 部署生产: ./deploy.sh production
+#
+# 备份管理:
+#   - 查看备份: ./scripts/db-backup.sh list production
+#   - 创建备份: ./scripts/db-backup.sh create production
+#   - 恢复备份: ./scripts/db-backup.sh restore production <文件名>
 
 # 颜色输出
 RED='\033[0;31m'
