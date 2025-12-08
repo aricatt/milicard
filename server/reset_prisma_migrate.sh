@@ -40,11 +40,14 @@ fi
 
 echo
 echo "2/6. 从现有数据库反向生成 schema.prisma..."
+# 使用 db pull 确保 schema.prisma 反映数据库的真实状态
+# 这样生成的迁移文件才是准确的
 npx prisma db pull
 if [ $? -ne 0 ]; then
     echo "❌ prisma db pull 失败"
     exit 1
 fi
+echo "✅ schema.prisma 已从数据库同步"
 
 echo
 echo "3/6. 清空本地迁移目录..."
@@ -76,15 +79,16 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 创建 steps.json
-echo "{}" > "$init_migration_dir/steps.json"
+# 创建 migration_lock.toml（标记数据库类型）
+echo 'provider = "postgresql"' > "prisma/migrations/migration_lock.toml"
 
 # 清理临时目录
 rm -rf "$temp_migration_dir"
 
 echo
 echo "5/6. 清空数据库中的 _prisma_migrations 表..."
-echo "DELETE FROM _prisma_migrations;" | psql -h localhost -p 5437 -d milicard_dev -U postgres 2>/dev/null
+# 使用环境变量传递密码（如果设置了的话）
+PGPASSWORD="${DB_PASSWORD:-840928}" psql -h localhost -p 5437 -d milicard_dev -U postgres -c "DELETE FROM _prisma_migrations;" 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "⚠️  清空 _prisma_migrations 表失败（可能需要手动执行）"
     echo "    请在数据库中执行: DELETE FROM _prisma_migrations;"
