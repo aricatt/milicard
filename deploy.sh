@@ -49,7 +49,7 @@ if [ "$ENV" = "production" ]; then
     echo -e "${GREEN}Deploying PRODUCTION environment${NC}"
 elif [ "$ENV" = "staging" ]; then
     CONTAINER_NAME="milicard-staging"
-    DEFAULT_PORT=8075
+    DEFAULT_PORT=8275
     VOLUME_NAME="milicard_staging_data"
     echo -e "${YELLOW}Deploying STAGING environment${NC}"
 else

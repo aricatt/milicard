@@ -19,7 +19,7 @@ if ($Env -eq "production") {
     Write-Host "Deploying PRODUCTION environment" -ForegroundColor Green
 } else {
     $CONTAINER_NAME = "milicard-staging"
-    $DEFAULT_PORT = 8075
+    $DEFAULT_PORT = 8275
     $VOLUME_NAME = "milicard_staging_data"
     Write-Host "Deploying STAGING environment" -ForegroundColor Yellow
 }

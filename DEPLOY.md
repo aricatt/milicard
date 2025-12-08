@@ -148,12 +148,12 @@ docker volume rm milicard_staging_data
 
 | 环境 | 端口 | 容器名 | 数据卷 |
 |------|------|--------|--------|
-| 测试服 | 8075 | milicard-staging | milicard_staging_data |
+| 测试服 | 8275 | milicard-staging | milicard_staging_data |
 | 生产服 | 8175 | milicard-prod | milicard_prod_data |
 
 ## 五、访问地址
 
-- 测试服: `http://服务器IP:8075`
+- 测试服: `http://服务器IP:8275`
 - 生产服: `http://服务器IP:8175`
 
 ## 六、数据备份
@@ -174,7 +174,7 @@ cat backup_20241128.sql | docker exec -i milicard-staging su - postgres -c "psql
 docker logs milicard-staging
 
 # 检查端口占用
-netstat -tlnp | grep 8075
+netstat -tlnp | grep 8275
 ```
 
 ### 数据库连接失败
@@ -205,6 +205,6 @@ docker exec milicard-staging ls -la /app/client/dist
 ## 九、安全建议
 
 1. **修改默认密码**: 首次部署后立即修改 admin 密码
-2. **防火墙配置**: 只开放需要的端口（8075/8175）
+2. **防火墙配置**: 只开放需要的端口（8275/8175）
 3. **定期备份**: 建议每天自动备份数据库
 4. **HTTPS**: 生产环境建议配置 HTTPS（可用阿里云 SLB 或 Nginx 反向代理）
