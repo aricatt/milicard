@@ -71,7 +71,7 @@ describe('Login Page', () => {
     await rootContainer.findAllByText('Ant Design');
 
     const userNameInput = await rootContainer.findByPlaceholderText(
-      'Username: admin or user',
+      'Username',
     );
 
     act(() => {
@@ -79,7 +79,7 @@ describe('Login Page', () => {
     });
 
     const passwordInput = await rootContainer.findByPlaceholderText(
-      'Password: ant.design',
+      'Password',
     );
 
     act(() => {

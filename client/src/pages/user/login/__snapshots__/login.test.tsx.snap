@@ -229,7 +229,7 @@ exports[`Login Page should login success 1`] = `
                           <input
                             class="ant-input ant-input-lg"
                             id="username"
-                            placeholder="Username: admin or user"
+                            placeholder="Username"
                             type="text"
                             value="admin"
                           />
@@ -313,7 +313,7 @@ exports[`Login Page should login success 1`] = `
                           <input
                             class="ant-input ant-input-lg"
                             id="password"
-                            placeholder="Password: ant.design"
+                            placeholder="Password"
                             type="password"
                             value="ant.design"
                           />
@@ -773,7 +773,7 @@ exports[`Login Page should show login form 1`] = `
                           <input
                             class="ant-input ant-input-lg"
                             id="username"
-                            placeholder="Username: admin or user"
+                            placeholder="Username"
                             type="text"
                             value=""
                           />
@@ -857,7 +857,7 @@ exports[`Login Page should show login form 1`] = `
                           <input
                             class="ant-input ant-input-lg"
                             id="password"
-                            placeholder="Password: ant.design"
+                            placeholder="Password"
                             type="password"
                           />
                           <span

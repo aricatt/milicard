@@ -65,13 +65,13 @@ async function createTestUser() {
 
     console.log('✅ 测试用户创建成功:');
     console.log(`   用户名: ${user.username}`);
-    console.log(`   密码: ant.design`);
+    console.log(`   密码`);
     console.log(`   邮箱: ${user.email}`);
     console.log(`   角色: ${user.userRoles.map(ur => ur.role.name).join(', ')}`);
     console.log('');
     console.log('🎯 现在可以使用以下账号登录:');
     console.log('   用户名: admin');
-    console.log('   密码: ant.design');
+    console.log('   密码');
 
   } catch (error) {
     console.error('❌ 创建测试用户失败:', error);
