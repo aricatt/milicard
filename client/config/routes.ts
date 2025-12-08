@@ -172,7 +172,7 @@ export default [
         name: 'receivables',
         icon: 'moneyCollect',
         path: '/live-base/receivables',
-        component: './live-base/sales',
+        component: './live-base/receivables',
         access: 'canAccessReceivables',
       },
     ],
