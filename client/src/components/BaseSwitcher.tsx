@@ -36,10 +36,11 @@ const BaseSwitcher: React.FC = () => {
     
     // 直播基地 → 直播间/仓库页，线下基地 → 小区页
     // 使用 window.location.href 强制刷新，确保菜单正确更新
+    // 使用完整 URL 确保端口号不丢失
     const targetPath = base.type === BaseType.OFFLINE_REGION 
       ? '/offline-region/sub-districts' 
       : '/live-base/locations';
-    window.location.href = targetPath;
+    window.location.href = `${window.location.origin}${targetPath}`;
   };
 
   // 创建新基地
