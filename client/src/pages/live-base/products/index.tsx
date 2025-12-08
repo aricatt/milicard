@@ -14,6 +14,7 @@ import {
   Col,
   Image,
   InputNumber,
+  Select,
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -38,11 +39,57 @@ import ImportModal from '@/components/ImportModal';
 
 const { TextArea } = Input;
 
+// 商品品类枚举
+enum GoodsCategory {
+  CARD = 'CARD',             // 卡牌
+  CARD_BRICK = 'CARD_BRICK', // 卡砖
+  GIFT = 'GIFT',             // 礼物
+  COLOR_PAPER = 'COLOR_PAPER', // 色纸
+  FORTUNE_SIGN = 'FORTUNE_SIGN', // 上上签
+  TEAR_CARD = 'TEAR_CARD',   // 撕撕乐
+  TOY = 'TOY',               // 玩具
+  STAMP = 'STAMP',           // 邮票
+  LUCKY_CAT = 'LUCKY_CAT'    // 招财猫
+}
+
+// 品类中文映射
+const GoodsCategoryLabels: Record<GoodsCategory, string> = {
+  [GoodsCategory.CARD]: '卡牌',
+  [GoodsCategory.CARD_BRICK]: '卡砖',
+  [GoodsCategory.GIFT]: '礼物',
+  [GoodsCategory.COLOR_PAPER]: '色纸',
+  [GoodsCategory.FORTUNE_SIGN]: '上上签',
+  [GoodsCategory.TEAR_CARD]: '撕撕乐',
+  [GoodsCategory.TOY]: '玩具',
+  [GoodsCategory.STAMP]: '邮票',
+  [GoodsCategory.LUCKY_CAT]: '招财猫'
+};
+
+// 品类颜色映射
+const GoodsCategoryColors: Record<GoodsCategory, string> = {
+  [GoodsCategory.CARD]: 'blue',
+  [GoodsCategory.CARD_BRICK]: 'cyan',
+  [GoodsCategory.GIFT]: 'magenta',
+  [GoodsCategory.COLOR_PAPER]: 'purple',
+  [GoodsCategory.FORTUNE_SIGN]: 'gold',
+  [GoodsCategory.TEAR_CARD]: 'orange',
+  [GoodsCategory.TOY]: 'green',
+  [GoodsCategory.STAMP]: 'geekblue',
+  [GoodsCategory.LUCKY_CAT]: 'red'
+};
+
+// 品类选项列表
+const categoryOptions = Object.entries(GoodsCategoryLabels).map(([value, label]) => ({
+  value,
+  label
+}));
+
 // 商品数据类型定义
 interface Product {
   id: string;
   code: string;
   name: string;
+  category: GoodsCategory;
   alias?: string;
   manufacturer: string;
   description?: string;
@@ -287,6 +334,7 @@ const ProductManagement: React.FC = () => {
     setEditingProduct(record);
     editForm.setFieldsValue({
       name: record.name,
+      category: record.category,
       alias: record.alias,
       manufacturer: record.manufacturer,
       description: record.description,
@@ -324,6 +372,25 @@ const ProductManagement: React.FC = () => {
       hideInSetting: true,
       hideInSearch: true,
       render: (text: string) => <code style={{ fontSize: 12 }}>{text}</code>,
+    },
+    {
+      title: '品类',
+      dataIndex: 'category',
+      key: 'category',
+      width: 100,
+      fixed: 'left',
+      valueType: 'select',
+      valueEnum: Object.fromEntries(
+        Object.entries(GoodsCategoryLabels).map(([key, label]) => [key, { text: label }])
+      ),
+      render: (_, record) => {
+        const category = record.category || GoodsCategory.CARD;
+        return (
+          <Tag color={GoodsCategoryColors[category]}>
+            {GoodsCategoryLabels[category]}
+          </Tag>
+        );
+      },
     },
     {
       title: '商品名称',
@@ -752,16 +819,33 @@ const ProductManagement: React.FC = () => {
           layout="vertical"
           onFinish={handleCreate}
         >
-          <Form.Item
-            label="商品名称"
-            name="name"
-            rules={[
-              { required: true, message: '请输入商品名称' },
-              { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
-            ]}
-          >
-            <Input placeholder="请输入商品名称" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={16}>
+              <Form.Item
+                label="商品名称"
+                name="name"
+                rules={[
+                  { required: true, message: '请输入商品名称' },
+                  { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
+                ]}
+              >
+                <Input placeholder="请输入商品名称" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="品类"
+                name="category"
+                initialValue={GoodsCategory.CARD}
+                rules={[{ required: true, message: '请选择品类' }]}
+              >
+                <Select
+                  placeholder="请选择品类"
+                  options={categoryOptions}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Row gutter={16}>
             <Col span={12}>
@@ -923,16 +1007,32 @@ const ProductManagement: React.FC = () => {
           layout="vertical"
           onFinish={handleUpdate}
         >
-          <Form.Item
-            label="商品名称"
-            name="name"
-            rules={[
-              { required: true, message: '请输入商品名称' },
-              { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
-            ]}
-          >
-            <Input placeholder="请输入商品名称" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={16}>
+              <Form.Item
+                label="商品名称"
+                name="name"
+                rules={[
+                  { required: true, message: '请输入商品名称' },
+                  { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
+                ]}
+              >
+                <Input placeholder="请输入商品名称" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="品类"
+                name="category"
+                rules={[{ required: true, message: '请选择品类' }]}
+              >
+                <Select
+                  placeholder="请选择品类"
+                  options={categoryOptions}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Row gutter={16}>
             <Col span={12}>

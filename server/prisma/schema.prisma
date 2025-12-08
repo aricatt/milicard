@@ -172,6 +172,7 @@ model Goods {
   code               String              @unique
   name               String
   description        String?
+  category           GoodsCategory       @default(CARD)
   retailPrice        Decimal             @map("retail_price") @db.Decimal(12, 2)
   purchasePrice      Decimal?            @map("purchase_price") @db.Decimal(12, 2)
   boxQuantity        Int                 @default(1) @map("box_quantity")
@@ -1055,4 +1056,17 @@ enum PaymentStatus {
   UNPAID
   PARTIAL
   PAID
+}
+
+/// 商品品类
+enum GoodsCategory {
+  CARD          // 卡牌
+  CARD_BRICK    // 卡砖
+  GIFT          // 礼物
+  COLOR_PAPER   // 色纸
+  FORTUNE_SIGN  // 上上签
+  TEAR_CARD     // 撕撕乐
+  TOY           // 玩具
+  STAMP         // 邮票
+  LUCKY_CAT     // 招财猫
 }

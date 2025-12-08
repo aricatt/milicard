@@ -8,10 +8,50 @@ import type { UploadProps } from 'antd';
 import { request } from '@umijs/max';
 import { exportToExcel, readExcelFile, downloadTemplate, validateImportData, formatDateTime } from '@/utils/excelUtils';
 
+// 商品品类枚举
+enum GoodsCategory {
+  CARD = 'CARD',             // 卡牌
+  CARD_BRICK = 'CARD_BRICK', // 卡砖
+  GIFT = 'GIFT',             // 礼物
+  COLOR_PAPER = 'COLOR_PAPER', // 色纸
+  FORTUNE_SIGN = 'FORTUNE_SIGN', // 上上签
+  TEAR_CARD = 'TEAR_CARD',   // 撕撕乐
+  TOY = 'TOY',               // 玩具
+  STAMP = 'STAMP',           // 邮票
+  LUCKY_CAT = 'LUCKY_CAT'    // 招财猫
+}
+
+// 品类中文映射
+const GoodsCategoryLabels: Record<GoodsCategory, string> = {
+  [GoodsCategory.CARD]: '卡牌',
+  [GoodsCategory.CARD_BRICK]: '卡砖',
+  [GoodsCategory.GIFT]: '礼物',
+  [GoodsCategory.COLOR_PAPER]: '色纸',
+  [GoodsCategory.FORTUNE_SIGN]: '上上签',
+  [GoodsCategory.TEAR_CARD]: '撕撕乐',
+  [GoodsCategory.TOY]: '玩具',
+  [GoodsCategory.STAMP]: '邮票',
+  [GoodsCategory.LUCKY_CAT]: '招财猫'
+};
+
+// 品类反向映射（中文 -> 枚举值）
+const GoodsCategoryReverse: Record<string, GoodsCategory> = {
+  '卡牌': GoodsCategory.CARD,
+  '卡砖': GoodsCategory.CARD_BRICK,
+  '礼物': GoodsCategory.GIFT,
+  '色纸': GoodsCategory.COLOR_PAPER,
+  '上上签': GoodsCategory.FORTUNE_SIGN,
+  '撕撕乐': GoodsCategory.TEAR_CARD,
+  '玩具': GoodsCategory.TOY,
+  '邮票': GoodsCategory.STAMP,
+  '招财猫': GoodsCategory.LUCKY_CAT
+};
+
 interface Product {
   id: string;
   code: string;
   name: string;
+  category: GoodsCategory;
   alias?: string;
   manufacturer: string;
   retailPrice: number;
@@ -40,6 +80,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
   const excelColumns = [
     { header: 'ID', key: 'id', width: 8 },
     { header: '商品编号', key: 'code', width: 20 },
+    { header: '品类', key: 'category', width: 10 },
     { header: '商品名称', key: 'name', width: 35 },
     { header: '商品别名', key: 'alias', width: 25 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
@@ -71,6 +112,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       const exportData = result.data.map((item: Product) => ({
         id: item.id,
         code: item.code,
+        category: GoodsCategoryLabels[item.category] || '卡牌',
         name: item.name,
         alias: item.alias || '',
         manufacturer: item.manufacturer,
@@ -107,16 +149,21 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       message.loading(`准备导入 ${jsonData.length} 条数据...`, 0);
 
       // 转换数据格式
-      const importData = jsonData.map((row: any) => ({
-        code: String(row['商品编号'] || '').trim() || undefined, // 保留源编号，空则自动生成
-        name: String(row['商品名称'] || '').trim(),
-        alias: String(row['商品别名'] || '').trim() || undefined,
-        manufacturer: String(row['厂家名称'] || '').trim(),
-        retailPrice: parseFloat(row['零售价(一箱)'] || '0'),
-        packPerBox: parseInt(row['多少盒1箱'] || '0'),
-        piecePerPack: parseInt(row['多少包1盒'] || '0'),
-        boxQuantity: 1,
-      }));
+      const importData = jsonData.map((row: any) => {
+        const categoryStr = String(row['品类'] || '').trim();
+        const category = GoodsCategoryReverse[categoryStr] || GoodsCategory.CARD;
+        return {
+          code: String(row['商品编号'] || '').trim() || undefined, // 保留源编号，空则自动生成
+          name: String(row['商品名称'] || '').trim(),
+          category,
+          alias: String(row['商品别名'] || '').trim() || undefined,
+          manufacturer: String(row['厂家名称'] || '').trim(),
+          retailPrice: parseFloat(row['零售价(一箱)'] || '0'),
+          packPerBox: parseInt(row['多少盒1箱'] || '0'),
+          piecePerPack: parseInt(row['多少包1盒'] || '0'),
+          boxQuantity: 1,
+        };
+      });
 
       // 数据验证
       const errors = validateImportData(importData, [
@@ -252,6 +299,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       {
         id: '（导入时此列会被忽略）',
         code: '（系统自动生成）',
+        category: '卡牌',
         name: '琦趣创想航海王 和之国篇',
         alias: '',
         manufacturer: '琦趣创想',
@@ -264,6 +312,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       {
         id: '',
         code: '',
+        category: '玩具',
         name: '名侦探柯南挂件-星绽版-第1弹',
         alias: '',
         manufacturer: '卡游',
@@ -276,6 +325,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       {
         id: '',
         code: '',
+        category: '卡砖',
         name: '灵魂重生收藏卡',
         alias: '',
         manufacturer: '万画云游',

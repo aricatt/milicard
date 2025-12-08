@@ -8,7 +8,8 @@ import {
   GoodsResponse,
   GoodsListResponse,
   GoodsError,
-  GoodsErrorType
+  GoodsErrorType,
+  GoodsCategory
 } from '../types/goods'
 
 /**
@@ -58,6 +59,7 @@ export class GoodsService {
         data: {
           code: goodsCode,
           name: data.name,
+          category: data.category || 'CARD', // 默认卡牌
           manufacturer: data.manufacturer,
           description: data.description,
           retailPrice: data.retailPrice,
@@ -122,7 +124,8 @@ export class GoodsService {
         pageSize = 20,
         search,
         isActive,
-        manufacturer
+        manufacturer,
+        category
       } = params
 
       const skip = (page - 1) * pageSize
@@ -146,6 +149,10 @@ export class GoodsService {
 
       if (manufacturer) {
         where.manufacturer = { contains: manufacturer, mode: 'insensitive' }
+      }
+
+      if (category) {
+        where.category = category
       }
 
       // 查询商品列表
@@ -279,6 +286,7 @@ export class GoodsService {
         data: {
           ...(data.code && { code: data.code }),
           ...(data.name && { name: data.name }),
+          ...(data.category && { category: data.category }),
           ...(data.alias !== undefined && { alias: data.alias }),
           ...(data.manufacturer && { manufacturer: data.manufacturer }),
           ...(data.description !== undefined && { description: data.description }),
@@ -424,6 +432,7 @@ export class GoodsService {
       id: goods.id,
       code: goods.code,
       name: goods.name,
+      category: goods.category as GoodsCategory,
       alias: goods.alias,
       manufacturer: goods.manufacturer,
       description: goods.description,
