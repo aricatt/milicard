@@ -126,6 +126,57 @@ npx prisma migrate deploy
 3. **备份文件** - 脚本会自动备份数据库，备份成功后可手动删除
 4. **Git 提交** - 执行后记得提交 `prisma/migrations/` 目录
 
+## 部署流程
+
+### 统一迁移策略
+
+**Staging 和 Production 环境现在使用相同的迁移逻辑：**
+
+```
+容器启动
+    │
+    ▼
+检查是否有迁移文件？
+    │
+    ├─ 否 ──► 使用 db push（兼容旧版本）
+    │
+    └─ 是 ──► 检查 _prisma_migrations 表
+                │
+                ├─ 存在 ──► migrate deploy（只执行未应用的迁移）
+                │
+                └─ 不存在 ──► 检查数据库是否为空？
+                              │
+                              ├─ 空 ──► 执行所有迁移
+                              │
+                              └─ 有表 ──► 自动基线化
+                                         1. db push 同步结构
+                                         2. 标记所有迁移为已应用
+```
+
+### 开发工作流
+
+```bash
+# 1. 修改 schema.prisma
+
+# 2. 创建迁移
+npx prisma migrate dev --name add_new_feature
+
+# 3. 提交代码（包含 prisma/migrations/ 目录）
+git add .
+git commit -m "feat: add new feature"
+
+# 4. 部署
+./deploy.ps1 staging      # 测试环境
+./deploy.ps1 production   # 生产环境
+```
+
+### 部署时的数据库更新
+
+部署脚本会自动：
+1. 备份数据库（非首次运行时）
+2. 检测并应用新的迁移
+3. 保留所有业务数据
+
 ## 故障排除
 
 ### 备份失败

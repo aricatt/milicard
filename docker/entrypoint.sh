@@ -58,87 +58,78 @@ export DATABASE_URL="postgresql://milicard:${DB_PASSWORD}@localhost:5432/milicar
 BACKUP_DIR="/var/lib/postgresql/backups"
 mkdir -p $BACKUP_DIR
 
-# 同步数据库 schema
+# 同步数据库 schema（统一使用迁移）
 echo "Syncing database schema..."
 cd /app/server
 
-if [ "$NODE_ENV" = "production" ]; then
-    # 生产环境：使用安全的迁移方式
-    echo "Production mode: Using safe migration strategy..."
+# 如果不是首次运行，先备份数据库
+if [ "$FIRST_RUN" = false ]; then
+    BACKUP_FILE="$BACKUP_DIR/backup_$(date +%Y%m%d_%H%M%S).sql"
+    echo "Creating database backup: $BACKUP_FILE"
+    PGPASSWORD="${DB_PASSWORD}" pg_dump -h localhost -U milicard milicard > "$BACKUP_FILE" 2>/dev/null || true
     
-    # 如果不是首次运行，先备份数据库
-    if [ "$FIRST_RUN" = false ]; then
-        BACKUP_FILE="$BACKUP_DIR/backup_$(date +%Y%m%d_%H%M%S).sql"
-        echo "Creating database backup: $BACKUP_FILE"
-        PGPASSWORD="${DB_PASSWORD}" pg_dump -h localhost -U milicard milicard > "$BACKUP_FILE"
-        
-        # 保留最近 10 个备份
-        ls -t $BACKUP_DIR/backup_*.sql 2>/dev/null | tail -n +11 | xargs -r rm
-        echo "Backup created successfully."
-    fi
+    # 保留最近 10 个备份
+    ls -t $BACKUP_DIR/backup_*.sql 2>/dev/null | tail -n +11 | xargs -r rm
+    echo "Backup created."
+fi
+
+# 检查是否有迁移文件
+if [ -d "prisma/migrations" ] && [ "$(ls -A prisma/migrations 2>/dev/null)" ]; then
+    echo "Found migration files, checking migration status..."
     
-    # 检查是否有迁移文件
-    if [ -d "prisma/migrations" ] && [ "$(ls -A prisma/migrations 2>/dev/null)" ]; then
-        echo "Found migration files, checking migration status..."
+    # 检查 _prisma_migrations 表是否存在
+    MIGRATIONS_TABLE_EXISTS=$(PGPASSWORD="${DB_PASSWORD}" psql -h localhost -U milicard -d milicard -tAc "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '_prisma_migrations')" 2>/dev/null || echo "f")
+    
+    if [ "$MIGRATIONS_TABLE_EXISTS" = "t" ]; then
+        # 迁移表存在，正常应用迁移
+        echo "Migration history found, applying pending migrations..."
+        npx prisma migrate status || true
         
-        # 检查 _prisma_migrations 表是否存在
-        MIGRATIONS_TABLE_EXISTS=$(PGPASSWORD="${DB_PASSWORD}" psql -h localhost -U milicard -d milicard -tAc "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '_prisma_migrations')")
+        if npx prisma migrate deploy; then
+            echo "✅ Database migrations applied successfully."
+        else
+            echo "⚠️ Migration deploy failed. Check the error above."
+            echo "You may need to manually resolve with: npx prisma migrate resolve"
+            exit 1
+        fi
+    else
+        # 迁移表不存在，检查数据库是否为空
+        TABLE_COUNT=$(PGPASSWORD="${DB_PASSWORD}" psql -h localhost -U milicard -d milicard -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'" 2>/dev/null || echo "0")
         
-        if [ "$MIGRATIONS_TABLE_EXISTS" = "t" ]; then
-            # 迁移表存在，正常应用迁移
-            echo "Migration history found, applying pending migrations..."
-            npx prisma migrate status || true
-            
+        if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
+            # 数据库为空，正常执行迁移
+            echo "Empty database, applying all migrations..."
             if npx prisma migrate deploy; then
                 echo "✅ Database migrations applied successfully."
             else
-                echo "⚠️ Migration deploy failed. Check the error above."
-                echo "You may need to manually resolve with: npx prisma migrate resolve"
-                exit 1
+                echo "⚠️ Migration failed, falling back to db push..."
+                npx prisma db push --accept-data-loss
             fi
         else
-            # 迁移表不存在，检查数据库是否为空
-            TABLE_COUNT=$(PGPASSWORD="${DB_PASSWORD}" psql -h localhost -U milicard -d milicard -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")
+            # 数据库有表但没有迁移历史（需要基线化）
+            echo "⚠️ Database has tables but no migration history."
+            echo "Baselining the database with current migrations..."
             
-            if [ "$TABLE_COUNT" = "0" ]; then
-                # 数据库为空，正常执行迁移
-                echo "Empty database, applying all migrations..."
-                if npx prisma migrate deploy; then
-                    echo "✅ Database migrations applied successfully."
-                else
-                    echo "⚠️ Migration failed, falling back to db push..."
-                    npx prisma db push --accept-data-loss
-                fi
-            else
-                # 数据库有表但没有迁移历史（可能之前用 db push 创建的）
-                echo "⚠️ Database has tables but no migration history."
-                echo "This usually means the database was created with 'db push'."
-                echo "Baselining the database with current migrations..."
-                
-                # 使用 db push 确保 schema 同步，然后标记迁移为已应用
-                npx prisma db push --accept-data-loss
-                
-                # 创建迁移历史表并标记所有迁移为已应用
-                for migration_dir in prisma/migrations/*/; do
-                    if [ -d "$migration_dir" ]; then
-                        migration_name=$(basename "$migration_dir")
-                        if [ "$migration_name" != "migration_lock.toml" ]; then
-                            echo "Marking migration as applied: $migration_name"
-                            npx prisma migrate resolve --applied "$migration_name" 2>/dev/null || true
-                        fi
+            # 使用 db push 确保 schema 同步
+            npx prisma db push --accept-data-loss
+            
+            # 标记所有迁移为已应用
+            for migration_dir in prisma/migrations/*/; do
+                if [ -d "$migration_dir" ]; then
+                    migration_name=$(basename "$migration_dir")
+                    if [ "$migration_name" != "migration_lock.toml" ]; then
+                        echo "Marking migration as applied: $migration_name"
+                        npx prisma migrate resolve --applied "$migration_name" 2>/dev/null || true
                     fi
-                done
-                
-                echo "✅ Database baselined successfully."
-            fi
+                fi
+            done
+            
+            echo "✅ Database baselined successfully."
         fi
-    else
-        echo "No migration files found, using db push..."
-        npx prisma db push --accept-data-loss
     fi
 else
-    # 开发/测试环境：使用 db push（更灵活）
-    echo "Development mode: Using db push..."
+    # 没有迁移文件，使用 db push（兼容旧版本）
+    echo "No migration files found, using db push..."
     npx prisma db push --accept-data-loss
 fi
 
