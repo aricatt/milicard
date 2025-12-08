@@ -189,4 +189,11 @@ export default defineConfig({
   define: {
     'process.env.CI': process.env.CI,
   },
+  /**
+   * @name 代码分割配置
+   * @description 解决 Circular hash dependency 错误
+   */
+  codeSplitting: {
+    jsStrategy: 'granularChunks',
+  },
 });
