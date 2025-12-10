@@ -20,22 +20,23 @@ export const exportToExcel = (
   fileName: string
 ) => {
   try {
+    let ws: XLSX.WorkSheet;
+
     if (!data || data.length === 0) {
-      message.warning('没有数据可导出');
-      return false;
-    }
-
-    // 转换数据格式
-    const exportData = data.map((item) => {
-      const row: any = {};
-      columns.forEach((col) => {
-        row[col.header] = item[col.key] ?? '';
+      // 没有数据时导出只有列头的空表（可作为导入模板使用）
+      const headers = columns.map((col) => col.header);
+      ws = XLSX.utils.aoa_to_sheet([headers]);
+    } else {
+      // 转换数据格式
+      const exportData = data.map((item) => {
+        const row: any = {};
+        columns.forEach((col) => {
+          row[col.header] = item[col.key] ?? '';
+        });
+        return row;
       });
-      return row;
-    });
-
-    // 创建工作簿
-    const ws = XLSX.utils.json_to_sheet(exportData);
+      ws = XLSX.utils.json_to_sheet(exportData);
+    }
 
     // 设置列宽
     if (columns.some((col) => col.width)) {
@@ -51,7 +52,11 @@ export const exportToExcel = (
     const fullFileName = `${fileName}_${timestamp}.xlsx`;
     saveAs(new Blob([wbout], { type: 'application/octet-stream' }), fullFileName);
 
-    message.success(`成功导出 ${data.length} 条数据`);
+    if (data && data.length > 0) {
+      message.success(`成功导出 ${data.length} 条数据`);
+    } else {
+      message.success('已导出空表模板');
+    }
     return true;
   } catch (error) {
     console.error('导出失败:', error);

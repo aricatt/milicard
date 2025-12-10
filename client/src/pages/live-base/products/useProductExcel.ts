@@ -103,13 +103,11 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       message.destroy();
 
-      if (!result.success || !result.data) {
-        message.warning('没有数据可导出');
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式
-      const exportData = result.data.map((item: Product) => ({
+      const exportData = dataList.map((item: Product) => ({
         id: item.id,
         code: item.code,
         category: GoodsCategoryLabels[item.category] || '卡牌',
@@ -347,6 +345,5 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };

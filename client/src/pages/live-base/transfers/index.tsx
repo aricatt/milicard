@@ -58,7 +58,6 @@ const TransferManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useTransferExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -516,7 +515,6 @@ const TransferManagement: React.FC = () => {
         open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         loading={importLoading}
         progress={importProgress}
         tips={[

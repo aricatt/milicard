@@ -48,13 +48,11 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
 
       message.destroy();
 
-      if (!result.success || !result.data) {
-        message.warning('没有数据可导出');
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式
-      const exportData = result.data.map((item: any) => ({
+      const exportData = dataList.map((item: any) => ({
         id: item.id,
         transferDate: item.transferDate ? item.transferDate.split('T')[0] : '',
         goodsCode: item.goodsCode || '',
@@ -241,6 +239,5 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };

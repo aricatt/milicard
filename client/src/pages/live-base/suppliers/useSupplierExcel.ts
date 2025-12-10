@@ -57,13 +57,11 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
 
       message.destroy();
 
-      if (!result.success || !result.data) {
-        message.warning('没有数据可导出');
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式（不导出ID）
-      const exportData = result.data.map((item: Supplier) => ({
+      const exportData = dataList.map((item: Supplier) => ({
         code: item.code,
         name: item.name,
         contactPerson: item.contactPerson || '',
@@ -298,6 +296,5 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };

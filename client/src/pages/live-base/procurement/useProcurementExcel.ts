@@ -62,13 +62,11 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
 
       message.destroy();
 
-      if (!result.success || !result.data) {
-        message.warning('没有数据可导出');
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式 - 动态计算字段
-      const exportData = result.data.map((item: any) => {
+      const exportData = dataList.map((item: any) => {
         const retailPrice = item.retailPrice || 0;
         const unitPriceBox = item.unitPriceBox || 0;
         const unitPricePack = item.unitPricePack || 0;
@@ -351,6 +349,5 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };

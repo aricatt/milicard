@@ -55,7 +55,6 @@ const AnchorProfitPage: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useAnchorProfitExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -828,7 +827,6 @@ const AnchorProfitPage: React.FC = () => {
         open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         loading={importLoading}
         progress={importProgress}
         tips={[

@@ -60,7 +60,6 @@ const ConsumptionManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useConsumptionExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -664,7 +663,6 @@ const ConsumptionManagement: React.FC = () => {
         open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         loading={importLoading}
         progress={importProgress}
         title="导入消耗记录"

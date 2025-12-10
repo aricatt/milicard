@@ -152,7 +152,6 @@ const ProductManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useProductExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -1169,7 +1168,6 @@ const ProductManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         tips={[
           '1. 请使用提供的模板文件，保持列名不变',
           '2. ID、商品编号、创建时间由系统自动生成，导入时会被忽略',

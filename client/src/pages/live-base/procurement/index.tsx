@@ -79,7 +79,6 @@ const ProcurementManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useProcurementExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -433,13 +432,6 @@ const ProcurementManagement: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button
-            key="template"
-            icon={<DownloadOutlined />}
-            onClick={handleDownloadTemplate}
-          >
-            下载模板
-          </Button>,
-          <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
@@ -541,7 +533,6 @@ const ProcurementManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         tips={[
           '1. 请使用提供的模板文件，保持列名不变',
           '2. 采购日期、商品名称、供应商、拿货单价箱为必填项',

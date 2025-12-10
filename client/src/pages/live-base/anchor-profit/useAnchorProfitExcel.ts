@@ -45,12 +45,10 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
         params: { pageSize: 10000 },
       });
 
-      if (!result.success || !result.data?.length) {
-        message.warning({ content: '没有可导出的数据', key: 'export' });
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
-      const exportData = result.data.map((record: any) => ({
+      const exportData = dataList.map((record: any) => ({
         '日期': dayjs(record.profitDate).format('YYYY-MM-DD'),
         '主播': record.handlerName || '',
         'GMV金额': record.gmvAmount || 0,
@@ -65,7 +63,11 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
         '备注': record.notes || '',
       }));
 
-      const ws = XLSX.utils.json_to_sheet(exportData);
+      // 如果没有数据，创建只有列头的空表
+      const headers = ['日期', '主播', 'GMV金额', '退款金额', '走水金额', '当日销售额', '消耗金额', '投流金额', '平台扣点金额', '利润金额', '毛利率%', '备注'];
+      const ws = exportData.length > 0 
+        ? XLSX.utils.json_to_sheet(exportData)
+        : XLSX.utils.aoa_to_sheet([headers]);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, '主播利润');
 
@@ -209,6 +211,5 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };

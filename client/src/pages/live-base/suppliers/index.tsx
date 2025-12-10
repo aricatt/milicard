@@ -99,7 +99,6 @@ const SupplierManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useSupplierExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -833,7 +832,6 @@ const SupplierManagement: React.FC = () => {
         open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         loading={importLoading}
         progress={importProgress}
         title="导入供应商"

@@ -44,7 +44,6 @@ const ArrivalManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   } = useArrivalExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -542,7 +541,6 @@ const ArrivalManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         onImport={handleImport}
-        onDownloadTemplate={handleDownloadTemplate}
         tips={[
           '1. 请使用提供的模板文件，保持列名不变',
           '2. 到货日期、采购编号、直播间、主播为必填项',

@@ -43,12 +43,10 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         params: { pageSize: 10000 },
       });
 
-      if (!result.success || !result.data?.length) {
-        message.warning({ content: '没有可导出的数据', key: 'export' });
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
-      const exportData = result.data.map((record: any) => ({
+      const exportData = dataList.map((record: any) => ({
         '消耗日期': dayjs(record.consumptionDate).format('YYYY-MM-DD'),
         '商品': record.goodsName || '',
         '直播间': record.locationName || '',
@@ -59,7 +57,11 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         '备注': record.notes || '',
       }));
 
-      const ws = XLSX.utils.json_to_sheet(exportData);
+      // 如果没有数据，创建只有列头的空表
+      const headers = ['消耗日期', '商品', '直播间', '主播', '消耗箱', '消耗盒', '消耗包', '备注'];
+      const ws = exportData.length > 0 
+        ? XLSX.utils.json_to_sheet(exportData)
+        : XLSX.utils.aoa_to_sheet([headers]);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, '消耗记录');
 
@@ -191,6 +193,5 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };

@@ -3,8 +3,8 @@
  * 统一商品、采购、到货等页面的导入UI风格
  */
 import React from 'react';
-import { Modal, Upload, Button, Alert, Spin, Progress } from 'antd';
-import { InboxOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Modal, Upload, Alert, Spin, Progress } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 
 export interface ImportModalProps {
@@ -20,8 +20,8 @@ export interface ImportModalProps {
   progress?: number;
   /** 导入处理函数 */
   onImport: UploadProps['customRequest'];
-  /** 下载模板函数 */
-  onDownloadTemplate: () => void;
+  /** 下载模板函数（已废弃，导出空表可代替此功能） */
+  onDownloadTemplate?: () => void;
   /** 导入说明列表 */
   tips?: string[];
   /** 模态框宽度 */
@@ -35,7 +35,6 @@ const ImportModal: React.FC<ImportModalProps> = ({
   loading,
   progress = 0,
   onImport,
-  onDownloadTemplate,
   tips = [],
   width = 600,
 }) => {
@@ -100,15 +99,6 @@ const ImportModal: React.FC<ImportModalProps> = ({
             </p>
           </Upload.Dragger>
 
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <Button
-              type="link"
-              icon={<DownloadOutlined />}
-              onClick={onDownloadTemplate}
-            >
-              下载导入模板
-            </Button>
-          </div>
         </>
       )}
     </Modal>

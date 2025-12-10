@@ -47,13 +47,11 @@ export const useArrivalExcel = ({ baseId, baseName, onImportSuccess }: UseArriva
 
       message.destroy();
 
-      if (!result.success || !result.data) {
-        message.warning('没有数据可导出');
-        return;
-      }
+      // 允许导出空表（可作为导入模板使用）
+      const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式
-      const exportData = result.data.map((item: any) => {
+      const exportData = dataList.map((item: any) => {
         const purchaseDate = item.purchaseDate ? item.purchaseDate.split('T')[0] : '';
         return {
           id: item.id,
@@ -228,6 +226,5 @@ export const useArrivalExcel = ({ baseId, baseName, onImportSuccess }: UseArriva
     importProgress,
     handleExport,
     handleImport,
-    handleDownloadTemplate,
   };
 };
