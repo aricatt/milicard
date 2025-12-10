@@ -23,6 +23,7 @@ import { useProcurementExcel } from './useProcurementExcel';
 import ProcurementForm from './ProcurementForm';
 import { getColumns } from './columns';
 import ImportModal from '@/components/ImportModal';
+import LogisticsModal from './LogisticsModal';
 import type { 
   PurchaseOrder, 
   PurchaseStats, 
@@ -39,7 +40,7 @@ import dayjs from 'dayjs';
 const ProcurementManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   
   // 状态管理
   const [stats, setStats] = useState<PurchaseStats>({
@@ -55,6 +56,10 @@ const ProcurementManagement: React.FC = () => {
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  
+  // 物流弹窗状态
+  const [logisticsModalVisible, setLogisticsModalVisible] = useState(false);
+  const [logisticsOrder, setLogisticsOrder] = useState<PurchaseOrder | null>(null);
   
   // 商品和供应商选项
   const [goodsOptions, setGoodsOptions] = useState<GoodsOption[]>([]);
@@ -333,6 +338,14 @@ const ProcurementManagement: React.FC = () => {
   };
 
   /**
+   * 查看物流信息
+   */
+  const handleLogistics = (record: PurchaseOrder) => {
+    setLogisticsOrder(record);
+    setLogisticsModalVisible(true);
+  };
+
+  /**
    * 统计信息内容
    */
   // 向下取整到2位小数
@@ -350,7 +363,7 @@ const ProcurementManagement: React.FC = () => {
   );
 
   // 获取列定义
-  const columns = getColumns(handleEdit, handleDelete);
+  const columns = getColumns(handleEdit, handleDelete, handleLogistics);
 
   if (!currentBase) {
     return (
@@ -538,6 +551,20 @@ const ProcurementManagement: React.FC = () => {
           '6. 零售价、折扣、应付金额等字段由系统自动计算，导入时会被忽略',
           '7. 支持批量导入，建议每次不超过500条',
         ]}
+      />
+
+      {/* 物流信息弹窗 */}
+      <LogisticsModal
+        visible={logisticsModalVisible}
+        record={logisticsOrder}
+        baseId={currentBase?.id || 0}
+        onClose={() => {
+          setLogisticsModalVisible(false);
+          setLogisticsOrder(null);
+        }}
+        onRefreshSuccess={() => {
+          actionRef.current?.reload();
+        }}
       />
     </PageContainer>
   );

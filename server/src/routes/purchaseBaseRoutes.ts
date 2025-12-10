@@ -64,4 +64,34 @@ router.put('/:baseId/suppliers/:supplierId', authenticateToken, checkPermission(
  */
 router.delete('/:baseId/suppliers/:supplierId', authenticateToken, checkPermission('supplier', 'delete'), PurchaseBaseController.deleteBaseSupplier);
 
+/**
+ * 获取采购订单物流信息（所有物流记录）
+ * GET /api/v1/bases/{baseId}/purchase-orders/:orderId/logistics
+ */
+router.get('/:baseId/purchase-orders/:orderId/logistics', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getPurchaseOrderLogistics);
+
+/**
+ * 添加物流单号
+ * POST /api/v1/bases/{baseId}/purchase-orders/:orderId/logistics
+ */
+router.post('/:baseId/purchase-orders/:orderId/logistics', authenticateToken, checkPermission('purchase_order', 'update'), PurchaseBaseController.addLogisticsRecord);
+
+/**
+ * 删除物流记录
+ * DELETE /api/v1/bases/{baseId}/purchase-orders/:orderId/logistics/:logisticsId
+ */
+router.delete('/:baseId/purchase-orders/:orderId/logistics/:logisticsId', authenticateToken, checkPermission('purchase_order', 'update'), PurchaseBaseController.deleteLogisticsRecord);
+
+/**
+ * 刷新单个物流记录
+ * POST /api/v1/bases/{baseId}/purchase-orders/:orderId/logistics/:logisticsId/refresh
+ */
+router.post('/:baseId/purchase-orders/:orderId/logistics/:logisticsId/refresh', authenticateToken, checkPermission('purchase_order', 'update'), PurchaseBaseController.refreshLogisticsRecord);
+
+/**
+ * 更新采购订单
+ * PUT /api/v1/bases/{baseId}/purchase-orders/:orderId
+ */
+router.put('/:baseId/purchase-orders/:orderId', authenticateToken, checkPermission('purchase_order', 'update'), PurchaseBaseController.updatePurchaseOrder);
+
 export default router;

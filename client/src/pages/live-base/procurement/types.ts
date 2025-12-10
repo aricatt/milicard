@@ -5,6 +5,7 @@
 // 采购订单数据类型（对应CSV结构）
 export interface PurchaseOrder {
   id: string;
+  purchaseOrderId?: string;     // 采购订单ID（用于物流查询）
   orderNo: string;              // 采购编号
   orderName?: string;           // 采购名称
   purchaseDate: string;         // 采购日期
@@ -36,6 +37,54 @@ export interface PurchaseOrder {
   createdAt: string;
   updatedAt?: string;
   status?: 'pending' | 'confirmed' | 'received' | 'cancelled';
+  // 物流汇总信息（用于列表显示）
+  logisticsSummary?: LogisticsSummary;
+}
+
+// 物流状态映射
+export const LOGISTICS_STATE_MAP: Record<number, string> = {
+  1: '在途中',
+  2: '派件中',
+  3: '已签收',
+  4: '派送失败',
+  5: '揽收',
+  6: '退回',
+  7: '转单',
+  8: '疑难',
+  9: '退签',
+  10: '待清关',
+  11: '清关中',
+  12: '已清关',
+  13: '清关异常',
+};
+
+// 物流轨迹项
+export interface LogisticsTrackItem {
+  time: string;
+  status: string;
+}
+
+// 单个物流记录信息
+export interface LogisticsRecordInfo {
+  id: string;
+  trackingNumber: string;
+  state: number | null;
+  stateName: string;
+  companyName: string;
+  companyCode: string;
+  logo?: string;
+  tracks: LogisticsTrackItem[];
+  updatedAt: string | null;
+  canRefresh: boolean;
+  createdAt: string;
+}
+
+// 物流汇总信息
+export interface LogisticsSummary {
+  totalCount: number;           // 总包裹数
+  deliveredCount: number;       // 已签收数
+  inTransitCount: number;       // 在途中数
+  records: LogisticsRecordInfo[];  // 所有物流记录
 }
 
 // 采购统计数据类型

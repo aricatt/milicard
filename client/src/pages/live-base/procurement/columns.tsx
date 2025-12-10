@@ -1,6 +1,6 @@
 import React from 'react';
-import { Space, Button, Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Space, Button, Popconfirm, Tag, Tooltip } from 'antd';
+import { EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
 
@@ -16,7 +16,8 @@ const floorTo2 = (value: number): string => {
  */
 export const getColumns = (
   handleEdit: (record: PurchaseOrder) => void,
-  handleDelete: (record: PurchaseOrder) => void
+  handleDelete: (record: PurchaseOrder) => void,
+  handleLogistics?: (record: PurchaseOrder) => void
 ): ProColumns<PurchaseOrder>[] => [
   {
     title: 'ID',
@@ -285,13 +286,72 @@ export const getColumns = (
     hideInSearch: true,
   },
   {
+    title: '物流状态',
+    key: 'logisticsStatus',
+    width: 140,
+    fixed: 'right',
+    hideInSearch: true,
+    render: (_, record) => {
+      const summary = record.logisticsSummary;
+      
+      // 没有物流记录
+      if (!summary || summary.totalCount === 0) {
+        return <Tag color="default">无包裹</Tag>;
+      }
+      
+      const { totalCount, deliveredCount, inTransitCount } = summary;
+      
+      // 全部已签收
+      if (deliveredCount === totalCount) {
+        return (
+          <Tooltip title={`${totalCount}个包裹全部已签收`}>
+            <Tag color="success">{totalCount}个已签收</Tag>
+          </Tooltip>
+        );
+      }
+      
+      // 部分已签收
+      if (deliveredCount > 0) {
+        return (
+          <Tooltip title={`${deliveredCount}/${totalCount}已签收，${inTransitCount}在途中`}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Tag color="processing">{totalCount}个包裹</Tag>
+              <span style={{ fontSize: 11, color: '#52c41a' }}>
+                {deliveredCount}已签收
+              </span>
+            </div>
+          </Tooltip>
+        );
+      }
+      
+      // 全部在途中或未查询
+      return (
+        <Tooltip title={inTransitCount > 0 ? `${inTransitCount}个在途中` : '点击物流按钮查询'}>
+          <Tag color={inTransitCount > 0 ? 'processing' : 'warning'}>
+            {totalCount}个包裹
+          </Tag>
+        </Tooltip>
+      );
+    },
+  },
+  {
     title: '操作',
     key: 'action',
-    width: 150,
+    width: 180,
     fixed: 'right',
     hideInSetting: true,
     render: (_, record) => (
       <Space size="small">
+        {handleLogistics && (
+          <Button
+            type="link"
+            size="small"
+            icon={<CarOutlined />}
+            onClick={() => handleLogistics(record)}
+          >
+            物流
+          </Button>
+        )}
         <Button
           type="link"
           size="small"

@@ -127,6 +127,7 @@ docker run -d \
     -e DB_PASSWORD="${DB_PASSWORD}" \
     -e JWT_SECRET="${JWT_SECRET}" \
     -e NODE_ENV="${ENV}" \
+    -e LOGISTICS_APPCODE="${LOGISTICS_APPCODE:-}" \
     ${IMAGE_NAME}:${ENV}
 
 # 等待容器启动

@@ -61,6 +61,7 @@ nano .env.staging
 ```
 DB_PASSWORD=设置一个强密码
 JWT_SECRET=设置一个随机字符串
+LOGISTICS_APPCODE=阿里云物流查询API的APPCODE（可选，用于物流追踪功能）
 ```
 
 ### 4. 执行部署

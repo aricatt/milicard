@@ -1,6 +1,7 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
 import { CodeGenerator } from '../utils/codeGenerator';
+import * as logisticsService from './logisticsService';
 
 /**
  * 基地感知的采购服务类
@@ -138,6 +139,7 @@ export class PurchaseBaseService {
         
         return {
           id: item.purchaseOrderId,       // 返回采购订单ID
+          purchaseOrderId: item.purchaseOrderId, // 同时保留purchaseOrderId字段
           orderNo: item.orderNo,
           supplierName: item.supplierName,
           baseId: item.baseId,
@@ -165,16 +167,31 @@ export class PurchaseBaseService {
         };
       });
 
+      // 获取所有采购订单的物流汇总信息
+      const orderIds = [...new Set(data.map(item => item.id))];
+      const logisticsSummaryMap = await logisticsService.getLogisticsSummaryForList(orderIds);
+
+      // 将物流汇总信息添加到每条记录
+      const dataWithLogistics = data.map(item => ({
+        ...item,
+        logisticsSummary: logisticsSummaryMap.get(item.id) || {
+          totalCount: 0,
+          deliveredCount: 0,
+          inTransitCount: 0,
+          records: []
+        }
+      }));
+
       logger.info('获取基地采购订单列表成功', {
         service: 'milicard-api',
         baseId,
-        count: data.length,
+        count: dataWithLogistics.length,
         total
       });
 
       return {
         success: true,
-        data,
+        data: dataWithLogistics,
         total,
         current,
         pageSize
@@ -759,6 +776,56 @@ export class PurchaseBaseService {
       };
     } catch (error) {
       logger.error('更新基地供应商失败', { error, baseId, supplierId, service: 'milicard-api' });
+      throw error;
+    }
+  }
+
+  /**
+   * 更新采购订单
+   */
+  static async updatePurchaseOrder(baseId: number, orderId: string, data: any, userId: string) {
+    try {
+      // 验证订单是否存在且属于该基地
+      const order = await prisma.purchaseOrder.findFirst({
+        where: {
+          id: orderId,
+          baseId
+        }
+      });
+
+      if (!order) {
+        throw new Error('采购订单不存在或不属于该基地');
+      }
+
+      // 构建更新数据（物流信息现在在单独的表中管理）
+      const updateData: any = {};
+      
+      if (data.actualAmount !== undefined) {
+        updateData.actualAmount = data.actualAmount;
+      }
+      
+      if (data.notes !== undefined) {
+        updateData.notes = data.notes;
+      }
+
+      const updatedOrder = await prisma.purchaseOrder.update({
+        where: { id: orderId },
+        data: updateData
+      });
+
+      logger.info('更新采购订单成功', {
+        service: 'milicard-api',
+        baseId,
+        orderId,
+        userId
+      });
+
+      return {
+        success: true,
+        data: updatedOrder
+      };
+    } catch (error) {
+      logger.error('更新采购订单失败', { error, baseId, orderId, service: 'milicard-api' });
       throw error;
     }
   }

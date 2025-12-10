@@ -245,6 +245,7 @@ model PurchaseOrder {
   arrivalRecords   ArrivalRecord[]
   payables         Payable[]
   items            PurchaseOrderItem[]
+  logistics        PurchaseOrderLogistics[]  // 物流记录（一对多）
   base             Base                @relation(fields: [baseId], references: [id])
   creator          User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
   targetLocation   Location?           @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
@@ -257,6 +258,27 @@ model PurchaseOrder {
   @@index([purchaseDate])
   @@index([createdBy])
   @@map("purchase_orders")
+}
+
+// 采购订单物流记录（支持多个物流单号）
+model PurchaseOrderLogistics {
+  id                  String        @id @default(uuid())
+  purchaseOrderId     String        @map("purchase_order_id")
+  trackingNumber      String        @map("tracking_number")          // 物流单号
+  logisticsState      Int?          @map("logistics_state")          // 物流状态 1-13
+  logisticsCompany    String?       @map("logistics_company")        // 快递公司名称
+  logisticsCompanyCode String?      @map("logistics_company_code")   // 快递公司代码
+  logisticsData       Json?         @map("logistics_data")           // 完整物流轨迹JSON
+  logisticsUpdatedAt  DateTime?     @map("logistics_updated_at")     // 最后刷新时间
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  
+  purchaseOrder       PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@unique([purchaseOrderId, trackingNumber])  // 同一订单不能有重复的物流单号
+  @@index([purchaseOrderId])
+  @@index([trackingNumber])
+  @@map("purchase_order_logistics")
 }
 
 model PurchaseOrderItem {

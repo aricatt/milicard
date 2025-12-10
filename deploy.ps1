@@ -125,6 +125,7 @@ Write-Host "Using volume: $VOLUME_NAME" -ForegroundColor Cyan
 
 # 运行新容器
 Write-Host "Starting new container..." -ForegroundColor Green
+$LOGISTICS_APPCODE = if ($env:LOGISTICS_APPCODE) { $env:LOGISTICS_APPCODE } else { "" }
 docker run -d `
     --name $CONTAINER_NAME `
     --restart unless-stopped `
@@ -133,6 +134,7 @@ docker run -d `
     -e "DB_PASSWORD=$DB_PASSWORD" `
     -e "JWT_SECRET=$JWT_SECRET" `
     -e "NODE_ENV=$Env" `
+    -e "LOGISTICS_APPCODE=$LOGISTICS_APPCODE" `
     "${IMAGE_NAME}:${Env}"
 
 if ($LASTEXITCODE -ne 0) {
