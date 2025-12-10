@@ -660,14 +660,14 @@ const RolesPage: React.FC = () => {
                 okText="确定"
                 cancelText="取消"
               >
-                <Button
-                  type="link"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                >
-                  {/* 删除 */}
-                </Button>
+                <Tooltip title="删除">
+                  <Button
+                    type="link"
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                  />
+                </Tooltip>
               </Popconfirm>
             )}
           </Space>

@@ -416,30 +416,28 @@ const UsersPage: React.FC = () => {
         }
         
         return [
-          <Button
-            key="edit"
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setCurrentUser(record);
-              setEditModalVisible(true);
-            }}
-          >
-            {/* 编辑 */}
-          </Button>,
-          <Button
-            key="resetPassword"
-            type="link"
-            size="small"
-            icon={<KeyOutlined />}
-            onClick={() => {
-              setCurrentUser(record);
-              setResetPasswordModalVisible(true);
-            }}
-          >
-            {/* 重置密码 */}
-          </Button>,
+          <Tooltip key="edit" title="编辑">
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setCurrentUser(record);
+                setEditModalVisible(true);
+              }}
+            />
+          </Tooltip>,
+          <Tooltip key="resetPassword" title="重置密码">
+            <Button
+              type="link"
+              size="small"
+              icon={<KeyOutlined />}
+              onClick={() => {
+                setCurrentUser(record);
+                setResetPasswordModalVisible(true);
+              }}
+            />
+          </Tooltip>,
           record.username !== 'admin' && (
             <Popconfirm
               key="delete"
@@ -449,9 +447,9 @@ const UsersPage: React.FC = () => {
               okText="确定"
               cancelText="取消"
             >
-              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                {/* 删除 */}
-              </Button>
+              <Tooltip title="删除">
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+              </Tooltip>
             </Popconfirm>
           ),
         ];

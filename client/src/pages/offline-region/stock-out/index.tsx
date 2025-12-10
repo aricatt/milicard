@@ -13,6 +13,7 @@ import {
   Select,
   DatePicker,
   InputNumber,
+  Tooltip,
 } from 'antd';
 import {
   PlusOutlined,
@@ -484,19 +485,18 @@ const StockOutPage: React.FC = () => {
           return <span style={{ color: '#999' }}>-</span>;
         }
         return [
-          <Button
-            key="edit"
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              fetchGoods();
-              fetchLocations();
-              handleEdit(record);
-            }}
-          >
-            {/* 编辑 */}
-          </Button>,
+          <Tooltip key="edit" title="编辑">
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                fetchGoods();
+                fetchLocations();
+                handleEdit(record);
+              }}
+            />
+          </Tooltip>,
           <Popconfirm
             key="delete"
             title="确认删除"
@@ -506,9 +506,9 @@ const StockOutPage: React.FC = () => {
             cancelText="取消"
             icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
           >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-              {/* 删除 */}
-            </Button>
+            <Tooltip title="删除">
+              <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+            </Tooltip>
           </Popconfirm>,
         ];
       },

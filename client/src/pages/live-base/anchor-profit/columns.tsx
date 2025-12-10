@@ -161,23 +161,23 @@ export const getColumns = (
     fixed: 'right',
     render: (_, record) => (
       <Space size="small">
-        <Button
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => onEdit(record)}
-        >
-          编辑
-        </Button>
+        <Tooltip title="编辑">
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(record)}
+          />
+        </Tooltip>
         <Popconfirm
           title="确定删除此记录？"
           onConfirm={() => onDelete(record.id)}
           okText="确定"
           cancelText="取消"
         >
-          <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-            删除
-          </Button>
+          <Tooltip title="删除">
+            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+          </Tooltip>
         </Popconfirm>
       </Space>
     ),

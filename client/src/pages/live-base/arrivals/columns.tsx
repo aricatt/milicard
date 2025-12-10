@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Button, Popconfirm, Tag } from 'antd';
+import { Space, Button, Popconfirm, Tag, Tooltip } from 'antd';
 import { DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { ArrivalRecord } from './types';
@@ -151,14 +151,14 @@ export const getColumns = (
           okText="确定"
           cancelText="取消"
         >
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-          >
-            {/* 删除 */}
-          </Button>
+          <Tooltip title="删除">
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+            />
+          </Tooltip>
         </Popconfirm>
       </Space>
     ),

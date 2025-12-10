@@ -343,37 +343,37 @@ export const getColumns = (
     render: (_, record) => (
       <Space size="small">
         {handleLogistics && (
+          <Tooltip title="物流">
+            <Button
+              type="link"
+              size="small"
+              icon={<CarOutlined />}
+              onClick={() => handleLogistics(record)}
+            />
+          </Tooltip>
+        )}
+        <Tooltip title="编辑">
           <Button
             type="link"
             size="small"
-            icon={<CarOutlined />}
-            onClick={() => handleLogistics(record)}
-          >
-            {/* 物流 */}
-          </Button>
-        )}
-        <Button
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
-          {/* 编辑 */}
-        </Button>
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          />
+        </Tooltip>
         <Popconfirm
           title="确定删除此采购订单吗？"
           onConfirm={() => handleDelete(record)}
           okText="确定"
           cancelText="取消"
         >
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-          >
-            {/* 删除 */}
-          </Button>
+          <Tooltip title="删除">
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+            />
+          </Tooltip>
         </Popconfirm>
       </Space>
     ),

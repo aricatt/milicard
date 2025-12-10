@@ -10,7 +10,8 @@ import {
   Button,
   Popconfirm,
   Popover,
-  Descriptions
+  Descriptions,
+  Tooltip,
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -363,15 +364,14 @@ const WarehouseKeepersPage: React.FC = () => {
       valueType: 'option',
       hideInSetting: true,
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
-          {/* 编辑 */}
-        </Button>,
+        <Tooltip key="edit" title="编辑">
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          />
+        </Tooltip>,
         <Popconfirm
           key="delete"
           title="确认删除"
@@ -381,9 +381,9 @@ const WarehouseKeepersPage: React.FC = () => {
           cancelText="取消"
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
-          <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-            {/* 删除 */}
-          </Button>
+          <Tooltip title="删除">
+            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+          </Tooltip>
         </Popconfirm>,
       ],
     },
