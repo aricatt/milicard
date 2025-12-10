@@ -32,9 +32,8 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
 
-  // Excel列配置
+  // Excel列配置（导出用）
   const excelColumns = [
-    { header: 'ID', key: 'id', width: 8 },
     { header: '供应商编号', key: 'code', width: 20 },
     { header: '供应商名称', key: 'name', width: 25 },
     { header: '联系人', key: 'contactPerson', width: 15 },
@@ -63,13 +62,12 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
         return;
       }
 
-      // 转换数据格式
+      // 转换数据格式（不导出ID）
       const exportData = result.data.map((item: Supplier) => ({
-        id: item.id,
         code: item.code,
         name: item.name,
-        contactPerson: item.contactPerson,
-        phone: item.phone,
+        contactPerson: item.contactPerson || '',
+        phone: item.phone || '',
         email: item.email || '',
         address: item.address || '',
         notes: item.notes || '',
@@ -105,12 +103,13 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
       // 转换数据格式
       const importData = jsonData.map((row: any) => {
         const isActiveStr = String(row['状态'] || '').trim();
-        const isActive = isActiveStr === '启用' || isActiveStr === '1' || isActiveStr === 'true';
+        // 状态为空时默认启用
+        const isActive = isActiveStr === '' || isActiveStr === '启用' || isActiveStr === '1' || isActiveStr === 'true';
         return {
           code: String(row['供应商编号'] || '').trim() || undefined, // 保留源编号，空则自动生成
           name: String(row['供应商名称'] || '').trim(),
-          contactPerson: String(row['联系人'] || '').trim(),
-          phone: String(row['联系电话'] || '').trim(),
+          contactPerson: String(row['联系人'] || '').trim() || undefined,
+          phone: String(row['联系电话'] || '').trim() || undefined,
           email: String(row['邮箱'] || '').trim() || undefined,
           address: String(row['地址'] || '').trim() || undefined,
           notes: String(row['备注'] || '').trim() || undefined,
@@ -118,11 +117,9 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
         };
       });
 
-      // 数据验证
+      // 数据验证（只有供应商名称是必填的）
       const errors = validateImportData(importData, [
         { field: 'name', required: true, message: '供应商名称不能为空' },
-        { field: 'contactPerson', required: true, message: '联系人不能为空' },
-        { field: 'phone', required: true, message: '联系电话不能为空' },
       ]);
 
       if (errors.length > 0) {
@@ -246,10 +243,21 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
 
   // 下载导入模板
   const handleDownloadTemplate = () => {
+    // 导入模板列配置（不含创建时间）
+    const templateColumns = [
+      { header: '供应商编号', key: 'code', width: 20 },
+      { header: '供应商名称', key: 'name', width: 25 },
+      { header: '联系人', key: 'contactPerson', width: 15 },
+      { header: '联系电话', key: 'phone', width: 15 },
+      { header: '邮箱', key: 'email', width: 25 },
+      { header: '地址', key: 'address', width: 40 },
+      { header: '备注', key: 'notes', width: 30 },
+      { header: '状态', key: 'isActive', width: 10 },
+    ];
+
     const templateData = [
       {
-        id: '（导入时此列会被忽略）',
-        code: '（系统自动生成）',
+        code: '（可留空，系统自动生成）',
         name: '示例供应商A',
         contactPerson: '张三',
         phone: '13800138000',
@@ -257,22 +265,18 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
         address: '北京市朝阳区XX路XX号',
         notes: '优质供应商',
         isActive: '启用',
-        createdAt: '（系统自动生成）',
       },
       {
-        id: '',
         code: '',
         name: '示例供应商B',
-        contactPerson: '李四',
-        phone: '13900139000',
-        email: 'lisi@example.com',
-        address: '上海市浦东新区XX路XX号',
+        contactPerson: '',
+        phone: '',
+        email: '',
+        address: '',
         notes: '',
-        isActive: '启用',
-        createdAt: '',
+        isActive: '',
       },
       {
-        id: '',
         code: '',
         name: '示例供应商C',
         contactPerson: '王五',
@@ -281,11 +285,10 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
         address: '广州市天河区XX路XX号',
         notes: '新合作供应商',
         isActive: '启用',
-        createdAt: '',
       },
     ];
 
-    downloadTemplate(templateData, excelColumns, '供应商导入模板', '供应商导入模板');
+    downloadTemplate(templateData, templateColumns, '供应商导入模板', '供应商导入模板');
   };
 
   return {

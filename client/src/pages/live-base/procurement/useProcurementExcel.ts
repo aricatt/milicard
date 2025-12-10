@@ -146,12 +146,35 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
 
       message.loading(`准备导入 ${jsonData.length} 条数据...`, 0);
 
+      // Excel日期序列号转换为日期字符串
+      // Excel日期从1900-01-01开始计数，但有1900年闰年bug，需要减去2天
+      const excelDateToString = (value: any): string => {
+        if (!value) return '';
+        const strValue = String(value).trim();
+        // 如果已经是日期格式字符串（包含-或/），直接返回
+        if (strValue.includes('-') || strValue.includes('/')) {
+          return strValue;
+        }
+        // 如果是数字（Excel日期序列号），转换为日期
+        const num = parseFloat(strValue);
+        if (!isNaN(num) && num > 0) {
+          // Excel日期序列号转换：从1900-01-01开始，但Excel有个bug认为1900年是闰年
+          const excelEpoch = new Date(1899, 11, 30); // 1899-12-30
+          const date = new Date(excelEpoch.getTime() + num * 24 * 60 * 60 * 1000);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+        return strValue;
+      };
+
       // 转换数据格式 - 只导入必要字段，跳过动态计算字段
       // 需要导入：采购日期、采购编号、商品名称、供应商、采购箱/盒/包、拿货单价箱、实付金额
       // 跳过：ID、采购名称、零售价、折扣、到货数量、相差数量、拿货单价盒/包、应付金额、应付总金额、未支付金额、创建时间
       const importData = jsonData.map((row: any) => ({
         orderNo: String(row['采购编号'] || '').trim(),  // 用于判断更新还是新增
-        purchaseDate: row['采购日期'] ? String(row['采购日期']).trim() : '',
+        purchaseDate: excelDateToString(row['采购日期']),
         goodsName: String(row['商品名称'] || '').trim(),
         supplierName: String(row['供应商'] || '').trim(),
         purchaseBoxQty: parseInt(row['采购箱'] || '0') || 0,
@@ -185,13 +208,13 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       // 批量导入 - 从最后一行开始导入（按时间从旧到新）
       // 这样最新的数据最后插入，查询时按创建时间倒序排列就能正确显示
       let successCount = 0;
-      let failCount = 0;
-      const failedItems: string[] = [];
+      let skipCount = 0;
       const reversedData = [...importData].reverse();
 
       for (let i = 0; i < reversedData.length; i++) {
         const item = reversedData[i];
         const originalIndex = importData.length - 1 - i; // 原始行号（用于错误提示）
+        const excelRowNum = originalIndex + 2; // Excel行号（第1行是表头）
         setImportProgress(Math.round(((i + 1) / reversedData.length) * 100));
 
         try {
@@ -220,30 +243,55 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
           if (result.success) {
             successCount++;
           } else {
-            failCount++;
-            failedItems.push(`第${originalIndex + 2}行：${item.goodsName} - ${result.message || '创建失败'}`);
+            // 遇到失败立即停止
+            message.destroy();
+            const errorContent = [
+              `成功导入：${successCount} 条`,
+              `跳过：${skipCount} 条`,
+              `失败位置：第 ${excelRowNum} 行（Excel中）`,
+              `商品名称：${item.goodsName}`,
+              `失败原因：${result.message || '创建失败'}`,
+            ].join('\n');
+            Modal.error({
+              title: '导入失败',
+              content: errorContent,
+              width: 500,
+            });
+            setImportModalVisible(false);
+            setImportProgress(0);
+            if (successCount > 0) {
+              onImportSuccess?.();
+            }
+            return;
           }
         } catch (error: any) {
-          failCount++;
-          failedItems.push(`第${originalIndex + 2}行：${item.goodsName} - ${error.message || '网络错误'}`);
+          // 遇到错误立即停止
+          message.destroy();
+          const errorContent = [
+            `成功导入：${successCount} 条`,
+            `跳过：${skipCount} 条`,
+            `失败位置：第 ${excelRowNum} 行（Excel中）`,
+            `商品名称：${item.goodsName}`,
+            `失败原因：${error.message || '网络错误'}`,
+          ].join('\n');
+          Modal.error({
+            title: '导入失败',
+            content: errorContent,
+            width: 500,
+          });
+          setImportModalVisible(false);
+          setImportProgress(0);
+          if (successCount > 0) {
+            onImportSuccess?.();
+          }
+          return;
         }
       }
 
       message.destroy();
 
-      // 显示导入结果
-      if (failCount === 0) {
-        message.success(`导入完成！成功导入 ${successCount} 条采购记录`);
-      } else {
-        const failedList = failedItems.slice(0, 10).join('\n');
-        const moreFailures = failedItems.length > 10 ? `\n...还有 ${failedItems.length - 10} 条失败` : '';
-        const content = `成功导入：${successCount} 条\n失败：${failCount} 条\n\n失败详情：\n${failedList}${moreFailures}`;
-        Modal.warning({
-          title: '导入完成',
-          content,
-          width: 600,
-        });
-      }
+      // 全部成功
+      message.success(`导入完成！成功导入 ${successCount} 条采购记录`);
 
       setImportModalVisible(false);
       setImportProgress(0);
