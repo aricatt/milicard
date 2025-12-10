@@ -205,17 +205,14 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
         return;
       }
 
-      // 批量导入 - 从最后一行开始导入（按时间从旧到新）
-      // 这样最新的数据最后插入，查询时按创建时间倒序排列就能正确显示
+      // 批量导入 - 从第一行开始按顺序导入
       let successCount = 0;
       let skipCount = 0;
-      const reversedData = [...importData].reverse();
 
-      for (let i = 0; i < reversedData.length; i++) {
-        const item = reversedData[i];
-        const originalIndex = importData.length - 1 - i; // 原始行号（用于错误提示）
-        const excelRowNum = originalIndex + 2; // Excel行号（第1行是表头）
-        setImportProgress(Math.round(((i + 1) / reversedData.length) * 100));
+      for (let i = 0; i < importData.length; i++) {
+        const item = importData[i];
+        const excelRowNum = i + 2; // Excel行号（第1行是表头）
+        setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
         try {
           // 构造后端API期望的数据格式

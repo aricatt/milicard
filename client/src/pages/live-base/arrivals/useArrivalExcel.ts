@@ -128,16 +128,15 @@ export const useArrivalExcel = ({ baseId, baseName, onImportSuccess }: UseArriva
         return;
       }
 
-      // 批量导入 - 从最后一行开始导入（按时间从旧到新）
+      // 批量导入 - 从第一行开始按顺序导入
       let successCount = 0;
       let failCount = 0;
       const failedItems: string[] = [];
-      const reversedData = [...importData].reverse();
 
-      for (let i = 0; i < reversedData.length; i++) {
-        const item = reversedData[i];
-        const originalIndex = importData.length - 1 - i;
-        setImportProgress(Math.round(((i + 1) / reversedData.length) * 100));
+      for (let i = 0; i < importData.length; i++) {
+        const item = importData[i];
+        const excelRowNum = i + 2; // Excel行号（第1行是表头）
+        setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
         try {
           const result = await request(`/api/v1/bases/${baseId}/arrivals/import`, {
@@ -149,12 +148,12 @@ export const useArrivalExcel = ({ baseId, baseName, onImportSuccess }: UseArriva
             successCount++;
           } else {
             failCount++;
-            failedItems.push(`第${originalIndex + 2}行：${item.purchaseOrderNo} - ${result.message || '创建失败'}`);
+            failedItems.push(`第${excelRowNum}行：${item.purchaseOrderNo} - ${result.message || '创建失败'}`);
           }
         } catch (error: any) {
           failCount++;
           const errorMsg = error?.response?.data?.message || error.message || '网络错误';
-          failedItems.push(`第${originalIndex + 2}行：${item.purchaseOrderNo} - ${errorMsg}`);
+          failedItems.push(`第${excelRowNum}行：${item.purchaseOrderNo} - ${errorMsg}`);
         }
       }
 
