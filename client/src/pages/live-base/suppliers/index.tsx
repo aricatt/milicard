@@ -24,13 +24,17 @@ import {
   ExclamationCircleOutlined,
   InfoCircleOutlined,
   CheckCircleOutlined,
-  ShopOutlined
+  ShopOutlined,
+  ExportOutlined,
+  ImportOutlined,
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
+import { useSupplierExcel } from './useSupplierExcel';
+import ImportModal from '@/components/ImportModal';
 
 const { TextArea } = Input;
 
@@ -86,6 +90,21 @@ const SupplierManagement: React.FC = () => {
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useSupplierExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => actionRef.current?.reload(),
+  });
 
   /**
    * 获取供应商数据
@@ -590,6 +609,20 @@ const SupplierManagement: React.FC = () => {
         // 工具栏按钮
         toolBarRender={() => [
           <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出Excel
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入Excel
+          </Button>,
+          <Button
             key="create"
             type="primary"
             icon={<PlusOutlined />}
@@ -794,6 +827,23 @@ const SupplierManagement: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 导入Excel模态框 */}
+      <ImportModal
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        onDownloadTemplate={handleDownloadTemplate}
+        loading={importLoading}
+        progress={importProgress}
+        title="导入供应商"
+        tips={[
+          '请先下载导入模板，按照模板格式填写数据',
+          '供应商名称、联系人、联系电话为必填项',
+          '供应商编号可留空，系统将自动生成',
+          '重复的供应商名称或编号将被跳过',
+        ]}
+      />
     </PageContainer>
   );
 };
