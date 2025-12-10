@@ -494,7 +494,7 @@ const LocationManagement: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 80,
       fixed: 'right',
       valueType: 'option',
       // 不可隐藏
@@ -507,7 +507,7 @@ const LocationManagement: React.FC = () => {
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {/* 编辑 */}
         </Button>,
         <Popconfirm
           key="delete"
@@ -524,7 +524,7 @@ const LocationManagement: React.FC = () => {
             danger
             icon={<DeleteOutlined />}
           >
-            删除
+            {/* 删除 */}
           </Button>
         </Popconfirm>,
       ],

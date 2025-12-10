@@ -72,7 +72,7 @@ export const getColumns = (
     title: '供应商',
     dataIndex: 'supplierName',
     key: 'supplierName',
-    width: 150,
+    width: 100,
     hideInSetting: true,
   },
   {
@@ -86,7 +86,7 @@ export const getColumns = (
   {
     title: '折扣%',
     key: 'discount',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     render: (_, record) => {
       // 折扣 = 拿货单价/箱 / 零售价 * 100
@@ -101,7 +101,7 @@ export const getColumns = (
     title: '采购箱',
     dataIndex: 'purchaseBoxQty',
     key: 'purchaseBoxQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
   },
@@ -109,7 +109,7 @@ export const getColumns = (
     title: '采购盒',
     dataIndex: 'purchasePackQty',
     key: 'purchasePackQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
   },
@@ -117,7 +117,7 @@ export const getColumns = (
     title: '采购包',
     dataIndex: 'purchasePieceQty',
     key: 'purchasePieceQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
   },
@@ -125,7 +125,7 @@ export const getColumns = (
     title: '到货箱',
     dataIndex: 'arrivedBoxQty',
     key: 'arrivedBoxQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
     render: (_, record) => record.arrivedBoxQty || 0,
@@ -134,7 +134,7 @@ export const getColumns = (
     title: '到货盒',
     dataIndex: 'arrivedPackQty',
     key: 'arrivedPackQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
     render: (_, record) => record.arrivedPackQty || 0,
@@ -143,7 +143,7 @@ export const getColumns = (
     title: '到货包',
     dataIndex: 'arrivedPieceQty',
     key: 'arrivedPieceQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
     render: (_, record) => record.arrivedPieceQty || 0,
@@ -152,7 +152,7 @@ export const getColumns = (
     title: '相差箱',
     dataIndex: 'diffBoxQty',
     key: 'diffBoxQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
     render: (_, record) => {
@@ -164,7 +164,7 @@ export const getColumns = (
     title: '相差盒',
     dataIndex: 'diffPackQty',
     key: 'diffPackQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
     render: (_, record) => {
@@ -176,7 +176,7 @@ export const getColumns = (
     title: '相差包',
     dataIndex: 'diffPieceQty',
     key: 'diffPieceQty',
-    width: 80,
+    width: 60,
     hideInSearch: true,
     align: 'right',
     render: (_, record) => {
@@ -288,7 +288,7 @@ export const getColumns = (
   {
     title: '物流状态',
     key: 'logisticsStatus',
-    width: 140,
+    width: 80,
     fixed: 'right',
     hideInSearch: true,
     render: (_, record) => {
@@ -337,7 +337,7 @@ export const getColumns = (
   {
     title: '操作',
     key: 'action',
-    width: 180,
+    width: 100,
     fixed: 'right',
     hideInSetting: true,
     render: (_, record) => (
@@ -349,7 +349,7 @@ export const getColumns = (
             icon={<CarOutlined />}
             onClick={() => handleLogistics(record)}
           >
-            物流
+            {/* 物流 */}
           </Button>
         )}
         <Button
@@ -358,7 +358,7 @@ export const getColumns = (
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {/* 编辑 */}
         </Button>
         <Popconfirm
           title="确定删除此采购订单吗？"
@@ -372,7 +372,7 @@ export const getColumns = (
             danger
             icon={<DeleteOutlined />}
           >
-            删除
+            {/* 删除 */}
           </Button>
         </Popconfirm>
       </Space>

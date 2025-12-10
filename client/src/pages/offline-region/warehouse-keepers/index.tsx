@@ -358,7 +358,7 @@ const WarehouseKeepersPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 80,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
@@ -370,7 +370,7 @@ const WarehouseKeepersPage: React.FC = () => {
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {/* 编辑 */}
         </Button>,
         <Popconfirm
           key="delete"
@@ -382,7 +382,7 @@ const WarehouseKeepersPage: React.FC = () => {
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
           <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-            删除
+            {/* 删除 */}
           </Button>
         </Popconfirm>,
       ],

@@ -390,7 +390,7 @@ const StockOutPage: React.FC = () => {
       title: '目标名称',
       dataIndex: 'targetName',
       key: 'targetName',
-      width: 150,
+      width: 100,
       hideInSearch: true,
       ellipsis: true,
       render: (text) => text || '-',
@@ -407,7 +407,7 @@ const StockOutPage: React.FC = () => {
       title: '出库仓库',
       dataIndex: 'location',
       key: 'location',
-      width: 120,
+      width: 100,
       hideInSearch: true,
       render: (_, record) => record.location?.name || '-',
     },
@@ -475,7 +475,7 @@ const StockOutPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: 80,
       fixed: 'right',
       valueType: 'option',
       render: (_, record) => {
@@ -495,7 +495,7 @@ const StockOutPage: React.FC = () => {
               handleEdit(record);
             }}
           >
-            编辑
+            {/* 编辑 */}
           </Button>,
           <Popconfirm
             key="delete"
@@ -507,7 +507,7 @@ const StockOutPage: React.FC = () => {
             icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
           >
             <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-              删除
+              {/* 删除 */}
             </Button>
           </Popconfirm>,
         ];

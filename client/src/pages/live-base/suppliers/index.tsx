@@ -294,7 +294,7 @@ const SupplierManagement: React.FC = () => {
       title: '编号',
       dataIndex: 'code',
       key: 'code',
-      width: 180,
+      width: 200,
       fixed: 'left',
       copyable: true,
       hideInSetting: true,
@@ -305,7 +305,7 @@ const SupplierManagement: React.FC = () => {
       title: '供应商名称',
       dataIndex: 'name',
       key: 'name',
-      width: 200,
+      width: 100,
       fixed: 'left',
       hideInSetting: true,
       hideInSearch: false,
@@ -315,14 +315,14 @@ const SupplierManagement: React.FC = () => {
       title: '联系人',
       dataIndex: 'contactPerson',
       key: 'contactPerson',
-      width: 120,
+      width: 60,
       hideInSearch: true,
     },
     {
       title: '联系电话',
       dataIndex: 'phone',
       key: 'phone',
-      width: 140,
+      width: 80,
       hideInSearch: true,
       render: (phone: string) => (
         <Space>
@@ -396,7 +396,7 @@ const SupplierManagement: React.FC = () => {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 170,
+      width: 160,
       valueType: 'dateTime',
       hideInSearch: true,
       sorter: true,
@@ -449,7 +449,7 @@ const SupplierManagement: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 80,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
@@ -461,7 +461,7 @@ const SupplierManagement: React.FC = () => {
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {/* 编辑 */}
         </Button>,
         <Popconfirm
           key="delete"
@@ -478,7 +478,7 @@ const SupplierManagement: React.FC = () => {
             danger
             icon={<DeleteOutlined />}
           >
-            删除
+            {/* 删除 */}
           </Button>
         </Popconfirm>,
       ],

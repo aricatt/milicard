@@ -366,7 +366,7 @@ const ProductManagement: React.FC = () => {
       title: '商品编号',
       dataIndex: 'code',
       key: 'code',
-      width: 180,
+      width: 140,
       fixed: 'left',
       copyable: true,
       hideInSetting: true,
@@ -377,7 +377,7 @@ const ProductManagement: React.FC = () => {
       title: '品类',
       dataIndex: 'category',
       key: 'category',
-      width: 100,
+      width: 60,
       fixed: 'left',
       valueType: 'select',
       valueEnum: Object.fromEntries(
@@ -417,7 +417,7 @@ const ProductManagement: React.FC = () => {
       title: '厂家名称',
       dataIndex: 'manufacturer',
       key: 'manufacturer',
-      width: 150,
+      width: 60,
       hideInSearch: false,
       ellipsis: true,
     },
@@ -466,7 +466,7 @@ const ProductManagement: React.FC = () => {
       title: '箱数量',
       dataIndex: 'boxQuantity',
       key: 'boxQuantity',
-      width: 80,
+      width: 60,
       hideInSearch: true,
       hideInTable: false,
       align: 'center',
@@ -476,7 +476,7 @@ const ProductManagement: React.FC = () => {
       title: '盒/箱',
       dataIndex: 'packPerBox',
       key: 'packPerBox',
-      width: 80,
+      width: 60,
       hideInSearch: true,
       align: 'center',
       render: (num: number) => <Tag color="cyan">{num}</Tag>,
@@ -485,7 +485,7 @@ const ProductManagement: React.FC = () => {
       title: '包/盒',
       dataIndex: 'piecePerPack',
       key: 'piecePerPack',
-      width: 80,
+      width: 60,
       hideInSearch: true,
       align: 'center',
       render: (num: number) => <Tag color="geekblue">{num}</Tag>,
@@ -494,7 +494,7 @@ const ProductManagement: React.FC = () => {
       title: '图片',
       dataIndex: 'imageUrl',
       key: 'imageUrl',
-      width: 80,
+      width: 60,
       hideInSearch: true,
       hideInTable: false,
       align: 'center',
@@ -523,7 +523,7 @@ const ProductManagement: React.FC = () => {
       title: '状态',
       dataIndex: 'isActive',
       key: 'isActive',
-      width: 80,
+      width: 60,
       valueType: 'select',
       valueEnum: {
         true: { text: '启用', status: 'Success' },
@@ -543,7 +543,7 @@ const ProductManagement: React.FC = () => {
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 170,
+      width: 130,
       valueType: 'dateTime',
       hideInSearch: true,
       sorter: true,
@@ -596,7 +596,7 @@ const ProductManagement: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 60,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
@@ -608,7 +608,7 @@ const ProductManagement: React.FC = () => {
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {/* 编辑 */}
         </Button>,
         <Popconfirm
           key="delete"
@@ -625,7 +625,7 @@ const ProductManagement: React.FC = () => {
             danger
             icon={<DeleteOutlined />}
           >
-            删除
+            {/* 删除 */}
           </Button>
         </Popconfirm>,
       ],
