@@ -145,7 +145,7 @@ export const getColumns = (
           cancelText="取消"
         >
           <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-            删除
+            {/* 删除 */}
           </Button>
         </Popconfirm>
       </Space>
