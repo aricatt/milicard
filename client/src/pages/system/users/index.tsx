@@ -391,7 +391,7 @@ const UsersPage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
-      width: 180,
+      width: 100,
       fixed: 'right',
       render: (_, record) => {
         // 计算目标用户的最高角色层级（level 越小权限越高）
@@ -426,7 +426,7 @@ const UsersPage: React.FC = () => {
               setEditModalVisible(true);
             }}
           >
-            编辑
+            {/* 编辑 */}
           </Button>,
           <Button
             key="resetPassword"
@@ -438,7 +438,7 @@ const UsersPage: React.FC = () => {
               setResetPasswordModalVisible(true);
             }}
           >
-            重置密码
+            {/* 重置密码 */}
           </Button>,
           record.username !== 'admin' && (
             <Popconfirm
@@ -450,7 +450,7 @@ const UsersPage: React.FC = () => {
               cancelText="取消"
             >
               <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                删除
+                {/* 删除 */}
               </Button>
             </Popconfirm>
           ),

@@ -629,7 +629,7 @@ const RolesPage: React.FC = () => {
       title: '类型',
       dataIndex: 'isSystem',
       key: 'isSystem',
-      width: 100,
+      width: 80,
       render: (isSystem: boolean) =>
         isSystem ? <Tag color="blue">系统角色</Tag> : <Tag>自定义角色</Tag>,
     },
@@ -649,7 +649,7 @@ const RolesPage: React.FC = () => {
                 icon={canEdit ? <SettingOutlined /> : <EyeOutlined />}
                 onClick={() => handleConfigPermission(record)}
               >
-                {canEdit ? '配置权限' : '查看权限'}
+                {/* {canEdit ? '配置权限' : '查看权限'} */}
               </Button>
             </Tooltip>
             {!record.isSystem && canEdit && (
@@ -666,7 +666,7 @@ const RolesPage: React.FC = () => {
                   danger
                   icon={<DeleteOutlined />}
                 >
-                  删除
+                  {/* 删除 */}
                 </Button>
               </Popconfirm>
             )}
