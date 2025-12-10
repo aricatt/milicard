@@ -384,7 +384,7 @@ const ProcurementManagement: React.FC = () => {
             const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
               method: 'GET',
               params: {
-                page: params.current,
+                current: params.current,
                 pageSize: params.pageSize,
                 orderNo: params.orderNo,
                 supplierName: params.supplierName,
@@ -396,7 +396,7 @@ const ProcurementManagement: React.FC = () => {
               return {
                 data: result.data || [],
                 success: true,
-                total: result.pagination?.total || 0,
+                total: result.total || 0,
               };
             }
             return {
@@ -415,9 +415,10 @@ const ProcurementManagement: React.FC = () => {
         }}
         rowKey="id"
         pagination={{
-          defaultPageSize: 10,
+          defaultPageSize: 20,
           showSizeChanger: true,
           showQuickJumper: true,
+          pageSizeOptions: ['10', '20', '30', '50', '100'],
         }}
         search={{
           labelWidth: 'auto',
