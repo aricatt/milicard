@@ -629,7 +629,7 @@ const RolesPage: React.FC = () => {
       title: '类型',
       dataIndex: 'isSystem',
       key: 'isSystem',
-      width: 80,
+      width: 100,
       render: (isSystem: boolean) =>
         isSystem ? <Tag color="blue">系统角色</Tag> : <Tag>自定义角色</Tag>,
     },
