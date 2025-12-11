@@ -15,9 +15,10 @@ interface ImportRecord {
   goodsName: string;
   locationName: string;
   handlerName: string;
-  boxQuantity?: number;
-  packQuantity?: number;
-  pieceQuantity?: number;
+  // 期末数量（用户填写的剩余数量）
+  closingBoxQty?: number;
+  closingPackQty?: number;
+  closingPieceQty?: number;
   notes?: string;
 }
 
@@ -25,6 +26,42 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
+
+  /**
+   * 计算单价（盒/包）
+   */
+  const calcUnitPrice = (record: any) => {
+    const boxPrice = record.unitPricePerBox || 0;
+    const packPerBox = record.packPerBox || 1;
+    const piecePerPack = record.piecePerPack || 1;
+    const packPrice = boxPrice / packPerBox;
+    const piecePrice = packPrice / piecePerPack;
+    return { boxPrice, packPrice, piecePrice };
+  };
+
+  /**
+   * 计算消耗金额
+   */
+  const calcConsumptionAmount = (record: any) => {
+    const { boxPrice, packPrice, piecePrice } = calcUnitPrice(record);
+    return (
+      (record.boxQuantity || 0) * boxPrice +
+      (record.packQuantity || 0) * packPrice +
+      (record.pieceQuantity || 0) * piecePrice
+    );
+  };
+
+  /**
+   * 计算库存货值（期末）
+   */
+  const calcInventoryValue = (record: any) => {
+    const { boxPrice, packPrice, piecePrice } = calcUnitPrice(record);
+    return (
+      (record.closingBoxQty || 0) * boxPrice +
+      (record.closingPackQty || 0) * packPrice +
+      (record.closingPieceQty || 0) * piecePrice
+    );
+  };
 
   /**
    * 导出消耗记录
@@ -51,14 +88,29 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         '商品': record.goodsName || '',
         '直播间': record.locationName || '',
         '主播': record.handlerName || '',
-        '消耗箱': record.boxQuantity || 0,
-        '消耗盒': record.packQuantity || 0,
-        '消耗包': record.pieceQuantity || 0,
+        '期初/箱': record.openingBoxQty || 0,
+        '期初/盒': record.openingPackQty || 0,
+        '期初/包': record.openingPieceQty || 0,
+        '期末/箱': record.closingBoxQty || 0,
+        '期末/盒': record.closingPackQty || 0,
+        '期末/包': record.closingPieceQty || 0,
+        '消耗/箱': record.boxQuantity || 0,
+        '消耗/盒': record.packQuantity || 0,
+        '消耗/包': record.pieceQuantity || 0,
+        '单价/箱': (record.unitPricePerBox || 0).toFixed(2),
+        '消耗金额': calcConsumptionAmount(record).toFixed(2),
+        '库存货值': calcInventoryValue(record).toFixed(2),
         '备注': record.notes || '',
       }));
 
       // 如果没有数据，创建只有列头的空表
-      const headers = ['消耗日期', '商品', '直播间', '主播', '消耗箱', '消耗盒', '消耗包', '备注'];
+      const headers = [
+        '消耗日期', '商品', '直播间', '主播', 
+        '期初/箱', '期初/盒', '期初/包',
+        '期末/箱', '期末/盒', '期末/包',
+        '消耗/箱', '消耗/盒', '消耗/包',
+        '单价/箱', '消耗金额', '库存货值', '备注'
+      ];
       const ws = exportData.length > 0 
         ? XLSX.utils.json_to_sheet(exportData)
         : XLSX.utils.aoa_to_sheet([headers]);
@@ -77,6 +129,10 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
 
   /**
    * 下载导入模板
+   * 导入字段与"添加消耗记录"表单规则一致：
+   * - 消耗日期、商品、直播间、主播：必填
+   * - 期末/箱、期末/盒、期末/包：用户填写的剩余数量
+   * - 期初、消耗、单价、金额等字段由系统动态计算
    */
   const handleDownloadTemplate = () => {
     const templateData = [
@@ -85,9 +141,9 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         '商品': '商品名称（必须与系统中商品名称一致）',
         '直播间': '直播间名称（必须与系统中直播间名称一致）',
         '主播': '主播姓名（必须与系统中主播姓名一致）',
-        '消耗箱': 0,
-        '消耗盒': 1,
-        '消耗包': 0,
+        '期末/箱': 0,
+        '期末/盒': 0,
+        '期末/包': 0,
         '备注': '备注信息（可选）',
       },
     ];
@@ -129,9 +185,10 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         goodsName: row['商品'] || row['商品名称'] || '',
         locationName: row['直播间'] || row['位置'] || '',
         handlerName: row['主播'] || row['经手人'] || '',
-        boxQuantity: parseInt(row['消耗箱'] || row['箱'] || '0') || 0,
-        packQuantity: parseInt(row['消耗盒'] || row['盒'] || '0') || 0,
-        pieceQuantity: parseInt(row['消耗包'] || row['包'] || '0') || 0,
+        // 期末数量（用户填写的剩余数量）
+        closingBoxQty: parseInt(row['期末/箱'] || row['剩余/箱'] || row['剩余箱'] || '0') || 0,
+        closingPackQty: parseInt(row['期末/盒'] || row['剩余/盒'] || row['剩余盒'] || '0') || 0,
+        closingPieceQty: parseInt(row['期末/包'] || row['剩余/包'] || row['剩余包'] || '0') || 0,
         notes: row['备注'] || '',
       }));
 

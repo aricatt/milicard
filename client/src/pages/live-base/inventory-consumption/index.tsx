@@ -87,6 +87,8 @@ const ConsumptionManagement: React.FC = () => {
     openingPackQty: number;
     openingPieceQty: number;
     unitPricePerBox: number;
+    packPerBox: number;
+    piecePerPack: number;
   } | null>(null);
   const [openingStockLoading, setOpeningStockLoading] = useState(false);
 
@@ -235,15 +237,80 @@ const ConsumptionManagement: React.FC = () => {
   };
 
   /**
-   * 计算消耗数量
+   * 将箱-盒-包转换为总包数（最小单位）
+   */
+  const convertToTotalPieces = (box: number, pack: number, piece: number) => {
+    if (!openingStock) return 0;
+    const { packPerBox, piecePerPack } = openingStock;
+    return box * packPerBox * piecePerPack + pack * piecePerPack + piece;
+  };
+
+  /**
+   * 将总包数转换为箱-盒-包
+   */
+  const convertFromTotalPieces = (totalPieces: number) => {
+    if (!openingStock) return { boxQty: 0, packQty: 0, pieceQty: 0 };
+    const { packPerBox, piecePerPack } = openingStock;
+    const piecesPerBox = packPerBox * piecePerPack;
+    
+    const boxQty = Math.floor(totalPieces / piecesPerBox);
+    const remainingAfterBox = totalPieces % piecesPerBox;
+    const packQty = Math.floor(remainingAfterBox / piecePerPack);
+    const pieceQty = remainingAfterBox % piecePerPack;
+    
+    return { boxQty, packQty, pieceQty };
+  };
+
+  /**
+   * 计算消耗数量（考虑箱-盒-包转换关系）
+   * 消耗 = 期初总量 - 期末总量，然后转换为箱-盒-包
    */
   const calculateConsumption = () => {
     if (!openingStock) return { boxQty: 0, packQty: 0, pieceQty: 0 };
-    return {
-      boxQty: openingStock.openingBoxQty - closingStock.closingBoxQty,
-      packQty: openingStock.openingPackQty - closingStock.closingPackQty,
-      pieceQty: openingStock.openingPieceQty - closingStock.closingPieceQty,
-    };
+    
+    const openingTotal = convertToTotalPieces(
+      openingStock.openingBoxQty,
+      openingStock.openingPackQty,
+      openingStock.openingPieceQty
+    );
+    const closingTotal = convertToTotalPieces(
+      closingStock.closingBoxQty,
+      closingStock.closingPackQty,
+      closingStock.closingPieceQty
+    );
+    const consumptionTotal = openingTotal - closingTotal;
+    
+    return convertFromTotalPieces(consumptionTotal);
+  };
+
+  /**
+   * 计算期初总包数
+   */
+  const getOpeningTotalPieces = () => {
+    if (!openingStock) return 0;
+    return convertToTotalPieces(
+      openingStock.openingBoxQty,
+      openingStock.openingPackQty,
+      openingStock.openingPieceQty
+    );
+  };
+
+  /**
+   * 计算期末总包数
+   */
+  const getClosingTotalPieces = () => {
+    return convertToTotalPieces(
+      closingStock.closingBoxQty,
+      closingStock.closingPackQty,
+      closingStock.closingPieceQty
+    );
+  };
+
+  /**
+   * 验证期末数量是否有效（不超过期初总量）
+   */
+  const isClosingStockValid = () => {
+    return getClosingTotalPieces() <= getOpeningTotalPieces();
   };
 
   /**
@@ -284,7 +351,7 @@ const ConsumptionManagement: React.FC = () => {
       }
     } catch (error: any) {
       console.error('创建消耗记录失败:', error);
-      message.error(error.message || '创建失败');
+      // 全局错误处理器已经会显示错误消息，这里不需要重复显示
     } finally {
       setCreateLoading(false);
     }
@@ -560,12 +627,23 @@ const ConsumptionManagement: React.FC = () => {
 
           {/* 期末数据输入 */}
           <Divider orientation="left" style={{ margin: '8px 0 16px' }}>期末（剩余数量）</Divider>
+          {openingStock && !isClosingStockValid() && (
+            <Alert
+              message="期末总量不能超过期初总量"
+              description={`期初总量: ${getOpeningTotalPieces()} 包，当前期末: ${getClosingTotalPieces()} 包（换算关系: 1箱=${openingStock.packPerBox}盒, 1盒=${openingStock.piecePerPack}包）`}
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label="剩余/箱">
+              <Form.Item 
+                label="剩余/箱"
+                extra={openingStock ? `期初: ${openingStock.openingBoxQty} 箱` : undefined}
+              >
                 <InputNumber
                   min={0}
-                  max={openingStock?.openingBoxQty || 0}
                   value={closingStock.closingBoxQty}
                   onChange={(v) => setClosingStock(prev => ({ ...prev, closingBoxQty: v || 0 }))}
                   disabled={!openingStock}
@@ -575,10 +653,12 @@ const ConsumptionManagement: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="剩余/盒">
+              <Form.Item 
+                label="剩余/盒"
+                extra={openingStock ? `期初: ${openingStock.openingPackQty} 盒（1箱=${openingStock.packPerBox}盒）` : undefined}
+              >
                 <InputNumber
                   min={0}
-                  max={openingStock?.openingPackQty || 0}
                   value={closingStock.closingPackQty}
                   onChange={(v) => setClosingStock(prev => ({ ...prev, closingPackQty: v || 0 }))}
                   disabled={!openingStock}
@@ -588,10 +668,12 @@ const ConsumptionManagement: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="剩余/包">
+              <Form.Item 
+                label="剩余/包"
+                extra={openingStock ? `期初: ${openingStock.openingPieceQty} 包（1盒=${openingStock.piecePerPack}包）` : undefined}
+              >
                 <InputNumber
                   min={0}
-                  max={openingStock?.openingPieceQty || 0}
                   value={closingStock.closingPieceQty}
                   onChange={(v) => setClosingStock(prev => ({ ...prev, closingPieceQty: v || 0 }))}
                   disabled={!openingStock}
@@ -649,7 +731,7 @@ const ConsumptionManagement: React.FC = () => {
                 type="primary"
                 htmlType="submit"
                 loading={createLoading}
-                disabled={!openingStock}
+                disabled={!openingStock || !isClosingStockValid()}
               >
                 创建
               </Button>

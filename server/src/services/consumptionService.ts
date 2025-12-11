@@ -209,10 +209,30 @@ export class ConsumptionService {
       });
       const unitPricePerBox = inventory?.averageCost || 0;
 
-      // 计算消耗 = 期初 - 期末
-      const boxQuantity = data.openingBoxQty - data.closingBoxQty;
-      const packQuantity = data.openingPackQty - data.closingPackQty;
-      const pieceQuantity = data.openingPieceQty - data.closingPieceQty;
+      // 获取换算关系
+      const packPerBox = goods.packPerBox || 1;
+      const piecePerPack = goods.piecePerPack || 1;
+      const piecesPerBox = packPerBox * piecePerPack;
+
+      // 将期初和期末转换为总包数（最小单位）
+      const openingTotal = data.openingBoxQty * piecesPerBox + data.openingPackQty * piecePerPack + data.openingPieceQty;
+      const closingTotal = data.closingBoxQty * piecesPerBox + data.closingPackQty * piecePerPack + data.closingPieceQty;
+
+      // 验证期末不能超过期初
+      if (closingTotal > openingTotal) {
+        throw new BaseError(
+          `期末数量(${data.closingBoxQty}箱${data.closingPackQty}盒${data.closingPieceQty}包)超过期初数量(${data.openingBoxQty}箱${data.openingPackQty}盒${data.openingPieceQty}包)`,
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
+
+      const consumptionTotal = openingTotal - closingTotal;
+
+      // 将消耗总量转换回箱-盒-包
+      const boxQuantity = Math.floor(consumptionTotal / piecesPerBox);
+      const remainingAfterBox = consumptionTotal % piecesPerBox;
+      const packQuantity = Math.floor(remainingAfterBox / piecePerPack);
+      const pieceQuantity = remainingAfterBox % piecePerPack;
 
       // 创建消耗记录
       const record = await prisma.stockConsumption.create({
@@ -288,13 +308,20 @@ export class ConsumptionService {
         userId,
         service: 'milicard-api'
       });
+      // 处理唯一约束冲突错误
+      if (error instanceof Error && error.message.includes('Unique constraint failed')) {
+        throw new BaseError(
+          '该日期已存在相同商品、直播间、主播的消耗记录，请勿重复录入',
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
       throw error;
     }
   }
 
   /**
-   * 获取期初数据（调入总量）
-   * 按主播查询某商品调入给该主播的总量
+   * 获取期初数据（调入总量 - 已消耗量）
+   * 按主播查询某商品调入给该主播的总量，并扣减已录入的消耗记录
    * 注意：直播间的货物归属是人，所以按 handlerId 查询
    */
   static async getOpeningStock(
@@ -308,6 +335,8 @@ export class ConsumptionService {
       openingPackQty: number;
       openingPieceQty: number;
       unitPricePerBox: number;
+      packPerBox: number;
+      piecePerPack: number;
     };
   }> {
     try {
@@ -326,9 +355,50 @@ export class ConsumptionService {
       });
 
       // 计算调入总量
-      const openingBoxQty = transferRecords.reduce((sum, r) => sum + r.boxQuantity, 0);
-      const openingPackQty = transferRecords.reduce((sum, r) => sum + r.packQuantity, 0);
-      const openingPieceQty = transferRecords.reduce((sum, r) => sum + r.pieceQuantity, 0);
+      const transferInBoxQty = transferRecords.reduce((sum, r) => sum + r.boxQuantity, 0);
+      const transferInPackQty = transferRecords.reduce((sum, r) => sum + r.packQuantity, 0);
+      const transferInPieceQty = transferRecords.reduce((sum, r) => sum + r.pieceQuantity, 0);
+
+      // 查询该主播已录入的消耗记录
+      const consumptionRecords = await prisma.stockConsumption.findMany({
+        where: {
+          baseId,
+          handlerId,
+          goodsId
+        },
+        select: {
+          boxQuantity: true,
+          packQuantity: true,
+          pieceQuantity: true
+        }
+      });
+
+      // 计算已消耗总量
+      const consumedBoxQty = consumptionRecords.reduce((sum, r) => sum + r.boxQuantity, 0);
+      const consumedPackQty = consumptionRecords.reduce((sum, r) => sum + r.packQuantity, 0);
+      const consumedPieceQty = consumptionRecords.reduce((sum, r) => sum + r.pieceQuantity, 0);
+
+      // 获取商品信息（换算关系）
+      const goods = await prisma.goods.findUnique({
+        where: { id: goodsId },
+        select: { packPerBox: true, piecePerPack: true }
+      });
+      const packPerBox = goods?.packPerBox || 1;
+      const piecePerPack = goods?.piecePerPack || 1;
+      const piecesPerBox = packPerBox * piecePerPack;
+
+      // 将调入和消耗都转换为总包数（最小单位）
+      const transferInTotal = transferInBoxQty * piecesPerBox + transferInPackQty * piecePerPack + transferInPieceQty;
+      const consumedTotal = consumedBoxQty * piecesPerBox + consumedPackQty * piecePerPack + consumedPieceQty;
+      
+      // 计算期初总量（包）
+      const openingTotal = transferInTotal - consumedTotal;
+
+      // 将期初总量转换回箱-盒-包
+      const openingBoxQty = Math.floor(openingTotal / piecesPerBox);
+      const remainingAfterBox = openingTotal % piecesPerBox;
+      const openingPackQty = Math.floor(remainingAfterBox / piecePerPack);
+      const openingPieceQty = remainingAfterBox % piecePerPack;
 
       // 获取平均单价/箱（从Inventory获取）
       const inventory = await prisma.inventory.findFirst({
@@ -342,7 +412,9 @@ export class ConsumptionService {
           openingBoxQty,
           openingPackQty,
           openingPieceQty,
-          unitPricePerBox
+          unitPricePerBox,
+          packPerBox,
+          piecePerPack
         }
       };
 
@@ -360,7 +432,9 @@ export class ConsumptionService {
 
   /**
    * 导入消耗记录（通过名称匹配）
-   * 导入时直接使用消耗数量，不需要期初期末
+   * 与"添加消耗记录"表单规则一致：
+   * - 用户提供期末数量（剩余数量）
+   * - 系统动态计算期初数量和消耗数量
    */
   static async importConsumption(
     baseId: number,
@@ -369,9 +443,10 @@ export class ConsumptionService {
       goodsName: string;
       locationName: string;
       handlerName: string;
-      boxQuantity?: number;
-      packQuantity?: number;
-      pieceQuantity?: number;
+      // 期末数量（用户填写的剩余数量）
+      closingBoxQty?: number;
+      closingPackQty?: number;
+      closingPieceQty?: number;
       notes?: string;
     },
     userId: string
@@ -406,16 +481,39 @@ export class ConsumptionService {
         throw new BaseError(`主播不存在: ${data.handlerName}`, BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
-      // 获取平均单价/箱
-      const inventory = await prisma.inventory.findFirst({
-        where: { goodsId: goods.id, baseId }
-      });
-      const unitPricePerBox = inventory?.averageCost || 0;
+      // 动态获取期初数据（与添加消耗记录表单一致）
+      const openingStockResult = await this.getOpeningStock(baseId, goods.id, handler.id);
+      const { openingBoxQty, openingPackQty, openingPieceQty, unitPricePerBox } = openingStockResult.data;
 
-      // 导入时直接使用消耗数量，期初期末设为0（历史数据导入）
-      const boxQuantity = data.boxQuantity || 0;
-      const packQuantity = data.packQuantity || 0;
-      const pieceQuantity = data.pieceQuantity || 0;
+      // 期末数量（用户填写的剩余数量）
+      const closingBoxQty = data.closingBoxQty || 0;
+      const closingPackQty = data.closingPackQty || 0;
+      const closingPieceQty = data.closingPieceQty || 0;
+
+      // 获取换算关系
+      const packPerBox = goods.packPerBox || 1;
+      const piecePerPack = goods.piecePerPack || 1;
+      const piecesPerBox = packPerBox * piecePerPack;
+
+      // 将期初和期末转换为总包数（最小单位）
+      const openingTotal = openingBoxQty * piecesPerBox + openingPackQty * piecePerPack + openingPieceQty;
+      const closingTotal = closingBoxQty * piecesPerBox + closingPackQty * piecePerPack + closingPieceQty;
+
+      // 验证期末不能超过期初
+      if (closingTotal > openingTotal) {
+        throw new BaseError(
+          `期末数量(${closingBoxQty}箱${closingPackQty}盒${closingPieceQty}包)超过期初数量(${openingBoxQty}箱${openingPackQty}盒${openingPieceQty}包)`,
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
+
+      const consumptionTotal = openingTotal - closingTotal;
+
+      // 将消耗总量转换回箱-盒-包
+      const boxQuantity = Math.floor(consumptionTotal / piecesPerBox);
+      const remainingAfterBox = consumptionTotal % piecesPerBox;
+      const packQuantity = Math.floor(remainingAfterBox / piecePerPack);
+      const pieceQuantity = remainingAfterBox % piecePerPack;
 
       // 创建消耗记录
       const record = await prisma.stockConsumption.create({
@@ -425,12 +523,12 @@ export class ConsumptionService {
           locationId: location.id,
           handlerId: handler.id,
           baseId,
-          openingBoxQty: 0,
-          openingPackQty: 0,
-          openingPieceQty: 0,
-          closingBoxQty: 0,
-          closingPackQty: 0,
-          closingPieceQty: 0,
+          openingBoxQty,
+          openingPackQty,
+          openingPieceQty,
+          closingBoxQty,
+          closingPackQty,
+          closingPieceQty,
           boxQuantity,
           packQuantity,
           pieceQuantity,

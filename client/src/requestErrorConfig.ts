@@ -180,7 +180,13 @@ export const errorConfig: RequestConfig = {
         // Axios 的错误
         // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
         if (error.response.status !== 401) {
-          message.error(`Response status:${error.response.status}`);
+          // 优先使用后端返回的错误消息
+          const backendMessage = error.response?.data?.message || error.data?.message;
+          if (backendMessage) {
+            message.error(backendMessage);
+          } else {
+            message.error(`Response status:${error.response.status}`);
+          }
         }
       } else if (error.request) {
         // 请求已经成功发起，但没有收到响应
