@@ -487,23 +487,21 @@ const ArrivalManagement: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="仓管"
+            label="经手人"
             name="handlerId"
-            rules={[{ required: true, message: '请选择仓管' }]}
-            extra="到货由仓管负责入库"
+            rules={[{ required: true, message: '请选择经手人' }]}
+            extra="👷仓管 / 🎤主播"
           >
             <Select
-              placeholder="请选择仓管"
+              placeholder="请选择经手人"
               loading={handlersLoading}
               showSearch
               optionFilterProp="label"
               allowClear
-              options={handlers
-                .filter((h) => h.role === 'WAREHOUSE_KEEPER')
-                .map((h) => ({
-                  value: h.id,
-                  label: `👷 ${h.name}`,
-                }))}
+              options={handlers.map((h) => ({
+                value: h.id,
+                label: h.role === 'WAREHOUSE_KEEPER' ? `👷 ${h.name}` : `🎤 ${h.name}`,
+              }))}
             />
           </Form.Item>
 

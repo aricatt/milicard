@@ -359,12 +359,16 @@ export class ConsumptionService {
       const transferInPackQty = transferRecords.reduce((sum, r) => sum + r.packQuantity, 0);
       const transferInPieceQty = transferRecords.reduce((sum, r) => sum + r.pieceQuantity, 0);
 
-      // 查询该主播调出的调货记录（源主播是该人）
+      // 查询该主播调出的调货记录（源主播是该人，且源位置是直播间类型）
+      // 注意：只有从直播间调出时才扣减主播库存，从仓库调出时货物属于仓库而非经办人
       const transferOutRecords = await prisma.transferRecord.findMany({
         where: {
           baseId,
           sourceHandlerId: handlerId,
-          goodsId
+          goodsId,
+          sourceLocation: {
+            type: 'LIVE_ROOM'  // 只有从直播间调出才算主播的调出
+          }
         },
         select: {
           boxQuantity: true,
