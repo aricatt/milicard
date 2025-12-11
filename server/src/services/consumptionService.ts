@@ -359,6 +359,25 @@ export class ConsumptionService {
       const transferInPackQty = transferRecords.reduce((sum, r) => sum + r.packQuantity, 0);
       const transferInPieceQty = transferRecords.reduce((sum, r) => sum + r.pieceQuantity, 0);
 
+      // 查询该主播调出的调货记录（源主播是该人）
+      const transferOutRecords = await prisma.transferRecord.findMany({
+        where: {
+          baseId,
+          sourceHandlerId: handlerId,
+          goodsId
+        },
+        select: {
+          boxQuantity: true,
+          packQuantity: true,
+          pieceQuantity: true
+        }
+      });
+
+      // 计算调出总量
+      const transferOutBoxQty = transferOutRecords.reduce((sum, r) => sum + r.boxQuantity, 0);
+      const transferOutPackQty = transferOutRecords.reduce((sum, r) => sum + r.packQuantity, 0);
+      const transferOutPieceQty = transferOutRecords.reduce((sum, r) => sum + r.pieceQuantity, 0);
+
       // 查询该主播已录入的消耗记录
       const consumptionRecords = await prisma.stockConsumption.findMany({
         where: {
@@ -387,12 +406,13 @@ export class ConsumptionService {
       const piecePerPack = goods?.piecePerPack || 1;
       const piecesPerBox = packPerBox * piecePerPack;
 
-      // 将调入和消耗都转换为总包数（最小单位）
+      // 将调入、调出和消耗都转换为总包数（最小单位）
       const transferInTotal = transferInBoxQty * piecesPerBox + transferInPackQty * piecePerPack + transferInPieceQty;
+      const transferOutTotal = transferOutBoxQty * piecesPerBox + transferOutPackQty * piecePerPack + transferOutPieceQty;
       const consumedTotal = consumedBoxQty * piecesPerBox + consumedPackQty * piecePerPack + consumedPieceQty;
       
-      // 计算期初总量（包）
-      const openingTotal = transferInTotal - consumedTotal;
+      // 计算期初总量（包）= 调入 - 调出 - 已消耗
+      const openingTotal = transferInTotal - transferOutTotal - consumedTotal;
 
       // 将期初总量转换回箱-盒-包
       const openingBoxQty = Math.floor(openingTotal / piecesPerBox);
