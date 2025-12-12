@@ -165,9 +165,10 @@ const WarehouseKeepersPage: React.FC = () => {
       } else {
         message.error(result.message || '创建失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('创建人员失败:', error);
-      message.error('创建人员失败');
+      const errorMsg = error?.response?.data?.message || error?.data?.message || '创建人员失败';
+      message.error(errorMsg);
     } finally {
       setCreateLoading(false);
     }
@@ -201,9 +202,10 @@ const WarehouseKeepersPage: React.FC = () => {
       } else {
         message.error(result.message || '更新失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('更新人员失败:', error);
-      message.error('更新人员失败');
+      const errorMsg = error?.response?.data?.message || error?.data?.message || '更新人员失败';
+      message.error(errorMsg);
     } finally {
       setEditLoading(false);
     }

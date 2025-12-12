@@ -52,6 +52,15 @@ export class PersonnelBaseController {
       res.status(201).json(result);
     } catch (error) {
       logger.error('创建人员失败', { error, service: 'milicard-api' });
+      
+      // 业务逻辑错误（如重名）返回400
+      if (error instanceof Error && error.message.includes('已存在同名')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
+
       res.status(500).json({
         success: false,
         message: '服务器内部错误',
@@ -91,6 +100,14 @@ export class PersonnelBaseController {
       
       if (error instanceof Error && error.message.includes('不存在')) {
         return res.status(404).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      // 业务逻辑错误（如重名）返回400
+      if (error instanceof Error && error.message.includes('已存在同名')) {
+        return res.status(400).json({
           success: false,
           message: error.message
         });

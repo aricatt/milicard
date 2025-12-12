@@ -97,6 +97,19 @@ export class PersonnelBaseService {
    */
   static async createPersonnel(baseId: number, personnelData: any, createdBy: string) {
     try {
+      // 检查同一基地、同一角色下是否存在同名人员
+      const existingByName = await prisma.personnel.findFirst({
+        where: {
+          baseId: baseId,
+          role: personnelData.role,
+          name: personnelData.name,
+        },
+      });
+
+      if (existingByName) {
+        throw new Error(`该基地已存在同名的${personnelData.role === 'ANCHOR' ? '主播' : '仓管'}：${personnelData.name}`);
+      }
+
       // 生成业务编号
       const code = await CodeGenerator.generatePersonnelCode(personnelData.role);
 
@@ -169,6 +182,23 @@ export class PersonnelBaseService {
 
       if (!existingPersonnel) {
         throw new Error('人员不存在或不属于该基地');
+      }
+
+      // 如果修改了名称，检查同一基地、同一角色下是否存在同名人员
+      const targetRole = personnelData.role || existingPersonnel.role;
+      if (personnelData.name && personnelData.name !== existingPersonnel.name) {
+        const existingByName = await prisma.personnel.findFirst({
+          where: {
+            baseId: baseId,
+            role: targetRole,
+            name: personnelData.name,
+            id: { not: personnelId }, // 排除自己
+          },
+        });
+
+        if (existingByName) {
+          throw new Error(`该基地已存在同名的${targetRole === 'ANCHOR' ? '主播' : '仓管'}：${personnelData.name}`);
+        }
       }
 
       const personnel = await prisma.personnel.update({
