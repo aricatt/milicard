@@ -239,5 +239,6 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };

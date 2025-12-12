@@ -22,6 +22,7 @@ import {
   ExportOutlined, 
   ImportOutlined,
   InfoCircleOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
@@ -60,6 +61,7 @@ const ConsumptionManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   } = useConsumptionExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -467,18 +469,25 @@ const ConsumptionManagement: React.FC = () => {
         }
         toolBarRender={() => [
           <Button
-            key="export"
-            icon={<ExportOutlined />}
-            onClick={handleExport}
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
           >
-            导出Excel
+            下载模板
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入Excel
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出
           </Button>,
           <Button
             key="add"
@@ -748,6 +757,17 @@ const ConsumptionManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         title="导入消耗记录"
+        width={700}
+        fields={[
+          { field: '消耗日期', required: true, description: '消耗日期，格式YYYY-MM-DD', example: '2025-01-01' },
+          { field: '商品', required: true, description: '需与系统中商品名称完全匹配', example: '商品名称' },
+          { field: '直播间', required: true, description: '需与系统中直播间名称匹配', example: '直播间名称' },
+          { field: '主播', required: true, description: '需与系统中主播姓名匹配', example: '主播姓名' },
+          { field: '期末/箱', required: false, description: '剩余箱数', example: '0' },
+          { field: '期末/盒', required: false, description: '剩余盒数', example: '0' },
+          { field: '期末/包', required: false, description: '剩余包数', example: '0' },
+          { field: '备注', required: false, description: '备注信息', example: '' },
+        ]}
       />
     </PageContainer>
   );

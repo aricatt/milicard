@@ -16,6 +16,7 @@ import {
   ExportOutlined, 
   ImportOutlined,
   InfoCircleOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
@@ -44,6 +45,7 @@ const ArrivalManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   } = useArrivalExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -370,18 +372,25 @@ const ArrivalManagement: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button
-            key="export"
-            icon={<ExportOutlined />}
-            onClick={handleExport}
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
           >
-            导出Excel
+            下载模板
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入Excel
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出
           </Button>,
           <Button
             key="create"
@@ -539,12 +548,15 @@ const ArrivalManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         onImport={handleImport}
-        tips={[
-          '1. 请使用提供的模板文件，保持列名不变',
-          '2. 到货日期、采购编号、直播间、主播为必填项',
-          '3. 到货数量（箱/盒/包）至少填写一项',
-          '4. 采购编号必须是系统中已存在的采购单',
-          '5. 直播间和主播名称必须与系统中一致',
+        width={700}
+        fields={[
+          { field: '到货日期', required: true, description: '到货日期，格式YYYY-MM-DD', example: '2025-11-24' },
+          { field: '采购编号', required: true, description: '系统中已存在的采购单编号', example: 'PUSH-1CLM4AT5542' },
+          { field: '直播间', required: true, description: '需与系统中直播间名称一致', example: '泰国仓库 1' },
+          { field: '主播', required: true, description: '需与系统中主播姓名一致', example: 'Lin' },
+          { field: '到货箱', required: false, description: '到货箱数', example: '2' },
+          { field: '到货盒', required: false, description: '到货盒数', example: '0' },
+          { field: '到货包', required: false, description: '到货包数', example: '0' },
         ]}
       />
     </PageContainer>

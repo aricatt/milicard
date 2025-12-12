@@ -226,5 +226,6 @@ export const useArrivalExcel = ({ baseId, baseName, onImportSuccess }: UseArriva
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };

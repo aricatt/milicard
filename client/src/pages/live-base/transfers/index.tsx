@@ -20,6 +20,7 @@ import {
   ExportOutlined, 
   ImportOutlined,
   InfoCircleOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
@@ -58,6 +59,7 @@ const TransferManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   } = useTransferExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -310,18 +312,25 @@ const TransferManagement: React.FC = () => {
             </Button>
           </Popover>,
           <Button
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            下载模板
+          </Button>,
+          <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入Excel
+            导入
           </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
           >
-            导出Excel
+            导出
           </Button>,
           <Button
             key="create"
@@ -517,12 +526,18 @@ const TransferManagement: React.FC = () => {
         onImport={handleImport}
         loading={importLoading}
         progress={importProgress}
-        tips={[
-          '调货日期格式：YYYY-MM-DD（如：2025-11-24）',
-          '商品名称必须与系统中已有的商品名称完全匹配',
-          '调出/调入直播间名称必须与系统中已有的位置名称匹配',
-          '调出/调入主播名称必须与系统中已有的人员名称匹配',
-          '数量字段为空时默认为0',
+        width={700}
+        fields={[
+          { field: '调货日期', required: true, description: '调货日期，格式YYYY-MM-DD', example: '2025-11-24' },
+          { field: '商品', required: true, description: '需与系统中商品名称完全匹配', example: '商品名称示例' },
+          { field: '调出直播间', required: true, description: '需与系统中直播间名称匹配', example: 'Live Room 1' },
+          { field: '调出主播', required: true, description: '需与系统中主播姓名匹配', example: 'Lin' },
+          { field: '调入直播间', required: true, description: '需与系统中直播间名称匹配', example: 'Live Room 2' },
+          { field: '调入主播', required: true, description: '需与系统中主播姓名匹配', example: 'Sai' },
+          { field: '调货箱', required: false, description: '调货箱数', example: '1' },
+          { field: '调货盒', required: false, description: '调货盒数', example: '0' },
+          { field: '调货包', required: false, description: '调货包数', example: '0' },
+          { field: '备注', required: false, description: '备注信息', example: '' },
         ]}
       />
     </PageContainer>

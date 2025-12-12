@@ -211,5 +211,6 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };

@@ -79,6 +79,7 @@ const ProcurementManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   } = useProcurementExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -433,18 +434,25 @@ const ProcurementManagement: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button
-            key="export"
-            icon={<ExportOutlined />}
-            onClick={handleExport}
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
           >
-            导出Excel
+            下载模板
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入Excel
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出
           </Button>,
           <Button
             key="create"
@@ -534,14 +542,17 @@ const ProcurementManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         onImport={handleImport}
-        tips={[
-          '1. 请使用提供的模板文件，保持列名不变',
-          '2. 采购日期、商品名称、供应商、拿货单价箱为必填项',
-          '3. 商品名称需与系统中商品名称完全匹配',
-          '4. 供应商需与系统中供应商名称完全匹配（请先在"供应商"页面添加）',
-          '5. 采购编号留空则自动生成，填写已存在的编号则会更新该订单',
-          '6. 零售价、折扣、应付金额等字段由系统自动计算，导入时会被忽略',
-          '7. 支持批量导入，建议每次不超过500条',
+        width={700}
+        fields={[
+          { field: '采购日期', required: true, description: '采购日期，格式YYYY-MM-DD', example: '2025-11-17' },
+          { field: '采购编号', required: false, description: '留空自动生成，填写已存在编号则更新', example: '' },
+          { field: '商品名称', required: true, description: '需与系统中商品名称完全匹配', example: '名侦探柯南挂件' },
+          { field: '供应商', required: true, description: '需与系统中供应商名称完全匹配', example: '咸鱼' },
+          { field: '采购箱', required: false, description: '采购箱数', example: '0' },
+          { field: '采购盒', required: false, description: '采购盒数', example: '17' },
+          { field: '采购包', required: false, description: '采购包数', example: '0' },
+          { field: '拿货单价箱', required: true, description: '每箱拿货单价', example: '9697.5' },
+          { field: '实付金额', required: false, description: '实际支付金额', example: '4995' },
         ]}
       />
 

@@ -27,6 +27,7 @@ import {
   ShopOutlined,
   ExportOutlined,
   ImportOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
@@ -99,6 +100,7 @@ const SupplierManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   } = useSupplierExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -608,18 +610,25 @@ const SupplierManagement: React.FC = () => {
         // 工具栏按钮
         toolBarRender={() => [
           <Button
-            key="export"
-            icon={<ExportOutlined />}
-            onClick={handleExport}
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
           >
-            导出Excel
+            下载模板
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入Excel
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出
           </Button>,
           <Button
             key="create"
@@ -835,12 +844,16 @@ const SupplierManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         title="导入供应商"
-        tips={[
-          '请先下载导入模板，按照模板格式填写数据',
-          '只有供应商名称为必填项，其他字段可留空',
-          '供应商编号可留空，系统将自动生成',
-          '状态为空时默认为"启用"',
-          '重复的供应商名称或编号将被跳过',
+        width={700}
+        fields={[
+          { field: '供应商编号', required: false, description: '留空则系统自动生成', example: '' },
+          { field: '供应商名称', required: true, description: '供应商名称（基地内唯一）', example: '咸鱼' },
+          { field: '联系人', required: false, description: '联系人姓名', example: '张三' },
+          { field: '联系电话', required: false, description: '联系电话', example: '13800138000' },
+          { field: '邮箱', required: false, description: '电子邮箱', example: 'test@example.com' },
+          { field: '地址', required: false, description: '联系地址', example: '北京市朝阳区' },
+          { field: '状态', required: false, description: '启用/禁用，默认启用', example: '启用' },
+          { field: '备注', required: false, description: '备注信息', example: '' },
         ]}
       />
     </PageContainer>

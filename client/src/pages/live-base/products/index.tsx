@@ -29,6 +29,7 @@ import {
   ShopOutlined,
   ExportOutlined,
   ImportOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
@@ -152,6 +153,7 @@ const ProductManagement: React.FC = () => {
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   } = useProductExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
@@ -751,18 +753,25 @@ const ProductManagement: React.FC = () => {
         // 工具栏按钮
         toolBarRender={() => [
           <Button
-            key="export"
-            icon={<ExportOutlined />}
-            onClick={handleExport}
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
           >
-            导出Excel
+            下载模板
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入Excel
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出
           </Button>,
           <Button
             key="create"
@@ -1168,13 +1177,15 @@ const ProductManagement: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         onImport={handleImport}
-        tips={[
-          '1. 请使用提供的模板文件，保持列名不变',
-          '2. ID、商品编号、创建时间由系统自动生成，导入时会被忽略',
-          '3. 商品名称、厂家名称、零售价、盒/箱、包/盒为必填项',
-          '4. 箱数量固定为1，无需填写',
-          '5. 自动去重：相同"商品名称"的数据会被自动跳过（基地内唯一）',
-          '6. 支持批量导入，建议每次不超过500条',
+        width={700}
+        fields={[
+          { field: '品类', required: false, description: '卡牌/卡砖/礼物/色纸/上上签/撕撕乐/玩具/邮票/招财猫', example: '卡牌' },
+          { field: '商品名称', required: true, description: '商品名称（基地内唯一）', example: '琦趣创想航海王' },
+          { field: '商品别名', required: false, description: '商品别名或简称', example: '' },
+          { field: '厂家名称', required: true, description: '生产厂家名称', example: '琦趣创想' },
+          { field: '零售价(一箱)', required: true, description: '一箱的零售价格', example: '22356' },
+          { field: '多少盒1箱', required: true, description: '每箱包含多少盒', example: '36' },
+          { field: '多少包1盒', required: true, description: '每盒包含多少包', example: '10' },
         ]}
       />
     </PageContainer>

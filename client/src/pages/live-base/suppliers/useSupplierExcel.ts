@@ -296,5 +296,6 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };

@@ -250,5 +250,6 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };

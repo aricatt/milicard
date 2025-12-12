@@ -349,5 +349,6 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };

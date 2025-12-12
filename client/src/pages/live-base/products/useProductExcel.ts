@@ -345,5 +345,6 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
     importProgress,
     handleExport,
     handleImport,
+    handleDownloadTemplate,
   };
 };
