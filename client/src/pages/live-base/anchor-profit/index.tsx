@@ -446,7 +446,7 @@ const AnchorProfitPage: React.FC = () => {
   if (!currentBase) {
     return (
       <PageContainer>
-        <Alert message="请先选择基地" type="warning" showIcon />
+        <Alert message={intl.formatMessage({ id: 'message.selectBase' })} type="warning" showIcon />
       </PageContainer>
     );
   }
@@ -457,9 +457,9 @@ const AnchorProfitPage: React.FC = () => {
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
-            label="日期"
+            label={intl.formatMessage({ id: 'anchorProfit.form.profitDate' })}
             name="profitDate"
-            rules={[{ required: true, message: '请选择日期' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'anchorProfit.form.profitDateRequired' }) }]}
             initialValue={dayjs()}
           >
             <DatePicker style={{ width: '100%' }} />
@@ -467,12 +467,12 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={12}>
           <Form.Item
-            label="主播"
+            label={intl.formatMessage({ id: 'anchorProfit.form.handler' })}
             name="handlerId"
-            rules={[{ required: true, message: '请选择主播' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'anchorProfit.form.handlerRequired' }) }]}
           >
             <Select
-              placeholder="请选择主播"
+              placeholder={intl.formatMessage({ id: 'anchorProfit.form.handlerPlaceholder' })}
               loading={optionsLoading}
               showSearch
               optionFilterProp="label"
@@ -489,13 +489,13 @@ const AnchorProfitPage: React.FC = () => {
       <Row gutter={16}>
         <Col span={24}>
           <Form.Item
-            label="直播消耗"
+            label={intl.formatMessage({ id: 'anchorProfit.form.consumption' })}
             name="consumptionId"
-            rules={[{ required: true, message: '请选择消耗记录' }]}
-            extra="选择该主播的一条消耗记录关联利润"
+            rules={[{ required: true, message: intl.formatMessage({ id: 'anchorProfit.form.consumptionRequired' }) }]}
+            extra={intl.formatMessage({ id: 'anchorProfit.form.consumptionHint' })}
           >
             <Select
-              placeholder="请先选择主播，然后选择消耗记录"
+              placeholder={intl.formatMessage({ id: 'anchorProfit.form.consumptionPlaceholder' })}
               loading={consumptionOptionsLoading}
               showSearch
               optionFilterProp="label"
@@ -507,33 +507,33 @@ const AnchorProfitPage: React.FC = () => {
               }))}
               notFoundContent={
                 consumptionOptionsLoading 
-                  ? '加载中...' 
-                  : '暂无可关联的消耗记录'
+                  ? intl.formatMessage({ id: 'message.loading' })
+                  : intl.formatMessage({ id: 'anchorProfit.form.noConsumption' })
               }
             />
           </Form.Item>
         </Col>
       </Row>
 
-      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>收入</Divider>
+      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.incomeSection' })}</Divider>
       <Row gutter={16}>
         <Col span={8}>
           <Form.Item
-            label="GMV金额"
+            label={intl.formatMessage({ id: 'anchorProfit.form.gmvAmount' })}
             name="gmvAmount"
-            rules={[{ required: true, message: '请输入GMV金额' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'anchorProfit.form.gmvAmountRequired' }) }]}
           >
             <InputNumber
               min={0}
               precision={2}
               style={{ width: '100%' }}
-              placeholder="请输入"
+              placeholder={intl.formatMessage({ id: 'anchorProfit.form.gmvAmountPlaceholder' })}
             />
           </Form.Item>
         </Col>
         <Col span={8}>
           <Form.Item
-            label="退款金额"
+            label={intl.formatMessage({ id: 'anchorProfit.form.refundAmount' })}
             name="refundAmount"
             initialValue={0}
           >
@@ -547,10 +547,10 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={8}>
           <Form.Item
-            label="走水金额"
+            label={intl.formatMessage({ id: 'anchorProfit.form.waterAmount' })}
             name="waterAmount"
             initialValue={0}
-            extra="补单等额外收入"
+            extra={intl.formatMessage({ id: 'anchorProfit.form.waterAmountHint' })}
           >
             <InputNumber
               min={0}
@@ -562,10 +562,10 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>成本</Divider>
+      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.costSection' })}</Divider>
       <Row gutter={16}>
         <Col span={8}>
-          <Form.Item label="消耗金额" extra="根据选择的消耗记录自动获取">
+          <Form.Item label={intl.formatMessage({ id: 'anchorProfit.form.consumptionAmount' })} extra={intl.formatMessage({ id: 'anchorProfit.form.consumptionAmountHint' })}>
             <InputNumber
               value={consumptionAmount}
               disabled
@@ -576,7 +576,7 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={8}>
           <Form.Item
-            label="投流金额"
+            label={intl.formatMessage({ id: 'anchorProfit.form.adSpendAmount' })}
             name="adSpendAmount"
             initialValue={0}
           >
@@ -590,10 +590,10 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={8}>
           <Form.Item
-            label="平台扣点比例"
+            label={intl.formatMessage({ id: 'anchorProfit.form.platformFeeRate' })}
             name="platformFeeRate"
             initialValue={17}
-            extra="默认17%"
+            extra={intl.formatMessage({ id: 'anchorProfit.form.platformFeeRateHint' })}
           >
             <InputNumber
               min={0}
@@ -607,15 +607,15 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>计算结果</Divider>
+      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.resultSection' })}</Divider>
       <Alert
-        message="计算公式"
+        message={intl.formatMessage({ id: 'anchorProfit.form.formula' })}
         description={
           <div style={{ fontSize: 12 }}>
-            <div>当日销售额 = GMV + 走水 - 退款</div>
-            <div>平台扣点 = (GMV - 退款) × 扣点比例</div>
-            <div>利润 = 销售额 - 消耗 - 投流 - 平台扣点</div>
-            <div>毛利率 = 利润 / 销售额 × 100%</div>
+            <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaSales' })}</div>
+            <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaPlatformFee' })}</div>
+            <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaProfit' })}</div>
+            <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaProfitRate' })}</div>
           </div>
         }
         type="info"
@@ -624,7 +624,7 @@ const AnchorProfitPage: React.FC = () => {
       <Row gutter={16}>
         <Col span={6}>
           <Statistic
-            title="当日销售额"
+            title={intl.formatMessage({ id: 'anchorProfit.form.salesAmount' })}
             value={calculatedValues.salesAmount}
             precision={2}
             valueStyle={{ color: '#722ed1' }}
@@ -632,7 +632,7 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={6}>
           <Statistic
-            title="平台扣点"
+            title={intl.formatMessage({ id: 'anchorProfit.form.platformFeeAmount' })}
             value={calculatedValues.platformFeeAmount}
             precision={2}
             valueStyle={{ color: '#faad14' }}
@@ -640,7 +640,7 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={6}>
           <Statistic
-            title="利润金额"
+            title={intl.formatMessage({ id: 'anchorProfit.form.profitAmount' })}
             value={calculatedValues.profitAmount}
             precision={2}
             valueStyle={{ color: calculatedValues.profitAmount >= 0 ? '#52c41a' : '#ff4d4f' }}
@@ -648,7 +648,7 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
         <Col span={6}>
           <Statistic
-            title="毛利率"
+            title={intl.formatMessage({ id: 'anchorProfit.form.profitRate' })}
             value={calculatedValues.profitRate}
             precision={2}
             suffix="%"
@@ -661,8 +661,8 @@ const AnchorProfitPage: React.FC = () => {
       </Row>
 
       <Divider style={{ margin: '16px 0' }} />
-      <Form.Item label="备注" name="notes">
-        <TextArea rows={2} placeholder="请输入备注信息" />
+      <Form.Item label={intl.formatMessage({ id: 'anchorProfit.form.notes' })} name="notes">
+        <TextArea rows={2} placeholder={intl.formatMessage({ id: 'anchorProfit.form.notesPlaceholder' })} />
       </Form.Item>
     </>
   );

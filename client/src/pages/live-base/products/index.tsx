@@ -827,25 +827,25 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={16}>
               <Form.Item
-                label="商品名称"
+                label={intl.formatMessage({ id: 'products.form.name' })}
                 name="name"
                 rules={[
-                  { required: true, message: '请输入商品名称' },
-                  { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.nameRequired' }) },
+                  { min: 2, max: 100, message: intl.formatMessage({ id: 'products.form.nameLength' }) }
                 ]}
               >
-                <Input placeholder="请输入商品名称" />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.namePlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                label="品类"
+                label={intl.formatMessage({ id: 'products.form.category' })}
                 name="category"
                 initialValue={GoodsCategory.CARD}
-                rules={[{ required: true, message: '请选择品类' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'products.form.categoryRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择品类"
+                  placeholder={intl.formatMessage({ id: 'products.form.categoryPlaceholder' })}
                   options={categoryOptions}
                 />
               </Form.Item>
@@ -855,33 +855,33 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="商品别名"
+                label={intl.formatMessage({ id: 'products.form.alias' })}
                 name="alias"
               >
-                <Input placeholder="请输入商品别名" />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="厂家名称"
+                label={intl.formatMessage({ id: 'products.form.manufacturer' })}
                 name="manufacturer"
                 rules={[
-                  { required: true, message: '请输入厂家名称' },
-                  { min: 2, max: 50, message: '厂家名称长度应在2-50个字符之间' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.manufacturerRequired' }) },
+                  { min: 2, max: 50, message: intl.formatMessage({ id: 'products.form.manufacturerLength' }) }
                 ]}
               >
-                <Input placeholder="请输入厂家名称" />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.manufacturerPlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="商品描述"
+            label={intl.formatMessage({ id: 'products.form.description' })}
             name="description"
           >
             <TextArea
               rows={3}
-              placeholder="请输入商品描述"
+              placeholder={intl.formatMessage({ id: 'products.form.descriptionPlaceholder' })}
               maxLength={500}
               showCount
             />
@@ -890,16 +890,16 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="零售价(一箱)"
+                label={intl.formatMessage({ id: 'products.form.retailPrice' })}
                 name="retailPrice"
                 rules={[
-                  { required: true, message: '请输入零售价' },
-                  { type: 'number', min: 0, message: '零售价不能为负数' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.retailPriceRequired' }) },
+                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.retailPriceMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="零售价"
+                  placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
                   min={0}
                   precision={2}
                 />
@@ -907,15 +907,15 @@ const ProductManagement: React.FC = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="平拆价(一盒)"
+                label={intl.formatMessage({ id: 'products.form.packPrice' })}
                 name="packPrice"
                 rules={[
-                  { type: 'number', min: 0, message: '平拆价不能为负数' }
+                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.packPriceMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="平拆价"
+                  placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
                   min={0}
                   precision={2}
                 />
@@ -926,10 +926,10 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
-                label="箱装数量"
+                label={intl.formatMessage({ id: 'products.form.boxQuantity' })}
                 name="boxQuantity"
                 initialValue={1}
-                extra="固定为1，不可修改"
+                extra={intl.formatMessage({ id: 'products.form.boxQuantityHint' })}
               >
                 <InputNumber
                   style={{ width: '100%' }}
@@ -941,32 +941,32 @@ const ProductManagement: React.FC = () => {
             </Col>
             <Col span={8}>
               <Form.Item
-                label="盒/箱"
+                label={intl.formatMessage({ id: 'products.form.packPerBox' })}
                 name="packPerBox"
                 rules={[
-                  { required: true, message: '请输入盒/箱数量' },
-                  { type: 'number', min: 1, message: '盒/箱数量必须大于0' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.packPerBoxRequired' }) },
+                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.packPerBoxMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="盒/箱"
+                  placeholder={intl.formatMessage({ id: 'products.form.packPerBoxPlaceholder' })}
                   min={1}
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                label="包/盒"
+                label={intl.formatMessage({ id: 'products.form.piecePerPack' })}
                 name="piecePerPack"
                 rules={[
-                  { required: true, message: '请输入包/盒数量' },
-                  { type: 'number', min: 1, message: '包/盒数量必须大于0' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.piecePerPackRequired' }) },
+                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.piecePerPackMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="包/盒"
+                  placeholder={intl.formatMessage({ id: 'products.form.piecePerPackPlaceholder' })}
                   min={1}
                 />
               </Form.Item>
@@ -974,19 +974,19 @@ const ProductManagement: React.FC = () => {
           </Row>
 
           <Form.Item
-            label="图片URL"
+            label={intl.formatMessage({ id: 'products.form.imageUrl' })}
             name="imageUrl"
           >
-            <Input placeholder="请输入商品图片URL（选填）" />
+            <Input placeholder={intl.formatMessage({ id: 'products.form.imageUrlPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'products.form.notes' })}
             name="notes"
           >
             <TextArea
               rows={3}
-              placeholder="请输入备注信息"
+              placeholder={intl.formatMessage({ id: 'products.form.notesPlaceholder' })}
               maxLength={500}
               showCount
             />
@@ -1015,24 +1015,24 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={16}>
               <Form.Item
-                label="商品名称"
+                label={intl.formatMessage({ id: 'products.form.name' })}
                 name="name"
                 rules={[
-                  { required: true, message: '请输入商品名称' },
-                  { min: 2, max: 100, message: '商品名称长度应在2-100个字符之间' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.nameRequired' }) },
+                  { min: 2, max: 100, message: intl.formatMessage({ id: 'products.form.nameLength' }) }
                 ]}
               >
-                <Input placeholder="请输入商品名称" />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.namePlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                label="品类"
+                label={intl.formatMessage({ id: 'products.form.category' })}
                 name="category"
-                rules={[{ required: true, message: '请选择品类' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'products.form.categoryRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择品类"
+                  placeholder={intl.formatMessage({ id: 'products.form.categoryPlaceholder' })}
                   options={categoryOptions}
                 />
               </Form.Item>
@@ -1042,33 +1042,33 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="商品别名"
+                label={intl.formatMessage({ id: 'products.form.alias' })}
                 name="alias"
               >
-                <Input placeholder="请输入商品别名" />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="厂家名称"
+                label={intl.formatMessage({ id: 'products.form.manufacturer' })}
                 name="manufacturer"
                 rules={[
-                  { required: true, message: '请输入厂家名称' },
-                  { min: 2, max: 50, message: '厂家名称长度应在2-50个字符之间' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.manufacturerRequired' }) },
+                  { min: 2, max: 50, message: intl.formatMessage({ id: 'products.form.manufacturerLength' }) }
                 ]}
               >
-                <Input placeholder="请输入厂家名称" />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.manufacturerPlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="商品描述"
+            label={intl.formatMessage({ id: 'products.form.description' })}
             name="description"
           >
             <TextArea
               rows={3}
-              placeholder="请输入商品描述"
+              placeholder={intl.formatMessage({ id: 'products.form.descriptionPlaceholder' })}
               maxLength={500}
               showCount
             />
@@ -1077,16 +1077,16 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="零售价(一箱)"
+                label={intl.formatMessage({ id: 'products.form.retailPrice' })}
                 name="retailPrice"
                 rules={[
-                  { required: true, message: '请输入零售价' },
-                  { type: 'number', min: 0, message: '零售价不能为负数' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.retailPriceRequired' }) },
+                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.retailPriceMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="零售价"
+                  placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
                   min={0}
                   precision={2}
                 />
@@ -1094,15 +1094,15 @@ const ProductManagement: React.FC = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="平拆价(一盒)"
+                label={intl.formatMessage({ id: 'products.form.packPrice' })}
                 name="packPrice"
                 rules={[
-                  { type: 'number', min: 0, message: '平拆价不能为负数' }
+                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.packPriceMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="平拆价"
+                  placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
                   min={0}
                   precision={2}
                 />
@@ -1113,32 +1113,32 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="盒/箱"
+                label={intl.formatMessage({ id: 'products.form.packPerBox' })}
                 name="packPerBox"
                 rules={[
-                  { required: true, message: '请输入盒/箱数量' },
-                  { type: 'number', min: 1, message: '盒/箱数量必须大于0' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.packPerBoxRequired' }) },
+                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.packPerBoxMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="盒/箱"
+                  placeholder={intl.formatMessage({ id: 'products.form.packPerBoxPlaceholder' })}
                   min={1}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="包/盒"
+                label={intl.formatMessage({ id: 'products.form.piecePerPack' })}
                 name="piecePerPack"
                 rules={[
-                  { required: true, message: '请输入包/盒数量' },
-                  { type: 'number', min: 1, message: '包/盒数量必须大于0' }
+                  { required: true, message: intl.formatMessage({ id: 'products.form.piecePerPackRequired' }) },
+                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.piecePerPackMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="包/盒"
+                  placeholder={intl.formatMessage({ id: 'products.form.piecePerPackPlaceholder' })}
                   min={1}
                 />
               </Form.Item>
@@ -1146,19 +1146,19 @@ const ProductManagement: React.FC = () => {
           </Row>
 
           <Form.Item
-            label="图片URL"
+            label={intl.formatMessage({ id: 'products.form.imageUrl' })}
             name="imageUrl"
           >
-            <Input placeholder="请输入商品图片URL（选填）" />
+            <Input placeholder={intl.formatMessage({ id: 'products.form.imageUrlPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'products.form.notes' })}
             name="notes"
           >
             <TextArea
               rows={3}
-              placeholder="请输入备注信息"
+              placeholder={intl.formatMessage({ id: 'products.form.notesPlaceholder' })}
               maxLength={500}
               showCount
             />

@@ -468,7 +468,7 @@ const PersonnelManagement: React.FC = () => {
       <PageContainer>
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <p>请先选择一个基地</p>
+            <p>{intl.formatMessage({ id: 'message.selectBase' })}</p>
           </div>
         </Card>
       </PageContainer>
@@ -479,34 +479,34 @@ const PersonnelManagement: React.FC = () => {
   const statsContent = (
     <div style={{ width: 300 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="人员总数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.stats.total' })}>
           <Space>
             <TeamOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalPersonnel}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="主播">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.stats.anchors' })}>
           <Space>
             <UserOutlined style={{ color: '#722ed1' }} />
             <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{stats.anchors}</span>
             <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? ((stats.anchors / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="仓管">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.stats.warehouseKeepers' })}>
           <Space>
             <TeamOutlined style={{ color: '#fa8c16' }} />
             <span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{stats.warehouseKeepers}</span>
             <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? ((stats.warehouseKeepers / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="在职人员">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.stats.active' })}>
           <Space>
             <CheckCircleOutlined style={{ color: '#52c41a' }} />
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activePersonnel}</span>
             <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? ((stats.activePersonnel / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="离职人员">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.stats.inactive' })}>
           <Space>
             <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.totalPersonnel - stats.activePersonnel}</span>
             <span style={{ color: '#999' }}>({stats.totalPersonnel > 0 ? (((stats.totalPersonnel - stats.activePersonnel) / stats.totalPersonnel) * 100).toFixed(1) : 0}%)</span>
@@ -626,55 +626,55 @@ const PersonnelManagement: React.FC = () => {
           onFinish={handleCreate}
         >
           <Form.Item
-            label="姓名"
+            label={intl.formatMessage({ id: 'personnel.form.name' })}
             name="name"
             rules={[
-              { required: true, message: '请输入姓名' },
-              { min: 2, max: 20, message: '姓名长度应在2-20个字符之间' }
+              { required: true, message: intl.formatMessage({ id: 'personnel.form.nameRequired' }) },
+              { min: 2, max: 20, message: intl.formatMessage({ id: 'personnel.form.nameLength' }) }
             ]}
           >
-            <Input placeholder="请输入姓名" />
+            <Input placeholder={intl.formatMessage({ id: 'personnel.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="角色"
+            label={intl.formatMessage({ id: 'personnel.form.role' })}
             name="role"
-            rules={[{ required: true, message: '请选择角色' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'personnel.form.roleRequired' }) }]}
           >
-            <Select placeholder="请选择角色">
+            <Select placeholder={intl.formatMessage({ id: 'personnel.form.rolePlaceholder' })}>
               <Option value={PersonnelRole.ANCHOR}>
-                <UserOutlined /> 主播
+                <UserOutlined /> {intl.formatMessage({ id: 'personnel.stats.anchors' })}
               </Option>
               <Option value={PersonnelRole.WAREHOUSE_KEEPER}>
-                <TeamOutlined /> 仓管
+                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.stats.warehouseKeepers' })}
               </Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            label="联系电话"
+            label={intl.formatMessage({ id: 'personnel.form.phone' })}
             name="phone"
           >
-            <Input placeholder="请输入联系电话" />
+            <Input placeholder={intl.formatMessage({ id: 'personnel.form.phonePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="邮箱"
+            label={intl.formatMessage({ id: 'personnel.form.email' })}
             name="email"
             rules={[
-              { type: 'email', message: '请输入正确的邮箱地址' }
+              { type: 'email', message: intl.formatMessage({ id: 'personnel.form.emailInvalid' }) }
             ]}
           >
-            <Input placeholder="请输入邮箱" />
+            <Input placeholder={intl.formatMessage({ id: 'personnel.form.emailPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'personnel.form.notes' })}
             name="notes"
           >
             <Input.TextArea
               rows={3}
-              placeholder="请输入备注信息"
+              placeholder={intl.formatMessage({ id: 'personnel.form.notesPlaceholder' })}
               maxLength={200}
               showCount
             />
@@ -684,7 +684,7 @@ const PersonnelManagement: React.FC = () => {
 
       {/* 编辑人员模态框 */}
       <Modal
-        title="编辑人员"
+        title={intl.formatMessage({ id: 'personnel.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
@@ -701,55 +701,55 @@ const PersonnelManagement: React.FC = () => {
           onFinish={handleUpdate}
         >
           <Form.Item
-            label="姓名"
+            label={intl.formatMessage({ id: 'personnel.form.name' })}
             name="name"
             rules={[
-              { required: true, message: '请输入姓名' },
-              { min: 2, max: 20, message: '姓名长度应在2-20个字符之间' }
+              { required: true, message: intl.formatMessage({ id: 'personnel.form.nameRequired' }) },
+              { min: 2, max: 20, message: intl.formatMessage({ id: 'personnel.form.nameLength' }) }
             ]}
           >
-            <Input placeholder="请输入姓名" />
+            <Input placeholder={intl.formatMessage({ id: 'personnel.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="角色"
+            label={intl.formatMessage({ id: 'personnel.form.role' })}
             name="role"
-            rules={[{ required: true, message: '请选择角色' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'personnel.form.roleRequired' }) }]}
           >
-            <Select placeholder="请选择角色">
+            <Select placeholder={intl.formatMessage({ id: 'personnel.form.rolePlaceholder' })}>
               <Option value={PersonnelRole.ANCHOR}>
-                <UserOutlined /> 主播
+                <UserOutlined /> {intl.formatMessage({ id: 'personnel.stats.anchors' })}
               </Option>
               <Option value={PersonnelRole.WAREHOUSE_KEEPER}>
-                <TeamOutlined /> 仓管
+                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.stats.warehouseKeepers' })}
               </Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            label="联系电话"
+            label={intl.formatMessage({ id: 'personnel.form.phone' })}
             name="phone"
           >
-            <Input placeholder="请输入联系电话" />
+            <Input placeholder={intl.formatMessage({ id: 'personnel.form.phonePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="邮箱"
+            label={intl.formatMessage({ id: 'personnel.form.email' })}
             name="email"
             rules={[
-              { type: 'email', message: '请输入正确的邮箱地址' }
+              { type: 'email', message: intl.formatMessage({ id: 'personnel.form.emailInvalid' }) }
             ]}
           >
-            <Input placeholder="请输入邮箱" />
+            <Input placeholder={intl.formatMessage({ id: 'personnel.form.emailPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'personnel.form.notes' })}
             name="notes"
           >
             <Input.TextArea
               rows={3}
-              placeholder="请输入备注信息"
+              placeholder={intl.formatMessage({ id: 'personnel.form.notesPlaceholder' })}
               maxLength={200}
               showCount
             />

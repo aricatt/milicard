@@ -514,7 +514,7 @@ const ProcurementManagement: React.FC = () => {
 
       {/* 编辑采购订单模态框 */}
       <Modal
-        title="编辑采购订单"
+        title={intl.formatMessage({ id: 'procurement.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {

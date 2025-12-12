@@ -508,7 +508,7 @@ const ConsumptionManagement: React.FC = () => {
 
       {/* 创建消耗记录模态框 */}
       <Modal
-        title="添加消耗记录"
+        title={intl.formatMessage({ id: 'consumption.add' })}
         open={createModalVisible}
         onCancel={() => {
           setCreateModalVisible(false);
@@ -528,21 +528,21 @@ const ConsumptionManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
-                label="消耗日期"
+                label={intl.formatMessage({ id: 'consumption.form.consumptionDate' })}
                 name="consumptionDate"
-                rules={[{ required: true, message: '请选择消耗日期' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.consumptionDateRequired' }) }]}
               >
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                label="商品"
+                label={intl.formatMessage({ id: 'consumption.form.goods' })}
                 name="goodsId"
-                rules={[{ required: true, message: '请选择商品' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.goodsRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择商品"
+                  placeholder={intl.formatMessage({ id: 'consumption.form.goodsPlaceholder' })}
                   loading={optionsLoading}
                   showSearch
                   optionFilterProp="label"
@@ -553,12 +553,12 @@ const ConsumptionManagement: React.FC = () => {
             </Col>
             <Col span={8}>
               <Form.Item
-                label="直播间"
+                label={intl.formatMessage({ id: 'consumption.form.location' })}
                 name="locationId"
-                rules={[{ required: true, message: '请选择直播间' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.locationRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择直播间"
+                  placeholder={intl.formatMessage({ id: 'consumption.form.locationPlaceholder' })}
                   loading={optionsLoading}
                   showSearch
                   optionFilterProp="label"
@@ -573,13 +573,13 @@ const ConsumptionManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
-                label="主播"
+                label={intl.formatMessage({ id: 'consumption.form.handler' })}
                 name="handlerId"
-                rules={[{ required: true, message: '请选择主播' }]}
-                extra="选择主播后计算期初库存（直播间货物归属人）"
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.handlerRequired' }) }]}
+                extra={intl.formatMessage({ id: 'consumption.form.handlerHint' })}
               >
                 <Select
-                  placeholder="请选择主播"
+                  placeholder={intl.formatMessage({ id: 'consumption.form.handlerPlaceholder' })}
                   loading={optionsLoading}
                   showSearch
                   optionFilterProp="label"
@@ -593,12 +593,12 @@ const ConsumptionManagement: React.FC = () => {
           </Row>
 
           {/* 期初数据显示 */}
-          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>期初（调入总量）</Divider>
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'consumption.form.openingSection' })}</Divider>
           <Spin spinning={openingStockLoading}>
             {openingStock ? (
               <Row gutter={16}>
                 <Col span={8}>
-                  <Form.Item label="调入/箱">
+                  <Form.Item label={intl.formatMessage({ id: 'consumption.form.openingBox' })}>
                     <InputNumber
                       value={openingStock.openingBoxQty}
                       disabled
@@ -607,7 +607,7 @@ const ConsumptionManagement: React.FC = () => {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="调入/盒">
+                  <Form.Item label={intl.formatMessage({ id: 'consumption.form.openingPack' })}>
                     <InputNumber
                       value={openingStock.openingPackQty}
                       disabled
@@ -616,7 +616,7 @@ const ConsumptionManagement: React.FC = () => {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="调入/包">
+                  <Form.Item label={intl.formatMessage({ id: 'consumption.form.openingPiece' })}>
                     <InputNumber
                       value={openingStock.openingPieceQty}
                       disabled
@@ -627,7 +627,7 @@ const ConsumptionManagement: React.FC = () => {
               </Row>
             ) : (
               <Alert
-                message="请先选择商品和主播，系统将自动获取该主播的调入总量（直播间货物归属人）"
+                message={intl.formatMessage({ id: 'consumption.form.openingHint' })}
                 type="info"
                 showIcon
                 style={{ marginBottom: 16 }}
@@ -636,10 +636,10 @@ const ConsumptionManagement: React.FC = () => {
           </Spin>
 
           {/* 期末数据输入 */}
-          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>期末（剩余数量）</Divider>
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'consumption.form.closingSection' })}</Divider>
           {openingStock && !isClosingStockValid() && (
             <Alert
-              message="期末总量不能超过期初总量"
+              message={intl.formatMessage({ id: 'consumption.form.closingError' })}
               description={`期初总量: ${getOpeningTotalPieces()} 包，当前期末: ${getClosingTotalPieces()} 包（换算关系: 1箱=${openingStock.packPerBox}盒, 1盒=${openingStock.piecePerPack}包）`}
               type="error"
               showIcon
@@ -649,7 +649,7 @@ const ConsumptionManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item 
-                label="剩余/箱"
+                label={intl.formatMessage({ id: 'consumption.form.closingBox' })}
                 extra={openingStock ? `期初: ${openingStock.openingBoxQty} 箱` : undefined}
               >
                 <InputNumber
@@ -664,7 +664,7 @@ const ConsumptionManagement: React.FC = () => {
             </Col>
             <Col span={8}>
               <Form.Item 
-                label="剩余/盒"
+                label={intl.formatMessage({ id: 'consumption.form.closingPack' })}
                 extra={openingStock ? `期初: ${openingStock.openingPackQty} 盒（1箱=${openingStock.packPerBox}盒）` : undefined}
               >
                 <InputNumber
@@ -679,7 +679,7 @@ const ConsumptionManagement: React.FC = () => {
             </Col>
             <Col span={8}>
               <Form.Item 
-                label="剩余/包"
+                label={intl.formatMessage({ id: 'consumption.form.closingPiece' })}
                 extra={openingStock ? `期初: ${openingStock.openingPieceQty} 包（1盒=${openingStock.piecePerPack}包）` : undefined}
               >
                 <InputNumber
@@ -695,10 +695,10 @@ const ConsumptionManagement: React.FC = () => {
           </Row>
 
           {/* 消耗数据显示（自动计算） */}
-          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>消耗（自动计算）</Divider>
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'consumption.form.consumptionSection' })}</Divider>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label="消耗/箱">
+              <Form.Item label={intl.formatMessage({ id: 'consumption.form.consumptionBox' })}>
                 <InputNumber
                   value={calculateConsumption().boxQty}
                   disabled
@@ -707,7 +707,7 @@ const ConsumptionManagement: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="消耗/盒">
+              <Form.Item label={intl.formatMessage({ id: 'consumption.form.consumptionPack' })}>
                 <InputNumber
                   value={calculateConsumption().packQty}
                   disabled
@@ -716,7 +716,7 @@ const ConsumptionManagement: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="消耗/包">
+              <Form.Item label={intl.formatMessage({ id: 'consumption.form.consumptionPiece' })}>
                 <InputNumber
                   value={calculateConsumption().pieceQty}
                   disabled
@@ -726,8 +726,8 @@ const ConsumptionManagement: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item label="备注" name="notes">
-            <TextArea rows={2} placeholder="请输入备注信息" maxLength={500} showCount />
+          <Form.Item label={intl.formatMessage({ id: 'consumption.form.notes' })} name="notes">
+            <TextArea rows={2} placeholder={intl.formatMessage({ id: 'consumption.form.notesPlaceholder' })} maxLength={500} showCount />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
@@ -736,14 +736,14 @@ const ConsumptionManagement: React.FC = () => {
                 setCreateModalVisible(false);
                 setOpeningStock(null);
                 setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
-              }}>取消</Button>
+              }}>{intl.formatMessage({ id: 'button.cancel' })}</Button>
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={createLoading}
                 disabled={!openingStock || !isClosingStockValid()}
               >
-                创建
+                {intl.formatMessage({ id: 'button.create' })}
               </Button>
             </Space>
           </Form.Item>

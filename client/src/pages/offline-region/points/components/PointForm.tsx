@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Select, Switch, App } from 'antd';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 
 interface PointFormProps {
   visible: boolean;
@@ -26,6 +26,7 @@ const PointForm: React.FC<PointFormProps> = ({
 }) => {
   const [form] = Form.useForm();
   const { message } = App.useApp();
+  const intl = useIntl();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -39,7 +40,7 @@ const PointForm: React.FC<PointFormProps> = ({
       const response = await request(`/api/v1/bases/${baseId}/points/available-users`);
       setUsers(response.data || []);
     } catch (error) {
-      console.error('获取用户列表失败', error);
+      console.error(intl.formatMessage({ id: 'points.message.fetchUsersFailed' }), error);
     } finally {
       setLoadingUsers(false);
     }
@@ -77,14 +78,14 @@ const PointForm: React.FC<PointFormProps> = ({
           method: 'PUT',
           data: values,
         });
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'points.message.updateSuccess' }));
       } else {
         // 创建
         await request(`/api/v1/bases/${baseId}/points`, {
           method: 'POST',
           data: values,
         });
-        message.success('创建成功');
+        message.success(intl.formatMessage({ id: 'points.message.createSuccess' }));
       }
 
       onSuccess();
@@ -94,7 +95,7 @@ const PointForm: React.FC<PointFormProps> = ({
       } else if (error?.errorFields) {
         // 表单验证错误，不需要额外提示
       } else {
-        message.error('操作失败');
+        message.error(intl.formatMessage({ id: 'points.message.operationFailed' }));
       }
     } finally {
       setLoading(false);
@@ -103,7 +104,7 @@ const PointForm: React.FC<PointFormProps> = ({
 
   return (
     <Modal
-      title={editingPoint ? '编辑点位' : '新建点位'}
+      title={editingPoint ? intl.formatMessage({ id: 'points.form.title.edit' }) : intl.formatMessage({ id: 'points.form.title.add' })}
       open={visible}
       onCancel={onClose}
       onOk={handleSubmit}
@@ -118,40 +119,40 @@ const PointForm: React.FC<PointFormProps> = ({
       >
         <Form.Item
           name="name"
-          label="店铺名称"
-          rules={[{ required: true, message: '请输入店铺名称' }]}
+          label={intl.formatMessage({ id: 'points.form.name' })}
+          rules={[{ required: true, message: intl.formatMessage({ id: 'points.form.nameRequired' }) }]}
         >
-          <Input placeholder="请输入店铺名称" />
+          <Input placeholder={intl.formatMessage({ id: 'points.form.namePlaceholder' })} />
         </Form.Item>
 
         <Form.Item
           name="address"
-          label="地址"
+          label={intl.formatMessage({ id: 'points.form.address' })}
         >
-          <Input.TextArea rows={2} placeholder="请输入详细地址" />
+          <Input.TextArea rows={2} placeholder={intl.formatMessage({ id: 'points.form.addressPlaceholder' })} />
         </Form.Item>
 
         <Form.Item
           name="contactPerson"
-          label="联系人"
+          label={intl.formatMessage({ id: 'points.form.contactPerson' })}
         >
-          <Input placeholder="请输入联系人姓名" />
+          <Input placeholder={intl.formatMessage({ id: 'points.form.contactPersonPlaceholder' })} />
         </Form.Item>
 
         <Form.Item
           name="contactPhone"
-          label="联系电话"
+          label={intl.formatMessage({ id: 'points.form.contactPhone' })}
         >
-          <Input placeholder="请输入联系电话" />
+          <Input placeholder={intl.formatMessage({ id: 'points.form.contactPhonePlaceholder' })} />
         </Form.Item>
 
         <Form.Item
           name="ownerId"
-          label="点位老板"
-          tooltip="选择负责该点位的老板账号"
+          label={intl.formatMessage({ id: 'points.form.owner' })}
+          tooltip={intl.formatMessage({ id: 'points.form.ownerTooltip' })}
         >
           <Select
-            placeholder="请选择点位老板"
+            placeholder={intl.formatMessage({ id: 'points.form.ownerPlaceholder' })}
             allowClear
             showSearch
             loading={loadingUsers}
@@ -165,11 +166,11 @@ const PointForm: React.FC<PointFormProps> = ({
 
         <Form.Item
           name="dealerId"
-          label="经销商"
-          tooltip="选择负责该点位的经销商账号"
+          label={intl.formatMessage({ id: 'points.form.dealer' })}
+          tooltip={intl.formatMessage({ id: 'points.form.dealerTooltip' })}
         >
           <Select
-            placeholder="请选择经销商"
+            placeholder={intl.formatMessage({ id: 'points.form.dealerPlaceholder' })}
             allowClear
             showSearch
             loading={loadingUsers}
@@ -183,18 +184,18 @@ const PointForm: React.FC<PointFormProps> = ({
 
         <Form.Item
           name="notes"
-          label="备注"
+          label={intl.formatMessage({ id: 'points.form.notes' })}
         >
-          <Input.TextArea rows={2} placeholder="请输入备注信息" />
+          <Input.TextArea rows={2} placeholder={intl.formatMessage({ id: 'points.form.notesPlaceholder' })} />
         </Form.Item>
 
         {editingPoint && (
           <Form.Item
             name="isActive"
-            label="状态"
+            label={intl.formatMessage({ id: 'points.form.status' })}
             valuePropName="checked"
           >
-            <Switch checkedChildren="启用" unCheckedChildren="停用" />
+            <Switch checkedChildren={intl.formatMessage({ id: 'points.form.statusEnabled' })} unCheckedChildren={intl.formatMessage({ id: 'points.form.statusDisabled' })} />
           </Form.Item>
         )}
       </Form>

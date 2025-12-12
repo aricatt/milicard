@@ -452,20 +452,20 @@ const ArrivalManagement: React.FC = () => {
           }}
         >
           <Form.Item
-            label="日期"
+            label={intl.formatMessage({ id: 'arrivals.form.arrivalDate' })}
             name="arrivalDate"
-            rules={[{ required: true, message: '请选择到货日期' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.arrivalDateRequired' }) }]}
           >
-            <DatePicker style={{ width: '100%' }} placeholder="选择日期" />
+            <DatePicker style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.arrivalDatePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="采购"
+            label={intl.formatMessage({ id: 'arrivals.form.purchaseOrder' })}
             name="purchaseOrderNo"
-            rules={[{ required: true, message: '请选择采购单' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.purchaseOrderRequired' }) }]}
           >
             <Select
-              placeholder="请选择"
+              placeholder={intl.formatMessage({ id: 'arrivals.form.purchaseOrderPlaceholder' })}
               loading={purchaseOrdersLoading}
               showSearch
               optionFilterProp="label"
@@ -477,13 +477,13 @@ const ArrivalManagement: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="总仓库"
+            label={intl.formatMessage({ id: 'arrivals.form.location' })}
             name="locationId"
-            rules={[{ required: true, message: '请选择总仓库' }]}
-            extra="到货只能入库到总仓库"
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.locationRequired' }) }]}
+            extra={intl.formatMessage({ id: 'arrivals.form.locationHint' })}
           >
             <Select
-              placeholder="请选择总仓库"
+              placeholder={intl.formatMessage({ id: 'arrivals.form.locationPlaceholder' })}
               loading={locationsLoading}
               showSearch
               optionFilterProp="label"
@@ -497,13 +497,13 @@ const ArrivalManagement: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="经手人"
+            label={intl.formatMessage({ id: 'arrivals.form.handler' })}
             name="handlerId"
-            rules={[{ required: true, message: '请选择经手人' }]}
-            extra="👷仓管 / 🎤主播"
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.handlerRequired' }) }]}
+            extra={intl.formatMessage({ id: 'arrivals.form.handlerHint' })}
           >
             <Select
-              placeholder="请选择经手人"
+              placeholder={intl.formatMessage({ id: 'arrivals.form.handlerPlaceholder' })}
               loading={handlersLoading}
               showSearch
               optionFilterProp="label"
@@ -516,27 +516,27 @@ const ArrivalManagement: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="到货箱"
+            label={intl.formatMessage({ id: 'arrivals.form.boxQuantity' })}
             name="boxQuantity"
-            rules={[{ required: true, message: '请输入' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.boxQuantityRequired' }) }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
+            <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.boxQuantityPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="到货盒"
+            label={intl.formatMessage({ id: 'arrivals.form.packQuantity' })}
             name="packQuantity"
-            rules={[{ required: true, message: '请输入' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.packQuantityRequired' }) }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
+            <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.packQuantityPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="到货包"
+            label={intl.formatMessage({ id: 'arrivals.form.pieceQuantity' })}
             name="pieceQuantity"
-            rules={[{ required: true, message: '请输入' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.pieceQuantityRequired' }) }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="请输入" />
+            <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.pieceQuantityPlaceholder' })} />
           </Form.Item>
         </Form>
       </Modal>

@@ -386,21 +386,21 @@ const TransferManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="调货日期"
+                label={intl.formatMessage({ id: 'transfers.form.transferDate' })}
                 name="transferDate"
-                rules={[{ required: true, message: '请选择调货日期' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.transferDateRequired' }) }]}
               >
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="商品"
+                label={intl.formatMessage({ id: 'transfers.form.goods' })}
                 name="goodsId"
-                rules={[{ required: true, message: '请选择商品' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.goodsRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择商品"
+                  placeholder={intl.formatMessage({ id: 'transfers.form.goodsPlaceholder' })}
                   showSearch
                   optionFilterProp="label"
                   loading={optionsLoading}
@@ -410,16 +410,16 @@ const TransferManagement: React.FC = () => {
             </Col>
           </Row>
 
-          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>调出方</Divider>
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'transfers.form.sourceSection' })}</Divider>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="调出直播间"
+                label={intl.formatMessage({ id: 'transfers.form.sourceLocation' })}
                 name="sourceLocationId"
-                rules={[{ required: true, message: '请选择调出直播间' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.sourceLocationRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择直播间/仓库"
+                  placeholder={intl.formatMessage({ id: 'transfers.form.sourceLocationPlaceholder' })}
                   loading={optionsLoading}
                   options={locationOptions.map(l => ({ value: l.id, label: l.name }))}
                 />
@@ -427,12 +427,12 @@ const TransferManagement: React.FC = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="调出主播"
+                label={intl.formatMessage({ id: 'transfers.form.sourceHandler' })}
                 name="sourceHandlerId"
-                rules={[{ required: true, message: '请选择调出主播' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.sourceHandlerRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择主播"
+                  placeholder={intl.formatMessage({ id: 'transfers.form.sourceHandlerPlaceholder' })}
                   loading={optionsLoading}
                   options={personnelOptions.map(p => ({ value: p.id, label: p.name }))}
                 />
@@ -440,16 +440,16 @@ const TransferManagement: React.FC = () => {
             </Col>
           </Row>
 
-          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>调入方</Divider>
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'transfers.form.destinationSection' })}</Divider>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="调入直播间"
+                label={intl.formatMessage({ id: 'transfers.form.destinationLocation' })}
                 name="destinationLocationId"
-                rules={[{ required: true, message: '请选择调入直播间' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.destinationLocationRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择直播间/仓库"
+                  placeholder={intl.formatMessage({ id: 'transfers.form.destinationLocationPlaceholder' })}
                   loading={optionsLoading}
                   options={locationOptions.map(l => ({ value: l.id, label: l.name }))}
                 />
@@ -457,12 +457,12 @@ const TransferManagement: React.FC = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                label="调入主播"
+                label={intl.formatMessage({ id: 'transfers.form.destinationHandler' })}
                 name="destinationHandlerId"
-                rules={[{ required: true, message: '请选择调入主播' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.destinationHandlerRequired' }) }]}
               >
                 <Select
-                  placeholder="请选择主播"
+                  placeholder={intl.formatMessage({ id: 'transfers.form.destinationHandlerPlaceholder' })}
                   loading={optionsLoading}
                   options={personnelOptions.map(p => ({ value: p.id, label: p.name }))}
                 />
@@ -470,31 +470,31 @@ const TransferManagement: React.FC = () => {
             </Col>
           </Row>
 
-          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>调货数量</Divider>
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'transfers.form.quantitySection' })}</Divider>
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item
-                label="调货箱"
+                label={intl.formatMessage({ id: 'transfers.form.boxQuantity' })}
                 name="boxQuantity"
-                rules={[{ required: true, message: '请输入' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.boxQuantityRequired' }) }]}
               >
                 <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                label="调货盒"
+                label={intl.formatMessage({ id: 'transfers.form.packQuantity' })}
                 name="packQuantity"
-                rules={[{ required: true, message: '请输入' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.packQuantityRequired' }) }]}
               >
                 <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
-                label="调货包"
+                label={intl.formatMessage({ id: 'transfers.form.pieceQuantity' })}
                 name="pieceQuantity"
-                rules={[{ required: true, message: '请输入' }]}
+                rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.pieceQuantityRequired' }) }]}
               >
                 <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
               </Form.Item>
@@ -502,17 +502,17 @@ const TransferManagement: React.FC = () => {
           </Row>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'transfers.form.notes' })}
             name="notes"
           >
-            <TextArea rows={2} placeholder="请输入备注（选填）" maxLength={500} showCount />
+            <TextArea rows={2} placeholder={intl.formatMessage({ id: 'transfers.form.notesPlaceholder' })} maxLength={500} showCount />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'right', marginTop: 16 }}>
             <Space>
-              <Button onClick={() => setCreateModalVisible(false)}>取消</Button>
+              <Button onClick={() => setCreateModalVisible(false)}>{intl.formatMessage({ id: 'button.cancel' })}</Button>
               <Button type="primary" htmlType="submit" loading={createLoading}>
-                创建
+                {intl.formatMessage({ id: 'button.create' })}
               </Button>
             </Space>
           </Form.Item>

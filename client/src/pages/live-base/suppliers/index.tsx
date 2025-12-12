@@ -510,7 +510,7 @@ const SupplierManagement: React.FC = () => {
     return (
       <PageContainer>
         <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <p>请先选择一个基地</p>
+          <p>{intl.formatMessage({ id: 'message.selectBase' })}</p>
         </div>
       </PageContainer>
     );
@@ -520,30 +520,30 @@ const SupplierManagement: React.FC = () => {
   const statsContent = (
     <div style={{ width: 300 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="供应商总数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'suppliers.stats.total' })}>
           <Space>
             <ShopOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalSuppliers}</span>
-            <span style={{ color: '#999' }}>家</span>
+            <span style={{ color: '#999' }}>{intl.formatMessage({ id: 'suppliers.stats.unit' })}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="启用供应商">
+        <Descriptions.Item label={intl.formatMessage({ id: 'suppliers.stats.active' })}>
           <Space>
             <CheckCircleOutlined style={{ color: '#52c41a' }} />
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeSuppliers}</span>
             <span style={{ color: '#999' }}>({stats.totalSuppliers > 0 ? ((stats.activeSuppliers / stats.totalSuppliers) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="禁用供应商">
+        <Descriptions.Item label={intl.formatMessage({ id: 'suppliers.stats.inactive' })}>
           <Space>
             <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.inactiveSuppliers}</span>
             <span style={{ color: '#999' }}>({stats.totalSuppliers > 0 ? ((stats.inactiveSuppliers / stats.totalSuppliers) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="近7天新增">
+        <Descriptions.Item label={intl.formatMessage({ id: 'suppliers.stats.recentlyAdded' })}>
           <Space>
             <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{stats.recentlyAdded}</span>
-            <span style={{ color: '#999' }}>家</span>
+            <span style={{ color: '#999' }}>{intl.formatMessage({ id: 'suppliers.stats.unit' })}</span>
           </Space>
         </Descriptions.Item>
       </Descriptions>
@@ -682,65 +682,65 @@ const SupplierManagement: React.FC = () => {
           onFinish={handleCreate}
         >
           <Form.Item
-            label="供应商名称"
+            label={intl.formatMessage({ id: 'suppliers.form.name' })}
             name="name"
             rules={[
-              { required: true, message: '请输入供应商名称' },
-              { min: 2, max: 100, message: '供应商名称长度应在2-100个字符之间' }
+              { required: true, message: intl.formatMessage({ id: 'suppliers.form.nameRequired' }) },
+              { min: 2, max: 100, message: intl.formatMessage({ id: 'suppliers.form.nameLength' }) }
             ]}
           >
-            <Input placeholder="请输入供应商名称" />
+            <Input placeholder={intl.formatMessage({ id: 'suppliers.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="联系人"
+            label={intl.formatMessage({ id: 'suppliers.form.contactPerson' })}
             name="contactPerson"
             rules={[
-              { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
+              { min: 2, max: 50, message: intl.formatMessage({ id: 'suppliers.form.contactPersonLength' }) }
             ]}
           >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder={intl.formatMessage({ id: 'suppliers.form.contactPersonPlaceholder' })} />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="联系电话"
+                label={intl.formatMessage({ id: 'suppliers.form.phone' })}
                 name="phone"
               >
-                <Input placeholder="请输入联系电话" />
+                <Input placeholder={intl.formatMessage({ id: 'suppliers.form.phonePlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="邮箱"
+                label={intl.formatMessage({ id: 'suppliers.form.email' })}
                 name="email"
                 rules={[
-                  { type: 'email', message: '请输入正确的邮箱地址' }
+                  { type: 'email', message: intl.formatMessage({ id: 'suppliers.form.emailInvalid' }) }
                 ]}
               >
-                <Input placeholder="请输入邮箱" />
+                <Input placeholder={intl.formatMessage({ id: 'suppliers.form.emailPlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="地址"
+            label={intl.formatMessage({ id: 'suppliers.form.address' })}
             name="address"
             rules={[
-              { max: 200, message: '地址长度不能超过200个字符' }
+              { max: 200, message: intl.formatMessage({ id: 'suppliers.form.addressLength' }) }
             ]}
           >
-            <Input placeholder="请输入地址" />
+            <Input placeholder={intl.formatMessage({ id: 'suppliers.form.addressPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'suppliers.form.notes' })}
             name="notes"
           >
             <TextArea
               rows={3}
-              placeholder="请输入备注信息"
+              placeholder={intl.formatMessage({ id: 'suppliers.form.notesPlaceholder' })}
               maxLength={500}
               showCount
             />
@@ -767,65 +767,65 @@ const SupplierManagement: React.FC = () => {
           onFinish={handleUpdate}
         >
           <Form.Item
-            label="供应商名称"
+            label={intl.formatMessage({ id: 'suppliers.form.name' })}
             name="name"
             rules={[
-              { required: true, message: '请输入供应商名称' },
-              { min: 2, max: 100, message: '供应商名称长度应在2-100个字符之间' }
+              { required: true, message: intl.formatMessage({ id: 'suppliers.form.nameRequired' }) },
+              { min: 2, max: 100, message: intl.formatMessage({ id: 'suppliers.form.nameLength' }) }
             ]}
           >
-            <Input placeholder="请输入供应商名称" />
+            <Input placeholder={intl.formatMessage({ id: 'suppliers.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="联系人"
+            label={intl.formatMessage({ id: 'suppliers.form.contactPerson' })}
             name="contactPerson"
             rules={[
-              { min: 2, max: 50, message: '联系人长度应在2-50个字符之间' }
+              { min: 2, max: 50, message: intl.formatMessage({ id: 'suppliers.form.contactPersonLength' }) }
             ]}
           >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder={intl.formatMessage({ id: 'suppliers.form.contactPersonPlaceholder' })} />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="联系电话"
+                label={intl.formatMessage({ id: 'suppliers.form.phone' })}
                 name="phone"
               >
-                <Input placeholder="请输入联系电话" />
+                <Input placeholder={intl.formatMessage({ id: 'suppliers.form.phonePlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="邮箱"
+                label={intl.formatMessage({ id: 'suppliers.form.email' })}
                 name="email"
                 rules={[
-                  { type: 'email', message: '请输入正确的邮箱地址' }
+                  { type: 'email', message: intl.formatMessage({ id: 'suppliers.form.emailInvalid' }) }
                 ]}
               >
-                <Input placeholder="请输入邮箱" />
+                <Input placeholder={intl.formatMessage({ id: 'suppliers.form.emailPlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label="地址"
+            label={intl.formatMessage({ id: 'suppliers.form.address' })}
             name="address"
             rules={[
-              { max: 200, message: '地址长度不能超过200个字符' }
+              { max: 200, message: intl.formatMessage({ id: 'suppliers.form.addressLength' }) }
             ]}
           >
-            <Input placeholder="请输入地址" />
+            <Input placeholder={intl.formatMessage({ id: 'suppliers.form.addressPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="备注"
+            label={intl.formatMessage({ id: 'suppliers.form.notes' })}
             name="notes"
           >
             <TextArea
               rows={3}
-              placeholder="请输入备注信息"
+              placeholder={intl.formatMessage({ id: 'suppliers.form.notesPlaceholder' })}
               maxLength={500}
               showCount
             />

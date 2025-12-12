@@ -505,11 +505,11 @@ const LocationManagement: React.FC = () => {
         </Tooltip>,
         <Popconfirm
           key="delete"
-          title="确认删除"
-          description={`确定要删除位置"${record.name}"吗？`}
+          title={intl.formatMessage({ id: 'locations.confirm.delete' })}
+          description={intl.formatMessage({ id: 'locations.confirm.deleteContent' }, { name: record.name })}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl.formatMessage({ id: 'button.confirm' })}
+          cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
           <Tooltip title="删除">
@@ -530,7 +530,7 @@ const LocationManagement: React.FC = () => {
       <PageContainer>
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <p>请先选择一个基地</p>
+            <p>{intl.formatMessage({ id: 'message.selectBase' })}</p>
           </div>
         </Card>
       </PageContainer>
@@ -541,40 +541,40 @@ const LocationManagement: React.FC = () => {
   const statsContent = (
     <div style={{ width: 300 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="总位置数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.stats.total' })}>
           <Space>
             <DatabaseOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalLocations}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="总仓库">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.stats.mainWarehouse' })}>
           <Space>
             <DatabaseOutlined style={{ color: '#fa8c16' }} />
             <span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{stats.mainWarehouses}</span>
             <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.mainWarehouses / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="子仓库">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.stats.warehouse' })}>
           <Space>
             <DatabaseOutlined style={{ color: '#1890ff' }} />
             <span style={{ color: '#1890ff', fontWeight: 'bold' }}>{stats.warehouses}</span>
             <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.warehouses / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="直播间">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.stats.liveRoom' })}>
           <Space>
             <DesktopOutlined style={{ color: '#52c41a' }} />
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.liveRooms}</span>
             <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.liveRooms / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="启用中">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.stats.active' })}>
           <Space>
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeLocations}</span>
             <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? ((stats.activeLocations / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="禁用">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.stats.inactive' })}>
           <Space>
             <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.totalLocations - stats.activeLocations}</span>
             <span style={{ color: '#999' }}>({stats.totalLocations > 0 ? (((stats.totalLocations - stats.activeLocations) / stats.totalLocations) * 100).toFixed(1) : 0}%)</span>
@@ -589,8 +589,8 @@ const LocationManagement: React.FC = () => {
       {/* 没有总仓库的警告提示 */}
       {!hasMainWarehouse && stats.totalLocations > 0 && (
         <Alert
-          message="缺少总仓库"
-          description="当前基地尚未设置总仓库。请通过编辑现有位置，将其中一个设置为总仓库。每个基地必须有且只有一个总仓库。"
+          message={intl.formatMessage({ id: 'locations.alert.noMainWarehouse' })}
+          description={intl.formatMessage({ id: 'locations.alert.noMainWarehouseDesc' })}
           type="warning"
           showIcon
           icon={<WarningOutlined />}
@@ -603,18 +603,18 @@ const LocationManagement: React.FC = () => {
         title={
           <Space>
             <WarningOutlined style={{ color: '#faad14' }} />
-            <span>缺少总仓库</span>
+            <span>{intl.formatMessage({ id: 'locations.alert.noMainWarehouse' })}</span>
           </Space>
         }
         open={noMainWarehouseModalVisible}
         onOk={() => setNoMainWarehouseModalVisible(false)}
         onCancel={() => setNoMainWarehouseModalVisible(false)}
-        okText="我知道了"
+        okText={intl.formatMessage({ id: 'locations.modal.iKnow' })}
         cancelButtonProps={{ style: { display: 'none' } }}
       >
-        <p>当前基地尚未设置<strong>总仓库</strong>。</p>
-        <p>每个基地必须有且只有一个总仓库，才能创建其他子仓库和直播间。</p>
-        <p>请通过<strong>编辑</strong>现有位置，将其中一个设置为总仓库。</p>
+        <p>{intl.formatMessage({ id: 'locations.modal.noMainWarehouseP1' })}</p>
+        <p>{intl.formatMessage({ id: 'locations.modal.noMainWarehouseP2' })}</p>
+        <p>{intl.formatMessage({ id: 'locations.modal.noMainWarehouseP3' })}</p>
       </Modal>
 
       {/* ProTable */}
@@ -724,68 +724,68 @@ const LocationManagement: React.FC = () => {
           onFinish={handleCreate}
         >
           <Form.Item
-            label="位置名称"
+            label={intl.formatMessage({ id: 'locations.form.name' })}
             name="name"
-            rules={[{ required: true, message: '请输入位置名称' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'locations.form.nameRequired' }) }]}
           >
-            <Input placeholder="请输入位置名称" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="位置类型"
+            label={intl.formatMessage({ id: 'locations.form.type' })}
             name="type"
-            rules={[{ required: true, message: '请选择位置类型' }]}
-            extra={!hasMainWarehouse ? '当前基地没有总仓库，请先创建总仓库' : '已有总仓库，不能重复创建'}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'locations.form.typeRequired' }) }]}
+            extra={!hasMainWarehouse ? intl.formatMessage({ id: 'locations.form.typeHintNoMain' }) : intl.formatMessage({ id: 'locations.form.typeHintHasMain' })}
           >
-            <Select placeholder="请选择位置类型">
+            <Select placeholder={intl.formatMessage({ id: 'locations.form.typePlaceholder' })}>
               <Option value={LocationType.MAIN_WAREHOUSE} disabled={hasMainWarehouse}>
-                总仓库 {hasMainWarehouse ? '(已存在)' : ''}
+                {intl.formatMessage({ id: 'locations.form.mainWarehouse' })} {hasMainWarehouse ? intl.formatMessage({ id: 'locations.form.mainWarehouseExists' }) : ''}
               </Option>
               <Option value={LocationType.WAREHOUSE} disabled={!hasMainWarehouse}>
-                子仓库 {!hasMainWarehouse ? '(需先创建总仓库)' : ''}
+                {intl.formatMessage({ id: 'locations.form.warehouse' })} {!hasMainWarehouse ? intl.formatMessage({ id: 'locations.form.warehouseNeedMain' }) : ''}
               </Option>
               <Option value={LocationType.LIVE_ROOM} disabled={!hasMainWarehouse}>
-                直播间 {!hasMainWarehouse ? '(需先创建总仓库)' : ''}
+                {intl.formatMessage({ id: 'locations.form.liveRoom' })} {!hasMainWarehouse ? intl.formatMessage({ id: 'locations.form.warehouseNeedMain' }) : ''}
               </Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            label="描述"
+            label={intl.formatMessage({ id: 'locations.form.description' })}
             name="description"
           >
-            <TextArea rows={3} placeholder="请输入描述信息" />
+            <TextArea rows={3} placeholder={intl.formatMessage({ id: 'locations.form.descriptionPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="地址"
+            label={intl.formatMessage({ id: 'locations.form.address' })}
             name="address"
           >
-            <Input placeholder="请输入地址" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.addressPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="联系人"
+            label={intl.formatMessage({ id: 'locations.form.contactPerson' })}
             name="contactPerson"
           >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.contactPersonPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="联系电话"
+            label={intl.formatMessage({ id: 'locations.form.contactPhone' })}
             name="contactPhone"
           >
-            <Input placeholder="请输入联系电话" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.contactPhonePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="状态"
+            label={intl.formatMessage({ id: 'locations.form.status' })}
             name="isActive"
             initialValue={true}
           >
             <Select>
-              <Option value={true}>启用</Option>
-              <Option value={false}>禁用</Option>
+              <Option value={true}>{intl.formatMessage({ id: 'status.enabled' })}</Option>
+              <Option value={false}>{intl.formatMessage({ id: 'status.disabled' })}</Option>
             </Select>
           </Form.Item>
         </Form>
@@ -793,7 +793,7 @@ const LocationManagement: React.FC = () => {
 
       {/* 编辑位置模态框 */}
       <Modal
-        title="编辑位置"
+        title={intl.formatMessage({ id: 'locations.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
@@ -810,71 +810,71 @@ const LocationManagement: React.FC = () => {
           onFinish={handleUpdate}
         >
           <Form.Item
-            label="位置名称"
+            label={intl.formatMessage({ id: 'locations.form.name' })}
             name="name"
-            rules={[{ required: true, message: '请输入位置名称' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'locations.form.nameRequired' }) }]}
           >
-            <Input placeholder="请输入位置名称" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="位置类型"
+            label={intl.formatMessage({ id: 'locations.form.type' })}
             name="type"
-            rules={[{ required: true, message: '请选择位置类型' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'locations.form.typeRequired' }) }]}
             extra={
               editingLocation?.type === LocationType.MAIN_WAREHOUSE
-                ? '当前位置是总仓库，修改类型后将失去总仓库身份'
-                : (!hasMainWarehouse ? '当前基地没有总仓库，可以将此位置设为总仓库' : '')
+                ? intl.formatMessage({ id: 'locations.form.typeEditHintIsMain' })
+                : (!hasMainWarehouse ? intl.formatMessage({ id: 'locations.form.typeEditHintNoMain' }) : '')
             }
           >
-            <Select placeholder="请选择位置类型">
+            <Select placeholder={intl.formatMessage({ id: 'locations.form.typePlaceholder' })}>
               {/* 总仓库选项：如果当前编辑的就是总仓库，或者还没有总仓库，则可选 */}
               <Option 
                 value={LocationType.MAIN_WAREHOUSE} 
                 disabled={hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE}
               >
-                总仓库 {hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE ? '(已存在)' : ''}
+                {intl.formatMessage({ id: 'locations.form.mainWarehouse' })} {hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE ? intl.formatMessage({ id: 'locations.form.mainWarehouseExists' }) : ''}
               </Option>
-              <Option value={LocationType.WAREHOUSE}>子仓库</Option>
-              <Option value={LocationType.LIVE_ROOM}>直播间</Option>
+              <Option value={LocationType.WAREHOUSE}>{intl.formatMessage({ id: 'locations.form.warehouse' })}</Option>
+              <Option value={LocationType.LIVE_ROOM}>{intl.formatMessage({ id: 'locations.form.liveRoom' })}</Option>
             </Select>
           </Form.Item>
 
           <Form.Item
-            label="描述"
+            label={intl.formatMessage({ id: 'locations.form.description' })}
             name="description"
           >
-            <TextArea rows={3} placeholder="请输入描述信息" />
+            <TextArea rows={3} placeholder={intl.formatMessage({ id: 'locations.form.descriptionPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="地址"
+            label={intl.formatMessage({ id: 'locations.form.address' })}
             name="address"
           >
-            <Input placeholder="请输入地址" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.addressPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="联系人"
+            label={intl.formatMessage({ id: 'locations.form.contactPerson' })}
             name="contactPerson"
           >
-            <Input placeholder="请输入联系人" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.contactPersonPlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="联系电话"
+            label={intl.formatMessage({ id: 'locations.form.contactPhone' })}
             name="contactPhone"
           >
-            <Input placeholder="请输入联系电话" />
+            <Input placeholder={intl.formatMessage({ id: 'locations.form.contactPhonePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="状态"
+            label={intl.formatMessage({ id: 'locations.form.status' })}
             name="isActive"
           >
             <Select>
-              <Option value={true}>启用</Option>
-              <Option value={false}>禁用</Option>
+              <Option value={true}>{intl.formatMessage({ id: 'status.enabled' })}</Option>
+              <Option value={false}>{intl.formatMessage({ id: 'status.disabled' })}</Option>
             </Select>
           </Form.Item>
         </Form>

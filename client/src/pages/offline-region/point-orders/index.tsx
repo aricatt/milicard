@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Card, Statistic, Row, Col, App, Divider, Table, Modal, Form, Input, InputNumber, Select } from 'antd';
+import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Card, Statistic, Row, Col, App, Divider, Table, Modal, Form, Input, InputNumber, Select, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, CarOutlined, CheckCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
@@ -511,27 +511,27 @@ const PointOrdersPage: React.FC = () => {
       width: 200,
       fixed: 'right',
       render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetail(record)}
-          >
-            {intl.formatMessage({ id: 'button.detail' })}
-          </Button>
-          {record.status === 'PENDING' && access.canUpdatePointOrder && (
+        <Space size={0}>
+          <Tooltip title={intl.formatMessage({ id: 'button.detail' })}>
             <Button
               type="link"
               size="small"
-              icon={<EditOutlined />}
-              onClick={() => {
-                setEditingOrder(record);
-                setFormVisible(true);
-              }}
-            >
-              {intl.formatMessage({ id: 'button.edit' })}
-            </Button>
+              icon={<EyeOutlined />}
+              onClick={() => handleViewDetail(record)}
+            />
+          </Tooltip>
+          {record.status === 'PENDING' && access.canUpdatePointOrder && (
+            <Tooltip title={intl.formatMessage({ id: 'button.edit' })}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingOrder(record);
+                  setFormVisible(true);
+                }}
+              />
+            </Tooltip>
           )}
           {record.status === 'PENDING' && access.canConfirmPointOrder && (
             <Popconfirm
@@ -548,9 +548,9 @@ const PointOrdersPage: React.FC = () => {
                 }
               }}
             >
-              <Button type="link" size="small">
-                {intl.formatMessage({ id: 'button.confirm' })}
-              </Button>
+              <Tooltip title={intl.formatMessage({ id: 'button.confirm' })}>
+                <Button type="link" size="small" icon={<CheckCircleOutlined />} />
+              </Tooltip>
             </Popconfirm>
           )}
           {['PENDING', 'CANCELLED'].includes(record.status) && access.canDeletePointOrder && (
@@ -558,9 +558,9 @@ const PointOrdersPage: React.FC = () => {
               title={intl.formatMessage({ id: 'pointOrders.delete.title' })}
               onConfirm={() => handleDelete(record.id)}
             >
-              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                {intl.formatMessage({ id: 'button.delete' })}
-              </Button>
+              <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+              </Tooltip>
             </Popconfirm>
           )}
         </Space>

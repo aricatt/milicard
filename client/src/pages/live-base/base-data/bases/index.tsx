@@ -101,56 +101,56 @@ const BaseList: React.FC = () => {
   const addFormFields = (
     <>
       <ProFormText
-        rules={[{ required: true, message: '基地名称为必填项' }]}
-        label="基地名称"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.nameRequired' }) }]}
+        label={intl.formatMessage({ id: 'bases.form.name' })}
         name="name"
-        placeholder="请输入基地名称，如：杭州基地"
-        extra="基地编号将自动生成（格式：BASE-XXXXXXXXXXX）"
+        placeholder={intl.formatMessage({ id: 'bases.form.namePlaceholder' })}
+        extra={intl.formatMessage({ id: 'bases.form.nameHint' })}
       />
       <ProFormSelect
-        label="基地类型"
+        label={intl.formatMessage({ id: 'bases.form.type' })}
         name="type"
-        placeholder="请选择基地类型"
+        placeholder={intl.formatMessage({ id: 'bases.form.typePlaceholder' })}
         options={BASE_TYPE_OPTIONS}
-        rules={[{ required: true, message: '请选择基地类型' }]}
-        extra="直播基地用于直播电商管理，线下区域用于线下市场管理"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.typeRequired' }) }]}
+        extra={intl.formatMessage({ id: 'bases.form.typeHint' })}
       />
       <ProFormTextArea
-        label="描述"
+        label={intl.formatMessage({ id: 'bases.form.description' })}
         name="description"
-        placeholder="请输入基地描述"
+        placeholder={intl.formatMessage({ id: 'bases.form.descriptionPlaceholder' })}
         fieldProps={{ rows: 2 }}
       />
       <ProFormText
-        label="地址"
+        label={intl.formatMessage({ id: 'bases.form.address' })}
         name="address"
-        placeholder="请输入基地地址"
+        placeholder={intl.formatMessage({ id: 'bases.form.addressPlaceholder' })}
       />
       <ProFormText
-        label="联系人"
+        label={intl.formatMessage({ id: 'bases.form.contactPerson' })}
         name="contactPerson"
-        placeholder="请输入联系人姓名"
+        placeholder={intl.formatMessage({ id: 'bases.form.contactPersonPlaceholder' })}
       />
       <ProFormText
-        label="联系电话"
+        label={intl.formatMessage({ id: 'bases.form.contactPhone' })}
         name="contactPhone"
-        placeholder="请输入联系电话"
+        placeholder={intl.formatMessage({ id: 'bases.form.contactPhonePlaceholder' })}
       />
       <ProFormSelect
-        label="货币"
+        label={intl.formatMessage({ id: 'bases.form.currency' })}
         name="currency"
-        placeholder="请选择货币"
+        placeholder={intl.formatMessage({ id: 'bases.form.currencyPlaceholder' })}
         options={CURRENCY_OPTIONS}
-        rules={[{ required: true, message: '请选择货币' }]}
-        extra="选择该基地使用的货币单位"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.currencyRequired' }) }]}
+        extra={intl.formatMessage({ id: 'bases.form.currencyHint' })}
       />
       <ProFormSelect
-        label="语言"
+        label={intl.formatMessage({ id: 'bases.form.language' })}
         name="language"
-        placeholder="请选择语言"
+        placeholder={intl.formatMessage({ id: 'bases.form.languagePlaceholder' })}
         options={LANGUAGE_OPTIONS}
-        rules={[{ required: true, message: '请选择语言' }]}
-        extra="选择该基地的默认显示语言"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.languageRequired' }) }]}
+        extra={intl.formatMessage({ id: 'bases.form.languageHint' })}
       />
     </>
   );
@@ -158,59 +158,59 @@ const BaseList: React.FC = () => {
   const updateFormFields = (
     <>
       <ProFormText
-        label="基地编号"
+        label={intl.formatMessage({ id: 'bases.form.code' })}
         name="code"
         disabled
-        extra="编号创建后不可修改"
+        extra={intl.formatMessage({ id: 'bases.form.codeHint' })}
       />
       <ProFormText
-        rules={[{ required: true, message: '基地名称为必填项' }]}
-        label="基地名称"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.nameRequired' }) }]}
+        label={intl.formatMessage({ id: 'bases.form.name' })}
         name="name"
-        placeholder="请输入基地名称"
+        placeholder={intl.formatMessage({ id: 'bases.form.namePlaceholder' })}
       />
       <ProFormSelect
-        label="基地类型"
+        label={intl.formatMessage({ id: 'bases.form.type' })}
         name="type"
-        placeholder="请选择基地类型"
+        placeholder={intl.formatMessage({ id: 'bases.form.typePlaceholder' })}
         options={BASE_TYPE_OPTIONS}
-        rules={[{ required: true, message: '请选择基地类型' }]}
-        extra="基地类型创建后不建议修改"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.typeRequired' }) }]}
+        extra={intl.formatMessage({ id: 'bases.form.typeEditHint' })}
       />
       <ProFormTextArea
-        label="描述"
+        label={intl.formatMessage({ id: 'bases.form.description' })}
         name="description"
-        placeholder="请输入基地描述"
+        placeholder={intl.formatMessage({ id: 'bases.form.descriptionPlaceholder' })}
         fieldProps={{ rows: 2 }}
       />
       <ProFormText
-        label="地址"
+        label={intl.formatMessage({ id: 'bases.form.address' })}
         name="address"
-        placeholder="请输入基地地址"
+        placeholder={intl.formatMessage({ id: 'bases.form.addressPlaceholder' })}
       />
       <ProFormText
-        label="联系人"
+        label={intl.formatMessage({ id: 'bases.form.contactPerson' })}
         name="contactPerson"
-        placeholder="请输入联系人姓名"
+        placeholder={intl.formatMessage({ id: 'bases.form.contactPersonPlaceholder' })}
       />
       <ProFormText
-        label="联系电话"
+        label={intl.formatMessage({ id: 'bases.form.contactPhone' })}
         name="contactPhone"
-        placeholder="请输入联系电话"
+        placeholder={intl.formatMessage({ id: 'bases.form.contactPhonePlaceholder' })}
       />
       <ProFormSelect
-        label="货币"
+        label={intl.formatMessage({ id: 'bases.form.currency' })}
         name="currency"
-        placeholder="请选择货币"
+        placeholder={intl.formatMessage({ id: 'bases.form.currencyPlaceholder' })}
         options={CURRENCY_OPTIONS}
-        rules={[{ required: true, message: '请选择货币' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.currencyRequired' }) }]}
       />
       <ProFormSelect
-        label="语言"
+        label={intl.formatMessage({ id: 'bases.form.language' })}
         name="language"
-        placeholder="请选择语言"
+        placeholder={intl.formatMessage({ id: 'bases.form.languagePlaceholder' })}
         options={LANGUAGE_OPTIONS}
-        rules={[{ required: true, message: '请选择语言' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'bases.form.languageRequired' }) }]}
       />
     </>
   );

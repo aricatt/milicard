@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { PageContainer, ProTable, ModalForm, ProFormSelect, ProFormDateRangePicker, ProFormTextArea } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { Button, message, Popconfirm, Space, Tag, Typography, Card, Table, Descriptions, Spin, Alert, Divider } from 'antd';
+import { Button, message, Popconfirm, Space, Tag, Typography, Card, Table, Descriptions, Spin, Alert, Divider, Tooltip } from 'antd';
 import { PlusOutlined, DeleteOutlined, CalculatorOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
@@ -304,16 +304,16 @@ const LocationProfitPage: React.FC = () => {
       width: 80,
       search: false,
       render: (_, record) => (
-        <Space>
+        <Space size={0}>
           <Popconfirm
             title={intl.formatMessage({ id: 'message.confirmDelete' })}
             onConfirm={() => handleDelete(record.id)}
             okText={intl.formatMessage({ id: 'button.confirm' })}
             cancelText={intl.formatMessage({ id: 'button.cancel' })}
           >
-            <Button type="link" danger size="small" icon={<DeleteOutlined />}>
-              {intl.formatMessage({ id: 'button.delete' })}
-            </Button>
+            <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+              <Button type="link" danger size="small" icon={<DeleteOutlined />} />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),
@@ -372,7 +372,7 @@ const LocationProfitPage: React.FC = () => {
         onValuesChange={handleFormValuesChange}
         width={700}
         modalProps={{
-          destroyOnClose: true,
+          destroyOnHidden: true,
         }}
         submitter={{
           searchConfig: {

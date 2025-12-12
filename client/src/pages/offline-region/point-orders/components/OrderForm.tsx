@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Select, DatePicker, Input, InputNumber, Button, Table, Space, Card, Descriptions, App, Empty } from 'antd';
 import { PlusOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
 
@@ -52,6 +52,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
   const [form] = Form.useForm();
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const [loading, setLoading] = useState(false);
   const [points, setPoints] = useState<PointOption[]>([]);
   const [pointsLoading, setPointsLoading] = useState(false);
@@ -75,7 +76,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
         setPoints(response.data || []);
       }
     } catch (error) {
-      console.error('获取点位列表失败', error);
+      console.error(intl.formatMessage({ id: 'pointOrders.message.fetchPointsFailed' }), error);
     } finally {
       setPointsLoading(false);
     }
@@ -93,7 +94,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
         setGoods(response.data || []);
       }
     } catch (error) {
-      console.error('获取商品列表失败', error);
+      console.error(intl.formatMessage({ id: 'pointOrders.message.fetchGoodsFailed' }), error);
     } finally {
       setGoodsLoading(false);
     }
@@ -171,13 +172,13 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
   // 添加商品
   const handleAddGoods = () => {
     if (!selectedGoodsId) {
-      message.warning('请先选择商品');
+      message.warning(intl.formatMessage({ id: 'pointOrders.message.selectGoodsFirst' }));
       return;
     }
 
     // 检查是否已添加
     if (orderItems.some((item) => item.goodsId === selectedGoodsId)) {
-      message.warning('该商品已添加');
+      message.warning(intl.formatMessage({ id: 'pointOrders.message.goodsAlreadyAdded' }));
       return;
     }
 
@@ -234,14 +235,14 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
       const values = await form.validateFields();
 
       if (orderItems.length === 0) {
-        message.error('请至少添加一个商品');
+        message.error(intl.formatMessage({ id: 'pointOrders.message.addAtLeastOneGoods' }));
         return;
       }
 
       // 验证商品数量
       for (const item of orderItems) {
         if (item.boxQuantity === 0 && item.packQuantity === 0) {
-          message.error(`商品 ${item.goods?.name} 的数量不能为0`);
+          message.error(`${intl.formatMessage({ id: 'pointOrders.message.quantityCannotBeZero' })} ${item.goods?.name}`);
           return;
         }
       }
@@ -267,13 +268,13 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
           method: 'PUT',
           data,
         });
-        message.success('订单更新成功');
+        message.success(intl.formatMessage({ id: 'pointOrders.message.updateSuccess' }));
       } else {
         await request(`/api/v1/bases/${currentBase?.id}/point-orders`, {
           method: 'POST',
           data,
         });
-        message.success('订单创建成功');
+        message.success(intl.formatMessage({ id: 'pointOrders.message.createSuccess' }));
       }
 
       onSuccess();
@@ -282,7 +283,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
         // 表单验证错误
         return;
       }
-      message.error(error?.data?.message || '操作失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.operationFailed' }));
     } finally {
       setLoading(false);
     }
@@ -291,12 +292,12 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
   // 商品明细列
   const itemColumns = [
     {
-      title: '商品名称',
+      title: intl.formatMessage({ id: 'pointOrders.form.goodsName' }),
       dataIndex: ['goods', 'name'],
       ellipsis: true,
     },
     {
-      title: '箱数',
+      title: intl.formatMessage({ id: 'pointOrders.form.boxQuantity' }),
       dataIndex: 'boxQuantity',
       width: 100,
       render: (_: any, record: OrderItemData) => (
@@ -310,7 +311,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
       ),
     },
     {
-      title: '盒数',
+      title: intl.formatMessage({ id: 'pointOrders.form.packQuantity' }),
       dataIndex: 'packQuantity',
       width: 100,
       render: (_: any, record: OrderItemData) => (
@@ -324,7 +325,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
       ),
     },
     {
-      title: '单价/盒',
+      title: intl.formatMessage({ id: 'pointOrders.form.unitPricePack' }),
       dataIndex: 'unitPrice',
       width: 120,
       render: (_: any, record: OrderItemData) => (
@@ -340,7 +341,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
       ),
     },
     {
-      title: '小计',
+      title: intl.formatMessage({ id: 'pointOrders.form.subtotal' }),
       dataIndex: 'totalPrice',
       width: 100,
       align: 'right' as const,
@@ -349,7 +350,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
       ),
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'pointOrders.form.operation' }),
       width: 60,
       render: (_: any, record: OrderItemData) => (
         <Button
@@ -365,30 +366,30 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
 
   return (
     <Modal
-      title={isEdit ? '编辑订单' : '新建订单'}
+      title={isEdit ? intl.formatMessage({ id: 'pointOrders.form.title.edit' }) : intl.formatMessage({ id: 'pointOrders.form.title.add' })}
       open={visible}
       onCancel={onClose}
       width={900}
       destroyOnHidden
       footer={[
         <Button key="cancel" onClick={onClose}>
-          取消
+          {intl.formatMessage({ id: 'pointOrders.form.cancel' })}
         </Button>,
         <Button key="submit" type="primary" loading={loading} onClick={handleSubmit}>
-          {isEdit ? '保存' : '提交订单'}
+          {isEdit ? intl.formatMessage({ id: 'pointOrders.form.save' }) : intl.formatMessage({ id: 'pointOrders.form.submit' })}
         </Button>,
       ]}
     >
       <Form form={form} layout="vertical">
-        <Card title="基本信息" size="small" style={{ marginBottom: 16 }}>
+        <Card title={intl.formatMessage({ id: 'pointOrders.form.basicInfo' })} size="small" style={{ marginBottom: 16 }}>
           <Form.Item
             name="pointId"
-            label="选择点位"
-            rules={[{ required: true, message: '请选择点位' }]}
+            label={intl.formatMessage({ id: 'pointOrders.form.selectPoint' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pointOrders.form.selectPointRequired' }) }]}
           >
             <Select
               showSearch
-              placeholder="搜索并选择点位"
+              placeholder={intl.formatMessage({ id: 'pointOrders.form.selectPointPlaceholder' })}
               loading={pointsLoading}
               filterOption={false}
               onSearch={fetchPoints}
@@ -410,12 +411,12 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
 
           {selectedPoint && (
             <Descriptions size="small" column={2} style={{ marginBottom: 16 }}>
-              <Descriptions.Item label="点位编号">{selectedPoint.code}</Descriptions.Item>
-              <Descriptions.Item label="老板">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.form.pointCode' })}>{selectedPoint.code}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.form.pointOwner' })}>
                 {selectedPoint.owner?.name || '-'}
                 {selectedPoint.owner?.phone && ` (${selectedPoint.owner.phone})`}
               </Descriptions.Item>
-              <Descriptions.Item label="地址" span={2}>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.form.pointAddress' })} span={2}>
                 {selectedPoint.address || '-'}
               </Descriptions.Item>
             </Descriptions>
@@ -423,33 +424,33 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
 
           <Form.Item
             name="orderDate"
-            label="订单日期"
-            rules={[{ required: true, message: '请选择订单日期' }]}
+            label={intl.formatMessage({ id: 'pointOrders.form.orderDate' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pointOrders.form.orderDateRequired' }) }]}
           >
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item name="shippingAddress" label="收货地址">
-            <Input placeholder="收货地址" />
+          <Form.Item name="shippingAddress" label={intl.formatMessage({ id: 'pointOrders.form.shippingAddress' })}>
+            <Input placeholder={intl.formatMessage({ id: 'pointOrders.form.shippingAddressPlaceholder' })} />
           </Form.Item>
 
-          <Form.Item name="shippingPhone" label="收货电话">
-            <Input placeholder="收货电话" />
+          <Form.Item name="shippingPhone" label={intl.formatMessage({ id: 'pointOrders.form.shippingPhone' })}>
+            <Input placeholder={intl.formatMessage({ id: 'pointOrders.form.shippingPhonePlaceholder' })} />
           </Form.Item>
 
-          <Form.Item name="customerNotes" label="备注">
-            <Input.TextArea rows={2} placeholder="订单备注" />
+          <Form.Item name="customerNotes" label={intl.formatMessage({ id: 'pointOrders.form.customerNotes' })}>
+            <Input.TextArea rows={2} placeholder={intl.formatMessage({ id: 'pointOrders.form.customerNotesPlaceholder' })} />
           </Form.Item>
         </Card>
 
         <Card
-          title="商品明细"
+          title={intl.formatMessage({ id: 'pointOrders.form.goodsDetails' })}
           size="small"
           extra={
             <Space>
               <Select
                 showSearch
-                placeholder={selectedPoint ? "搜索商品" : "请先选择点位"}
+                placeholder={selectedPoint ? intl.formatMessage({ id: 'pointOrders.form.searchGoods' }) : intl.formatMessage({ id: 'pointOrders.form.selectPointFirst' })}
                 disabled={!selectedPoint}
                 style={{ width: 280 }}
                 loading={goodsLoading}
@@ -458,7 +459,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
                 value={selectedGoodsId}
                 onChange={setSelectedGoodsId}
                 optionLabelProp="label"
-                notFoundContent={goods.length === 0 ? "该点位暂无可购商品" : "未找到商品"}
+                notFoundContent={goods.length === 0 ? intl.formatMessage({ id: 'pointOrders.form.noGoodsAvailable' }) : intl.formatMessage({ id: 'pointOrders.form.goodsNotFound' })}
               >
                 {goods.map((g) => {
                   // 计算盒单价显示
@@ -479,7 +480,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
                 })}
               </Select>
               <Button type="primary" icon={<PlusOutlined />} onClick={handleAddGoods}>
-                添加
+                {intl.formatMessage({ id: 'pointOrders.form.addGoods' })}
               </Button>
             </Space>
           }
@@ -494,7 +495,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
               summary={() => (
                 <Table.Summary.Row>
                   <Table.Summary.Cell index={0} colSpan={4} align="right">
-                    <strong>订单总额</strong>
+                    <strong>{intl.formatMessage({ id: 'pointOrders.form.orderTotal' })}</strong>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell index={1} align="right">
                     <strong style={{ color: '#cf1322', fontSize: 16 }}>
@@ -506,7 +507,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
               )}
             />
           ) : (
-            <Empty description="请添加商品" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            <Empty description={intl.formatMessage({ id: 'pointOrders.form.addGoodsHint' })} image={Empty.PRESENTED_IMAGE_SIMPLE} />
           )}
         </Card>
       </Form>

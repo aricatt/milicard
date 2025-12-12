@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form, DatePicker, Select, InputNumber, Row, Col, Tag } from 'antd';
+import { useIntl } from '@umijs/max';
 import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
 import type { GoodsOption, SupplierOption, ProcurementFormValues } from './types';
@@ -27,6 +28,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
   supplierLoading,
   onFinish,
 }) => {
+  const intl = useIntl();
   /**
    * 商品选择变化时，自动填充零售价和拆分关系
    */
@@ -107,22 +109,22 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
     >
       {/* 采购日期 */}
       <Form.Item
-        label="采购日期"
+        label={intl.formatMessage({ id: 'procurement.form.purchaseDate' })}
         name="purchaseDate"
-        rules={[{ required: true, message: '请选择采购日期' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.purchaseDateRequired' }) }]}
       >
-        <DatePicker style={{ width: '100%' }} placeholder="选择日期" />
+        <DatePicker style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'procurement.form.purchaseDatePlaceholder' })} />
       </Form.Item>
 
       {/* 商品选择 */}
       <Form.Item
-        label="商品"
+        label={intl.formatMessage({ id: 'procurement.form.goods' })}
         name="goodsCode"
-        rules={[{ required: true, message: '请选择商品' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.goodsRequired' }) }]}
       >
         <Select
           showSearch
-          placeholder="请选择商品"
+          placeholder={intl.formatMessage({ id: 'procurement.form.goodsPlaceholder' })}
           loading={goodsLoading}
           optionFilterProp="children"
           onChange={handleGoodsChange}
@@ -150,13 +152,13 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
 
       {/* 供应商选择 */}
       <Form.Item
-        label="供应商"
+        label={intl.formatMessage({ id: 'procurement.form.supplier' })}
         name="supplierCode"
-        rules={[{ required: true, message: '请选择供应商' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.supplierRequired' }) }]}
       >
         <Select
           showSearch
-          placeholder="请选择供应商"
+          placeholder={intl.formatMessage({ id: 'procurement.form.supplierPlaceholder' })}
           loading={supplierLoading}
           optionFilterProp="children"
           onChange={handleSupplierChange}
@@ -181,16 +183,16 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
       <Row gutter={16}>
         <Col span={8}>
           <Form.Item
-            label="拿货单价/箱"
+            label={intl.formatMessage({ id: 'procurement.form.unitPriceBox' })}
             name="unitPriceBox"
             rules={[
-              { required: true, message: '请输入拿货单价/箱' },
-              { type: 'number', min: 0.01, message: '单价必须大于0' }
+              { required: true, message: intl.formatMessage({ id: 'procurement.form.unitPriceBoxRequired' }) },
+              { type: 'number', min: 0.01, message: intl.formatMessage({ id: 'procurement.form.unitPriceBoxMin' }) }
             ]}
           >
             <InputNumber
               style={{ width: '100%' }}
-              placeholder="单价/箱（必填）"
+              placeholder={intl.formatMessage({ id: 'procurement.form.unitPriceBoxPlaceholder' })}
               precision={2}
               min={0.01}
               onChange={handleUnitPriceBoxChange}
@@ -199,13 +201,13 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
         <Col span={8}>
           <Form.Item
-            label="采购箱"
+            label={intl.formatMessage({ id: 'procurement.form.purchaseBoxQty' })}
             name="purchaseBoxQty"
-            rules={[{ required: true, message: '请输入采购箱数' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.purchaseBoxQtyRequired' }) }]}
           >
             <InputNumber
               style={{ width: '100%' }}
-              placeholder="箱数"
+              placeholder={intl.formatMessage({ id: 'procurement.form.purchaseBoxQtyPlaceholder' })}
               min={0}
               precision={0}
             />
@@ -213,7 +215,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
         <Col span={8}>
           <Form.Item
-            label="应付金额/箱"
+            label={intl.formatMessage({ id: 'procurement.form.amountBox' })}
             shouldUpdate={(prev, curr) =>
               prev.unitPriceBox !== curr.unitPriceBox ||
               prev.purchaseBoxQty !== curr.purchaseBoxQty ||
@@ -270,7 +272,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
       <Row gutter={16}>
         <Col span={8}>
           <Form.Item
-            label="拿货单价/盒（自动计算）"
+            label={intl.formatMessage({ id: 'procurement.form.unitPricePack' })}
             shouldUpdate={(prev, curr) => prev.unitPricePack !== curr.unitPricePack}
           >
             {({ getFieldValue }) => {
@@ -285,13 +287,13 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
         <Col span={8}>
           <Form.Item
-            label="采购盒"
+            label={intl.formatMessage({ id: 'procurement.form.purchasePackQty' })}
             name="purchasePackQty"
-            rules={[{ required: true, message: '请输入采购盒数' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.purchasePackQtyRequired' }) }]}
           >
             <InputNumber
               style={{ width: '100%' }}
-              placeholder="盒数"
+              placeholder={intl.formatMessage({ id: 'procurement.form.purchasePackQtyPlaceholder' })}
               min={0}
               precision={0}
             />
@@ -299,7 +301,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
         <Col span={8}>
           <Form.Item
-            label="应付金额/盒"
+            label={intl.formatMessage({ id: 'procurement.form.amountPack' })}
             shouldUpdate={(prev, curr) =>
               prev.unitPricePack !== curr.unitPricePack ||
               prev.purchasePackQty !== curr.purchasePackQty
@@ -328,7 +330,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
       <Row gutter={16}>
         <Col span={8}>
           <Form.Item
-            label="拿货单价/包（自动计算）"
+            label={intl.formatMessage({ id: 'procurement.form.unitPricePiece' })}
             shouldUpdate={(prev, curr) => prev.unitPricePiece !== curr.unitPricePiece}
           >
             {({ getFieldValue }) => {
@@ -343,13 +345,13 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
         <Col span={8}>
           <Form.Item
-            label="采购包"
+            label={intl.formatMessage({ id: 'procurement.form.purchasePieceQty' })}
             name="purchasePieceQty"
-            rules={[{ required: true, message: '请输入采购包数' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.purchasePieceQtyRequired' }) }]}
           >
             <InputNumber
               style={{ width: '100%' }}
-              placeholder="包数"
+              placeholder={intl.formatMessage({ id: 'procurement.form.purchasePieceQtyPlaceholder' })}
               min={0}
               precision={0}
             />
@@ -357,7 +359,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         </Col>
         <Col span={8}>
           <Form.Item
-            label="应付金额/包"
+            label={intl.formatMessage({ id: 'procurement.form.amountPiece' })}
             shouldUpdate={(prevValues, currentValues) =>
               prevValues.unitPricePiece !== currentValues.unitPricePiece ||
               prevValues.purchasePieceQty !== currentValues.purchasePieceQty
@@ -379,7 +381,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
 
       {/* 应付金额（自动计算） */}
       <Form.Item
-        label="应付金额（自动计算）"
+        label={intl.formatMessage({ id: 'procurement.form.totalAmount' })}
         shouldUpdate={(prevValues, currentValues) =>
           prevValues.unitPriceBox !== currentValues.unitPriceBox ||
           prevValues.purchaseBoxQty !== currentValues.purchaseBoxQty ||
@@ -412,14 +414,14 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
 
       {/* 实付金额（手动输入） */}
       <Form.Item
-        label="实付金额"
+        label={intl.formatMessage({ id: 'procurement.form.actualAmount' })}
         name="actualAmount"
-        rules={[{ required: true, message: '请输入实付金额' }]}
-        extra="如果本次未付清，请输入实际支付的金额"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.actualAmountRequired' }) }]}
+        extra={intl.formatMessage({ id: 'procurement.form.actualAmountHint' })}
       >
         <InputNumber
           style={{ width: '100%' }}
-          placeholder="请输入实付金额"
+          placeholder={intl.formatMessage({ id: 'procurement.form.actualAmountPlaceholder' })}
           precision={2}
           min={0}
           size="large"

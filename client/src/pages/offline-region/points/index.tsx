@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App, Modal, Form, Select, InputNumber, Switch } from 'antd';
+import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App, Modal, Form, Select, InputNumber, Switch, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, SettingOutlined } from '@ant-design/icons';
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
@@ -337,27 +337,27 @@ const PointsPage: React.FC = () => {
       valueType: 'option',
       width: 150,
       render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetail(record)}
-          >
-            {intl.formatMessage({ id: 'button.detail' })}
-          </Button>
-          {access.canUpdatePoint && (
+        <Space size={0}>
+          <Tooltip title={intl.formatMessage({ id: 'button.detail' })}>
             <Button
               type="link"
               size="small"
-              icon={<EditOutlined />}
-              onClick={() => {
-                setEditingPoint(record);
-                setFormVisible(true);
-              }}
-            >
-              {intl.formatMessage({ id: 'button.edit' })}
-            </Button>
+              icon={<EyeOutlined />}
+              onClick={() => handleViewDetail(record)}
+            />
+          </Tooltip>
+          {access.canUpdatePoint && (
+            <Tooltip title={intl.formatMessage({ id: 'button.edit' })}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingPoint(record);
+                  setFormVisible(true);
+                }}
+              />
+            </Tooltip>
           )}
           {access.canDeletePoint && (
             <Popconfirm
@@ -366,9 +366,9 @@ const PointsPage: React.FC = () => {
               okText={intl.formatMessage({ id: 'button.confirm' })}
               cancelText={intl.formatMessage({ id: 'button.cancel' })}
             >
-              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                {intl.formatMessage({ id: 'button.delete' })}
-              </Button>
+              <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+              </Tooltip>
             </Popconfirm>
           )}
         </Space>
