@@ -7,12 +7,7 @@ const { Title, Paragraph } = Typography;
 
 const ReceivablesPage: React.FC = () => {
   return (
-    <PageContainer
-      header={{
-        title: '应收管理',
-        subTitle: '管理直播基地的应收账款',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       <Card>
         <Empty
           image={<MoneyCollectOutlined style={{ fontSize: 64, color: '#1890ff' }} />}

@@ -440,7 +440,7 @@ const AnchorProfitPage: React.FC = () => {
   };
 
   // 列定义
-  const columns = getColumns(handleEdit, handleDelete);
+  const columns = getColumns(handleEdit, handleDelete, intl);
 
   // 无基地时显示提示
   if (!currentBase) {
@@ -696,11 +696,7 @@ const AnchorProfitPage: React.FC = () => {
   );
 
   return (
-    <PageContainer
-      header={{
-        title: '主播利润',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       {/* 数据表格 */}
       <ProTable<AnchorProfitRecord>
         columns={columns}

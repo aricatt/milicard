@@ -364,7 +364,7 @@ const ProcurementManagement: React.FC = () => {
   );
 
   // 获取列定义
-  const columns = getColumns(handleEdit, handleDelete, handleLogistics);
+  const columns = getColumns(handleEdit, handleDelete, handleLogistics, intl);
 
   if (!currentBase) {
     return (
@@ -377,7 +377,7 @@ const ProcurementManagement: React.FC = () => {
   }
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       <ProTable<PurchaseOrder>
         columns={columns}
         actionRef={actionRef}

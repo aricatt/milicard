@@ -2,6 +2,7 @@ import type { ProColumns } from '@ant-design/pro-components';
 import { ProFormText, ProFormTextArea, ProFormSelect } from '@ant-design/pro-components';
 import { Tag } from 'antd';
 import React from 'react';
+import { useIntl } from '@umijs/max';
 import ListPageTemplate from '@/components/PageTemplates/ListPageTemplate';
 import type { BaseItem } from './data.d';
 import { addBase, queryBaseList, updateBase } from './service';
@@ -11,6 +12,7 @@ import { useBase, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contex
 
 const BaseList: React.FC = () => {
   const { refreshBaseList } = useBase();
+  const intl = useIntl();
   const columns: ProColumns<BaseItem>[] = [
     {
       title: 'ID',
@@ -19,20 +21,20 @@ const BaseList: React.FC = () => {
       search: false,
     },
     {
-      title: '编号',
+      title: intl.formatMessage({ id: 'table.column.code' }),
       dataIndex: 'code',
       width: 150,
       copyable: true,
       ellipsis: true,
     },
     {
-      title: '名称',
+      title: intl.formatMessage({ id: 'table.column.name' }),
       dataIndex: 'name',
       width: 150,
       ellipsis: true,
     },
     {
-      title: '类型',
+      title: intl.formatMessage({ id: 'bases.column.type' }),
       dataIndex: 'type',
       width: 100,
       search: false,
@@ -43,7 +45,7 @@ const BaseList: React.FC = () => {
       ),
     },
     {
-      title: '货币',
+      title: intl.formatMessage({ id: 'bases.column.currency' }),
       dataIndex: 'currency',
       width: 100,
       search: false,
@@ -54,7 +56,7 @@ const BaseList: React.FC = () => {
       ),
     },
     {
-      title: '语言',
+      title: intl.formatMessage({ id: 'bases.column.language' }),
       dataIndex: 'language',
       width: 100,
       search: false,
@@ -63,32 +65,32 @@ const BaseList: React.FC = () => {
       ),
     },
     {
-      title: '联系人',
+      title: intl.formatMessage({ id: 'locations.column.contact' }),
       dataIndex: 'contactPerson',
       width: 100,
       search: false,
       ellipsis: true,
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'locations.column.phone' }),
       dataIndex: 'contactPhone',
       width: 120,
       search: false,
       ellipsis: true,
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       width: 80,
       search: false,
       render: (_, record) => (
         <Tag color={record.isActive ? 'success' : 'default'}>
-          {record.isActive ? '启用' : '禁用'}
+          {record.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
         </Tag>
       ),
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       width: 160,
       valueType: 'dateTime',
@@ -215,9 +217,7 @@ const BaseList: React.FC = () => {
 
   return (
     <ListPageTemplate<BaseItem>
-      title="基地管理"
-      subTitle="管理系统中的所有基地信息"
-      headerTitle="基地列表"
+      headerTitle={intl.formatMessage({ id: 'list.title.bases' })}
       columns={columns}
       request={async (params) => {
         const response = await queryBaseList({

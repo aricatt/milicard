@@ -4,9 +4,11 @@ import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 import type { ConsumptionRecord } from './types';
+import type { IntlShape } from 'react-intl';
 
 interface ColumnsConfig {
   onDelete: (record: ConsumptionRecord) => void;
+  intl?: IntlShape;
 }
 
 /**
@@ -45,9 +47,9 @@ const calcInventoryValue = (record: ConsumptionRecord) => {
   );
 };
 
-export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => [
+export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => [
   {
-    title: '日期',
+    title: intl?.formatMessage({ id: 'consumption.column.date' }) || '日期',
     dataIndex: 'consumptionDate',
     key: 'consumptionDate',
     width: 100,
@@ -55,7 +57,7 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     render: (_, record) => dayjs(record.consumptionDate).format('YYYY-MM-DD'),
   },
   {
-    title: '商品',
+    title: intl?.formatMessage({ id: 'consumption.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 180,
@@ -67,7 +69,7 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     ),
   },
   {
-    title: '直播间',
+    title: intl?.formatMessage({ id: 'consumption.column.location' }) || '直播间',
     dataIndex: 'locationName',
     key: 'locationName',
     width: 100,
@@ -79,7 +81,7 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     ),
   },
   {
-    title: '主播',
+    title: intl?.formatMessage({ id: 'consumption.column.anchor' }) || '主播',
     dataIndex: 'handlerName',
     key: 'handlerName',
     width: 80,
@@ -189,20 +191,20 @@ export const getColumns = ({ onDelete }: ColumnsConfig): ProColumns<ConsumptionR
     },
   },
   {
-    title: '操作',
+    title: intl?.formatMessage({ id: 'table.column.operation' }) || '操作',
     key: 'action',
     width: 70,
     fixed: 'right',
     search: false,
     render: (_, record) => (
       <Popconfirm
-        title="确认删除"
-        description="确定要删除这条消耗记录吗？"
+        title={intl?.formatMessage({ id: 'message.confirmDelete' }) || '确定删除这条消耗记录吗？'}
+        description={intl?.formatMessage({ id: 'message.deleteConfirmContent' }) || ''}
         onConfirm={() => onDelete(record)}
-        okText="确定"
-        cancelText="取消"
+        okText={intl?.formatMessage({ id: 'button.confirm' }) || '确定'}
+        cancelText={intl?.formatMessage({ id: 'button.cancel' }) || '取消'}
       >
-        <Tooltip title="删除">
+        <Tooltip title={intl?.formatMessage({ id: 'button.delete' }) || '删除'}>
           <Button type="link" size="small" danger icon={<DeleteOutlined />} />
         </Tooltip>
       </Popconfirm>

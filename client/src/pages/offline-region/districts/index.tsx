@@ -192,8 +192,6 @@ const DistrictsPage: React.FC = () => {
 
   return (
     <ListPageTemplate<BaseItem>
-      title="大区管理"
-      subTitle="管理线下市场的大区划分"
       headerTitle="大区列表"
       columns={columns}
       request={async (params) => {

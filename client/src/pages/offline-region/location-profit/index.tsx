@@ -321,7 +321,7 @@ const LocationProfitPage: React.FC = () => {
 
   if (!currentBase) {
     return (
-      <PageContainer header={{ title: '点位利润' }}>
+      <PageContainer header={{ title: false }}>
         <div style={{ textAlign: 'center', padding: '50px 0' }}>
           <Text type="secondary">请先选择一个基地</Text>
         </div>
@@ -330,12 +330,7 @@ const LocationProfitPage: React.FC = () => {
   }
 
   return (
-    <PageContainer
-      header={{
-        title: '点位利润',
-        subTitle: '统计各点位的利润情况',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       <ProTable<LocationProfitItem>
         actionRef={actionRef}
         columns={columns}

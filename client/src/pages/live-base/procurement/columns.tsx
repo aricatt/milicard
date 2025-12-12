@@ -3,6 +3,7 @@ import { Space, Button, Popconfirm, Tag, Tooltip } from 'antd';
 import { EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
+import type { IntlShape } from 'react-intl';
 
 /**
  * 向下取整到2位小数
@@ -17,10 +18,11 @@ const floorTo2 = (value: number): string => {
 export const getColumns = (
   handleEdit: (record: PurchaseOrder) => void,
   handleDelete: (record: PurchaseOrder) => void,
-  handleLogistics?: (record: PurchaseOrder) => void
+  handleLogistics?: (record: PurchaseOrder) => void,
+  intl?: IntlShape
 ): ProColumns<PurchaseOrder>[] => [
   {
-    title: 'ID',
+    title: intl?.formatMessage({ id: 'table.column.id' }) || 'ID',
     dataIndex: 'id',
     key: 'id',
     width: 80,
@@ -28,7 +30,7 @@ export const getColumns = (
     hideInTable: true,
   },
   {
-    title: '采购编号',
+    title: intl?.formatMessage({ id: 'procurement.column.orderNo' }) || '采购编号',
     dataIndex: 'orderNo',
     key: 'orderNo',
     width: 180,
@@ -37,7 +39,7 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
-    title: '采购日期',
+    title: intl?.formatMessage({ id: 'procurement.column.date' }) || '采购日期',
     dataIndex: 'purchaseDate',
     key: 'purchaseDate',
     width: 120,
@@ -335,7 +337,7 @@ export const getColumns = (
     },
   },
   {
-    title: '操作',
+    title: intl?.formatMessage({ id: 'table.column.operation' }) || '操作',
     key: 'action',
     width: 100,
     fixed: 'right',
@@ -343,7 +345,7 @@ export const getColumns = (
     render: (_, record) => (
       <Space size="small">
         {handleLogistics && (
-          <Tooltip title="物流">
+          <Tooltip title={intl?.formatMessage({ id: 'button.view' }) || '物流'}>
             <Button
               type="link"
               size="small"
@@ -352,7 +354,7 @@ export const getColumns = (
             />
           </Tooltip>
         )}
-        <Tooltip title="编辑">
+        <Tooltip title={intl?.formatMessage({ id: 'button.edit' }) || '编辑'}>
           <Button
             type="link"
             size="small"
@@ -361,12 +363,12 @@ export const getColumns = (
           />
         </Tooltip>
         <Popconfirm
-          title="确定删除此采购订单吗？"
+          title={intl?.formatMessage({ id: 'message.confirmDelete' }) || '确定删除此采购订单吗？'}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl?.formatMessage({ id: 'button.confirm' }) || '确定'}
+          cancelText={intl?.formatMessage({ id: 'button.cancel' }) || '取消'}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl?.formatMessage({ id: 'button.delete' }) || '删除'}>
             <Button
               type="link"
               size="small"

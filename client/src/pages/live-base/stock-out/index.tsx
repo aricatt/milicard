@@ -613,11 +613,7 @@ const StockOutPage: React.FC = () => {
   );
 
   return (
-    <PageContainer
-      header={{
-        title: '出库管理',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       <ProTable<StockOut>
         columns={columns}
         actionRef={actionRef}

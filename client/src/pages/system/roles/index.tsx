@@ -677,7 +677,7 @@ const RolesPage: React.FC = () => {
   ];
 
   return (
-    <PageContainer header={{ title: '角色管理' }}>
+    <PageContainer header={{ title: false }}>
       <Card
         extra={
           <Button

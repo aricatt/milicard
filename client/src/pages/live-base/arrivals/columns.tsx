@@ -3,6 +3,7 @@ import { Space, Button, Popconfirm, Tag, Tooltip } from 'antd';
 import { DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { ArrivalRecord } from './types';
+import type { IntlShape } from 'react-intl';
 
 /**
  * 生成采购名称：采购日期 + 商品名称
@@ -16,10 +17,11 @@ const getPurchaseName = (purchaseDate: string, goodsName: string): string => {
  * 获取ProTable列定义
  */
 export const getColumns = (
-  handleDelete: (record: ArrivalRecord) => void
+  handleDelete: (record: ArrivalRecord) => void,
+  intl?: IntlShape
 ): ProColumns<ArrivalRecord>[] => [
   {
-    title: 'ID',
+    title: intl?.formatMessage({ id: 'table.column.id' }) || 'ID',
     dataIndex: 'id',
     key: 'id',
     width: 80,
@@ -27,7 +29,7 @@ export const getColumns = (
     hideInTable: true,
   },
   {
-    title: '到货日期',
+    title: intl?.formatMessage({ id: 'arrivals.column.date' }) || '到货日期',
     dataIndex: 'arrivalDate',
     key: 'arrivalDate',
     width: 120,
@@ -36,7 +38,7 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
-    title: '采购编号',
+    title: intl?.formatMessage({ id: 'arrivals.column.orderNo' }) || '采购编号',
     dataIndex: 'purchaseOrderNo',
     key: 'purchaseOrderNo',
     width: 180,
@@ -50,7 +52,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '采购名称',
+    title: intl?.formatMessage({ id: 'procurement.column.product' }) || '采购名称',
     key: 'purchaseName',
     width: 280,
     ellipsis: true,
@@ -58,7 +60,7 @@ export const getColumns = (
     render: (_, record) => getPurchaseName(record.purchaseDate, record.goodsName),
   },
   {
-    title: '商品',
+    title: intl?.formatMessage({ id: 'procurement.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 200,
@@ -66,7 +68,7 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
-    title: '直播间',
+    title: intl?.formatMessage({ id: 'arrivals.column.location' }) || '直播间',
     dataIndex: 'locationName',
     key: 'locationName',
     width: 140,
@@ -78,7 +80,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '主播',
+    title: intl?.formatMessage({ id: 'arrivals.column.anchor' }) || '主播',
     dataIndex: 'handlerName',
     key: 'handlerName',
     width: 100,
@@ -91,7 +93,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '到货箱',
+    title: intl?.formatMessage({ id: 'arrivals.column.boxQty' }) || '到货箱',
     dataIndex: 'boxQuantity',
     key: 'boxQuantity',
     width: 80,
@@ -104,7 +106,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '到货盒',
+    title: intl?.formatMessage({ id: 'arrivals.column.packQty' }) || '到货盒',
     dataIndex: 'packQuantity',
     key: 'packQuantity',
     width: 80,
@@ -117,7 +119,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '到货包',
+    title: intl?.formatMessage({ id: 'arrivals.column.pieceQty' }) || '到货包',
     dataIndex: 'pieceQuantity',
     key: 'pieceQuantity',
     width: 80,
@@ -130,7 +132,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '创建时间',
+    title: intl?.formatMessage({ id: 'table.column.createdAt' }) || '创建时间',
     dataIndex: 'createdAt',
     key: 'createdAt',
     width: 160,
@@ -138,7 +140,7 @@ export const getColumns = (
     hideInSearch: true,
   },
   {
-    title: '操作',
+    title: intl?.formatMessage({ id: 'table.column.operation' }) || '操作',
     key: 'action',
     width: 100,
     fixed: 'right',
@@ -146,12 +148,12 @@ export const getColumns = (
     render: (_, record) => (
       <Space size="small">
         <Popconfirm
-          title="确定删除此到货记录吗？"
+          title={intl?.formatMessage({ id: 'message.confirmDelete' }) || '确定删除此到货记录吗？'}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl?.formatMessage({ id: 'button.confirm' }) || '确定'}
+          cancelText={intl?.formatMessage({ id: 'button.cancel' }) || '取消'}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl?.formatMessage({ id: 'button.delete' }) || '删除'}>
             <Button
               type="link"
               size="small"

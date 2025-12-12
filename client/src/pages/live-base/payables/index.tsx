@@ -272,12 +272,7 @@ const PayablesPage: React.FC = () => {
   ];
 
   return (
-    <PageContainer
-      header={{
-        title: '应付管理',
-        subTitle: '管理采购订单的付款情况',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       {/* 统计卡片 */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={24}>

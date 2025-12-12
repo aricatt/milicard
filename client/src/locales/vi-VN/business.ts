@@ -22,6 +22,7 @@ export default {
   'table.column.id': 'ID',
   'table.column.code': 'Mã',
   'table.column.name': 'Tên',
+  'table.column.description': 'Mô tả',
   'table.column.status': 'Trạng thái',
   'table.column.remark': 'Ghi chú',
   'table.column.notes': 'Ghi chú',
@@ -179,11 +180,15 @@ export default {
   'locations.title': 'Phòng live/Kho',
   'locations.add': 'Thêm vị trí',
   'locations.edit': 'Sửa vị trí',
-  'locations.column.name': 'Tên',
+  'locations.column.code': 'Mã vị trí',
+  'locations.column.name': 'Tên vị trí',
   'locations.column.type': 'Loại',
   'locations.column.address': 'Địa chỉ',
+  'locations.column.contact': 'Liên hệ',
+  'locations.column.phone': 'Điện thoại',
+  'locations.type.mainWarehouse': 'Kho chính',
+  'locations.type.warehouse': 'Kho phụ',
   'locations.type.liveRoom': 'Phòng live',
-  'locations.type.warehouse': 'Kho',
 
   // ==================== Nhân sự ====================
   'personnel.title': 'Streamer/Nhân viên',
@@ -192,9 +197,12 @@ export default {
   'personnel.column.name': 'Tên',
   'personnel.column.role': 'Vai trò',
   'personnel.column.phone': 'Điện thoại',
+  'personnel.column.email': 'Email',
   'personnel.column.location': 'Vị trí',
   'personnel.role.anchor': 'Streamer',
   'personnel.role.warehouseKeeper': 'Quản lý kho',
+  'personnel.status.active': 'Đang làm việc',
+  'personnel.status.inactive': 'Đã nghỉ việc',
 
   // ==================== Công nợ phải trả ====================
   'payables.title': 'Công nợ phải trả',
@@ -237,7 +245,8 @@ export default {
   'subDistricts.title': 'Khu vực nhỏ/Kho',
   'subDistricts.add': 'Thêm khu vực nhỏ',
   'subDistricts.edit': 'Sửa khu vực nhỏ',
-  'subDistricts.column.name': 'Tên',
+  'subDistricts.column.code': 'Mã kho',
+  'subDistricts.column.name': 'Tên kho',
   'subDistricts.column.district': 'Khu vực lớn',
 
   'warehouseKeepers.title': 'Quản lý kho',
@@ -280,4 +289,64 @@ export default {
   'roles.column.name': 'Tên vai trò',
   'roles.column.description': 'Mô tả',
   'roles.column.permissions': 'Quyền',
+
+  // ==================== Biểu mẫu chung ====================
+  'form.label.name': 'Tên',
+  'form.label.code': 'Mã',
+  'form.label.description': 'Mô tả',
+  'form.label.notes': 'Ghi chú',
+  'form.label.status': 'Trạng thái',
+  'form.label.image': 'Hình ảnh',
+  'form.label.imageUrl': 'URL hình ảnh',
+  'form.placeholder.input': 'Vui lòng nhập',
+  'form.placeholder.select': 'Vui lòng chọn',
+  'form.validation.required': 'Trường này là bắt buộc',
+  'form.validation.minLength': 'Độ dài không được ít hơn {min} ký tự',
+  'form.validation.maxLength': 'Độ dài không được vượt quá {max} ký tự',
+  'form.validation.min': 'Không được nhỏ hơn {min}',
+  'form.validation.max': 'Không được lớn hơn {max}',
+
+  // ==================== Biểu mẫu sản phẩm ====================
+  'products.form.name': 'Tên sản phẩm',
+  'products.form.category': 'Danh mục',
+  'products.form.alias': 'Tên gọi khác',
+  'products.form.manufacturer': 'Nhà sản xuất',
+  'products.form.description': 'Mô tả sản phẩm',
+  'products.form.retailPrice': 'Giá bán lẻ (mỗi thùng)',
+  'products.form.packPrice': 'Giá gói (mỗi gói)',
+  'products.form.boxQuantity': 'Số lượng thùng',
+  'products.form.packPerBox': 'Gói/Thùng',
+  'products.form.piecePerPack': 'Cái/Gói',
+  'products.form.imageUrl': 'URL hình ảnh',
+  'products.form.notes': 'Ghi chú',
+
+  // ==================== Quản lý cơ sở ====================
+  'bases.title': 'Quản lý cơ sở',
+  'bases.column.type': 'Loại',
+  'bases.column.currency': 'Tiền tệ',
+  'bases.column.language': 'Ngôn ngữ',
+
+  // ==================== Tiêu đề danh sách ====================
+  'list.title.bases': 'Danh sách cơ sở',
+  'list.title.products': 'Danh sách sản phẩm',
+  'list.title.suppliers': 'Danh sách nhà cung cấp',
+  'list.title.procurement': 'Danh sách mua hàng',
+  'list.title.arrivals': 'Danh sách nhập hàng',
+  'list.title.transfers': 'Danh sách chuyển hàng',
+  'list.title.consumption': 'Danh sách tiêu thụ',
+  'list.title.anchorProfit': 'Danh sách lợi nhuận',
+  'list.title.locations': 'Danh sách vị trí',
+  'list.title.personnel': 'Danh sách nhân sự',
+  'list.title.stockOut': 'Danh sách xuất kho',
+  'list.title.realTimeStock': 'Tồn kho thời gian thực',
+  'list.title.payables': 'Danh sách phải trả',
+
+  // ==================== Thống kê ====================
+  'stats.title': 'Thống kê',
+  'stats.detail': 'Chi tiết',
+  'stats.total': 'Tổng',
+  'stats.count': 'Tổng {count}',
+
+  // ==================== Xác nhận xóa ====================
+  'message.confirmDelete': 'Bạn có chắc chắn muốn xóa bản ghi này không?',
 };

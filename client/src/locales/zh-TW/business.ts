@@ -22,6 +22,7 @@ export default {
   'table.column.id': 'ID',
   'table.column.code': '編號',
   'table.column.name': '名稱',
+  'table.column.description': '描述',
   'table.column.status': '狀態',
   'table.column.remark': '備註',
   'table.column.notes': '備註',
@@ -179,11 +180,15 @@ export default {
   'locations.title': '直播間/倉庫',
   'locations.add': '新增直播間',
   'locations.edit': '編輯直播間',
-  'locations.column.name': '名稱',
+  'locations.column.code': '位置編號',
+  'locations.column.name': '位置名稱',
   'locations.column.type': '類型',
   'locations.column.address': '地址',
+  'locations.column.contact': '聯繫人',
+  'locations.column.phone': '聯繫電話',
+  'locations.type.mainWarehouse': '總倉庫',
+  'locations.type.warehouse': '子倉庫',
   'locations.type.liveRoom': '直播間',
-  'locations.type.warehouse': '倉庫',
 
   // ==================== 主播/倉管 ====================
   'personnel.title': '主播/倉管',
@@ -191,10 +196,13 @@ export default {
   'personnel.edit': '編輯人員',
   'personnel.column.name': '姓名',
   'personnel.column.role': '角色',
-  'personnel.column.phone': '電話',
+  'personnel.column.phone': '聯繫電話',
+  'personnel.column.email': '郵箱',
   'personnel.column.location': '所屬直播間',
   'personnel.role.anchor': '主播',
   'personnel.role.warehouseKeeper': '倉管',
+  'personnel.status.active': '在職',
+  'personnel.status.inactive': '離職',
 
   // ==================== 應付管理 ====================
   'payables.title': '應付管理',
@@ -235,9 +243,10 @@ export default {
   'districts.column.code': '大區編號',
 
   'subDistricts.title': '小區/倉庫',
-  'subDistricts.add': '新增小區',
-  'subDistricts.edit': '編輯小區',
-  'subDistricts.column.name': '小區名稱',
+  'subDistricts.add': '新增倉庫',
+  'subDistricts.edit': '編輯倉庫',
+  'subDistricts.column.code': '倉庫編號',
+  'subDistricts.column.name': '倉庫名稱',
   'subDistricts.column.district': '所屬大區',
 
   'warehouseKeepers.title': '倉管',
@@ -280,4 +289,64 @@ export default {
   'roles.column.name': '角色名稱',
   'roles.column.description': '描述',
   'roles.column.permissions': '權限',
+
+  // ==================== 表單通用 ====================
+  'form.label.name': '名稱',
+  'form.label.code': '編號',
+  'form.label.description': '描述',
+  'form.label.notes': '備註',
+  'form.label.status': '狀態',
+  'form.label.image': '圖片',
+  'form.label.imageUrl': '圖片URL',
+  'form.placeholder.input': '請輸入',
+  'form.placeholder.select': '請選擇',
+  'form.validation.required': '此項為必填項',
+  'form.validation.minLength': '長度不能少於{min}個字符',
+  'form.validation.maxLength': '長度不能超過{max}個字符',
+  'form.validation.min': '不能小於{min}',
+  'form.validation.max': '不能大於{max}',
+
+  // ==================== 商品表單 ====================
+  'products.form.name': '商品名稱',
+  'products.form.category': '品類',
+  'products.form.alias': '商品別名',
+  'products.form.manufacturer': '廠家名稱',
+  'products.form.description': '商品描述',
+  'products.form.retailPrice': '零售價(一箱)',
+  'products.form.packPrice': '平拆價(一盒)',
+  'products.form.boxQuantity': '箱裝數量',
+  'products.form.packPerBox': '盒/箱',
+  'products.form.piecePerPack': '包/盒',
+  'products.form.imageUrl': '圖片URL',
+  'products.form.notes': '備註',
+
+  // ==================== 基地管理 ====================
+  'bases.title': '基地管理',
+  'bases.column.type': '類型',
+  'bases.column.currency': '貨幣',
+  'bases.column.language': '語言',
+
+  // ==================== 列表標題 ====================
+  'list.title.bases': '基地列表',
+  'list.title.products': '商品列表',
+  'list.title.suppliers': '供應商列表',
+  'list.title.procurement': '採購列表',
+  'list.title.arrivals': '到貨列表',
+  'list.title.transfers': '調貨列表',
+  'list.title.consumption': '消耗列表',
+  'list.title.anchorProfit': '利潤列表',
+  'list.title.locations': '位置列表',
+  'list.title.personnel': '人員列表',
+  'list.title.stockOut': '出庫列表',
+  'list.title.realTimeStock': '實時庫存',
+  'list.title.payables': '應付列表',
+
+  // ==================== 統計相關 ====================
+  'stats.title': '統計詳情',
+  'stats.detail': '詳情',
+  'stats.total': '總數',
+  'stats.count': '共 {count} 個',
+
+  // ==================== 確認刪除 ====================
+  'message.confirmDelete': '確定刪除這條記錄嗎？',
 };

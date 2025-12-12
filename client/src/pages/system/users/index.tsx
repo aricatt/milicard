@@ -491,7 +491,7 @@ const UsersPage: React.FC = () => {
   );
 
   return (
-    <PageContainer header={{ title: '用户管理' }}>
+    <PageContainer header={{ title: false }}>
       {/* 用户列表 */}
       <ProTable<UserItem>
         actionRef={actionRef}

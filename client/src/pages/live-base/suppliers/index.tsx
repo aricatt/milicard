@@ -304,7 +304,7 @@ const SupplierManagement: React.FC = () => {
    */
   const columns: ProColumns<Supplier>[] = [
     {
-      title: 'ID',
+      title: intl.formatMessage({ id: 'table.column.id' }),
       dataIndex: 'id',
       key: 'id',
       width: 80,
@@ -313,7 +313,7 @@ const SupplierManagement: React.FC = () => {
       render: (id: any) => String(id).slice(-8),
     },
     {
-      title: '编号',
+      title: intl.formatMessage({ id: 'suppliers.column.code' }),
       dataIndex: 'code',
       key: 'code',
       width: 200,
@@ -324,7 +324,7 @@ const SupplierManagement: React.FC = () => {
       render: (text: string) => <code>{text}</code>,
     },
     {
-      title: '供应商名称',
+      title: intl.formatMessage({ id: 'suppliers.column.name' }),
       dataIndex: 'name',
       key: 'name',
       width: 100,
@@ -334,14 +334,14 @@ const SupplierManagement: React.FC = () => {
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: '联系人',
+      title: intl.formatMessage({ id: 'suppliers.column.contact' }),
       dataIndex: 'contactPerson',
       key: 'contactPerson',
       width: 60,
       hideInSearch: true,
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'suppliers.column.phone' }),
       dataIndex: 'phone',
       key: 'phone',
       width: 80,
@@ -354,7 +354,7 @@ const SupplierManagement: React.FC = () => {
       ),
     },
     {
-      title: '邮箱',
+      title: intl.formatMessage({ id: 'suppliers.column.email' }),
       dataIndex: 'email',
       key: 'email',
       width: 200,
@@ -369,7 +369,7 @@ const SupplierManagement: React.FC = () => {
       ) : '-',
     },
     {
-      title: '地址',
+      title: intl.formatMessage({ id: 'suppliers.column.address' }),
       dataIndex: 'address',
       key: 'address',
       width: 250,
@@ -384,7 +384,7 @@ const SupplierManagement: React.FC = () => {
       ) : '-',
     },
     {
-      title: '备注',
+      title: intl.formatMessage({ id: 'table.column.notes' }),
       dataIndex: 'notes',
       key: 'notes',
       width: 200,
@@ -394,28 +394,28 @@ const SupplierManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Error' },
       },
       render: (_, record) => {
         // 处理字符串 "true"/"false" 和布尔值
         const isActive = record.isActive === true || record.isActive === 'true' || record.isActive === 1;
         return (
           <Tag color={isActive ? 'green' : 'red'}>
-            {isActive ? '启用' : '禁用'}
+            {isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
           </Tag>
         );
       },
       hideInSearch: false,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 160,
@@ -442,7 +442,7 @@ const SupplierManagement: React.FC = () => {
       },
     },
     {
-      title: '更新时间',
+      title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 170,
@@ -469,14 +469,14 @@ const SupplierManagement: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 80,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
       render: (_, record) => [
-        <Tooltip key="edit" title="编辑">
+        <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
           <Button
             type="link"
             size="small"
@@ -486,14 +486,14 @@ const SupplierManagement: React.FC = () => {
         </Tooltip>,
         <Popconfirm
           key="delete"
-          title="确认删除"
-          description={`确定要删除供应商"${record.name}"吗？`}
+          title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+          description={intl.formatMessage({ id: 'message.deleteConfirmContent' })}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl.formatMessage({ id: 'button.confirm' })}
+          cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
             <Button
               type="link"
               size="small"
@@ -551,11 +551,7 @@ const SupplierManagement: React.FC = () => {
   );
 
   return (
-    <PageContainer
-      header={{
-        title: intl.formatMessage({ id: 'suppliers.title' }),
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       {/* ProTable */}
       <ProTable<Supplier>
         columns={columns}
@@ -670,7 +666,7 @@ const SupplierManagement: React.FC = () => {
 
       {/* 创建供应商模态框 */}
       <Modal
-        title="新增供应商"
+        title={intl.formatMessage({ id: 'suppliers.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -754,7 +750,7 @@ const SupplierManagement: React.FC = () => {
 
       {/* 编辑供应商模态框 */}
       <Modal
-        title="编辑供应商"
+        title={intl.formatMessage({ id: 'suppliers.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {

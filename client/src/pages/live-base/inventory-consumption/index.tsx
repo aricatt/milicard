@@ -391,10 +391,10 @@ const ConsumptionManagement: React.FC = () => {
     );
   }
 
-  const columns = getColumns({ onDelete: handleDelete });
+  const columns = getColumns({ onDelete: handleDelete, intl });
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       <ProTable<ConsumptionRecord>
         columns={columns}
         actionRef={actionRef}

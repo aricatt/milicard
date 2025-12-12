@@ -297,7 +297,7 @@ const PersonnelManagement: React.FC = () => {
       render: (text: string) => <code>{text}</code>,
     },
     {
-      title: '姓名',
+      title: intl.formatMessage({ id: 'personnel.column.name' }),
       dataIndex: 'name',
       key: 'name',
       width: 150,
@@ -307,27 +307,27 @@ const PersonnelManagement: React.FC = () => {
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: '角色',
+      title: intl.formatMessage({ id: 'personnel.column.role' }),
       dataIndex: 'role',
       key: 'role',
       width: 100,
       valueType: 'select',
       valueEnum: {
-        ANCHOR: { text: '主播', status: 'Processing' },
-        WAREHOUSE_KEEPER: { text: '仓管', status: 'Default' },
+        ANCHOR: { text: intl.formatMessage({ id: 'personnel.role.anchor' }), status: 'Processing' },
+        WAREHOUSE_KEEPER: { text: intl.formatMessage({ id: 'personnel.role.warehouseKeeper' }), status: 'Default' },
       },
       render: (_, record) => (
         <Tag 
           color={record.role === PersonnelRole.ANCHOR ? 'purple' : 'orange'}
           icon={record.role === PersonnelRole.ANCHOR ? <UserOutlined /> : <TeamOutlined />}
         >
-          {record.role === PersonnelRole.ANCHOR ? '主播' : '仓管'}
+          {record.role === PersonnelRole.ANCHOR ? intl.formatMessage({ id: 'personnel.role.anchor' }) : intl.formatMessage({ id: 'personnel.role.warehouseKeeper' })}
         </Tag>
       ),
       hideInSearch: false,
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'personnel.column.phone' }),
       dataIndex: 'phone',
       key: 'phone',
       width: 130,
@@ -335,7 +335,7 @@ const PersonnelManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '邮箱',
+      title: intl.formatMessage({ id: 'personnel.column.email' }),
       dataIndex: 'email',
       key: 'email',
       width: 180,
@@ -345,7 +345,7 @@ const PersonnelManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '备注',
+      title: intl.formatMessage({ id: 'table.column.notes' }),
       dataIndex: 'notes',
       key: 'notes',
       width: 200,
@@ -355,24 +355,24 @@ const PersonnelManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '在职', status: 'Success' },
-        false: { text: '离职', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'personnel.status.active' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'personnel.status.inactive' }), status: 'Error' },
       },
       render: (_, record) => (
         <Tag color={record.isActive ? 'green' : 'red'}>
-          {record.isActive ? '在职' : '离职'}
+          {record.isActive ? intl.formatMessage({ id: 'personnel.status.active' }) : intl.formatMessage({ id: 'personnel.status.inactive' })}
         </Tag>
       ),
       hideInSearch: false,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
@@ -399,7 +399,7 @@ const PersonnelManagement: React.FC = () => {
       },
     },
     {
-      title: '更新时间',
+      title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 170,
@@ -426,14 +426,14 @@ const PersonnelManagement: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 80,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
       render: (_, record) => [
-        <Tooltip key="edit" title="编辑">
+        <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
           <Button
             type="link"
             size="small"
@@ -443,14 +443,14 @@ const PersonnelManagement: React.FC = () => {
         </Tooltip>,
         <Popconfirm
           key="delete"
-          title="确认删除"
-          description={`确定要删除"${record.name}"吗？`}
+          title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+          description={intl.formatMessage({ id: 'message.deleteConfirmContent' })}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl.formatMessage({ id: 'button.confirm' })}
+          cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
             <Button
               type="link"
               size="small"
@@ -517,11 +517,7 @@ const PersonnelManagement: React.FC = () => {
   );
 
   return (
-    <PageContainer
-      header={{
-        title: '主播/仓管管理',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       {/* ProTable */}
       <ProTable<Personnel>
         columns={columns}

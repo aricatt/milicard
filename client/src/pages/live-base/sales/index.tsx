@@ -357,7 +357,7 @@ const SalesManagement: React.FC = () => {
 
   return (
     <PageContainer
-      title="销售管理"
+      header={{ title: false }}
       extra={[
         <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
           导出

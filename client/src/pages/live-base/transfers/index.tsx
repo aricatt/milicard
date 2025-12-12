@@ -222,7 +222,7 @@ const TransferManagement: React.FC = () => {
   }, [currentBase]);
 
   // 获取列定义
-  const columns = getColumns(handleDelete);
+  const columns = getColumns(handleDelete, intl);
 
   // 统计信息内容
   const statsContent = (
@@ -247,7 +247,7 @@ const TransferManagement: React.FC = () => {
   }
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       <ProTable<TransferRecord>
         columns={columns}
         actionRef={actionRef}

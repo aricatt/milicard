@@ -22,10 +22,11 @@ export default {
   'table.column.id': 'ID',
   'table.column.code': 'Code',
   'table.column.name': 'Name',
+  'table.column.description': 'Description',
   'table.column.status': 'Status',
   'table.column.remark': 'Remark',
   'table.column.notes': 'Notes',
-  'table.column.operation': 'Operation',
+  'table.column.operation': 'Actions',
   'table.column.createdAt': 'Created At',
   'table.column.updatedAt': 'Updated At',
   'table.column.createdBy': 'Created By',
@@ -179,11 +180,15 @@ export default {
   'locations.title': 'Live Rooms/Warehouses',
   'locations.add': 'Add Location',
   'locations.edit': 'Edit Location',
-  'locations.column.name': 'Name',
+  'locations.column.code': 'Location Code',
+  'locations.column.name': 'Location Name',
   'locations.column.type': 'Type',
   'locations.column.address': 'Address',
+  'locations.column.contact': 'Contact',
+  'locations.column.phone': 'Phone',
+  'locations.type.mainWarehouse': 'Main Warehouse',
+  'locations.type.warehouse': 'Sub Warehouse',
   'locations.type.liveRoom': 'Live Room',
-  'locations.type.warehouse': 'Warehouse',
 
   // ==================== Personnel ====================
   'personnel.title': 'Streamers/Staff',
@@ -192,9 +197,12 @@ export default {
   'personnel.column.name': 'Name',
   'personnel.column.role': 'Role',
   'personnel.column.phone': 'Phone',
+  'personnel.column.email': 'Email',
   'personnel.column.location': 'Location',
   'personnel.role.anchor': 'Streamer',
   'personnel.role.warehouseKeeper': 'Warehouse Keeper',
+  'personnel.status.active': 'Active',
+  'personnel.status.inactive': 'Inactive',
 
   // ==================== Payables ====================
   'payables.title': 'Payables',
@@ -235,9 +243,10 @@ export default {
   'districts.column.code': 'District Code',
 
   'subDistricts.title': 'Sub-districts/Warehouses',
-  'subDistricts.add': 'Add Sub-district',
-  'subDistricts.edit': 'Edit Sub-district',
-  'subDistricts.column.name': 'Sub-district Name',
+  'subDistricts.add': 'Add Warehouse',
+  'subDistricts.edit': 'Edit Warehouse',
+  'subDistricts.column.code': 'Warehouse Code',
+  'subDistricts.column.name': 'Warehouse Name',
   'subDistricts.column.district': 'District',
 
   'warehouseKeepers.title': 'Warehouse Keepers',
@@ -280,4 +289,64 @@ export default {
   'roles.column.name': 'Role Name',
   'roles.column.description': 'Description',
   'roles.column.permissions': 'Permissions',
+
+  // ==================== Form Common ====================
+  'form.label.name': 'Name',
+  'form.label.code': 'Code',
+  'form.label.description': 'Description',
+  'form.label.notes': 'Notes',
+  'form.label.status': 'Status',
+  'form.label.image': 'Image',
+  'form.label.imageUrl': 'Image URL',
+  'form.placeholder.input': 'Please enter',
+  'form.placeholder.select': 'Please select',
+  'form.validation.required': 'This field is required',
+  'form.validation.minLength': 'Length cannot be less than {min} characters',
+  'form.validation.maxLength': 'Length cannot exceed {max} characters',
+  'form.validation.min': 'Cannot be less than {min}',
+  'form.validation.max': 'Cannot be greater than {max}',
+
+  // ==================== Products Form ====================
+  'products.form.name': 'Product Name',
+  'products.form.category': 'Category',
+  'products.form.alias': 'Product Alias',
+  'products.form.manufacturer': 'Manufacturer',
+  'products.form.description': 'Product Description',
+  'products.form.retailPrice': 'Retail Price (per box)',
+  'products.form.packPrice': 'Pack Price (per pack)',
+  'products.form.boxQuantity': 'Box Quantity',
+  'products.form.packPerBox': 'Packs/Box',
+  'products.form.piecePerPack': 'Pieces/Pack',
+  'products.form.imageUrl': 'Image URL',
+  'products.form.notes': 'Notes',
+
+  // ==================== Bases ====================
+  'bases.title': 'Base Management',
+  'bases.column.type': 'Type',
+  'bases.column.currency': 'Currency',
+  'bases.column.language': 'Language',
+
+  // ==================== List Titles ====================
+  'list.title.bases': 'Base List',
+  'list.title.products': 'Product List',
+  'list.title.suppliers': 'Supplier List',
+  'list.title.procurement': 'Procurement List',
+  'list.title.arrivals': 'Arrival List',
+  'list.title.transfers': 'Transfer List',
+  'list.title.consumption': 'Consumption List',
+  'list.title.anchorProfit': 'Profit List',
+  'list.title.locations': 'Location List',
+  'list.title.personnel': 'Personnel List',
+  'list.title.stockOut': 'Stock Out List',
+  'list.title.realTimeStock': 'Real-time Stock',
+  'list.title.payables': 'Payables List',
+
+  // ==================== Statistics ====================
+  'stats.title': 'Statistics',
+  'stats.detail': 'Details',
+  'stats.total': 'Total',
+  'stats.count': 'Total {count}',
+
+  // ==================== Confirm Delete ====================
+  'message.confirmDelete': 'Are you sure you want to delete this record?',
 };

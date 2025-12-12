@@ -311,7 +311,7 @@ const SubDistrictsPage: React.FC = () => {
    */
   const columns: ProColumns<Location>[] = [
     {
-      title: '仓库编号',
+      title: intl.formatMessage({ id: 'subDistricts.column.code' }),
       dataIndex: 'code',
       key: 'code',
       width: 180,
@@ -321,7 +321,7 @@ const SubDistrictsPage: React.FC = () => {
       hideInSetting: true,
     },
     {
-      title: '仓库名称',
+      title: intl.formatMessage({ id: 'subDistricts.column.name' }),
       dataIndex: 'name',
       key: 'name',
       width: 150,
@@ -331,19 +331,19 @@ const SubDistrictsPage: React.FC = () => {
       hideInSearch: false,
     },
     {
-      title: '类型',
+      title: intl.formatMessage({ id: 'locations.column.type' }),
       dataIndex: 'type',
       key: 'type',
       width: 100,
       valueType: 'select',
       valueEnum: {
-        MAIN_WAREHOUSE: { text: '总仓库', status: 'Warning' },
-        WAREHOUSE: { text: '子仓库', status: 'Default' },
+        MAIN_WAREHOUSE: { text: intl.formatMessage({ id: 'locations.type.mainWarehouse' }), status: 'Warning' },
+        WAREHOUSE: { text: intl.formatMessage({ id: 'locations.type.warehouse' }), status: 'Default' },
       },
       render: (_, record) => {
         const typeConfig = {
-          [LocationType.MAIN_WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'orange', text: '总仓库' },
-          [LocationType.WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'blue', text: '子仓库' },
+          [LocationType.MAIN_WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'orange', text: intl.formatMessage({ id: 'locations.type.mainWarehouse' }) },
+          [LocationType.WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'blue', text: intl.formatMessage({ id: 'locations.type.warehouse' }) },
         };
         const config = typeConfig[record.type] || typeConfig[LocationType.WAREHOUSE];
         return (
@@ -355,7 +355,7 @@ const SubDistrictsPage: React.FC = () => {
       hideInSearch: false,
     },
     {
-      title: '描述',
+      title: intl.formatMessage({ id: 'table.column.description' }),
       dataIndex: 'description',
       key: 'description',
       width: 200,
@@ -365,7 +365,7 @@ const SubDistrictsPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '地址',
+      title: intl.formatMessage({ id: 'locations.column.address' }),
       dataIndex: 'address',
       key: 'address',
       width: 200,
@@ -375,7 +375,7 @@ const SubDistrictsPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '联系人',
+      title: intl.formatMessage({ id: 'locations.column.contact' }),
       dataIndex: 'contactPerson',
       key: 'contactPerson',
       width: 100,
@@ -383,7 +383,7 @@ const SubDistrictsPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'locations.column.phone' }),
       dataIndex: 'contactPhone',
       key: 'contactPhone',
       width: 130,
@@ -391,27 +391,27 @@ const SubDistrictsPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Error' },
       },
       render: (_, record) => {
         const isActiveValue = record.isActive === true;
         return (
           <Tag color={isActiveValue ? 'green' : 'red'}>
-            {isActiveValue ? '启用' : '禁用'}
+            {isActiveValue ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
           </Tag>
         );
       },
       hideInSearch: false,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
@@ -438,7 +438,7 @@ const SubDistrictsPage: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 150,
       fixed: 'right',
@@ -452,19 +452,19 @@ const SubDistrictsPage: React.FC = () => {
           icon={<EditOutlined />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {intl.formatMessage({ id: 'button.edit' })}
         </Button>,
         <Popconfirm
           key="delete"
-          title="确认删除"
-          description={`确定要删除仓库"${record.name}"吗？`}
+          title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+          description={intl.formatMessage({ id: 'message.deleteConfirmContent' })}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl.formatMessage({ id: 'button.confirm' })}
+          cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
           <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-            删除
+            {intl.formatMessage({ id: 'button.delete' })}
           </Button>
         </Popconfirm>,
       ],
@@ -515,7 +515,7 @@ const SubDistrictsPage: React.FC = () => {
   );
 
   return (
-    <PageContainer header={{ title: '小区/仓库管理' }}>
+    <PageContainer header={{ title: false }}>
       {/* 没有总仓库的警告提示 */}
       {!hasMainWarehouse && stats.totalLocations > 0 && (
         <Alert

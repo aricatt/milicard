@@ -330,44 +330,41 @@ const LocationManagement: React.FC = () => {
    */
   const columns: ProColumns<Location>[] = [
     {
-      title: '位置编号',
+      title: intl.formatMessage({ id: 'locations.column.code' }),
       dataIndex: 'code',
       key: 'code',
       width: 180,
       fixed: 'left',
       copyable: true,
       ellipsis: true,
-      // 不可隐藏
       hideInSetting: true,
     },
     {
-      title: '位置名称',
+      title: intl.formatMessage({ id: 'locations.column.name' }),
       dataIndex: 'name',
       key: 'name',
       width: 150,
       fixed: 'left',
       ellipsis: true,
-      // 不可隐藏
       hideInSetting: true,
-      // 支持搜索
       hideInSearch: false,
     },
     {
-      title: '类型',
+      title: intl.formatMessage({ id: 'locations.column.type' }),
       dataIndex: 'type',
       key: 'type',
       width: 100,
       valueType: 'select',
       valueEnum: {
-        MAIN_WAREHOUSE: { text: '总仓库', status: 'Warning' },
-        WAREHOUSE: { text: '子仓库', status: 'Default' },
-        LIVE_ROOM: { text: '直播间', status: 'Processing' },
+        MAIN_WAREHOUSE: { text: intl.formatMessage({ id: 'locations.type.mainWarehouse' }), status: 'Warning' },
+        WAREHOUSE: { text: intl.formatMessage({ id: 'locations.type.warehouse' }), status: 'Default' },
+        LIVE_ROOM: { text: intl.formatMessage({ id: 'locations.type.liveRoom' }), status: 'Processing' },
       },
       render: (_, record) => {
         const typeConfig = {
-          [LocationType.MAIN_WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'orange', text: '总仓库' },
-          [LocationType.WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'blue', text: '子仓库' },
-          [LocationType.LIVE_ROOM]: { icon: <DesktopOutlined />, color: 'green', text: '直播间' },
+          [LocationType.MAIN_WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'orange', text: intl.formatMessage({ id: 'locations.type.mainWarehouse' }) },
+          [LocationType.WAREHOUSE]: { icon: <DatabaseOutlined />, color: 'blue', text: intl.formatMessage({ id: 'locations.type.warehouse' }) },
+          [LocationType.LIVE_ROOM]: { icon: <DesktopOutlined />, color: 'green', text: intl.formatMessage({ id: 'locations.type.liveRoom' }) },
         };
         const config = typeConfig[record.type] || typeConfig[LocationType.WAREHOUSE];
         return (
@@ -376,34 +373,30 @@ const LocationManagement: React.FC = () => {
           </Tag>
         );
       },
-      // 支持筛选
       hideInSearch: false,
     },
     {
-      title: '描述',
+      title: intl.formatMessage({ id: 'table.column.description' }),
       dataIndex: 'description',
       key: 'description',
       width: 200,
       ellipsis: true,
-      // 默认隐藏
       hideInTable: false,
-      // 不在搜索表单中显示
       hideInSearch: true,
       render: (text: any) => text || '-',
     },
     {
-      title: '地址',
+      title: intl.formatMessage({ id: 'locations.column.address' }),
       dataIndex: 'address',
       key: 'address',
       width: 200,
       ellipsis: true,
-      // 默认隐藏
       hideInTable: false,
       hideInSearch: true,
       render: (text: any) => text || '-',
     },
     {
-      title: '联系人',
+      title: intl.formatMessage({ id: 'locations.column.contact' }),
       dataIndex: 'contactPerson',
       key: 'contactPerson',
       width: 100,
@@ -411,7 +404,7 @@ const LocationManagement: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'locations.column.phone' }),
       dataIndex: 'contactPhone',
       key: 'contactPhone',
       width: 130,
@@ -419,28 +412,27 @@ const LocationManagement: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Error' },
       },
       render: (_, record) => {
         const isActiveValue = record.isActive === true || record.isActive === 'true' || record.isActive === 1;
         return (
           <Tag color={isActiveValue ? 'green' : 'red'}>
-            {isActiveValue ? '启用' : '禁用'}
+            {isActiveValue ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
           </Tag>
         );
       },
-      // 支持筛选
       hideInSearch: false,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
@@ -467,7 +459,7 @@ const LocationManagement: React.FC = () => {
       },
     },
     {
-      title: '更新时间',
+      title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 170,
@@ -495,7 +487,7 @@ const LocationManagement: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 80,
       fixed: 'right',
@@ -593,11 +585,7 @@ const LocationManagement: React.FC = () => {
   );
 
   return (
-    <PageContainer
-      header={{
-        title: '直播间/仓库管理',
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       {/* 没有总仓库的警告提示 */}
       {!hasMainWarehouse && stats.totalLocations > 0 && (
         <Alert

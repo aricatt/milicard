@@ -2,13 +2,15 @@ import type { ProColumns } from '@ant-design/pro-components';
 import { Tag, Space, Popconfirm, Button, Tooltip } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import type { AnchorProfitRecord } from './types';
+import type { IntlShape } from 'react-intl';
 
 export const getColumns = (
   onEdit: (record: AnchorProfitRecord) => void,
-  onDelete: (id: string) => void
+  onDelete: (id: string) => void,
+  intl?: IntlShape
 ): ProColumns<AnchorProfitRecord>[] => [
   {
-    title: '日期',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.date' }) || '日期',
     dataIndex: 'profitDate',
     valueType: 'date',
     width: 110,
@@ -16,7 +18,7 @@ export const getColumns = (
     fixed: 'left',
   },
   {
-    title: '主播',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.anchor' }) || '主播',
     dataIndex: 'handlerName',
     width: 100,
     fixed: 'left',
@@ -25,7 +27,7 @@ export const getColumns = (
     ),
   },
   {
-    title: 'GMV金额',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.gmv' }) || 'GMV金额',
     dataIndex: 'gmvAmount',
     valueType: 'money',
     width: 120,
@@ -37,7 +39,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '退款金额',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.refund' }) || '退款金额',
     dataIndex: 'refundAmount',
     valueType: 'money',
     width: 110,
@@ -48,7 +50,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '走水金额',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.extra' }) || '走水金额',
     dataIndex: 'waterAmount',
     valueType: 'money',
     width: 110,
@@ -73,7 +75,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '消耗金额',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.consumption' }) || '消耗金额',
     dataIndex: 'consumptionAmount',
     valueType: 'money',
     width: 110,
@@ -84,7 +86,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '投流金额',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.adSpend' }) || '投流金额',
     dataIndex: 'adSpendAmount',
     valueType: 'money',
     width: 110,
@@ -106,7 +108,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '利润金额',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.profit' }) || '利润金额',
     dataIndex: 'profitAmount',
     valueType: 'money',
     width: 120,
@@ -155,13 +157,13 @@ export const getColumns = (
     sorter: true,
   },
   {
-    title: '操作',
+    title: intl?.formatMessage({ id: 'table.column.operation' }) || '操作',
     valueType: 'option',
     width: 120,
     fixed: 'right',
     render: (_, record) => (
       <Space size="small">
-        <Tooltip title="编辑">
+        <Tooltip title={intl?.formatMessage({ id: 'button.edit' }) || '编辑'}>
           <Button
             type="link"
             size="small"
@@ -170,12 +172,12 @@ export const getColumns = (
           />
         </Tooltip>
         <Popconfirm
-          title="确定删除此记录？"
+          title={intl?.formatMessage({ id: 'message.confirmDelete' }) || '确定删除此记录？'}
           onConfirm={() => onDelete(record.id)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl?.formatMessage({ id: 'button.confirm' }) || '确定'}
+          cancelText={intl?.formatMessage({ id: 'button.cancel' }) || '取消'}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl?.formatMessage({ id: 'button.delete' }) || '删除'}>
             <Button type="link" size="small" danger icon={<DeleteOutlined />} />
           </Tooltip>
         </Popconfirm>

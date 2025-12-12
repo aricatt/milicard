@@ -349,7 +349,7 @@ const InventoryManagement: React.FC = () => {
 
   return (
     <PageContainer
-      title="库存管理"
+      header={{ title: false }}
       extra={[
         <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
           导出

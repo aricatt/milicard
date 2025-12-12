@@ -206,7 +206,7 @@ const RealTimeStockPage: React.FC = () => {
   }
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       {/* 统计卡片 */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col span={8}>

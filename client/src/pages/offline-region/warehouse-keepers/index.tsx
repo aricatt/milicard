@@ -429,7 +429,7 @@ const WarehouseKeepersPage: React.FC = () => {
   );
 
   return (
-    <PageContainer header={{ title: '仓管管理' }}>
+    <PageContainer header={{ title: false }}>
       <ProTable<Personnel>
         columns={columns}
         actionRef={actionRef}

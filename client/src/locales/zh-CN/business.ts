@@ -22,6 +22,7 @@ export default {
   'table.column.id': 'ID',
   'table.column.code': '编号',
   'table.column.name': '名称',
+  'table.column.description': '描述',
   'table.column.status': '状态',
   'table.column.remark': '备注',
   'table.column.notes': '备注',
@@ -179,11 +180,15 @@ export default {
   'locations.title': '直播间/仓库',
   'locations.add': '新增直播间',
   'locations.edit': '编辑直播间',
-  'locations.column.name': '名称',
+  'locations.column.code': '位置编号',
+  'locations.column.name': '位置名称',
   'locations.column.type': '类型',
   'locations.column.address': '地址',
+  'locations.column.contact': '联系人',
+  'locations.column.phone': '联系电话',
+  'locations.type.mainWarehouse': '总仓库',
+  'locations.type.warehouse': '子仓库',
   'locations.type.liveRoom': '直播间',
-  'locations.type.warehouse': '仓库',
 
   // ==================== 主播/仓管 ====================
   'personnel.title': '主播/仓管',
@@ -191,10 +196,13 @@ export default {
   'personnel.edit': '编辑人员',
   'personnel.column.name': '姓名',
   'personnel.column.role': '角色',
-  'personnel.column.phone': '电话',
+  'personnel.column.phone': '联系电话',
+  'personnel.column.email': '邮箱',
   'personnel.column.location': '所属直播间',
   'personnel.role.anchor': '主播',
   'personnel.role.warehouseKeeper': '仓管',
+  'personnel.status.active': '在职',
+  'personnel.status.inactive': '离职',
 
   // ==================== 应付管理 ====================
   'payables.title': '应付管理',
@@ -235,9 +243,10 @@ export default {
   'districts.column.code': '大区编号',
 
   'subDistricts.title': '小区/仓库',
-  'subDistricts.add': '新增小区',
-  'subDistricts.edit': '编辑小区',
-  'subDistricts.column.name': '小区名称',
+  'subDistricts.add': '新增仓库',
+  'subDistricts.edit': '编辑仓库',
+  'subDistricts.column.code': '仓库编号',
+  'subDistricts.column.name': '仓库名称',
   'subDistricts.column.district': '所属大区',
 
   'warehouseKeepers.title': '仓管',
@@ -280,4 +289,64 @@ export default {
   'roles.column.name': '角色名称',
   'roles.column.description': '描述',
   'roles.column.permissions': '权限',
+
+  // ==================== 表单通用 ====================
+  'form.label.name': '名称',
+  'form.label.code': '编号',
+  'form.label.description': '描述',
+  'form.label.notes': '备注',
+  'form.label.status': '状态',
+  'form.label.image': '图片',
+  'form.label.imageUrl': '图片URL',
+  'form.placeholder.input': '请输入',
+  'form.placeholder.select': '请选择',
+  'form.validation.required': '此项为必填项',
+  'form.validation.minLength': '长度不能少于{min}个字符',
+  'form.validation.maxLength': '长度不能超过{max}个字符',
+  'form.validation.min': '不能小于{min}',
+  'form.validation.max': '不能大于{max}',
+
+  // ==================== 商品表单 ====================
+  'products.form.name': '商品名称',
+  'products.form.category': '品类',
+  'products.form.alias': '商品别名',
+  'products.form.manufacturer': '厂家名称',
+  'products.form.description': '商品描述',
+  'products.form.retailPrice': '零售价(一箱)',
+  'products.form.packPrice': '平拆价(一盒)',
+  'products.form.boxQuantity': '箱装数量',
+  'products.form.packPerBox': '盒/箱',
+  'products.form.piecePerPack': '包/盒',
+  'products.form.imageUrl': '图片URL',
+  'products.form.notes': '备注',
+
+  // ==================== 基地管理 ====================
+  'bases.title': '基地管理',
+  'bases.column.type': '类型',
+  'bases.column.currency': '货币',
+  'bases.column.language': '语言',
+
+  // ==================== 列表标题 ====================
+  'list.title.bases': '基地列表',
+  'list.title.products': '商品列表',
+  'list.title.suppliers': '供应商列表',
+  'list.title.procurement': '采购列表',
+  'list.title.arrivals': '到货列表',
+  'list.title.transfers': '调货列表',
+  'list.title.consumption': '消耗列表',
+  'list.title.anchorProfit': '利润列表',
+  'list.title.locations': '位置列表',
+  'list.title.personnel': '人员列表',
+  'list.title.stockOut': '出库列表',
+  'list.title.realTimeStock': '实时库存',
+  'list.title.payables': '应付列表',
+
+  // ==================== 统计相关 ====================
+  'stats.title': '统计详情',
+  'stats.detail': '详情',
+  'stats.total': '总数',
+  'stats.count': '共 {count} 个',
+
+  // ==================== 确认删除 ====================
+  'message.confirmDelete': '确定删除这条记录吗？',
 };

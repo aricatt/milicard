@@ -10,8 +10,8 @@ import React, { useRef, useState } from 'react';
 import { useIntl } from '@umijs/max';
 
 export interface ListPageTemplateProps<T> {
-  title: string;
-  subTitle?: string;
+  title?: string;  // 已废弃，不再使用
+  subTitle?: string;  // 已废弃，不再使用
   headerTitle: string;
   columns: ProColumns<T>[];
   request: (params: any) => Promise<{ data: T[]; total: number; success: boolean }>;
@@ -31,8 +31,6 @@ export interface ListPageTemplateProps<T> {
  * 通用列表页面模板
  */
 function ListPageTemplate<T extends Record<string, any>>({
-  title,
-  subTitle,
   headerTitle,
   columns,
   request,
@@ -162,12 +160,7 @@ function ListPageTemplate<T extends Record<string, any>>({
   ];
 
   return (
-    <PageContainer
-      header={{
-        title,
-        subTitle,
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       <ProTable<T>
         headerTitle={headerTitle}
         actionRef={actionRef}

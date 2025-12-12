@@ -304,7 +304,7 @@ const ArrivalManagement: React.FC = () => {
   );
 
   // 获取列定义
-  const columns = getColumns(handleDelete);
+  const columns = getColumns(handleDelete, intl);
 
   if (!currentBase) {
     return (
@@ -317,7 +317,7 @@ const ArrivalManagement: React.FC = () => {
   }
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       <ProTable<ArrivalRecord>
         columns={columns}
         actionRef={actionRef}

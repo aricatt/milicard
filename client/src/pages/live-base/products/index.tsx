@@ -357,7 +357,7 @@ const ProductManagement: React.FC = () => {
    */
   const columns: ProColumns<Product>[] = [
     {
-      title: 'ID',
+      title: intl.formatMessage({ id: 'table.column.id' }),
       dataIndex: 'id',
       key: 'id',
       width: 80,
@@ -366,7 +366,7 @@ const ProductManagement: React.FC = () => {
       render: (id: any) => String(id).slice(-8),
     },
     {
-      title: '商品编号',
+      title: intl.formatMessage({ id: 'products.column.code' }),
       dataIndex: 'code',
       key: 'code',
       width: 140,
@@ -377,7 +377,7 @@ const ProductManagement: React.FC = () => {
       render: (text: string) => <code style={{ fontSize: 12 }}>{text}</code>,
     },
     {
-      title: '品类',
+      title: intl.formatMessage({ id: 'products.column.category' }),
       dataIndex: 'category',
       key: 'category',
       width: 60,
@@ -396,7 +396,7 @@ const ProductManagement: React.FC = () => {
       },
     },
     {
-      title: '商品名称',
+      title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'name',
       key: 'name',
       width: 200,
@@ -407,7 +407,7 @@ const ProductManagement: React.FC = () => {
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: '商品别名',
+      title: intl.formatMessage({ id: 'products.column.alias' }),
       dataIndex: 'alias',
       key: 'alias',
       width: 150,
@@ -417,7 +417,7 @@ const ProductManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '厂家名称',
+      title: intl.formatMessage({ id: 'products.column.manufacturer' }),
       dataIndex: 'manufacturer',
       key: 'manufacturer',
       width: 60,
@@ -425,7 +425,7 @@ const ProductManagement: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: '零售价(一箱)',
+      title: intl.formatMessage({ id: 'products.column.retailPrice' }),
       dataIndex: 'retailPrice',
       key: 'retailPrice',
       width: 120,
@@ -438,7 +438,7 @@ const ProductManagement: React.FC = () => {
       ),
     },
     {
-      title: '平拆价',
+      title: intl.formatMessage({ id: 'products.column.packPrice' }),
       dataIndex: 'packPrice',
       key: 'packPrice',
       width: 100,
@@ -452,7 +452,7 @@ const ProductManagement: React.FC = () => {
       ) : '-',
     },
     {
-      title: '采购价',
+      title: intl.formatMessage({ id: 'products.column.purchasePrice' }),
       dataIndex: 'purchasePrice',
       key: 'purchasePrice',
       width: 100,
@@ -466,7 +466,7 @@ const ProductManagement: React.FC = () => {
       ) : '-',
     },
     {
-      title: '箱数量',
+      title: intl.formatMessage({ id: 'products.column.boxQuantity' }),
       dataIndex: 'boxQuantity',
       key: 'boxQuantity',
       width: 60,
@@ -476,7 +476,7 @@ const ProductManagement: React.FC = () => {
       render: (num: number) => <Tag color="blue">{num}</Tag>,
     },
     {
-      title: '盒/箱',
+      title: intl.formatMessage({ id: 'products.column.packPerBox' }),
       dataIndex: 'packPerBox',
       key: 'packPerBox',
       width: 60,
@@ -485,7 +485,7 @@ const ProductManagement: React.FC = () => {
       render: (num: number) => <Tag color="cyan">{num}</Tag>,
     },
     {
-      title: '包/盒',
+      title: intl.formatMessage({ id: 'products.column.piecePerPack' }),
       dataIndex: 'piecePerPack',
       key: 'piecePerPack',
       width: 60,
@@ -494,7 +494,7 @@ const ProductManagement: React.FC = () => {
       render: (num: number) => <Tag color="geekblue">{num}</Tag>,
     },
     {
-      title: '图片',
+      title: intl.formatMessage({ id: 'products.column.image' }),
       dataIndex: 'imageUrl',
       key: 'imageUrl',
       width: 60,
@@ -513,7 +513,7 @@ const ProductManagement: React.FC = () => {
       ) : '-',
     },
     {
-      title: '备注',
+      title: intl.formatMessage({ id: 'table.column.notes' }),
       dataIndex: 'notes',
       key: 'notes',
       width: 200,
@@ -523,27 +523,27 @@ const ProductManagement: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 60,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Error' },
       },
       render: (_, record) => {
         const isActive = record.isActive === true || record.isActive === 'true' || record.isActive === 1;
         return (
           <Tag color={isActive ? 'green' : 'red'}>
-            {isActive ? '启用' : '禁用'}
+            {isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
           </Tag>
         );
       },
       hideInSearch: false,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 130,
@@ -570,7 +570,7 @@ const ProductManagement: React.FC = () => {
       },
     },
     {
-      title: '更新时间',
+      title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 170,
@@ -597,14 +597,14 @@ const ProductManagement: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 60,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
       render: (_, record) => [
-        <Tooltip key="edit" title="编辑">
+        <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
           <Button
             type="link"
             size="small"
@@ -614,14 +614,14 @@ const ProductManagement: React.FC = () => {
         </Tooltip>,
         <Popconfirm
           key="delete"
-          title="确认删除"
-          description={`确定要删除商品"${record.name}"吗？`}
+          title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+          description={`${intl.formatMessage({ id: 'message.deleteConfirmContent' })}`}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl.formatMessage({ id: 'button.confirm' })}
+          cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
             <Button
               type="link"
               size="small"
@@ -692,11 +692,7 @@ const ProductManagement: React.FC = () => {
   );
 
   return (
-    <PageContainer
-      header={{
-        title: intl.formatMessage({ id: 'products.title' }),
-      }}
-    >
+    <PageContainer header={{ title: false }}>
       {/* ProTable */}
       <ProTable<Product>
         columns={columns}
@@ -788,13 +784,13 @@ const ProductManagement: React.FC = () => {
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>商品列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.products' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalGoods} 个)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalGoods })})
             </span>
             <Popover
               content={statsContent}
-              title="统计详情"
+              title={intl.formatMessage({ id: 'stats.title' })}
               trigger="click"
               placement="bottomLeft"
             >
@@ -804,7 +800,7 @@ const ProductManagement: React.FC = () => {
                 icon={<InfoCircleOutlined />}
                 style={{ color: '#1890ff' }}
               >
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>
@@ -813,7 +809,7 @@ const ProductManagement: React.FC = () => {
 
       {/* 创建商品模态框 */}
       <Modal
-        title="新增商品"
+        title={intl.formatMessage({ id: 'products.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -1000,7 +996,7 @@ const ProductManagement: React.FC = () => {
 
       {/* 编辑商品模态框 */}
       <Modal
-        title="编辑商品"
+        title={intl.formatMessage({ id: 'products.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
