@@ -7,6 +7,7 @@ import {
 } from '@ant-design/pro-components';
 import { App, Button, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
+import { useIntl } from '@umijs/max';
 
 export interface ListPageTemplateProps<T> {
   title: string;
@@ -45,6 +46,7 @@ function ListPageTemplate<T extends Record<string, any>>({
   searchConfig = { labelWidth: 120 },
 }: ListPageTemplateProps<T>) {
   const { message } = App.useApp();
+  const intl = useIntl();
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<T>();
@@ -128,7 +130,7 @@ function ListPageTemplate<T extends Record<string, any>>({
                 handleUpdateModalOpen(true);
               }}
             >
-              编辑
+              {intl.formatMessage({ id: 'button.edit' })}
             </Button>
           );
         }
@@ -137,18 +139,18 @@ function ListPageTemplate<T extends Record<string, any>>({
           actions.push(
             <Popconfirm
               key="delete"
-              title="确定删除这条记录吗？"
+              title={intl.formatMessage({ id: 'message.confirmDelete' })}
               onConfirm={async () => {
                 const success = await handleRemove(record[rowKey]);
                 if (success) {
                   actionRef.current?.reload();
                 }
               }}
-              okText="确定"
-              cancelText="取消"
+              okText={intl.formatMessage({ id: 'button.confirm' })}
+              cancelText={intl.formatMessage({ id: 'button.cancel' })}
             >
               <Button type="link" size="small" danger>
-                删除
+                {intl.formatMessage({ id: 'button.delete' })}
               </Button>
             </Popconfirm>
           );
@@ -182,7 +184,7 @@ function ListPageTemplate<T extends Record<string, any>>({
                   handleModalOpen(true);
                 }}
               >
-                <PlusOutlined /> 添加
+                <PlusOutlined /> {intl.formatMessage({ id: 'button.add' })}
               </Button>
             );
           }

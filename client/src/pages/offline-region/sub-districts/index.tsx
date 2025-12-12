@@ -26,6 +26,7 @@ import {
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
+import { useIntl } from '@umijs/max';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -67,7 +68,8 @@ interface LocationStats {
  */
 const SubDistrictsPage: React.FC = () => {
   const { currentBase } = useBase();
-    const actionRef = useRef<ActionType>();
+  const intl = useIntl();
+  const actionRef = useRef<ActionType>();
   
   // 状态管理
   const [stats, setStats] = useState<LocationStats>({
@@ -584,7 +586,7 @@ const SubDistrictsPage: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            新建仓库
+            {intl.formatMessage({ id: 'subDistricts.add' })}
           </Button>,
         ]}
         dateFormatter="string"

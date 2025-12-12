@@ -21,7 +21,7 @@ import {
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
 import { useArrivalExcel } from './useArrivalExcel';
@@ -35,6 +35,7 @@ import type { ArrivalRecord, ArrivalStats, ArrivalFormValues } from './types';
 const ArrivalManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
 
   // Excel导入导出Hook
@@ -376,21 +377,21 @@ const ArrivalManagement: React.FC = () => {
             icon={<DownloadOutlined />}
             onClick={handleDownloadTemplate}
           >
-            下载模板
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入
+            {intl.formatMessage({ id: 'button.import' })}
           </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
           >
-            导出
+            {intl.formatMessage({ id: 'button.export' })}
           </Button>,
           <Button
             key="create"
@@ -398,7 +399,7 @@ const ArrivalManagement: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            添加到货记录
+            {intl.formatMessage({ id: 'arrivals.add' })}
           </Button>,
         ]}
         dateFormatter="string"

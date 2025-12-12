@@ -1,3 +1,4 @@
+import business from './zh-TW/business';
 import component from './zh-TW/component';
 import globalHeader from './zh-TW/globalHeader';
 import menu from './zh-TW/menu';
@@ -19,4 +20,5 @@ export default {
   ...settings,
   ...pwa,
   ...component,
+  ...business,
 };

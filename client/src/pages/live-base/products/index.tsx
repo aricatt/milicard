@@ -33,7 +33,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
 import { useProductExcel } from './useProductExcel';
@@ -124,6 +124,7 @@ interface ProductStats {
 const ProductManagement: React.FC = () => {
   const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   
   // 状态管理
@@ -693,7 +694,7 @@ const ProductManagement: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: '商品管理',
+        title: intl.formatMessage({ id: 'products.title' }),
       }}
     >
       {/* ProTable */}
@@ -757,21 +758,21 @@ const ProductManagement: React.FC = () => {
             icon={<DownloadOutlined />}
             onClick={handleDownloadTemplate}
           >
-            下载模板
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入
+            {intl.formatMessage({ id: 'button.import' })}
           </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
           >
-            导出
+            {intl.formatMessage({ id: 'button.export' })}
           </Button>,
           <Button
             key="create"
@@ -779,7 +780,7 @@ const ProductManagement: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            新增商品
+            {intl.formatMessage({ id: 'products.add' })}
           </Button>,
         ]}
         

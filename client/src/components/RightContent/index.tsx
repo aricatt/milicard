@@ -3,12 +3,18 @@ import { SelectLang as UmiSelectLang } from '@umijs/max';
 
 export type SiderTheme = 'light' | 'dark';
 
+// 支持的语言列表
+const SUPPORTED_LOCALES = ['zh-CN', 'zh-TW', 'en-US', 'vi-VN', 'th-TH'];
+
 export const SelectLang: React.FC = () => {
   return (
     <UmiSelectLang
       style={{
         padding: 4,
       }}
+      postLocalesData={(locales) =>
+        locales.filter((locale) => SUPPORTED_LOCALES.includes(locale.lang))
+      }
     />
   );
 };

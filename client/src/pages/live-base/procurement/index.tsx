@@ -17,7 +17,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import { useProcurementExcel } from './useProcurementExcel';
 import ProcurementForm from './ProcurementForm';
@@ -38,8 +38,9 @@ import dayjs from 'dayjs';
  * 包含ProTable、Excel导入导出、商品/供应商关联选择
  */
 const ProcurementManagement: React.FC = () => {
-  const { currentBase } = useBase();
+  const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
   
   // 状态管理
@@ -438,21 +439,21 @@ const ProcurementManagement: React.FC = () => {
             icon={<DownloadOutlined />}
             onClick={handleDownloadTemplate}
           >
-            下载模板
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入
+            {intl.formatMessage({ id: 'button.import' })}
           </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
           >
-            导出
+            {intl.formatMessage({ id: 'button.export' })}
           </Button>,
           <Button
             key="create"
@@ -460,7 +461,7 @@ const ProcurementManagement: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            创建采购订单
+            {intl.formatMessage({ id: 'procurement.add' })}
           </Button>,
         ]}
         dateFormatter="string"

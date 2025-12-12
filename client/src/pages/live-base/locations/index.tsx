@@ -29,6 +29,7 @@ import {
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
+import { useIntl } from '@umijs/max';
 import styles from './index.less';
 
 const { TextArea } = Input;
@@ -74,6 +75,7 @@ interface LocationStats {
 const LocationManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   
   // 状态管理
@@ -685,7 +687,7 @@ const LocationManagement: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            新建位置
+            {intl.formatMessage({ id: 'locations.add' })}
           </Button>,
         ]}
         

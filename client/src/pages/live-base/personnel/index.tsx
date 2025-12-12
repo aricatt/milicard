@@ -26,7 +26,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
 
@@ -69,6 +69,7 @@ interface PersonnelStats {
 const PersonnelManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   
   // 状态管理
@@ -580,7 +581,7 @@ const PersonnelManagement: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            添加人员
+            {intl.formatMessage({ id: 'personnel.add' })}
           </Button>,
         ]}
         

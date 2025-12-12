@@ -31,7 +31,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
 import { useSupplierExcel } from './useSupplierExcel';
@@ -71,6 +71,7 @@ interface SupplierStats {
 const SupplierManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   
   // 状态管理
@@ -552,7 +553,7 @@ const SupplierManagement: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: '供应商管理',
+        title: intl.formatMessage({ id: 'suppliers.title' }),
       }}
     >
       {/* ProTable */}
@@ -614,21 +615,21 @@ const SupplierManagement: React.FC = () => {
             icon={<DownloadOutlined />}
             onClick={handleDownloadTemplate}
           >
-            下载模板
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入
+            {intl.formatMessage({ id: 'button.import' })}
           </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
           >
-            导出
+            {intl.formatMessage({ id: 'button.export' })}
           </Button>,
           <Button
             key="create"
@@ -636,7 +637,7 @@ const SupplierManagement: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            新增供应商
+            {intl.formatMessage({ id: 'suppliers.add' })}
           </Button>,
         ]}
         

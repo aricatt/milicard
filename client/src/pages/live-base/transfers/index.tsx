@@ -25,7 +25,7 @@ import {
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
 import { useTransferExcel } from './useTransferExcel';
@@ -48,6 +48,7 @@ const { TextArea } = Input;
 const TransferManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>();
   const [form] = Form.useForm();
 
@@ -303,12 +304,12 @@ const TransferManagement: React.FC = () => {
           <Popover
             key="stats"
             content={statsContent}
-            title="调货统计"
+            title={intl.formatMessage({ id: 'button.detail' })}
             trigger="hover"
             placement="bottomRight"
           >
             <Button icon={<InfoCircleOutlined />}>
-              统计信息
+              {intl.formatMessage({ id: 'button.detail' })}
             </Button>
           </Popover>,
           <Button
@@ -316,21 +317,21 @@ const TransferManagement: React.FC = () => {
             icon={<DownloadOutlined />}
             onClick={handleDownloadTemplate}
           >
-            下载模板
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
           </Button>,
           <Button
             key="import"
             icon={<ImportOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入
+            {intl.formatMessage({ id: 'button.import' })}
           </Button>,
           <Button
             key="export"
             icon={<ExportOutlined />}
             onClick={handleExport}
           >
-            导出
+            {intl.formatMessage({ id: 'button.export' })}
           </Button>,
           <Button
             key="create"
@@ -346,7 +347,7 @@ const TransferManagement: React.FC = () => {
               setCreateModalVisible(true);
             }}
           >
-            新增调货
+            {intl.formatMessage({ id: 'transfers.add' })}
           </Button>,
         ]}
         headerTitle={
