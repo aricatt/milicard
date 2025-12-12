@@ -110,7 +110,7 @@ function ListPageTemplate<T extends Record<string, any>>({
   const finalColumns: ProColumns<T>[] = [
     ...columns,
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.action' }),
       dataIndex: 'option',
       valueType: 'option',
       width: 150,

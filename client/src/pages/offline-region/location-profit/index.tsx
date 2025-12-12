@@ -3,7 +3,7 @@ import { PageContainer, ProTable, ModalForm, ProFormSelect, ProFormDateRangePick
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { Button, message, Popconfirm, Space, Tag, Typography, Card, Table, Descriptions, Spin, Alert, Divider } from 'antd';
 import { PlusOutlined, DeleteOutlined, CalculatorOutlined } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 
 const { Text, Title } = Typography;
@@ -56,6 +56,7 @@ interface ProfitPreview {
 
 const LocationProfitPage: React.FC = () => {
   const { currentBase } = useBase();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [pointOptions, setPointOptions] = useState<PointOption[]>([]);
@@ -149,7 +150,7 @@ const LocationProfitPage: React.FC = () => {
   // 创建利润记录
   const handleCreate = async (values: any) => {
     if (!currentBase?.id) {
-      message.error('请先选择基地');
+      message.error(intl.formatMessage({ id: 'message.selectBaseFirst' }));
       return false;
     }
 
@@ -166,18 +167,18 @@ const LocationProfitPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('利润记录已保存');
+        message.success(intl.formatMessage({ id: 'locationProfit.message.saveSuccess' }));
         setCreateModalVisible(false);
         setPreviewData(null);
         setFormValues({});
         actionRef.current?.reload();
         return true;
       } else {
-        message.error(result.message || '保存失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.saveFailed' }));
         return false;
       }
     } catch (error: any) {
-      message.error(error.message || '计算失败');
+      message.error(error.message || intl.formatMessage({ id: 'locationProfit.message.calcFailed' }));
       return false;
     }
   };
@@ -192,13 +193,13 @@ const LocationProfitPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('删除成功');
+        message.success(intl.formatMessage({ id: 'message.deleteSuccess' }));
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '删除失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.deleteFailed' }));
       }
     } catch (error: any) {
-      message.error(error.message || '删除失败');
+      message.error(error.message || intl.formatMessage({ id: 'message.deleteFailed' }));
     }
   };
 
@@ -210,7 +211,7 @@ const LocationProfitPage: React.FC = () => {
   // 表格列定义
   const columns: ProColumns<LocationProfitItem>[] = [
     {
-      title: '店铺名称',
+      title: intl.formatMessage({ id: 'points.column.name' }),
       dataIndex: 'pointName',
       key: 'pointName',
       width: 200,
@@ -219,7 +220,7 @@ const LocationProfitPage: React.FC = () => {
       ),
     },
     {
-      title: '日期段',
+      title: intl.formatMessage({ id: 'locationProfit.column.dateRange' }),
       dataIndex: 'dateRange',
       key: 'dateRange',
       width: 180,
@@ -229,7 +230,7 @@ const LocationProfitPage: React.FC = () => {
       ),
     },
     {
-      title: '拿货金额',
+      title: intl.formatMessage({ id: 'locationProfit.column.salesAmount' }),
       dataIndex: 'totalSalesAmount',
       key: 'totalSalesAmount',
       width: 120,
@@ -240,7 +241,7 @@ const LocationProfitPage: React.FC = () => {
       ),
     },
     {
-      title: '采购成本',
+      title: intl.formatMessage({ id: 'locationProfit.column.costAmount' }),
       dataIndex: 'totalCostAmount',
       key: 'totalCostAmount',
       width: 120,
@@ -251,7 +252,7 @@ const LocationProfitPage: React.FC = () => {
       ),
     },
     {
-      title: '利润金额',
+      title: intl.formatMessage({ id: 'locationProfit.column.profitAmount' }),
       dataIndex: 'profitAmount',
       key: 'profitAmount',
       width: 120,
@@ -264,7 +265,7 @@ const LocationProfitPage: React.FC = () => {
       ),
     },
     {
-      title: '利润率',
+      title: intl.formatMessage({ id: 'locationProfit.column.profitRate' }),
       dataIndex: 'profitRate',
       key: 'profitRate',
       width: 100,
@@ -282,7 +283,7 @@ const LocationProfitPage: React.FC = () => {
       },
     },
     {
-      title: '备注',
+      title: intl.formatMessage({ id: 'table.column.notes' }),
       dataIndex: 'notes',
       key: 'notes',
       width: 150,
@@ -290,7 +291,7 @@ const LocationProfitPage: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 160,
@@ -298,20 +299,20 @@ const LocationProfitPage: React.FC = () => {
       render: (_, record) => new Date(record.createdAt).toLocaleString('zh-CN'),
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 80,
       search: false,
       render: (_, record) => (
         <Space>
           <Popconfirm
-            title="确定要删除这条记录吗？"
+            title={intl.formatMessage({ id: 'message.confirmDelete' })}
             onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={intl.formatMessage({ id: 'button.confirm' })}
+            cancelText={intl.formatMessage({ id: 'button.cancel' })}
           >
             <Button type="link" danger size="small" icon={<DeleteOutlined />}>
-              删除
+              {intl.formatMessage({ id: 'button.delete' })}
             </Button>
           </Popconfirm>
         </Space>
@@ -323,7 +324,7 @@ const LocationProfitPage: React.FC = () => {
     return (
       <PageContainer header={{ title: false }}>
         <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <Text type="secondary">请先选择一个基地</Text>
+          <Text type="secondary">{intl.formatMessage({ id: 'message.selectBaseFirst' })}</Text>
         </div>
       </PageContainer>
     );
@@ -351,14 +352,14 @@ const LocationProfitPage: React.FC = () => {
               setCreateModalVisible(true);
             }}
           >
-            计算利润
+            {intl.formatMessage({ id: 'locationProfit.calcProfit' })}
           </Button>,
         ]}
       />
 
       {/* 创建利润记录弹窗 */}
       <ModalForm
-        title="计算点位利润"
+        title={intl.formatMessage({ id: 'locationProfit.modal.title' })}
         open={createModalVisible}
         onOpenChange={(visible) => {
           setCreateModalVisible(visible);
@@ -375,15 +376,15 @@ const LocationProfitPage: React.FC = () => {
         }}
         submitter={{
           searchConfig: {
-            submitText: previewData ? '保存记录' : '计算利润',
+            submitText: previewData ? intl.formatMessage({ id: 'button.save' }) : intl.formatMessage({ id: 'locationProfit.calcProfit' }),
           },
         }}
       >
         <ProFormSelect
           name="pointId"
-          label="选择店铺"
-          placeholder="请选择店铺"
-          rules={[{ required: true, message: '请选择店铺' }]}
+          label={intl.formatMessage({ id: 'locationProfit.form.selectPoint' })}
+          placeholder={intl.formatMessage({ id: 'form.placeholder.select' })}
+          rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.required' }) }]}
           options={pointOptions.map((p) => ({
             label: `${p.code}-${p.name}`,
             value: p.id,
@@ -397,9 +398,9 @@ const LocationProfitPage: React.FC = () => {
 
         <ProFormDateRangePicker
           name="dateRange"
-          label="日期段"
-          placeholder={['开始日期', '结束日期']}
-          rules={[{ required: true, message: '请选择日期范围' }]}
+          label={intl.formatMessage({ id: 'locationProfit.column.dateRange' })}
+          placeholder={[intl.formatMessage({ id: 'locationProfit.form.startDate' }), intl.formatMessage({ id: 'locationProfit.form.endDate' })]}
+          rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.required' }) }]}
           fieldProps={{
             style: { width: '100%' },
           }}
@@ -408,7 +409,7 @@ const LocationProfitPage: React.FC = () => {
         {/* 利润预览区域 */}
         {previewLoading && (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <Spin tip="正在计算..." />
+            <Spin tip={intl.formatMessage({ id: 'message.loading' })} />
           </div>
         )}
 
@@ -519,8 +520,8 @@ const LocationProfitPage: React.FC = () => {
 
         <ProFormTextArea
           name="notes"
-          label="备注"
-          placeholder="可选，添加备注信息"
+          label={intl.formatMessage({ id: 'table.column.notes' })}
+          placeholder={intl.formatMessage({ id: 'form.placeholder.input' })}
           fieldProps={{
             rows: 2,
             maxLength: 500,

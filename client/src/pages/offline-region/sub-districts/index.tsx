@@ -149,12 +149,12 @@ const SubDistrictsPage: React.FC = () => {
           total: warehouseData.length,
         };
       } else {
-        message.error(result.message || '获取数据失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
         return { data: [], success: false, total: 0 };
       }
     } catch (error) {
-      console.error('获取位置数据失败:', error);
-      message.error('获取位置数据失败');
+      console.error('Failed to fetch location data:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -186,7 +186,7 @@ const SubDistrictsPage: React.FC = () => {
    */
   const handleCreate = async (values: any) => {
     if (!currentBase) {
-      message.error('请先选择基地');
+      message.error(intl.formatMessage({ id: 'message.selectBaseFirst' }));
       return;
     }
 
@@ -204,16 +204,16 @@ const SubDistrictsPage: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        message.success('创建成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         setCreateModalVisible(false);
         createForm.resetFields();
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '创建失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('创建位置失败:', error);
-      message.error('创建位置失败');
+      console.error('Failed to create location:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     } finally {
       setCreateLoading(false);
     }
@@ -242,17 +242,17 @@ const SubDistrictsPage: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         setEditModalVisible(false);
         editForm.resetFields();
         setEditingLocation(null);
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '更新失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('更新位置失败:', error);
-      message.error('更新位置失败');
+      console.error('Failed to update location:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     } finally {
       setEditLoading(false);
     }
@@ -278,14 +278,14 @@ const SubDistrictsPage: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        message.success('删除成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '删除失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('删除位置失败:', error);
-      message.error('删除位置失败');
+      console.error('Failed to delete location:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     }
   };
 
@@ -476,7 +476,7 @@ const SubDistrictsPage: React.FC = () => {
       <PageContainer>
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <p>请先选择一个基地</p>
+            <p>{intl.formatMessage({ id: 'message.selectBaseFirst' })}</p>
           </div>
         </Card>
       </PageContainer>
@@ -487,25 +487,25 @@ const SubDistrictsPage: React.FC = () => {
   const statsContent = (
     <div style={{ width: 280 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="总仓库数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'subDistricts.stats.total' })}>
           <Space>
             <DatabaseOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalLocations}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="总仓库">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.type.mainWarehouse' })}>
           <Space>
             <DatabaseOutlined style={{ color: '#fa8c16' }} />
             <span style={{ color: '#fa8c16', fontWeight: 'bold' }}>{stats.mainWarehouses}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="子仓库">
+        <Descriptions.Item label={intl.formatMessage({ id: 'locations.type.warehouse' })}>
           <Space>
             <DatabaseOutlined style={{ color: '#1890ff' }} />
             <span style={{ color: '#1890ff', fontWeight: 'bold' }}>{stats.warehouses}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="启用中">
+        <Descriptions.Item label={intl.formatMessage({ id: 'subDistricts.stats.active' })}>
           <Space>
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeLocations}</span>
           </Space>
@@ -519,8 +519,8 @@ const SubDistrictsPage: React.FC = () => {
       {/* 没有总仓库的警告提示 */}
       {!hasMainWarehouse && stats.totalLocations > 0 && (
         <Alert
-          message="缺少总仓库"
-          description="当前基地尚未设置总仓库。请通过编辑现有仓库，将其中一个设置为总仓库。"
+          message={intl.formatMessage({ id: 'subDistricts.alert.noMainWarehouse' })}
+          description={intl.formatMessage({ id: 'subDistricts.alert.noMainWarehouseDesc' })}
           type="warning"
           showIcon
           icon={<WarningOutlined />}
@@ -533,18 +533,18 @@ const SubDistrictsPage: React.FC = () => {
         title={
           <Space>
             <WarningOutlined style={{ color: '#faad14' }} />
-            <span>缺少总仓库</span>
+            <span>{intl.formatMessage({ id: 'subDistricts.alert.noMainWarehouse' })}</span>
           </Space>
         }
         open={noMainWarehouseModalVisible}
         onOk={() => setNoMainWarehouseModalVisible(false)}
         onCancel={() => setNoMainWarehouseModalVisible(false)}
-        okText="我知道了"
+        okText={intl.formatMessage({ id: 'button.confirm' })}
         cancelButtonProps={{ style: { display: 'none' } }}
       >
-        <p>当前基地尚未设置<strong>总仓库</strong>。</p>
-        <p>每个基地必须有且只有一个总仓库，才能创建其他子仓库。</p>
-        <p>请通过<strong>编辑</strong>现有仓库，将其中一个设置为总仓库。</p>
+        <p>{intl.formatMessage({ id: 'subDistricts.modal.noMainWarehouseP1' })}</p>
+        <p>{intl.formatMessage({ id: 'subDistricts.modal.noMainWarehouseP2' })}</p>
+        <p>{intl.formatMessage({ id: 'subDistricts.modal.noMainWarehouseP3' })}</p>
       </Modal>
 
       {/* ProTable */}
@@ -592,13 +592,13 @@ const SubDistrictsPage: React.FC = () => {
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>仓库列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.subDistricts' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalLocations} 个)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalLocations })})
             </span>
-            <Popover content={statsContent} title="统计详情" trigger="click" placement="bottomLeft">
+            <Popover content={statsContent} title={intl.formatMessage({ id: 'stats.title' })} trigger="click" placement="bottomLeft">
               <Button type="text" size="small" icon={<InfoCircleOutlined />} style={{ color: '#1890ff' }}>
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>
@@ -607,7 +607,7 @@ const SubDistrictsPage: React.FC = () => {
 
       {/* 创建仓库模态框 - 只能选择仓库类型 */}
       <Modal
-        title="新建仓库"
+        title={intl.formatMessage({ id: 'subDistricts.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -619,49 +619,49 @@ const SubDistrictsPage: React.FC = () => {
       >
         <Form form={createForm} layout="vertical" onFinish={handleCreate}>
           <Form.Item
-            label="仓库名称"
+            label={intl.formatMessage({ id: 'subDistricts.column.name' })}
             name="name"
-            rules={[{ required: true, message: '请输入仓库名称' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'subDistricts.form.nameRequired' }) }]}
           >
-            <Input placeholder="请输入仓库名称" />
+            <Input placeholder={intl.formatMessage({ id: 'subDistricts.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="仓库类型"
+            label={intl.formatMessage({ id: 'locations.column.type' })}
             name="type"
-            rules={[{ required: true, message: '请选择仓库类型' }]}
-            extra={!hasMainWarehouse ? '当前基地没有总仓库，请先创建总仓库' : '已有总仓库，不能重复创建'}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'subDistricts.form.typeRequired' }) }]}
+            extra={!hasMainWarehouse ? intl.formatMessage({ id: 'subDistricts.form.noMainWarehouseHint' }) : intl.formatMessage({ id: 'subDistricts.form.hasMainWarehouseHint' })}
           >
-            <Select placeholder="请选择仓库类型">
+            <Select placeholder={intl.formatMessage({ id: 'subDistricts.form.typePlaceholder' })}>
               <Option value={LocationType.MAIN_WAREHOUSE} disabled={hasMainWarehouse}>
-                总仓库 {hasMainWarehouse ? '(已存在)' : ''}
+                {intl.formatMessage({ id: 'locations.type.mainWarehouse' })} {hasMainWarehouse ? `(${intl.formatMessage({ id: 'subDistricts.form.exists' })})` : ''}
               </Option>
               <Option value={LocationType.WAREHOUSE} disabled={!hasMainWarehouse}>
-                子仓库 {!hasMainWarehouse ? '(需先创建总仓库)' : ''}
+                {intl.formatMessage({ id: 'locations.type.warehouse' })} {!hasMainWarehouse ? `(${intl.formatMessage({ id: 'subDistricts.form.needMainFirst' })})` : ''}
               </Option>
             </Select>
           </Form.Item>
 
-          <Form.Item label="描述" name="description">
-            <TextArea rows={3} placeholder="请输入描述信息" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.description' })} name="description">
+            <TextArea rows={3} placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} />
           </Form.Item>
 
-          <Form.Item label="地址" name="address">
-            <Input placeholder="请输入地址" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.address' })} name="address">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} />
           </Form.Item>
 
-          <Form.Item label="联系人" name="contactPerson">
-            <Input placeholder="请输入联系人" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.contactPerson' })} name="contactPerson">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.contactPerson' })} />
           </Form.Item>
 
-          <Form.Item label="联系电话" name="contactPhone">
-            <Input placeholder="请输入联系电话" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.contactPhone' })} name="contactPhone">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.contactPhone' })} />
           </Form.Item>
 
-          <Form.Item label="状态" name="isActive" initialValue={true}>
+          <Form.Item label={intl.formatMessage({ id: 'form.label.status' })} name="isActive" initialValue={true}>
             <Select>
-              <Option value={true}>启用</Option>
-              <Option value={false}>禁用</Option>
+              <Option value={true}>{intl.formatMessage({ id: 'status.enabled' })}</Option>
+              <Option value={false}>{intl.formatMessage({ id: 'status.disabled' })}</Option>
             </Select>
           </Form.Item>
         </Form>
@@ -669,7 +669,7 @@ const SubDistrictsPage: React.FC = () => {
 
       {/* 编辑仓库模态框 */}
       <Modal
-        title="编辑仓库"
+        title={intl.formatMessage({ id: 'subDistricts.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
@@ -682,49 +682,49 @@ const SubDistrictsPage: React.FC = () => {
       >
         <Form form={editForm} layout="vertical" onFinish={handleUpdate}>
           <Form.Item
-            label="仓库名称"
+            label={intl.formatMessage({ id: 'subDistricts.column.name' })}
             name="name"
-            rules={[{ required: true, message: '请输入仓库名称' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'subDistricts.form.nameRequired' }) }]}
           >
-            <Input placeholder="请输入仓库名称" />
+            <Input placeholder={intl.formatMessage({ id: 'subDistricts.form.namePlaceholder' })} />
           </Form.Item>
 
           <Form.Item
-            label="仓库类型"
+            label={intl.formatMessage({ id: 'locations.column.type' })}
             name="type"
-            rules={[{ required: true, message: '请选择仓库类型' }]}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'subDistricts.form.typeRequired' }) }]}
           >
-            <Select placeholder="请选择仓库类型">
+            <Select placeholder={intl.formatMessage({ id: 'subDistricts.form.typePlaceholder' })}>
               <Option 
                 value={LocationType.MAIN_WAREHOUSE} 
                 disabled={hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE}
               >
-                总仓库 {hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE ? '(已存在)' : ''}
+                {intl.formatMessage({ id: 'locations.type.mainWarehouse' })} {hasMainWarehouse && editingLocation?.type !== LocationType.MAIN_WAREHOUSE ? `(${intl.formatMessage({ id: 'subDistricts.form.exists' })})` : ''}
               </Option>
-              <Option value={LocationType.WAREHOUSE}>子仓库</Option>
+              <Option value={LocationType.WAREHOUSE}>{intl.formatMessage({ id: 'locations.type.warehouse' })}</Option>
             </Select>
           </Form.Item>
 
-          <Form.Item label="描述" name="description">
-            <TextArea rows={3} placeholder="请输入描述信息" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.description' })} name="description">
+            <TextArea rows={3} placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} />
           </Form.Item>
 
-          <Form.Item label="地址" name="address">
-            <Input placeholder="请输入地址" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.address' })} name="address">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} />
           </Form.Item>
 
-          <Form.Item label="联系人" name="contactPerson">
-            <Input placeholder="请输入联系人" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.contactPerson' })} name="contactPerson">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.contactPerson' })} />
           </Form.Item>
 
-          <Form.Item label="联系电话" name="contactPhone">
-            <Input placeholder="请输入联系电话" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.contactPhone' })} name="contactPhone">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.contactPhone' })} />
           </Form.Item>
 
-          <Form.Item label="状态" name="isActive">
+          <Form.Item label={intl.formatMessage({ id: 'form.label.status' })} name="isActive">
             <Select>
-              <Option value={true}>启用</Option>
-              <Option value={false}>禁用</Option>
+              <Option value={true}>{intl.formatMessage({ id: 'status.enabled' })}</Option>
+              <Option value={false}>{intl.formatMessage({ id: 'status.disabled' })}</Option>
             </Select>
           </Form.Item>
         </Form>

@@ -17,7 +17,7 @@ import {
   Descriptions,
 } from 'antd';
 import { DollarOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 
 /**
@@ -50,6 +50,7 @@ interface PayableStats {
  */
 const PayablesPage: React.FC = () => {
   const { currentBase } = useBase();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
   
   // 付款弹窗状态
@@ -153,7 +154,7 @@ const PayablesPage: React.FC = () => {
    */
   const columns: ProColumns<PayableInfo>[] = [
     {
-      title: '采购',
+      title: intl.formatMessage({ id: 'payables.column.purchaseName' }),
       dataIndex: 'purchaseName',
       key: 'purchaseName',
       width: 300,
@@ -161,14 +162,14 @@ const PayablesPage: React.FC = () => {
       copyable: true,
     },
     {
-      title: '供应商',
+      title: intl.formatMessage({ id: 'payables.column.supplier' }),
       dataIndex: 'supplierName',
       key: 'supplierName',
       width: 120,
       ellipsis: true,
     },
     {
-      title: '商品',
+      title: intl.formatMessage({ id: 'payables.column.goods' }),
       dataIndex: 'goodsName',
       key: 'goodsName',
       width: 200,
@@ -176,7 +177,7 @@ const PayablesPage: React.FC = () => {
       hideInSearch: true,
     },
     {
-      title: '应付总金额',
+      title: intl.formatMessage({ id: 'payables.column.totalAmount' }),
       dataIndex: 'totalAmount',
       key: 'totalAmount',
       width: 130,
@@ -189,7 +190,7 @@ const PayablesPage: React.FC = () => {
       ),
     },
     {
-      title: '实付',
+      title: intl.formatMessage({ id: 'payables.column.paidAmount' }),
       dataIndex: 'paidAmount',
       key: 'paidAmount',
       width: 130,
@@ -202,7 +203,7 @@ const PayablesPage: React.FC = () => {
       ),
     },
     {
-      title: '未支付金额',
+      title: intl.formatMessage({ id: 'payables.column.unpaidAmount' }),
       dataIndex: 'unpaidAmount',
       key: 'unpaidAmount',
       width: 130,
@@ -220,36 +221,36 @@ const PayablesPage: React.FC = () => {
       },
     },
     {
-      title: '付款日期',
+      title: intl.formatMessage({ id: 'payables.column.paymentDate' }),
       dataIndex: 'paymentDate',
       key: 'paymentDate',
       width: 110,
       valueType: 'date',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       key: 'status',
       width: 80,
       hideInSearch: true,
       render: (_, record) => {
         if (record.unpaidAmount <= 0) {
-          return <Tag color="success">已付清</Tag>;
+          return <Tag color="success">{intl.formatMessage({ id: 'payables.status.paid' })}</Tag>;
         }
         if (record.paidAmount > 0) {
-          return <Tag color="warning">部分付款</Tag>;
+          return <Tag color="warning">{intl.formatMessage({ id: 'payables.status.partial' })}</Tag>;
         }
-        return <Tag color="error">未付款</Tag>;
+        return <Tag color="error">{intl.formatMessage({ id: 'payables.status.unpaid' })}</Tag>;
       },
     },
     {
-      title: '只看未付清',
+      title: intl.formatMessage({ id: 'payables.filter.unpaidOnly' }),
       dataIndex: 'unpaidOnly',
       key: 'unpaidOnly',
       hideInTable: true,
       valueType: 'switch',
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 100,
       fixed: 'right',
@@ -264,7 +265,7 @@ const PayablesPage: React.FC = () => {
             icon={<DollarOutlined />}
             onClick={() => handleOpenPaymentModal(record)}
           >
-            付款
+            {intl.formatMessage({ id: 'payables.action.pay' })}
           </Button>
         );
       },
@@ -278,7 +279,7 @@ const PayablesPage: React.FC = () => {
         <Row gutter={24}>
           <Col span={8}>
             <Statistic
-              title="应付总金额"
+              title={intl.formatMessage({ id: 'payables.stats.totalPayable' })}
               value={stats.totalPayable}
               precision={2}
               valueStyle={{ color: '#1890ff' }}
@@ -286,7 +287,7 @@ const PayablesPage: React.FC = () => {
           </Col>
           <Col span={8}>
             <Statistic
-              title="已付金额"
+              title={intl.formatMessage({ id: 'payables.stats.totalPaid' })}
               value={stats.totalPaid}
               precision={2}
               valueStyle={{ color: '#52c41a' }}
@@ -294,7 +295,7 @@ const PayablesPage: React.FC = () => {
           </Col>
           <Col span={8}>
             <Statistic
-              title="未付金额"
+              title={intl.formatMessage({ id: 'payables.stats.totalUnpaid' })}
               value={stats.totalUnpaid}
               precision={2}
               valueStyle={{ color: stats.totalUnpaid > 0 ? '#ff4d4f' : '#52c41a' }}
@@ -332,7 +333,7 @@ const PayablesPage: React.FC = () => {
 
       {/* 付款弹窗 */}
       <Modal
-        title="添加付款"
+        title={intl.formatMessage({ id: 'payables.modal.addPayment' })}
         open={paymentModalVisible}
         onOk={handlePayment}
         onCancel={() => setPaymentModalVisible(false)}
@@ -343,23 +344,23 @@ const PayablesPage: React.FC = () => {
         {currentPayable && (
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
             <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="采购名称">
+              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.purchaseName' })}>
                 {currentPayable.purchaseName}
               </Descriptions.Item>
-              <Descriptions.Item label="供应商">
+              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.supplier' })}>
                 {currentPayable.supplierName}
               </Descriptions.Item>
-              <Descriptions.Item label="应付总金额">
+              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.totalAmount' })}>
                 <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
                   ¥ {currentPayable.totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
                 </span>
               </Descriptions.Item>
-              <Descriptions.Item label="已付金额">
+              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.paidAmount' })}>
                 <span style={{ color: '#52c41a' }}>
                   ¥ {currentPayable.paidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
                 </span>
               </Descriptions.Item>
-              <Descriptions.Item label="未付金额">
+              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.unpaidAmount' })}>
                 <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
                   ¥ {currentPayable.unpaidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
                 </span>
@@ -369,9 +370,9 @@ const PayablesPage: React.FC = () => {
             <Form form={form} layout="vertical">
               <Form.Item
                 name="paymentAmount"
-                label="本次付款金额"
+                label={intl.formatMessage({ id: 'payables.form.paymentAmount' })}
                 rules={[
-                  { required: true, message: '请输入付款金额' },
+                  { required: true, message: intl.formatMessage({ id: 'payables.form.amountRequired' }) },
                   { type: 'number', min: 0.01, message: '付款金额必须大于0' },
                   {
                     type: 'number',
@@ -395,7 +396,7 @@ const PayablesPage: React.FC = () => {
                   type="link"
                   onClick={() => form.setFieldsValue({ paymentAmount: currentPayable.unpaidAmount })}
                 >
-                  全额付款
+                  {intl.formatMessage({ id: 'payables.action.payFull' })}
                 </Button>
               </div>
             </Form>

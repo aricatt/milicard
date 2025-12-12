@@ -243,14 +243,14 @@ export default [
         component: './live-base/arrivals',
         access: 'canAccessArrivals',
       },
-      // 库存和消耗（复用直播基地）
-      {
-        name: 'inventory-consumption',
-        icon: 'database',
-        path: '/offline-region/inventory-consumption',
-        component: './live-base/inventory-consumption',
-        access: 'canAccessInventoryConsumption',
-      },
+      // 库存和消耗（线下区域不需要，已隐藏）
+      // {
+      //   name: 'inventory-consumption',
+      //   icon: 'database',
+      //   path: '/offline-region/inventory-consumption',
+      //   component: './live-base/inventory-consumption',
+      //   access: 'canAccessInventoryConsumption',
+      // },
       // 出库管理
       {
         name: 'stock-out',

@@ -8,6 +8,7 @@ import { addBase, queryBaseList, updateBase } from '@/pages/live-base/base-data/
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
 import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
 import { useBase, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contexts/BaseContext';
+import { useIntl } from '@umijs/max';
 
 /**
  * 大区管理页面
@@ -15,6 +16,7 @@ import { useBase, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/contex
  */
 const DistrictsPage: React.FC = () => {
   const { refreshBaseList } = useBase();
+  const intl = useIntl();
   
   const columns: ProColumns<BaseItem>[] = [
     {
@@ -24,20 +26,20 @@ const DistrictsPage: React.FC = () => {
       search: false,
     },
     {
-      title: '编号',
+      title: intl.formatMessage({ id: 'districts.column.code' }),
       dataIndex: 'code',
       width: 150,
       copyable: true,
       ellipsis: true,
     },
     {
-      title: '名称',
+      title: intl.formatMessage({ id: 'districts.column.name' }),
       dataIndex: 'name',
       width: 150,
       ellipsis: true,
     },
     {
-      title: '货币',
+      title: intl.formatMessage({ id: 'bases.column.currency' }),
       dataIndex: 'currency',
       width: 100,
       search: false,
@@ -48,7 +50,7 @@ const DistrictsPage: React.FC = () => {
       ),
     },
     {
-      title: '语言',
+      title: intl.formatMessage({ id: 'bases.column.language' }),
       dataIndex: 'language',
       width: 100,
       search: false,
@@ -57,32 +59,32 @@ const DistrictsPage: React.FC = () => {
       ),
     },
     {
-      title: '联系人',
+      title: intl.formatMessage({ id: 'form.label.contactPerson' }),
       dataIndex: 'contactPerson',
       width: 100,
       search: false,
       ellipsis: true,
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'form.label.contactPhone' }),
       dataIndex: 'contactPhone',
       width: 120,
       search: false,
       ellipsis: true,
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       width: 80,
       search: false,
       render: (_, record) => (
         <Tag color={record.isActive ? 'success' : 'default'}>
-          {record.isActive ? '启用' : '禁用'}
+          {record.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
         </Tag>
       ),
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       width: 160,
       valueType: 'dateTime',
@@ -94,45 +96,45 @@ const DistrictsPage: React.FC = () => {
   const addFormFields = (
     <>
       <ProFormText
-        rules={[{ required: true, message: '大区名称为必填项' }]}
-        label="大区名称"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'districts.form.nameRequired' }) }]}
+        label={intl.formatMessage({ id: 'districts.column.name' })}
         name="name"
-        placeholder="请输入大区名称"
+        placeholder={intl.formatMessage({ id: 'districts.form.namePlaceholder' })}
       />
       <ProFormTextArea
-        label="描述"
+        label={intl.formatMessage({ id: 'form.label.description' })}
         name="description"
-        placeholder="请输入大区描述"
+        placeholder={intl.formatMessage({ id: 'districts.form.descPlaceholder' })}
         fieldProps={{ rows: 2 }}
       />
       <ProFormText
-        label="地址"
+        label={intl.formatMessage({ id: 'form.label.address' })}
         name="address"
-        placeholder="请输入大区地址"
+        placeholder={intl.formatMessage({ id: 'districts.form.addressPlaceholder' })}
       />
       <ProFormText
-        label="联系人"
+        label={intl.formatMessage({ id: 'form.label.contactPerson' })}
         name="contactPerson"
-        placeholder="请输入联系人姓名"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.contactPerson' })}
       />
       <ProFormText
-        label="联系电话"
+        label={intl.formatMessage({ id: 'form.label.contactPhone' })}
         name="contactPhone"
-        placeholder="请输入联系电话"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.contactPhone' })}
       />
       <ProFormSelect
-        label="货币"
+        label={intl.formatMessage({ id: 'bases.column.currency' })}
         name="currency"
-        placeholder="请选择货币"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.currency' })}
         options={CURRENCY_OPTIONS}
-        rules={[{ required: true, message: '请选择货币' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.currencyRequired' }) }]}
       />
       <ProFormSelect
-        label="语言"
+        label={intl.formatMessage({ id: 'bases.column.language' })}
         name="language"
-        placeholder="请选择语言"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.language' })}
         options={LANGUAGE_OPTIONS}
-        rules={[{ required: true, message: '请选择语言' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.languageRequired' }) }]}
       />
     </>
   );
@@ -141,58 +143,58 @@ const DistrictsPage: React.FC = () => {
   const updateFormFields = (
     <>
       <ProFormText
-        label="大区编号"
+        label={intl.formatMessage({ id: 'districts.column.code' })}
         name="code"
         disabled
-        extra="编号创建后不可修改"
+        extra={intl.formatMessage({ id: 'form.hint.codeReadonly' })}
       />
       <ProFormText
-        rules={[{ required: true, message: '大区名称为必填项' }]}
-        label="大区名称"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'districts.form.nameRequired' }) }]}
+        label={intl.formatMessage({ id: 'districts.column.name' })}
         name="name"
-        placeholder="请输入大区名称"
+        placeholder={intl.formatMessage({ id: 'districts.form.namePlaceholder' })}
       />
       <ProFormTextArea
-        label="描述"
+        label={intl.formatMessage({ id: 'form.label.description' })}
         name="description"
-        placeholder="请输入大区描述"
+        placeholder={intl.formatMessage({ id: 'districts.form.descPlaceholder' })}
         fieldProps={{ rows: 2 }}
       />
       <ProFormText
-        label="地址"
+        label={intl.formatMessage({ id: 'form.label.address' })}
         name="address"
-        placeholder="请输入大区地址"
+        placeholder={intl.formatMessage({ id: 'districts.form.addressPlaceholder' })}
       />
       <ProFormText
-        label="联系人"
+        label={intl.formatMessage({ id: 'form.label.contactPerson' })}
         name="contactPerson"
-        placeholder="请输入联系人姓名"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.contactPerson' })}
       />
       <ProFormText
-        label="联系电话"
+        label={intl.formatMessage({ id: 'form.label.contactPhone' })}
         name="contactPhone"
-        placeholder="请输入联系电话"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.contactPhone' })}
       />
       <ProFormSelect
-        label="货币"
+        label={intl.formatMessage({ id: 'bases.column.currency' })}
         name="currency"
-        placeholder="请选择货币"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.currency' })}
         options={CURRENCY_OPTIONS}
-        rules={[{ required: true, message: '请选择货币' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.currencyRequired' }) }]}
       />
       <ProFormSelect
-        label="语言"
+        label={intl.formatMessage({ id: 'bases.column.language' })}
         name="language"
-        placeholder="请选择语言"
+        placeholder={intl.formatMessage({ id: 'form.placeholder.language' })}
         options={LANGUAGE_OPTIONS}
-        rules={[{ required: true, message: '请选择语言' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.languageRequired' }) }]}
       />
     </>
   );
 
   return (
     <ListPageTemplate<BaseItem>
-      headerTitle="大区列表"
+      headerTitle={intl.formatMessage({ id: 'list.title.districts' })}
       columns={columns}
       request={async (params) => {
         const response = await queryBaseList({

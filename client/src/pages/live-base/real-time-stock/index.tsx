@@ -19,7 +19,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 
 // 实时库存数据类型
@@ -58,6 +58,7 @@ interface Warehouse {
 const RealTimeStockPage: React.FC = () => {
   const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
 
   // 状态管理
@@ -78,7 +79,7 @@ const RealTimeStockPage: React.FC = () => {
         setWarehouses(response.data || []);
       }
     } catch (error) {
-      console.error('获取仓库列表失败', error);
+      console.error('Failed to fetch warehouses', error);
     }
   };
 
@@ -91,7 +92,7 @@ const RealTimeStockPage: React.FC = () => {
         setStats(response.data);
       }
     } catch (error) {
-      console.error('获取统计数据失败', error);
+      console.error('Failed to fetch stats', error);
     }
   };
 
@@ -105,19 +106,19 @@ const RealTimeStockPage: React.FC = () => {
   // 表格列定义
   const columns: ProColumns<RealTimeStock>[] = [
     {
-      title: '商品编号',
+      title: intl.formatMessage({ id: 'products.column.code' }),
       dataIndex: 'goodsCode',
       width: 120,
       copyable: true,
     },
     {
-      title: '商品名称',
+      title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'goodsName',
       width: 200,
       ellipsis: true,
     },
     {
-      title: '库存/箱',
+      title: intl.formatMessage({ id: 'realTimeStock.column.boxQty' }),
       dataIndex: 'stockBox',
       width: 60,
       search: false,
@@ -129,57 +130,57 @@ const RealTimeStockPage: React.FC = () => {
       ),
     },
     {
-      title: '库存/盒',
+      title: intl.formatMessage({ id: 'realTimeStock.column.packQty' }),
       dataIndex: 'stockPack',
       width: 60,
       search: false,
       align: 'right',
     },
     {
-      title: '库存/包',
+      title: intl.formatMessage({ id: 'realTimeStock.column.pieceQty' }),
       dataIndex: 'stockPiece',
       width: 60,
       search: false,
       align: 'right',
     },
     {
-      title: '均价/箱',
+      title: intl.formatMessage({ id: 'realTimeStock.column.avgPriceBox' }),
       dataIndex: 'avgPricePerBox',
       width: 60,
       search: false,
       align: 'right',
     },
     {
-      title: '均价/盒',
+      title: intl.formatMessage({ id: 'realTimeStock.column.avgPricePack' }),
       dataIndex: 'avgPricePerPack',
       width: 60,
       search: false,
       align: 'right',
     },
     {
-      title: '均价/包',
+      title: intl.formatMessage({ id: 'realTimeStock.column.avgPricePiece' }),
       dataIndex: 'avgPricePerPiece',
       width: 60,
       search: false,
       align: 'right',
     },
     {
-      title: '总价值',
+      title: intl.formatMessage({ id: 'realTimeStock.column.totalValue' }),
       dataIndex: 'totalValue',
       width: 120,
       search: false,
       align: 'right',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       key: 'status',
       width: 80,
       search: false,
       render: (_, record) => {
         if (record.stockBox < 5) {
-          return <Tag color="red">低库存</Tag>;
+          return <Tag color="red">{intl.formatMessage({ id: 'inventory.status.lowStock' })}</Tag>;
         }
-        return <Tag color="green">正常</Tag>;
+        return <Tag color="green">{intl.formatMessage({ id: 'inventory.status.normal' })}</Tag>;
       },
     },
   ];
@@ -187,9 +188,9 @@ const RealTimeStockPage: React.FC = () => {
   // 统计详情弹出内容
   const statsContent = (
     <Descriptions column={1} size="small">
-      <Descriptions.Item label="商品种类">{stats.totalGoods} 种</Descriptions.Item>
-      <Descriptions.Item label="库存总价值">¥{stats.totalValue.toLocaleString()}</Descriptions.Item>
-      <Descriptions.Item label="低库存商品">{stats.lowStockCount} 种</Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalGoods' })}>{stats.totalGoods}</Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}>¥{stats.totalValue.toLocaleString()}</Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.lowStock' })}>{stats.lowStockCount}</Descriptions.Item>
     </Descriptions>
   );
 
@@ -200,7 +201,7 @@ const RealTimeStockPage: React.FC = () => {
   if (!currentBase) {
     return (
       <PageContainer>
-        <Card>请先选择一个基地</Card>
+        <Card>{intl.formatMessage({ id: 'message.selectBaseFirst' })}</Card>
       </PageContainer>
     );
   }
@@ -212,7 +213,7 @@ const RealTimeStockPage: React.FC = () => {
         <Col span={8}>
           <Card>
             <Statistic
-              title="商品种类"
+              title={intl.formatMessage({ id: 'realTimeStock.stats.totalGoods' })}
               value={stats.totalGoods}
               prefix={<DatabaseOutlined />}
             />
@@ -221,7 +222,7 @@ const RealTimeStockPage: React.FC = () => {
         <Col span={8}>
           <Card>
             <Statistic
-              title="库存总价值"
+              title={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}
               value={stats.totalValue}
               precision={2}
               prefix={<DollarOutlined />}
@@ -231,7 +232,7 @@ const RealTimeStockPage: React.FC = () => {
         <Col span={8}>
           <Card>
             <Statistic
-              title="低库存商品"
+              title={intl.formatMessage({ id: 'realTimeStock.stats.lowStock' })}
               value={stats.lowStockCount}
               prefix={<WarningOutlined />}
               valueStyle={{ color: stats.lowStockCount > 0 ? '#ff4d4f' : undefined }}
@@ -244,8 +245,8 @@ const RealTimeStockPage: React.FC = () => {
       <ProTable<RealTimeStock>
         headerTitle={
           <Space>
-            <span>实时库存列表</span>
-            <Popover content={statsContent} title="库存统计">
+            <span>{intl.formatMessage({ id: 'list.title.realTimeStock' })}</span>
+            <Popover content={statsContent} title={intl.formatMessage({ id: 'realTimeStock.stats.title' })}>
               <InfoCircleOutlined style={{ cursor: 'pointer' }} />
             </Popover>
           </Space>
@@ -259,7 +260,7 @@ const RealTimeStockPage: React.FC = () => {
           actions: [
             <Select
               key="warehouse"
-              placeholder="全部仓库"
+              placeholder={intl.formatMessage({ id: 'realTimeStock.filter.allWarehouses' })}
               allowClear
               style={{ width: 150 }}
               value={selectedWarehouse}
@@ -270,7 +271,7 @@ const RealTimeStockPage: React.FC = () => {
             >
               {warehouses.map((w) => (
                 <Select.Option key={w.id} value={w.id}>
-                  {w.name} {w.type === 'MAIN_WAREHOUSE' ? '(总仓)' : ''}
+                  {w.name} {w.type === 'MAIN_WAREHOUSE' ? `(${intl.formatMessage({ id: 'locations.type.mainWarehouse' })})` : ''}
                 </Select.Option>
               ))}
             </Select>,
@@ -301,7 +302,7 @@ const RealTimeStockPage: React.FC = () => {
             }
             return { data: [], success: false, total: 0 };
           } catch (error) {
-            message.error('获取库存数据失败');
+            message.error(intl.formatMessage({ id: 'realTimeStock.message.fetchFailed' }));
             return { data: [], success: false, total: 0 };
           }
         }}

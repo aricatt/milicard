@@ -1,16 +1,19 @@
 import React from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import { Card, Empty, Typography } from 'antd';
+import { useIntl } from '@umijs/max';
 import { PushpinOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph } = Typography;
 
 const LocationsPage: React.FC = () => {
+  const intl = useIntl();
+  
   return (
     <PageContainer
       header={{
-        title: '点位信息',
-        subTitle: '管理线下门店/网点信息',
+        title: intl.formatMessage({ id: 'offlineLocations.title' }),
+        subTitle: intl.formatMessage({ id: 'offlineLocations.subTitle' }),
       }}
     >
       <Card>
@@ -18,9 +21,9 @@ const LocationsPage: React.FC = () => {
           image={<PushpinOutlined style={{ fontSize: 64, color: '#1890ff' }} />}
           description={
             <Typography>
-              <Title level={4}>点位信息功能开发中</Title>
+              <Title level={4}>{intl.formatMessage({ id: 'offlineLocations.developing' })}</Title>
               <Paragraph type="secondary">
-                此功能将用于管理线下门店/网点的详细信息，包括地理位置、联系方式、库存状态等。
+                {intl.formatMessage({ id: 'offlineLocations.developingDesc' })}
               </Paragraph>
             </Typography>
           }

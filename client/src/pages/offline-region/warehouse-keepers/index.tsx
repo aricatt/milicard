@@ -24,7 +24,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 
 // 人员角色枚举 - 只使用仓管
@@ -60,7 +60,8 @@ interface PersonnelStats {
  */
 const WarehouseKeepersPage: React.FC = () => {
   const { currentBase } = useBase();
-    const actionRef = useRef<ActionType>();
+  const intl = useIntl();
+  const actionRef = useRef<ActionType>(null);
   
   // 状态管理
   const [stats, setStats] = useState<PersonnelStats>({
@@ -117,12 +118,12 @@ const WarehouseKeepersPage: React.FC = () => {
           total: warehouseKeepers.length,
         };
       } else {
-        message.error(result.message || '获取人员数据失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
         return { data: [], success: false, total: 0 };
       }
     } catch (error) {
-      console.error('获取人员数据失败:', error);
-      message.error('获取人员数据失败');
+      console.error('Failed to fetch personnel:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -143,7 +144,7 @@ const WarehouseKeepersPage: React.FC = () => {
    */
   const handleCreate = async (values: any) => {
     if (!currentBase) {
-      message.error('请先选择基地');
+      message.error(intl.formatMessage({ id: 'message.selectBaseFirst' }));
       return;
     }
 
@@ -158,16 +159,16 @@ const WarehouseKeepersPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('创建成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         setCreateModalVisible(false);
         createForm.resetFields();
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '创建失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error: any) {
-      console.error('创建人员失败:', error);
-      const errorMsg = error?.response?.data?.message || error?.data?.message || '创建人员失败';
+      console.error('Failed to create personnel:', error);
+      const errorMsg = error?.response?.data?.message || error?.data?.message || intl.formatMessage({ id: 'message.failed' });
       message.error(errorMsg);
     } finally {
       setCreateLoading(false);
@@ -194,17 +195,17 @@ const WarehouseKeepersPage: React.FC = () => {
       );
 
       if (result.success) {
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         setEditModalVisible(false);
         editForm.resetFields();
         setEditingPersonnel(null);
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '更新失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error: any) {
-      console.error('更新人员失败:', error);
-      const errorMsg = error?.response?.data?.message || error?.data?.message || '更新人员失败';
+      console.error('Failed to update personnel:', error);
+      const errorMsg = error?.response?.data?.message || error?.data?.message || intl.formatMessage({ id: 'message.failed' });
       message.error(errorMsg);
     } finally {
       setEditLoading(false);
@@ -224,14 +225,14 @@ const WarehouseKeepersPage: React.FC = () => {
       );
 
       if (result.success) {
-        message.success('删除成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '删除失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('删除人员失败:', error);
-      message.error('删除人员失败');
+      console.error('Failed to delete personnel:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     }
   };
 
@@ -254,7 +255,7 @@ const WarehouseKeepersPage: React.FC = () => {
    */
   const columns: ProColumns<Personnel>[] = [
     {
-      title: '编号',
+      title: intl.formatMessage({ id: 'form.label.code' }),
       dataIndex: 'code',
       key: 'code',
       width: 180,
@@ -265,7 +266,7 @@ const WarehouseKeepersPage: React.FC = () => {
       render: (text: any) => <code>{text}</code>,
     },
     {
-      title: '姓名',
+      title: intl.formatMessage({ id: 'warehouseKeepers.column.name' }),
       dataIndex: 'name',
       key: 'name',
       width: 150,
@@ -275,19 +276,19 @@ const WarehouseKeepersPage: React.FC = () => {
       render: (text: any) => <strong>{text}</strong>,
     },
     {
-      title: '角色',
+      title: intl.formatMessage({ id: 'personnel.column.role' }),
       dataIndex: 'role',
       key: 'role',
       width: 100,
       hideInSearch: true,
       render: () => (
         <Tag color="orange" icon={<TeamOutlined />}>
-          仓管
+          {intl.formatMessage({ id: 'personnel.role.warehouseKeeper' })}
         </Tag>
       ),
     },
     {
-      title: '联系电话',
+      title: intl.formatMessage({ id: 'form.label.contactPhone' }),
       dataIndex: 'phone',
       key: 'phone',
       width: 130,
@@ -295,7 +296,7 @@ const WarehouseKeepersPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '邮箱',
+      title: intl.formatMessage({ id: 'personnel.column.email' }),
       dataIndex: 'email',
       key: 'email',
       width: 180,
@@ -305,7 +306,7 @@ const WarehouseKeepersPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '备注',
+      title: intl.formatMessage({ id: 'form.label.notes' }),
       dataIndex: 'notes',
       key: 'notes',
       width: 200,
@@ -315,24 +316,24 @@ const WarehouseKeepersPage: React.FC = () => {
       render: (text: any) => text || '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '在职', status: 'Success' },
-        false: { text: '离职', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'personnel.status.active' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'personnel.status.inactive' }), status: 'Error' },
       },
       render: (_, record) => (
         <Tag color={record.isActive ? 'green' : 'red'}>
-          {record.isActive ? '在职' : '离职'}
+          {record.isActive ? intl.formatMessage({ id: 'personnel.status.active' }) : intl.formatMessage({ id: 'personnel.status.inactive' })}
         </Tag>
       ),
       hideInSearch: false,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
@@ -359,14 +360,14 @@ const WarehouseKeepersPage: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 80,
       fixed: 'right',
       valueType: 'option',
       hideInSetting: true,
       render: (_, record) => [
-        <Tooltip key="edit" title="编辑">
+        <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
           <Button
             type="link"
             size="small"
@@ -376,14 +377,14 @@ const WarehouseKeepersPage: React.FC = () => {
         </Tooltip>,
         <Popconfirm
           key="delete"
-          title="确认删除"
-          description={`确定要删除"${record.name}"吗？`}
+          title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+          description={intl.formatMessage({ id: 'message.deleteConfirmContent' })}
           onConfirm={() => handleDelete(record)}
-          okText="确定"
-          cancelText="取消"
+          okText={intl.formatMessage({ id: 'button.confirm' })}
+          cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
-          <Tooltip title="删除">
+          <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
             <Button type="link" size="small" danger icon={<DeleteOutlined />} />
           </Tooltip>
         </Popconfirm>,
@@ -396,7 +397,7 @@ const WarehouseKeepersPage: React.FC = () => {
       <PageContainer>
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
-            <p>请先选择一个基地</p>
+            <p>{intl.formatMessage({ id: 'message.selectBaseFirst' })}</p>
           </div>
         </Card>
       </PageContainer>
@@ -407,19 +408,19 @@ const WarehouseKeepersPage: React.FC = () => {
   const statsContent = (
     <div style={{ width: 280 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="仓管总数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'warehouseKeepers.stats.total' })}>
           <Space>
             <TeamOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalPersonnel}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="在职人员">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.status.active' })}>
           <Space>
             <CheckCircleOutlined style={{ color: '#52c41a' }} />
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activePersonnel}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="离职人员">
+        <Descriptions.Item label={intl.formatMessage({ id: 'personnel.status.inactive' })}>
           <Space>
             <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.totalPersonnel - stats.activePersonnel}</span>
           </Space>
@@ -468,19 +469,19 @@ const WarehouseKeepersPage: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            添加仓管
+            {intl.formatMessage({ id: 'warehouseKeepers.add' })}
           </Button>,
         ]}
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>仓管列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.warehouseKeepers' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalPersonnel} 人)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalPersonnel })})
             </span>
-            <Popover content={statsContent} title="统计详情" trigger="click" placement="bottomLeft">
+            <Popover content={statsContent} title={intl.formatMessage({ id: 'stats.title' })} trigger="click" placement="bottomLeft">
               <Button type="text" size="small" icon={<InfoCircleOutlined />} style={{ color: '#1890ff' }}>
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>
@@ -489,7 +490,7 @@ const WarehouseKeepersPage: React.FC = () => {
 
       {/* 添加仓管模态框 - 不需要选择角色 */}
       <Modal
-        title="添加仓管"
+        title={intl.formatMessage({ id: 'warehouseKeepers.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -501,37 +502,37 @@ const WarehouseKeepersPage: React.FC = () => {
       >
         <Form form={createForm} layout="vertical" onFinish={handleCreate}>
           <Form.Item
-            label="姓名"
+            label={intl.formatMessage({ id: 'warehouseKeepers.column.name' })}
             name="name"
             rules={[
-              { required: true, message: '请输入姓名' },
-              { min: 2, max: 20, message: '姓名长度应在2-20个字符之间' }
+              { required: true, message: intl.formatMessage({ id: 'warehouseKeepers.form.nameRequired' }) },
+              { min: 2, max: 20, message: intl.formatMessage({ id: 'warehouseKeepers.form.nameLength' }) }
             ]}
           >
-            <Input placeholder="请输入姓名" />
+            <Input placeholder={intl.formatMessage({ id: 'warehouseKeepers.form.namePlaceholder' })} />
           </Form.Item>
 
-          <Form.Item label="联系电话" name="phone">
-            <Input placeholder="请输入联系电话" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.contactPhone' })} name="phone">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.contactPhone' })} />
           </Form.Item>
 
           <Form.Item
-            label="邮箱"
+            label={intl.formatMessage({ id: 'personnel.column.email' })}
             name="email"
-            rules={[{ type: 'email', message: '请输入正确的邮箱地址' }]}
+            rules={[{ type: 'email', message: intl.formatMessage({ id: 'warehouseKeepers.form.emailInvalid' }) }]}
           >
-            <Input placeholder="请输入邮箱" />
+            <Input placeholder={intl.formatMessage({ id: 'warehouseKeepers.form.emailPlaceholder' })} />
           </Form.Item>
 
-          <Form.Item label="备注" name="notes">
-            <Input.TextArea rows={3} placeholder="请输入备注信息" maxLength={200} showCount />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.notes' })} name="notes">
+            <Input.TextArea rows={3} placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} maxLength={200} showCount />
           </Form.Item>
         </Form>
       </Modal>
 
       {/* 编辑仓管模态框 */}
       <Modal
-        title="编辑仓管"
+        title={intl.formatMessage({ id: 'warehouseKeepers.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
@@ -544,30 +545,30 @@ const WarehouseKeepersPage: React.FC = () => {
       >
         <Form form={editForm} layout="vertical" onFinish={handleUpdate}>
           <Form.Item
-            label="姓名"
+            label={intl.formatMessage({ id: 'warehouseKeepers.column.name' })}
             name="name"
             rules={[
-              { required: true, message: '请输入姓名' },
-              { min: 2, max: 20, message: '姓名长度应在2-20个字符之间' }
+              { required: true, message: intl.formatMessage({ id: 'warehouseKeepers.form.nameRequired' }) },
+              { min: 2, max: 20, message: intl.formatMessage({ id: 'warehouseKeepers.form.nameLength' }) }
             ]}
           >
-            <Input placeholder="请输入姓名" />
+            <Input placeholder={intl.formatMessage({ id: 'warehouseKeepers.form.namePlaceholder' })} />
           </Form.Item>
 
-          <Form.Item label="联系电话" name="phone">
-            <Input placeholder="请输入联系电话" />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.contactPhone' })} name="phone">
+            <Input placeholder={intl.formatMessage({ id: 'form.placeholder.contactPhone' })} />
           </Form.Item>
 
           <Form.Item
-            label="邮箱"
+            label={intl.formatMessage({ id: 'personnel.column.email' })}
             name="email"
-            rules={[{ type: 'email', message: '请输入正确的邮箱地址' }]}
+            rules={[{ type: 'email', message: intl.formatMessage({ id: 'warehouseKeepers.form.emailInvalid' }) }]}
           >
-            <Input placeholder="请输入邮箱" />
+            <Input placeholder={intl.formatMessage({ id: 'warehouseKeepers.form.emailPlaceholder' })} />
           </Form.Item>
 
-          <Form.Item label="备注" name="notes">
-            <Input.TextArea rows={3} placeholder="请输入备注信息" maxLength={200} showCount />
+          <Form.Item label={intl.formatMessage({ id: 'form.label.notes' })} name="notes">
+            <Input.TextArea rows={3} placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} maxLength={200} showCount />
           </Form.Item>
         </Form>
       </Modal>

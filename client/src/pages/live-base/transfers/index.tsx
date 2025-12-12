@@ -352,9 +352,9 @@ const TransferManagement: React.FC = () => {
         ]}
         headerTitle={
           <Space>
-            <span>调货列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.transfers' })}</span>
             <span style={{ fontSize: 12, color: '#999' }}>
-              共 {stats.totalRecords} 条记录
+              {intl.formatMessage({ id: 'stats.count' }, { count: stats.totalRecords })}
             </span>
           </Space>
         }

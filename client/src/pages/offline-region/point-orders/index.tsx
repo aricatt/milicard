@@ -4,7 +4,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Card, Statistic, Row, Col, App, Divider, Table, Modal, Form, Input, InputNumber, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, CarOutlined, CheckCircleOutlined, DollarOutlined } from '@ant-design/icons';
-import { request, useAccess, history } from '@umijs/max';
+import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import OrderForm from './components/OrderForm';
 
@@ -108,6 +108,7 @@ const PointOrdersPage: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const access = useAccess();
   const [formVisible, setFormVisible] = useState(false);
   const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
@@ -169,7 +170,7 @@ const PointOrdersPage: React.FC = () => {
         total: response.total || 0,
       };
     } catch (error) {
-      message.error('获取订单列表失败');
+      message.error(intl.formatMessage({ id: 'pointOrders.message.fetchFailed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -183,7 +184,7 @@ const PointOrdersPage: React.FC = () => {
         setDetailVisible(true);
       }
     } catch (error) {
-      message.error('获取订单详情失败');
+      message.error(intl.formatMessage({ id: 'pointOrders.message.detailFailed' }));
     }
   };
 
@@ -193,10 +194,10 @@ const PointOrdersPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/point-orders/${id}`, {
         method: 'DELETE',
       });
-      message.success('删除成功');
+      message.success(intl.formatMessage({ id: 'message.deleteSuccess' }));
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '删除失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'message.deleteFailed' }));
     }
   };
 
@@ -207,10 +208,10 @@ const PointOrdersPage: React.FC = () => {
         method: 'PUT',
         data: { status },
       });
-      message.success('状态更新成功');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.statusUpdateSuccess' }));
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '状态更新失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.statusUpdateFailed' }));
     }
   };
 
@@ -292,14 +293,14 @@ const PointOrdersPage: React.FC = () => {
       
       // 检查是否选择了仓库
       if (!values.locationId) {
-        message.error('请选择出库仓库');
+        message.error(intl.formatMessage({ id: 'pointOrders.message.selectWarehouse' }));
         return;
       }
       
       // 检查库存是否充足
       const insufficientItems = orderInventory.filter(item => !item.sufficient);
       if (insufficientItems.length > 0) {
-        message.error(`库存不足，无法发货：${insufficientItems.map(i => i.goodsName).join('、')}`);
+        message.error(`${intl.formatMessage({ id: 'pointOrders.message.insufficientStock' })}: ${insufficientItems.map(i => i.goodsName).join(', ')}`);
         return;
       }
       
@@ -307,13 +308,13 @@ const PointOrdersPage: React.FC = () => {
         method: 'POST',
         data: values,
       });
-      message.success('发货成功');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.shipSuccess' }));
       setShipModalVisible(false);
       setDetailVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
       if (error.errorFields) return;
-      message.error(error?.data?.message || '发货失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.shipFailed' }));
     }
   };
 
@@ -324,11 +325,11 @@ const PointOrdersPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/deliver`, {
         method: 'POST',
       });
-      message.success('确认送达成功');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.deliverSuccess' }));
       setDetailVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '确认送达失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.deliverFailed' }));
     }
   };
 
@@ -350,7 +351,7 @@ const PointOrdersPage: React.FC = () => {
         method: 'POST',
         data: values,
       });
-      message.success('收款确认成功');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.paymentSuccess' }));
       setPaymentModalVisible(false);
       // 刷新详情
       const response = await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}`);
@@ -360,7 +361,7 @@ const PointOrdersPage: React.FC = () => {
       actionRef.current?.reload();
     } catch (error: any) {
       if (error.errorFields) return;
-      message.error(error?.data?.message || '收款确认失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.paymentFailed' }));
     }
   };
 
@@ -371,11 +372,11 @@ const PointOrdersPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/complete`, {
         method: 'POST',
       });
-      message.success('订单已完成');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.completeSuccess' }));
       setDetailVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '完成订单失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.completeFailed' }));
     }
   };
 
@@ -386,11 +387,11 @@ const PointOrdersPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/confirm`, {
         method: 'POST',
       });
-      message.success('订单确认成功');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.confirmSuccess' }));
       setDetailVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '确认订单失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.confirmFailed' }));
     }
   };
 
@@ -401,25 +402,25 @@ const PointOrdersPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/point-orders/${detailOrder.id}/receive`, {
         method: 'POST',
       });
-      message.success('确认收货成功');
+      message.success(intl.formatMessage({ id: 'pointOrders.message.receiveSuccess' }));
       setDetailVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '确认收货失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.receiveFailed' }));
     }
   };
 
   // 表格列定义
   const columns: ProColumns<OrderItem>[] = [
     {
-      title: '订单编号',
+      title: intl.formatMessage({ id: 'pointOrders.column.orderNo' }),
       dataIndex: 'code',
       width: 150,
       copyable: true,
       fixed: 'left',
     },
     {
-      title: '点位',
+      title: intl.formatMessage({ id: 'pointOrders.column.point' }),
       dataIndex: ['point', 'name'],
       ellipsis: true,
       width: 150,
@@ -431,13 +432,13 @@ const PointOrdersPage: React.FC = () => {
       ),
     },
     {
-      title: '订单日期',
+      title: intl.formatMessage({ id: 'pointOrders.column.orderDate' }),
       dataIndex: 'orderDate',
       valueType: 'date',
       width: 110,
     },
     {
-      title: '商品数',
+      title: intl.formatMessage({ id: 'pointOrders.column.itemCount' }),
       dataIndex: ['_count', 'items'],
       hideInSearch: true,
       width: 80,
@@ -445,7 +446,7 @@ const PointOrdersPage: React.FC = () => {
       render: (_, record) => record.items?.length || record._count?.items || 0,
     },
     {
-      title: '订单金额',
+      title: intl.formatMessage({ id: 'pointOrders.column.amount' }),
       dataIndex: 'totalAmount',
       hideInSearch: true,
       width: 110,
@@ -453,7 +454,7 @@ const PointOrdersPage: React.FC = () => {
       render: (val) => Number(val).toFixed(2),
     },
     {
-      title: '订单状态',
+      title: intl.formatMessage({ id: 'pointOrders.column.status' }),
       dataIndex: 'status',
       width: 100,
       valueType: 'select',
@@ -466,7 +467,7 @@ const PointOrdersPage: React.FC = () => {
       },
     },
     {
-      title: '付款状态',
+      title: intl.formatMessage({ id: 'pointOrders.column.paymentStatus' }),
       dataIndex: 'paymentStatus',
       width: 100,
       valueType: 'select',
@@ -479,20 +480,20 @@ const PointOrdersPage: React.FC = () => {
       },
     },
     {
-      title: '下单人',
+      title: intl.formatMessage({ id: 'pointOrders.column.creator' }),
       dataIndex: ['creator', 'name'],
       hideInSearch: true,
       width: 100,
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       hideInSearch: true,
       width: 160,
     },
     {
-      title: '订单日期',
+      title: intl.formatMessage({ id: 'pointOrders.column.orderDate' }),
       key: 'orderDateRange',
       dataIndex: 'orderDate',
       valueType: 'dateRange',
@@ -505,7 +506,7 @@ const PointOrdersPage: React.FC = () => {
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       valueType: 'option',
       width: 200,
       fixed: 'right',
@@ -517,7 +518,7 @@ const PointOrdersPage: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record)}
           >
-            详情
+            {intl.formatMessage({ id: 'button.detail' })}
           </Button>
           {record.status === 'PENDING' && access.canUpdatePointOrder && (
             <Button
@@ -529,36 +530,36 @@ const PointOrdersPage: React.FC = () => {
                 setFormVisible(true);
               }}
             >
-              编辑
+              {intl.formatMessage({ id: 'button.edit' })}
             </Button>
           )}
           {record.status === 'PENDING' && access.canConfirmPointOrder && (
             <Popconfirm
-              title="确定要确认此订单吗？"
+              title={intl.formatMessage({ id: 'pointOrders.confirm.title' })}
               onConfirm={async () => {
                 try {
                   await request(`/api/v1/bases/${currentBase?.id}/point-orders/${record.id}/confirm`, {
                     method: 'POST',
                   });
-                  message.success('订单确认成功');
+                  message.success(intl.formatMessage({ id: 'pointOrders.message.confirmSuccess' }));
                   actionRef.current?.reload();
                 } catch (error: any) {
-                  message.error(error?.data?.message || '确认订单失败');
+                  message.error(error?.data?.message || intl.formatMessage({ id: 'pointOrders.message.confirmFailed' }));
                 }
               }}
             >
               <Button type="link" size="small">
-                确认
+                {intl.formatMessage({ id: 'button.confirm' })}
               </Button>
             </Popconfirm>
           )}
           {['PENDING', 'CANCELLED'].includes(record.status) && access.canDeletePointOrder && (
             <Popconfirm
-              title="确定要删除此订单吗？"
+              title={intl.formatMessage({ id: 'pointOrders.delete.title' })}
               onConfirm={() => handleDelete(record.id)}
             >
               <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                删除
+                {intl.formatMessage({ id: 'button.delete' })}
               </Button>
             </Popconfirm>
           )}
@@ -570,36 +571,36 @@ const PointOrdersPage: React.FC = () => {
   // 订单明细列
   const itemColumns = [
     {
-      title: '商品编号',
+      title: intl.formatMessage({ id: 'products.column.code' }),
       dataIndex: ['goods', 'code'],
       width: 120,
     },
     {
-      title: '商品名称',
+      title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: ['goods', 'name'],
       ellipsis: true,
     },
     {
-      title: '箱数',
+      title: intl.formatMessage({ id: 'pointOrders.column.boxQty' }),
       dataIndex: 'boxQuantity',
       width: 80,
       align: 'center' as const,
     },
     {
-      title: '盒数',
+      title: intl.formatMessage({ id: 'pointOrders.column.packQty' }),
       dataIndex: 'packQuantity',
       width: 80,
       align: 'center' as const,
     },
     {
-      title: '单价/盒',
+      title: intl.formatMessage({ id: 'unit.pricePerPack' }),
       dataIndex: 'unitPrice',
       width: 100,
       align: 'right' as const,
       render: (val: number) => Number(val).toFixed(2),
     },
     {
-      title: '小计',
+      title: intl.formatMessage({ id: 'pointOrders.column.subtotal' }),
       dataIndex: 'totalPrice',
       width: 100,
       align: 'right' as const,
@@ -610,8 +611,8 @@ const PointOrdersPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: '点位订单',
-        subTitle: '管理线下点位的订单',
+        title: intl.formatMessage({ id: 'pointOrders.title' }),
+        subTitle: intl.formatMessage({ id: 'pointOrders.subTitle' }),
       }}
     >
       {/* 统计卡片 */}
@@ -619,22 +620,22 @@ const PointOrdersPage: React.FC = () => {
         <Card style={{ marginBottom: 16 }}>
           <Row gutter={16}>
             <Col span={4}>
-              <Statistic title="总订单数" value={stats.totalOrders} />
+              <Statistic title={intl.formatMessage({ id: 'pointOrders.stats.total' })} value={stats.totalOrders} />
             </Col>
             <Col span={4}>
-              <Statistic title="待确认" value={stats.pendingOrders} valueStyle={{ color: '#fa8c16' }} />
+              <Statistic title={intl.formatMessage({ id: 'pointOrders.stats.pending' })} value={stats.pendingOrders} valueStyle={{ color: '#fa8c16' }} />
             </Col>
             <Col span={4}>
-              <Statistic title="已确认" value={stats.confirmedOrders} valueStyle={{ color: '#1890ff' }} />
+              <Statistic title={intl.formatMessage({ id: 'pointOrders.stats.confirmed' })} value={stats.confirmedOrders} valueStyle={{ color: '#1890ff' }} />
             </Col>
             <Col span={4}>
-              <Statistic title="配送中" value={stats.shippedOrders} valueStyle={{ color: '#13c2c2' }} />
+              <Statistic title={intl.formatMessage({ id: 'pointOrders.stats.shipping' })} value={stats.shippedOrders} valueStyle={{ color: '#13c2c2' }} />
             </Col>
             <Col span={4}>
-              <Statistic title="订单总额" value={stats.totalAmount} precision={2} />
+              <Statistic title={intl.formatMessage({ id: 'pointOrders.stats.totalAmount' })} value={stats.totalAmount} precision={2} />
             </Col>
             <Col span={4}>
-              <Statistic title="待收款" value={stats.unpaidAmount} precision={2} valueStyle={{ color: '#cf1322' }} />
+              <Statistic title={intl.formatMessage({ id: 'pointOrders.stats.unpaid' })} value={stats.unpaidAmount} precision={2} valueStyle={{ color: '#cf1322' }} />
             </Col>
           </Row>
         </Card>
@@ -664,7 +665,7 @@ const PointOrdersPage: React.FC = () => {
                 setFormVisible(true);
               }}
             >
-              新建订单
+              {intl.formatMessage({ id: 'pointOrders.add' })}
             </Button>
           ),
         ]}
@@ -687,7 +688,7 @@ const PointOrdersPage: React.FC = () => {
 
       {/* 订单详情抽屉 */}
       <Drawer
-        title={`订单详情 - ${detailOrder?.code || ''}`}
+        title={`${intl.formatMessage({ id: 'pointOrders.detail.title' })} - ${detailOrder?.code || ''}`}
         width={700}
         open={detailVisible}
         onClose={() => {
@@ -698,54 +699,54 @@ const PointOrdersPage: React.FC = () => {
         {detailOrder && (
           <>
             <Descriptions column={2} bordered size="small">
-              <Descriptions.Item label="订单编号">{detailOrder.code}</Descriptions.Item>
-              <Descriptions.Item label="订单日期">{detailOrder.orderDate}</Descriptions.Item>
-              <Descriptions.Item label="点位名称">{detailOrder.point.name}</Descriptions.Item>
-              <Descriptions.Item label="点位编号">{detailOrder.point.code}</Descriptions.Item>
-              <Descriptions.Item label="订单状态">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.orderNo' })}>{detailOrder.code}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.orderDate' })}>{detailOrder.orderDate}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.pointName' })}>{detailOrder.point.name}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.pointCode' })}>{detailOrder.point.code}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.status' })}>
                 <Tag color={ORDER_STATUS[detailOrder.status]?.color}>
                   {ORDER_STATUS[detailOrder.status]?.text}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="付款状态">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.paymentStatus' })}>
                 <Tag color={PAYMENT_STATUS[detailOrder.paymentStatus]?.color}>
                   {PAYMENT_STATUS[detailOrder.paymentStatus]?.text}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="订单金额">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.amount' })}>
                 <span style={{ color: '#cf1322', fontWeight: 'bold' }}>
                   {Number(detailOrder.totalAmount).toFixed(2)}
                 </span>
               </Descriptions.Item>
-              <Descriptions.Item label="已付金额">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.paidAmount' })}>
                 <span style={{ color: Number(detailOrder.paidAmount) >= Number(detailOrder.totalAmount) ? '#52c41a' : '#fa8c16' }}>
                   {Number(detailOrder.paidAmount).toFixed(2)}
                 </span>
                 {Number(detailOrder.paidAmount) < Number(detailOrder.totalAmount) && (
                   <span style={{ color: '#999', marginLeft: 8 }}>
-                    (待收: {(Number(detailOrder.totalAmount) - Number(detailOrder.paidAmount)).toFixed(2)})
+                    ({intl.formatMessage({ id: 'pointOrders.detail.unpaid' })}: {(Number(detailOrder.totalAmount) - Number(detailOrder.paidAmount)).toFixed(2)})
                   </span>
                 )}
               </Descriptions.Item>
-              <Descriptions.Item label="收货地址" span={2}>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.shippingAddress' })} span={2}>
                 {detailOrder.shippingAddress || '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="收货电话">
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.shippingPhone' })}>
                 {detailOrder.shippingPhone || '-'}
               </Descriptions.Item>
-              <Descriptions.Item label="下单人">{detailOrder.creator.name}</Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.creator' })}>{detailOrder.creator.name}</Descriptions.Item>
             </Descriptions>
 
             {/* 物流信息 */}
             {(detailOrder.status === 'SHIPPING' || detailOrder.status === 'DELIVERED' || detailOrder.status === 'COMPLETED') && (
               <>
-                <Divider orientation="left">物流信息</Divider>
+                <Divider orientation="left">{intl.formatMessage({ id: 'pointOrders.detail.logistics' })}</Divider>
                 <Descriptions column={2} bordered size="small">
-                  <Descriptions.Item label="送货员">{detailOrder.deliveryPerson || '-'}</Descriptions.Item>
-                  <Descriptions.Item label="送货员电话">{detailOrder.deliveryPhone || '-'}</Descriptions.Item>
-                  <Descriptions.Item label="物流单号" span={2}>{detailOrder.trackingNumber || '-'}</Descriptions.Item>
-                  <Descriptions.Item label="发货时间">{detailOrder.shippedAt ? new Date(detailOrder.shippedAt).toLocaleString('zh-CN') : '-'}</Descriptions.Item>
-                  <Descriptions.Item label="送达时间">{detailOrder.deliveredAt ? new Date(detailOrder.deliveredAt).toLocaleString('zh-CN') : '-'}</Descriptions.Item>
+                  <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.deliveryPerson' })}>{detailOrder.deliveryPerson || '-'}</Descriptions.Item>
+                  <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.deliveryPhone' })}>{detailOrder.deliveryPhone || '-'}</Descriptions.Item>
+                  <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.trackingNumber' })} span={2}>{detailOrder.trackingNumber || '-'}</Descriptions.Item>
+                  <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.shippedAt' })}>{detailOrder.shippedAt ? new Date(detailOrder.shippedAt).toLocaleString('zh-CN') : '-'}</Descriptions.Item>
+                  <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.deliveredAt' })}>{detailOrder.deliveredAt ? new Date(detailOrder.deliveredAt).toLocaleString('zh-CN') : '-'}</Descriptions.Item>
                 </Descriptions>
               </>
             )}
@@ -753,7 +754,7 @@ const PointOrdersPage: React.FC = () => {
             {/* 付款记录 */}
             {detailOrder.paymentNotes && (
               <>
-                <Divider orientation="left">收款记录</Divider>
+                <Divider orientation="left">{intl.formatMessage({ id: 'pointOrders.detail.paymentRecord' })}</Divider>
                 <div style={{ background: '#fafafa', padding: 12, borderRadius: 4, whiteSpace: 'pre-wrap' }}>
                   {detailOrder.paymentNotes}
                 </div>
@@ -763,19 +764,19 @@ const PointOrdersPage: React.FC = () => {
             {/* 备注信息 */}
             {(detailOrder.customerNotes || detailOrder.staffNotes) && (
               <>
-                <Divider orientation="left">备注</Divider>
+                <Divider orientation="left">{intl.formatMessage({ id: 'table.column.notes' })}</Divider>
                 <Descriptions column={1} bordered size="small">
                   {detailOrder.customerNotes && (
-                    <Descriptions.Item label="客户备注">{detailOrder.customerNotes}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.customerNotes' })}>{detailOrder.customerNotes}</Descriptions.Item>
                   )}
                   {detailOrder.staffNotes && (
-                    <Descriptions.Item label="客服备注">{detailOrder.staffNotes}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.staffNotes' })}>{detailOrder.staffNotes}</Descriptions.Item>
                   )}
                 </Descriptions>
               </>
             )}
 
-            <Divider orientation="left">商品明细</Divider>
+            <Divider orientation="left">{intl.formatMessage({ id: 'pointOrders.detail.items' })}</Divider>
             <Table
               rowKey="id"
               columns={itemColumns}
@@ -787,7 +788,7 @@ const PointOrdersPage: React.FC = () => {
                 return (
                   <Table.Summary.Row>
                     <Table.Summary.Cell index={0} colSpan={5} align="right">
-                      <strong>合计</strong>
+                      <strong>{intl.formatMessage({ id: 'pointOrders.detail.total' })}</strong>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1} align="right">
                       <strong style={{ color: '#cf1322' }}>{total.toFixed(2)}</strong>
@@ -811,16 +812,16 @@ const PointOrdersPage: React.FC = () => {
                           setFormVisible(true);
                         }}
                       >
-                        编辑订单
+                        {intl.formatMessage({ id: 'pointOrders.action.editOrder' })}
                       </Button>
                     )}
                     {access.canConfirmPointOrder && (
                       <Popconfirm
-                        title="确定要确认此订单吗？"
+                        title={intl.formatMessage({ id: 'pointOrders.confirm.title' })}
                         onConfirm={handleConfirm}
                       >
                         <Button type="primary">
-                          确认订单
+                          {intl.formatMessage({ id: 'pointOrders.action.confirmOrder' })}
                         </Button>
                       </Popconfirm>
                     )}
@@ -834,18 +835,18 @@ const PointOrdersPage: React.FC = () => {
                     icon={<CarOutlined />}
                     onClick={handleOpenShipModal}
                   >
-                    发货
+                    {intl.formatMessage({ id: 'pointOrders.action.ship' })}
                   </Button>
                 )}
 
                 {/* 配送中/已送达状态：确认送达/收货（合并按钮，根据权限显示不同文案） */}
                 {['SHIPPING', 'DELIVERED'].includes(detailOrder.status) && access.canDeliverOrReceivePointOrder && (
                   <Popconfirm
-                    title={access.canReceivePointOrder ? "确定已收到货物？" : "确定货物已送达？"}
+                    title={access.canReceivePointOrder ? intl.formatMessage({ id: 'pointOrders.receive.title' }) : intl.formatMessage({ id: 'pointOrders.deliver.title' })}
                     onConfirm={access.canReceivePointOrder ? handleReceive : handleDeliver}
                   >
                     <Button type="primary" icon={<CheckCircleOutlined />}>
-                      {access.canReceivePointOrder ? '确认收货' : '确认送达'}
+                      {access.canReceivePointOrder ? intl.formatMessage({ id: 'pointOrders.action.receive' }) : intl.formatMessage({ id: 'pointOrders.action.deliver' })}
                     </Button>
                   </Popconfirm>
                 )}
@@ -859,17 +860,17 @@ const PointOrdersPage: React.FC = () => {
                     icon={<DollarOutlined />}
                     onClick={handleOpenPaymentModal}
                   >
-                    确认收款
+                    {intl.formatMessage({ id: 'pointOrders.action.payment' })}
                   </Button>
                 )}
 
                 {/* 已送达状态：完成订单（官方） */}
                 {detailOrder.status === 'DELIVERED' && access.canCompletePointOrder && (
                   <Popconfirm
-                    title="确定完成此订单？"
+                    title={intl.formatMessage({ id: 'pointOrders.complete.title' })}
                     onConfirm={handleComplete}
                   >
-                    <Button>完成订单</Button>
+                    <Button>{intl.formatMessage({ id: 'pointOrders.action.complete' })}</Button>
                   </Popconfirm>
                 )}
               </Space>
@@ -880,26 +881,26 @@ const PointOrdersPage: React.FC = () => {
 
       {/* 发货弹窗 */}
       <Modal
-        title="发货"
+        title={intl.formatMessage({ id: 'pointOrders.ship.title' })}
         open={shipModalVisible}
         onOk={handleShip}
         onCancel={() => setShipModalVisible(false)}
-        okText="确认发货"
+        okText={intl.formatMessage({ id: 'pointOrders.ship.confirm' })}
         width={700}
       >
         <Form form={shipForm} layout="vertical">
           <Form.Item
             name="locationId"
-            label="出库仓库"
-            rules={[{ required: true, message: '请选择出库仓库' }]}
+            label={intl.formatMessage({ id: 'pointOrders.ship.warehouse' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pointOrders.ship.warehouseRequired' }) }]}
           >
             <Select
-              placeholder="请选择出库仓库"
+              placeholder={intl.formatMessage({ id: 'pointOrders.ship.warehousePlaceholder' })}
               onChange={handleWarehouseChange}
             >
               {warehouses.map(w => (
                 <Select.Option key={w.id} value={w.id}>
-                  {w.name} {w.type === 'MAIN_WAREHOUSE' ? '(总仓库)' : ''}
+                  {w.name} {w.type === 'MAIN_WAREHOUSE' ? `(${intl.formatMessage({ id: 'locations.type.mainWarehouse' })})` : ''}
                 </Select.Option>
               ))}
             </Select>
@@ -908,7 +909,7 @@ const PointOrdersPage: React.FC = () => {
           {/* 商品库存信息 */}
           {selectedWarehouse && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ marginBottom: 8, fontWeight: 'bold' }}>商品库存情况：</div>
+              <div style={{ marginBottom: 8, fontWeight: 'bold' }}>{intl.formatMessage({ id: 'pointOrders.ship.stockStatus' })}</div>
               <Table
                 size="small"
                 loading={loadingInventory}
@@ -916,26 +917,26 @@ const PointOrdersPage: React.FC = () => {
                 rowKey="goodsId"
                 pagination={false}
                 columns={[
-                  { title: '商品', dataIndex: 'goodsName', width: 150 },
+                  { title: intl.formatMessage({ id: 'products.column.name' }), dataIndex: 'goodsName', width: 150 },
                   { 
-                    title: '需要', 
+                    title: intl.formatMessage({ id: 'pointOrders.ship.required' }), 
                     key: 'required',
                     width: 100,
-                    render: (_, record) => `${record.requiredBox}箱${record.requiredPack}盒`
+                    render: (_, record) => `${record.requiredBox}${intl.formatMessage({ id: 'unit.box' })}${record.requiredPack}${intl.formatMessage({ id: 'unit.pack' })}`
                   },
                   { 
-                    title: '库存', 
+                    title: intl.formatMessage({ id: 'pointOrders.ship.available' }), 
                     key: 'available',
                     width: 100,
-                    render: (_, record) => `${record.availableBox}箱${record.availablePack}盒`
+                    render: (_, record) => `${record.availableBox}${intl.formatMessage({ id: 'unit.box' })}${record.availablePack}${intl.formatMessage({ id: 'unit.pack' })}`
                   },
                   { 
-                    title: '状态', 
+                    title: intl.formatMessage({ id: 'status.label' }), 
                     key: 'status',
                     width: 80,
                     render: (_, record) => (
                       <Tag color={record.sufficient ? 'green' : 'red'}>
-                        {record.sufficient ? '充足' : '不足'}
+                        {record.sufficient ? intl.formatMessage({ id: 'pointOrders.ship.sufficient' }) : intl.formatMessage({ id: 'pointOrders.ship.insufficient' })}
                       </Tag>
                     )
                   },
@@ -948,66 +949,71 @@ const PointOrdersPage: React.FC = () => {
             <Col span={12}>
               <Form.Item
                 name="deliveryPerson"
-                label="送货员姓名"
+                label={intl.formatMessage({ id: 'pointOrders.ship.deliveryPerson' })}
               >
-                <Input placeholder="请输入送货员姓名" />
+                <Input placeholder={intl.formatMessage({ id: 'pointOrders.ship.deliveryPersonPlaceholder' })} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="deliveryPhone"
-                label="送货员电话"
+                label={intl.formatMessage({ id: 'pointOrders.ship.deliveryPhone' })}
               >
-                <Input placeholder="请输入送货员电话" />
+                <Input placeholder={intl.formatMessage({ id: 'pointOrders.ship.deliveryPhonePlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
           <Form.Item
             name="trackingNumber"
-            label="物流单号"
+            label={intl.formatMessage({ id: 'pointOrders.ship.trackingNumber' })}
           >
-            <Input placeholder="自配送可不填" />
+            <Input placeholder={intl.formatMessage({ id: 'pointOrders.ship.trackingNumberPlaceholder' })} />
           </Form.Item>
         </Form>
       </Modal>
 
       {/* 收款弹窗 */}
       <Modal
-        title="确认收款"
+        title={intl.formatMessage({ id: 'pointOrders.payment.title' })}
         open={paymentModalVisible}
         onOk={handleConfirmPayment}
         onCancel={() => setPaymentModalVisible(false)}
-        okText="确认收款"
+        okText={intl.formatMessage({ id: 'pointOrders.payment.confirm' })}
       >
         <Form form={paymentForm} layout="vertical">
           <Form.Item
             name="amount"
-            label="收款金额"
-            rules={[{ required: true, message: '请输入收款金额' }]}
+            label={intl.formatMessage({ id: 'pointOrders.payment.amount' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'pointOrders.payment.amountRequired' }) }]}
           >
             <InputNumber
               style={{ width: '100%' }}
               min={0.01}
               step={0.01}
               precision={2}
-              placeholder="请输入收款金额"
+              placeholder={intl.formatMessage({ id: 'pointOrders.payment.amountPlaceholder' })}
             />
           </Form.Item>
           <Form.Item
             name="paymentMethod"
-            label="收款方式"
+            label={intl.formatMessage({ id: 'pointOrders.payment.method' })}
           >
             <Select
-              placeholder="请选择收款方式"
-              options={PAYMENT_METHODS}
+              placeholder={intl.formatMessage({ id: 'pointOrders.payment.methodPlaceholder' })}
+              options={[
+                { value: intl.formatMessage({ id: 'pointOrders.payment.cash' }), label: intl.formatMessage({ id: 'pointOrders.payment.cash' }) },
+                { value: intl.formatMessage({ id: 'pointOrders.payment.wechat' }), label: intl.formatMessage({ id: 'pointOrders.payment.wechat' }) },
+                { value: intl.formatMessage({ id: 'pointOrders.payment.alipay' }), label: intl.formatMessage({ id: 'pointOrders.payment.alipay' }) },
+                { value: intl.formatMessage({ id: 'pointOrders.payment.bank' }), label: intl.formatMessage({ id: 'pointOrders.payment.bank' }) },
+              ]}
               allowClear
             />
           </Form.Item>
           <Form.Item
             name="notes"
-            label="备注"
+            label={intl.formatMessage({ id: 'table.column.notes' })}
           >
-            <Input.TextArea rows={2} placeholder="收款备注" />
+            <Input.TextArea rows={2} placeholder={intl.formatMessage({ id: 'pointOrders.payment.notesPlaceholder' })} />
           </Form.Item>
         </Form>
       </Modal>

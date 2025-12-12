@@ -61,7 +61,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '当日销售',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.sales' }) || '当日销售',
     dataIndex: 'salesAmount',
     valueType: 'money',
     width: 120,
@@ -97,7 +97,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '平台扣点',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.platformFee' }) || '平台扣点',
     dataIndex: 'platformFeeAmount',
     valueType: 'money',
     width: 110,
@@ -125,7 +125,7 @@ export const getColumns = (
     ),
   },
   {
-    title: '毛利率',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.profitRate' }) || '毛利率',
     dataIndex: 'profitRate',
     width: 100,
     sorter: true,
@@ -142,14 +142,14 @@ export const getColumns = (
     },
   },
   {
-    title: '备注',
+    title: intl?.formatMessage({ id: 'table.column.notes' }) || '备注',
     dataIndex: 'notes',
     width: 150,
     ellipsis: true,
     hideInSearch: true,
   },
   {
-    title: '创建时间',
+    title: intl?.formatMessage({ id: 'table.column.createdAt' }) || '创建时间',
     dataIndex: 'createdAt',
     valueType: 'dateTime',
     width: 160,

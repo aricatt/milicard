@@ -286,7 +286,7 @@ const PersonnelManagement: React.FC = () => {
       render: (id: any) => String(id).slice(-8),
     },
     {
-      title: '编号',
+      title: intl.formatMessage({ id: 'table.column.code' }),
       dataIndex: 'code',
       key: 'code',
       width: 180,
@@ -585,13 +585,13 @@ const PersonnelManagement: React.FC = () => {
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>人员列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.personnel' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalPersonnel} 人)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalPersonnel })})
             </span>
             <Popover
               content={statsContent}
-              title="统计详情"
+              title={intl.formatMessage({ id: 'stats.title' })}
               trigger="click"
               placement="bottomLeft"
             >
@@ -601,7 +601,7 @@ const PersonnelManagement: React.FC = () => {
                 icon={<InfoCircleOutlined />}
                 style={{ color: '#1890ff' }}
               >
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>
@@ -610,7 +610,7 @@ const PersonnelManagement: React.FC = () => {
 
       {/* 创建人员模态框 */}
       <Modal
-        title="添加人员"
+        title={intl.formatMessage({ id: 'personnel.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {

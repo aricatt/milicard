@@ -4,7 +4,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tag, Popconfirm, Drawer, Descriptions, Tabs, Empty, App, Modal, Form, Select, InputNumber, Switch } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOutlined, SettingOutlined } from '@ant-design/icons';
-import { request, useAccess, history } from '@umijs/max';
+import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import PointForm from './components/PointForm';
 
@@ -92,6 +92,7 @@ const PointsPage: React.FC = () => {
   const actionRef = useRef<ActionType>(null);
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const access = useAccess();
   const [formVisible, setFormVisible] = useState(false);
   const [editingPoint, setEditingPoint] = useState<PointItem | null>(null);
@@ -131,7 +132,7 @@ const PointsPage: React.FC = () => {
         total: response.total || 0,
       };
     } catch (error) {
-      message.error('获取点位列表失败');
+      message.error(intl.formatMessage({ id: 'points.message.fetchFailed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -154,7 +155,7 @@ const PointsPage: React.FC = () => {
       setOrders(ordersRes.data || []);
       setPointGoods(goodsRes.data || []);
     } catch (error) {
-      console.error('获取详情失败', error);
+      console.error('Failed to fetch detail', error);
     } finally {
       setLoadingDetail(false);
     }
@@ -166,10 +167,10 @@ const PointsPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/points/${id}`, {
         method: 'DELETE',
       });
-      message.success('删除成功');
+      message.success(intl.formatMessage({ id: 'message.deleteSuccess' }));
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.data?.message || '删除失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'message.deleteFailed' }));
     }
   };
 
@@ -185,7 +186,7 @@ const PointsPage: React.FC = () => {
         setAllGoods(response.data || []);
       }
     } catch (error) {
-      console.error('获取商品列表失败', error);
+      console.error('Failed to fetch goods', error);
     } finally {
       setGoodsLoading(false);
     }
@@ -200,7 +201,7 @@ const PointsPage: React.FC = () => {
         setPointGoods(response.data || []);
       }
     } catch (error) {
-      console.error('刷新可购商品失败', error);
+      console.error('Failed to refresh point goods', error);
     }
   };
 
@@ -236,21 +237,21 @@ const PointsPage: React.FC = () => {
           method: 'PUT',
           data: values,
         });
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'message.updateSuccess' }));
       } else {
         // 添加
         await request(`/api/v1/bases/${currentBase?.id}/points/${detailPoint?.id}/goods`, {
           method: 'POST',
           data: values,
         });
-        message.success('添加成功');
+        message.success(intl.formatMessage({ id: 'message.createSuccess' }));
       }
       
       setGoodsModalVisible(false);
       refreshPointGoods();
     } catch (error: any) {
       if (error.errorFields) return;
-      message.error(error?.data?.message || '操作失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'message.operationFailed' }));
     }
   };
 
@@ -260,34 +261,34 @@ const PointsPage: React.FC = () => {
       await request(`/api/v1/bases/${currentBase?.id}/points/${detailPoint?.id}/goods/${id}`, {
         method: 'DELETE',
       });
-      message.success('删除成功');
+      message.success(intl.formatMessage({ id: 'message.deleteSuccess' }));
       refreshPointGoods();
     } catch (error: any) {
-      message.error(error?.data?.message || '删除失败');
+      message.error(error?.data?.message || intl.formatMessage({ id: 'message.deleteFailed' }));
     }
   };
 
   // 表格列定义
   const columns: ProColumns<PointItem>[] = [
     {
-      title: '编号',
+      title: intl.formatMessage({ id: 'form.label.code' }),
       dataIndex: 'code',
       width: 160,
       copyable: true,
     },
     {
-      title: '店铺名称',
+      title: intl.formatMessage({ id: 'points.column.name' }),
       dataIndex: 'name',
       ellipsis: true,
     },
     {
-      title: '地址',
+      title: intl.formatMessage({ id: 'points.column.address' }),
       dataIndex: 'address',
       ellipsis: true,
       hideInSearch: true,
     },
     {
-      title: '老板',
+      title: intl.formatMessage({ id: 'points.column.owner' }),
       dataIndex: ['owner', 'name'],
       hideInSearch: true,
       render: (_, record) => record.owner ? (
@@ -295,7 +296,7 @@ const PointsPage: React.FC = () => {
       ) : '-',
     },
     {
-      title: '经销商',
+      title: intl.formatMessage({ id: 'points.column.dealer' }),
       dataIndex: ['dealer', 'name'],
       hideInSearch: true,
       render: (_, record) => record.dealer ? (
@@ -303,36 +304,36 @@ const PointsPage: React.FC = () => {
       ) : '-',
     },
     {
-      title: '订单数',
+      title: intl.formatMessage({ id: 'points.column.orderCount' }),
       dataIndex: ['_count', 'pointOrders'],
       hideInSearch: true,
       width: 80,
       align: 'center',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'form.label.status' }),
       dataIndex: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '停用', status: 'Default' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Default' },
       },
       render: (_, record) => (
         <Tag color={record.isActive ? 'green' : 'default'}>
-          {record.isActive ? '启用' : '停用'}
+          {record.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
         </Tag>
       ),
     },
     {
-      title: '更新时间',
+      title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       valueType: 'dateTime',
       hideInSearch: true,
       width: 160,
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       valueType: 'option',
       width: 150,
       render: (_, record) => (
@@ -343,7 +344,7 @@ const PointsPage: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record)}
           >
-            详情
+            {intl.formatMessage({ id: 'button.detail' })}
           </Button>
           {access.canUpdatePoint && (
             <Button
@@ -355,18 +356,18 @@ const PointsPage: React.FC = () => {
                 setFormVisible(true);
               }}
             >
-              编辑
+              {intl.formatMessage({ id: 'button.edit' })}
             </Button>
           )}
           {access.canDeletePoint && (
             <Popconfirm
-              title="确定删除该点位吗？"
+              title={intl.formatMessage({ id: 'points.deleteConfirm' })}
               onConfirm={() => handleDelete(record.id)}
-              okText="确定"
-              cancelText="取消"
+              okText={intl.formatMessage({ id: 'button.confirm' })}
+              cancelText={intl.formatMessage({ id: 'button.cancel' })}
             >
               <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                删除
+                {intl.formatMessage({ id: 'button.delete' })}
               </Button>
             </Popconfirm>
           )}
@@ -377,24 +378,24 @@ const PointsPage: React.FC = () => {
 
   // 订单状态映射
   const orderStatusMap: Record<string, { text: string; color: string }> = {
-    PENDING: { text: '待处理', color: 'orange' },
-    CONFIRMED: { text: '已确认', color: 'blue' },
-    SHIPPING: { text: '配送中', color: 'cyan' },
-    DELIVERED: { text: '已送达', color: 'geekblue' },
-    COMPLETED: { text: '已完成', color: 'green' },
-    CANCELLED: { text: '已取消', color: 'default' },
+    PENDING: { text: intl.formatMessage({ id: 'pointOrders.status.pending' }), color: 'orange' },
+    CONFIRMED: { text: intl.formatMessage({ id: 'pointOrders.status.confirmed' }), color: 'blue' },
+    SHIPPING: { text: intl.formatMessage({ id: 'pointOrders.status.shipping' }), color: 'cyan' },
+    DELIVERED: { text: intl.formatMessage({ id: 'pointOrders.status.delivered' }), color: 'geekblue' },
+    COMPLETED: { text: intl.formatMessage({ id: 'pointOrders.status.completed' }), color: 'green' },
+    CANCELLED: { text: intl.formatMessage({ id: 'pointOrders.status.cancelled' }), color: 'default' },
   };
 
   const paymentStatusMap: Record<string, { text: string; color: string }> = {
-    UNPAID: { text: '未付款', color: 'red' },
-    PARTIAL: { text: '部分付款', color: 'orange' },
-    PAID: { text: '已付款', color: 'green' },
+    UNPAID: { text: intl.formatMessage({ id: 'payables.status.unpaid' }), color: 'red' },
+    PARTIAL: { text: intl.formatMessage({ id: 'payables.status.partial' }), color: 'orange' },
+    PAID: { text: intl.formatMessage({ id: 'payables.status.paid' }), color: 'green' },
   };
 
   return (
     <PageContainer>
       <ProTable<PointItem>
-        headerTitle="点位列表"
+        headerTitle={intl.formatMessage({ id: 'list.title.points' })}
         actionRef={actionRef}
         rowKey="id"
         search={{
@@ -411,7 +412,7 @@ const PointsPage: React.FC = () => {
                 setFormVisible(true);
               }}
             >
-              新建点位
+              {intl.formatMessage({ id: 'points.add' })}
             </Button>
           ),
         ]}
@@ -441,7 +442,7 @@ const PointsPage: React.FC = () => {
 
       {/* 详情抽屉 */}
       <Drawer
-        title={`点位详情 - ${detailPoint?.name || ''}`}
+        title={`${intl.formatMessage({ id: 'points.detail.title' })} - ${detailPoint?.name || ''}`}
         width={720}
         open={detailVisible}
         onClose={() => {
@@ -458,26 +459,26 @@ const PointsPage: React.FC = () => {
             items={[
               {
                 key: 'info',
-                label: '基本信息',
+                label: intl.formatMessage({ id: 'points.tab.info' }),
                 children: (
                   <Descriptions column={2} bordered size="small">
-                    <Descriptions.Item label="编号">{detailPoint.code}</Descriptions.Item>
-                    <Descriptions.Item label="店铺名称">{detailPoint.name}</Descriptions.Item>
-                    <Descriptions.Item label="地址" span={2}>{detailPoint.address || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="联系人">{detailPoint.contactPerson || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="联系电话">{detailPoint.contactPhone || '-'}</Descriptions.Item>
-                    <Descriptions.Item label="老板">
+                    <Descriptions.Item label={intl.formatMessage({ id: 'form.label.code' })}>{detailPoint.code}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'points.column.name' })}>{detailPoint.name}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'form.label.address' })} span={2}>{detailPoint.address || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'form.label.contactPerson' })}>{detailPoint.contactPerson || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'form.label.contactPhone' })}>{detailPoint.contactPhone || '-'}</Descriptions.Item>
+                    <Descriptions.Item label={intl.formatMessage({ id: 'points.column.owner' })}>
                       {detailPoint.owner ? `${detailPoint.owner.name} (${detailPoint.owner.phone || '-'})` : '-'}
                     </Descriptions.Item>
-                    <Descriptions.Item label="经销商">
+                    <Descriptions.Item label={intl.formatMessage({ id: 'points.column.dealer' })}>
                       {detailPoint.dealer ? `${detailPoint.dealer.name} (${detailPoint.dealer.phone || '-'})` : '-'}
                     </Descriptions.Item>
-                    <Descriptions.Item label="状态">
+                    <Descriptions.Item label={intl.formatMessage({ id: 'form.label.status' })}>
                       <Tag color={detailPoint.isActive ? 'green' : 'default'}>
-                        {detailPoint.isActive ? '启用' : '停用'}
+                        {detailPoint.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
                       </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label="更新时间">
+                    <Descriptions.Item label={intl.formatMessage({ id: 'table.column.updatedAt' })}>
                       {new Date(detailPoint.updatedAt).toLocaleString()}
                     </Descriptions.Item>
                   </Descriptions>
@@ -485,20 +486,20 @@ const PointsPage: React.FC = () => {
               },
               {
                 key: 'inventory',
-                label: '库存信息',
+                label: intl.formatMessage({ id: 'points.tab.inventory' }),
                 children: loadingDetail ? (
-                  <div style={{ textAlign: 'center', padding: 40 }}>加载中...</div>
+                  <div style={{ textAlign: 'center', padding: 40 }}>{intl.formatMessage({ id: 'message.loading' })}</div>
                 ) : inventory.length === 0 ? (
-                  <Empty description="暂无库存数据" />
+                  <Empty description={intl.formatMessage({ id: 'points.inventory.empty' })} />
                 ) : (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: '#fafafa' }}>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>商品编号</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>商品名称</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>箱</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>盒</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>个</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'form.label.code' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'form.label.name' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'unit.box' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'unit.pack' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'unit.piece' })}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -517,9 +518,9 @@ const PointsPage: React.FC = () => {
               },
               {
                 key: 'orders',
-                label: '历史订单',
+                label: intl.formatMessage({ id: 'points.tab.orders' }),
                 children: loadingDetail ? (
-                  <div style={{ textAlign: 'center', padding: 40 }}>加载中...</div>
+                  <div style={{ textAlign: 'center', padding: 40 }}>{intl.formatMessage({ id: 'message.loading' })}</div>
                 ) : (
                   <div>
                     <div style={{ marginBottom: 16, textAlign: 'right' }}>
@@ -531,20 +532,20 @@ const PointsPage: React.FC = () => {
                           history.push(`/offline-region/point-orders?pointId=${detailPoint?.id}`);
                         }}
                       >
-                        新建订单
+                        {intl.formatMessage({ id: 'pointOrders.add' })}
                       </Button>
                     </div>
                     {orders.length === 0 ? (
-                      <Empty description="暂无订单数据" />
+                      <Empty description={intl.formatMessage({ id: 'points.orders.empty' })} />
                     ) : (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: '#fafafa' }}>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>订单编号</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>下单日期</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>金额</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>订单状态</th>
-                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>付款状态</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'pointOrders.column.orderNo' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'pointOrders.column.orderDate' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'pointOrders.column.amount' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'pointOrders.column.status' })}</th>
+                        <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'pointOrders.column.paymentStatus' })}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -577,14 +578,14 @@ const PointsPage: React.FC = () => {
               },
               {
                 key: 'goods',
-                label: '可购商品',
+                label: intl.formatMessage({ id: 'points.tab.goods' }),
                 children: loadingDetail ? (
-                  <div style={{ textAlign: 'center', padding: 40 }}>加载中...</div>
+                  <div style={{ textAlign: 'center', padding: 40 }}>{intl.formatMessage({ id: 'message.loading' })}</div>
                 ) : (
                   <div>
                     <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ color: '#666', fontSize: 12 }}>
-                        配置该点位可以采购的商品及数量限制。未配置时，下单无法选择商品。
+                        {intl.formatMessage({ id: 'points.goods.hint' })}
                       </span>
                       <Button 
                         type="primary" 
@@ -592,22 +593,22 @@ const PointsPage: React.FC = () => {
                         size="small"
                         onClick={() => handleOpenGoodsModal()}
                       >
-                        添加商品
+                        {intl.formatMessage({ id: 'points.goods.add' })}
                       </Button>
                     </div>
                     {pointGoods.length === 0 ? (
-                      <Empty description="暂未配置可购商品" />
+                      <Empty description={intl.formatMessage({ id: 'points.goods.emptyConfig' })} />
                     ) : (
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ background: '#fafafa' }}>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>商品名称</th>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>单价/箱</th>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>单价/盒</th>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>最大箱数</th>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>最大盒数</th>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>状态</th>
-                            <th style={{ padding: 8, border: '1px solid #f0f0f0', width: 100 }}>操作</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'form.label.name' })}</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'points.goods.unitPrice' })}</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'unit.pricePerPack' })}</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'points.goods.maxBox' })}</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'points.goods.maxPack' })}</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'form.label.status' })}</th>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0', width: 100 }}>{intl.formatMessage({ id: 'table.column.operation' })}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -624,14 +625,14 @@ const PointsPage: React.FC = () => {
                                   {packPrice.toFixed(2)}
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
-                                  {pg.maxBoxQuantity ?? '不限'}
+                                  {pg.maxBoxQuantity ?? intl.formatMessage({ id: 'points.goods.noLimit' })}
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
-                                  {pg.maxPackQuantity ?? '不限'}
+                                  {pg.maxPackQuantity ?? intl.formatMessage({ id: 'points.goods.noLimit' })}
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
                                   <Tag color={pg.isActive ? 'green' : 'default'}>
-                                    {pg.isActive ? '启用' : '停用'}
+                                    {pg.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
                                   </Tag>
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
@@ -643,7 +644,7 @@ const PointsPage: React.FC = () => {
                                       onClick={() => handleOpenGoodsModal(pg)}
                                     />
                                     <Popconfirm
-                                      title="确定删除该商品配置吗？"
+                                      title={intl.formatMessage({ id: 'points.goods.deleteConfirm' })}
                                       onConfirm={() => handleDeletePointGoods(pg.id)}
                                     >
                                       <Button 
@@ -671,7 +672,7 @@ const PointsPage: React.FC = () => {
 
       {/* 可购商品编辑弹窗 */}
       <Modal
-        title={editingPointGoods ? '编辑可购商品' : '添加可购商品'}
+        title={editingPointGoods ? intl.formatMessage({ id: 'points.goods.editTitle' }) : intl.formatMessage({ id: 'points.goods.addTitle' })}
         open={goodsModalVisible}
         onOk={handleSavePointGoods}
         onCancel={() => setGoodsModalVisible(false)}
@@ -683,12 +684,12 @@ const PointsPage: React.FC = () => {
         >
           <Form.Item
             name="goodsId"
-            label="选择商品"
-            rules={[{ required: true, message: '请选择商品' }]}
+            label={intl.formatMessage({ id: 'points.goods.select' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'form.validation.required' }) }]}
           >
             <Select
               showSearch
-              placeholder="搜索并选择商品"
+              placeholder={intl.formatMessage({ id: 'form.placeholder.select' })}
               loading={goodsLoading}
               disabled={!!editingPointGoods}
               optionFilterProp="label"
@@ -696,55 +697,52 @@ const PointsPage: React.FC = () => {
                 .filter(g => !pointGoods.some(pg => pg.goodsId === g.id) || editingPointGoods?.goodsId === g.id)
                 .map(g => ({
                   value: g.id,
-                  label: `${g.name} (${Number(g.retailPrice).toFixed(2)}/箱)`,
+                  label: `${g.name} (${Number(g.retailPrice).toFixed(2)}/${intl.formatMessage({ id: 'unit.box' })})`,
                 }))}
             />
           </Form.Item>
 
           <Form.Item
             name="unitPrice"
-            label="专属单价/箱"
-            tooltip="留空则使用商品默认价格"
+            label={intl.formatMessage({ id: 'points.goods.unitPrice' })}
           >
             <InputNumber
               style={{ width: '100%' }}
               min={0}
               step={0.01}
               precision={2}
-              placeholder="留空使用默认价格"
+              placeholder={intl.formatMessage({ id: 'form.placeholder.input' })}
                           />
           </Form.Item>
 
           <Form.Item
             name="maxBoxQuantity"
-            label="最大可购箱数"
-            tooltip="留空表示不限制"
+            label={intl.formatMessage({ id: 'points.goods.maxBox' })}
           >
             <InputNumber
               style={{ width: '100%' }}
               min={1}
-              placeholder="不限制"
+              placeholder={intl.formatMessage({ id: 'points.goods.noLimit' })}
             />
           </Form.Item>
 
           <Form.Item
             name="maxPackQuantity"
-            label="最大可购盒数"
-            tooltip="留空表示不限制"
+            label={intl.formatMessage({ id: 'points.goods.maxPack' })}
           >
             <InputNumber
               style={{ width: '100%' }}
               min={1}
-              placeholder="不限制"
+              placeholder={intl.formatMessage({ id: 'points.goods.noLimit' })}
             />
           </Form.Item>
 
           <Form.Item
             name="isActive"
-            label="启用状态"
+            label={intl.formatMessage({ id: 'form.label.status' })}
             valuePropName="checked"
           >
-            <Switch checkedChildren="启用" unCheckedChildren="停用" />
+            <Switch checkedChildren={intl.formatMessage({ id: 'status.enabled' })} unCheckedChildren={intl.formatMessage({ id: 'status.disabled' })} />
           </Form.Item>
         </Form>
       </Modal>

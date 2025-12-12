@@ -23,6 +23,7 @@ import {
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
+import { useIntl } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
 
@@ -78,6 +79,7 @@ interface InventoryStats {
 const InventoryManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   
   // 状态管理
   const [loading, setLoading] = useState(false);
@@ -103,14 +105,14 @@ const InventoryManagement: React.FC = () => {
   // 表格列定义
   const columns: ColumnsType<InventoryItem> = [
     {
-      title: '商品编号',
+      title: intl.formatMessage({ id: 'products.column.code' }),
       dataIndex: ['goods', 'code'],
       key: 'goodsCode',
       width: 120,
       fixed: 'left',
     },
     {
-      title: '商品名称',
+      title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: ['goods', 'name'],
       key: 'goodsName',
       width: 200,
@@ -118,14 +120,14 @@ const InventoryManagement: React.FC = () => {
       render: (text: string) => <strong>{text}</strong>,
     },
     {
-      title: '描述',
+      title: intl.formatMessage({ id: 'table.column.description' }),
       dataIndex: ['goods', 'description'],
       key: 'goodsDescription',
       width: 150,
       ellipsis: true,
     },
     {
-      title: '当前库存',
+      title: intl.formatMessage({ id: 'inventory.column.stockQty' }),
       dataIndex: 'stockQuantity',
       key: 'stockQuantity',
       width: 100,
@@ -140,7 +142,7 @@ const InventoryManagement: React.FC = () => {
       ),
     },
     {
-      title: '平均成本',
+      title: intl.formatMessage({ id: 'inventory.column.avgCost' }),
       dataIndex: 'averageCost',
       key: 'averageCost',
       width: 100,
@@ -148,7 +150,7 @@ const InventoryManagement: React.FC = () => {
       render: (value: number) => `${Number(value).toFixed(2)}`,
     },
     {
-      title: '库存价值',
+      title: intl.formatMessage({ id: 'inventory.column.totalValue' }),
       dataIndex: 'totalValue',
       key: 'totalValue',
       width: 120,
@@ -156,19 +158,19 @@ const InventoryManagement: React.FC = () => {
       render: (value: number) => `${Number(value).toFixed(2)}`,
     },
     {
-      title: '存储位置',
+      title: intl.formatMessage({ id: 'inventory.column.location' }),
       dataIndex: ['location', 'name'],
       key: 'locationName',
       width: 120,
     },
     {
-      title: '位置类型',
+      title: intl.formatMessage({ id: 'inventory.column.locationType' }),
       dataIndex: ['location', 'type'],
       key: 'locationType',
       width: 100,
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'table.column.status' }),
       key: 'status',
       width: 100,
       render: (_, record: InventoryItem) => {
@@ -176,13 +178,13 @@ const InventoryManagement: React.FC = () => {
         let status, config;
         if (quantity === 0) {
           status = 'out';
-          config = { color: 'red', text: '缺货', icon: <WarningOutlined /> };
+          config = { color: 'red', text: intl.formatMessage({ id: 'inventory.status.outOfStock' }), icon: <WarningOutlined /> };
         } else if (quantity <= 10) {
           status = 'low';
-          config = { color: 'orange', text: '库存不足', icon: <WarningOutlined /> };
+          config = { color: 'orange', text: intl.formatMessage({ id: 'inventory.status.lowStock' }), icon: <WarningOutlined /> };
         } else {
           status = 'normal';
-          config = { color: 'green', text: '正常', icon: <CheckCircleOutlined /> };
+          config = { color: 'green', text: intl.formatMessage({ id: 'inventory.status.normal' }), icon: <CheckCircleOutlined /> };
         }
         return (
           <Tag color={config.color} icon={config.icon}>
@@ -192,24 +194,24 @@ const InventoryManagement: React.FC = () => {
       },
     },
     {
-      title: '最后更新',
+      title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 150,
       render: (value: string) => new Date(value).toLocaleString(),
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 120,
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
           <Button type="link" size="small" onClick={() => handleEdit(record)}>
-            编辑
+            {intl.formatMessage({ id: 'button.edit' })}
           </Button>
           <Button type="link" size="small" onClick={() => handleViewHistory(record)}>
-            历史
+            {intl.formatMessage({ id: 'inventory.viewHistory' })}
           </Button>
         </Space>
       ),
@@ -219,7 +221,7 @@ const InventoryManagement: React.FC = () => {
   // 获取库存数据
   const fetchInventoryData = async () => {
     if (!currentBase) {
-      message.warning('请先选择基地');
+      message.warning(intl.formatMessage({ id: 'message.selectBaseFirst' }));
       return;
     }
 
@@ -339,8 +341,8 @@ const InventoryManagement: React.FC = () => {
         <Card>
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
             <WarningOutlined style={{ fontSize: '48px', color: '#faad14' }} />
-            <h3>请先选择基地</h3>
-            <p>库存管理需要在特定基地下进行，请先选择一个基地。</p>
+            <h3>{intl.formatMessage({ id: 'message.selectBaseFirst' })}</h3>
+            <p>{intl.formatMessage({ id: 'message.selectBaseHint' })}</p>
           </div>
         </Card>
       </PageContainer>
@@ -352,13 +354,13 @@ const InventoryManagement: React.FC = () => {
       header={{ title: false }}
       extra={[
         <Button key="export" icon={<ExportOutlined />} onClick={handleExport}>
-          导出
+          {intl.formatMessage({ id: 'button.export' })}
         </Button>,
         <Button key="refresh" icon={<ReloadOutlined />} onClick={handleRefresh}>
-          刷新
+          {intl.formatMessage({ id: 'button.refresh' })}
         </Button>,
         <Button key="add" type="primary" icon={<PlusOutlined />}>
-          入库
+          {intl.formatMessage({ id: 'inventory.stockIn' })}
         </Button>,
       ]}
     >
@@ -367,9 +369,9 @@ const InventoryManagement: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="商品种类"
+              title={intl.formatMessage({ id: 'inventory.stats.uniqueGoods' })}
               value={stats.uniqueGoods}
-              suffix="种"
+              suffix={intl.formatMessage({ id: 'unit.item' })}
               valueStyle={{ color: '#1890ff' }}
             />
           </Card>
@@ -377,7 +379,7 @@ const InventoryManagement: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="库存总价值"
+              title={intl.formatMessage({ id: 'inventory.stats.totalValue' })}
               value={stats.totalValue}
               precision={2}
               valueStyle={{ color: '#52c41a' }}
@@ -387,9 +389,9 @@ const InventoryManagement: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="库存数量"
+              title={intl.formatMessage({ id: 'inventory.stats.totalQty' })}
               value={stats.totalQuantity}
-              suffix="件"
+              suffix={intl.formatMessage({ id: 'unit.item' })}
               valueStyle={{ color: '#faad14' }}
             />
           </Card>
@@ -397,9 +399,9 @@ const InventoryManagement: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="存储位置"
+              title={intl.formatMessage({ id: 'inventory.stats.locations' })}
               value={stats.uniqueLocations}
-              suffix="个"
+              suffix={intl.formatMessage({ id: 'unit.item' })}
               valueStyle={{ color: '#ff4d4f' }}
             />
           </Card>
@@ -412,7 +414,7 @@ const InventoryManagement: React.FC = () => {
           <Col span={8}>
             <Space.Compact style={{ width: '100%' }}>
               <Input
-                placeholder="搜索商品名称或编号"
+                placeholder={intl.formatMessage({ id: 'inventory.search.placeholder' })}
                 allowClear
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
@@ -427,7 +429,7 @@ const InventoryManagement: React.FC = () => {
           </Col>
           <Col span={4}>
             <Select
-              placeholder="选择分类"
+              placeholder={intl.formatMessage({ id: 'inventory.filter.category' })}
               allowClear
               style={{ width: '100%' }}
               value={categoryFilter}
@@ -436,16 +438,16 @@ const InventoryManagement: React.FC = () => {
                 handleFilterChange();
               }}
             >
-              <Option value="">全部分类</Option>
-              <Option value="electronics">电子产品</Option>
-              <Option value="clothing">服装</Option>
-              <Option value="food">食品</Option>
-              <Option value="books">图书</Option>
+              <Option value="">{intl.formatMessage({ id: 'filter.allCategories' })}</Option>
+              <Option value="card">{intl.formatMessage({ id: 'products.category.card' })}</Option>
+              <Option value="cardBrick">{intl.formatMessage({ id: 'products.category.cardBrick' })}</Option>
+              <Option value="gift">{intl.formatMessage({ id: 'products.category.gift' })}</Option>
+              <Option value="toy">{intl.formatMessage({ id: 'products.category.toy' })}</Option>
             </Select>
           </Col>
           <Col span={4}>
             <Select
-              placeholder="库存状态"
+              placeholder={intl.formatMessage({ id: 'inventory.filter.status' })}
               allowClear
               style={{ width: '100%' }}
               value={statusFilter}
@@ -454,11 +456,10 @@ const InventoryManagement: React.FC = () => {
                 handleFilterChange();
               }}
             >
-              <Option value="">全部状态</Option>
-              <Option value="normal">正常</Option>
-              <Option value="low">库存不足</Option>
-              <Option value="out">缺货</Option>
-              <Option value="excess">库存过多</Option>
+              <Option value="">{intl.formatMessage({ id: 'filter.allStatus' })}</Option>
+              <Option value="normal">{intl.formatMessage({ id: 'inventory.status.normal' })}</Option>
+              <Option value="low">{intl.formatMessage({ id: 'inventory.status.lowStock' })}</Option>
+              <Option value="out">{intl.formatMessage({ id: 'inventory.status.outOfStock' })}</Option>
             </Select>
           </Col>
         </Row>
@@ -476,7 +477,7 @@ const InventoryManagement: React.FC = () => {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) => 
-              `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
+              intl.formatMessage({ id: 'table.pagination.total' }, { start: range[0], end: range[1], total }),
           }}
           onChange={handleTableChange}
           scroll={{ x: 1400 }}

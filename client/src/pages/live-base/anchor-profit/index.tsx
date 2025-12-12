@@ -723,13 +723,13 @@ const AnchorProfitPage: React.FC = () => {
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>主播利润列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.anchorProfit' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalRecords} 条)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalRecords })})
             </span>
             <Popover
               content={statsContent}
-              title="统计详情"
+              title={intl.formatMessage({ id: 'stats.title' })}
               trigger="click"
               placement="bottomLeft"
             >
@@ -739,7 +739,7 @@ const AnchorProfitPage: React.FC = () => {
                 icon={<InfoCircleOutlined />}
                 style={{ color: '#1890ff' }}
               >
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>

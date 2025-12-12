@@ -641,13 +641,13 @@ const SupplierManagement: React.FC = () => {
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>供应商列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.suppliers' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.totalSuppliers} 家)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalSuppliers })})
             </span>
             <Popover
               content={statsContent}
-              title="统计详情"
+              title={intl.formatMessage({ id: 'stats.title' })}
               trigger="click"
               placement="bottomLeft"
             >
@@ -657,7 +657,7 @@ const SupplierManagement: React.FC = () => {
                 icon={<InfoCircleOutlined />}
                 style={{ color: '#1890ff' }}
               >
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>

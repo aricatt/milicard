@@ -28,7 +28,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
 
@@ -81,11 +81,11 @@ interface StockOutStats {
   byLocation: { locationId: number; locationName: string; count: number }[];
 }
 
-// 出库类型映射
-const TYPE_MAP: Record<StockOutType, { text: string; color: string; icon: React.ReactNode }> = {
-  POINT_ORDER: { text: '点位发货', color: 'blue', icon: <SendOutlined /> },
-  TRANSFER: { text: '跨基地调货', color: 'orange', icon: <SwapOutlined /> },
-  MANUAL: { text: '手动出库', color: 'green', icon: <ToolOutlined /> },
+// 出库类型映射 - 将在组件内动态获取文本
+const TYPE_COLORS: Record<StockOutType, { color: string; icon: React.ReactNode }> = {
+  POINT_ORDER: { color: 'blue', icon: <SendOutlined /> },
+  TRANSFER: { color: 'orange', icon: <SwapOutlined /> },
+  MANUAL: { color: 'green', icon: <ToolOutlined /> },
 };
 
 /**
@@ -94,6 +94,7 @@ const TYPE_MAP: Record<StockOutType, { text: string; color: string; icon: React.
 const StockOutPage: React.FC = () => {
   const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
+  const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
 
   // 状态管理
@@ -136,7 +137,7 @@ const StockOutPage: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('获取商品列表失败:', error);
+      console.error('Failed to fetch goods:', error);
     }
   };
 
@@ -158,7 +159,7 @@ const StockOutPage: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('获取仓库列表失败:', error);
+      console.error('Failed to fetch locations:', error);
     }
   };
 
@@ -198,7 +199,7 @@ const StockOutPage: React.FC = () => {
 
       return { data: [], success: true, total: 0 };
     } catch (error) {
-      console.error('获取出库列表失败:', error);
+      console.error('Failed to fetch stock-out list:', error);
       return { data: [], success: false, total: 0 };
     }
   };
@@ -214,7 +215,7 @@ const StockOutPage: React.FC = () => {
         setStats(result.data);
       }
     } catch (error) {
-      console.error('获取统计数据失败:', error);
+      console.error('Failed to fetch stats:', error);
     }
   };
 
@@ -235,16 +236,16 @@ const StockOutPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('创建成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         setCreateModalVisible(false);
         createForm.resetFields();
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '创建失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('创建出库记录失败:', error);
-      message.error('创建出库记录失败');
+      console.error('Failed to create stock-out:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     } finally {
       setCreateLoading(false);
     }
@@ -270,17 +271,17 @@ const StockOutPage: React.FC = () => {
       );
 
       if (result.success) {
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         setEditModalVisible(false);
         editForm.resetFields();
         setEditingRecord(null);
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '更新失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('更新出库记录失败:', error);
-      message.error('更新出库记录失败');
+      console.error('Failed to update stock-out:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     } finally {
       setEditLoading(false);
     }
@@ -299,14 +300,14 @@ const StockOutPage: React.FC = () => {
       );
 
       if (result.success) {
-        message.success('删除成功');
+        message.success(intl.formatMessage({ id: 'message.success' }));
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '删除失败');
+        message.error(result.message || intl.formatMessage({ id: 'message.failed' }));
       }
     } catch (error) {
-      console.error('删除出库记录失败:', error);
-      message.error('删除出库记录失败');
+      console.error('Failed to delete stock-out:', error);
+      message.error(intl.formatMessage({ id: 'message.failed' }));
     }
   };
 
@@ -348,7 +349,7 @@ const StockOutPage: React.FC = () => {
    */
   const columns: ProColumns<StockOut>[] = [
     {
-      title: '出库日期',
+      title: intl.formatMessage({ id: 'stockOut.column.date' }),
       dataIndex: 'date',
       key: 'date',
       width: 110,
@@ -359,7 +360,7 @@ const StockOutPage: React.FC = () => {
       },
     },
     {
-      title: '商品',
+      title: intl.formatMessage({ id: 'stockOut.column.goods' }),
       dataIndex: 'goods',
       key: 'goods',
       width: 200,
@@ -368,27 +369,32 @@ const StockOutPage: React.FC = () => {
       render: (_, record) => record.goods?.name || '-',
     },
     {
-      title: '出库类型',
+      title: intl.formatMessage({ id: 'stockOut.column.type' }),
       dataIndex: 'type',
       key: 'type',
       width: 120,
       valueType: 'select',
       valueEnum: {
-        POINT_ORDER: { text: '点位发货' },
-        TRANSFER: { text: '跨基地调货' },
-        MANUAL: { text: '手动出库' },
+        POINT_ORDER: { text: intl.formatMessage({ id: 'stockOut.type.pointOrder' }) },
+        TRANSFER: { text: intl.formatMessage({ id: 'stockOut.type.transfer' }) },
+        MANUAL: { text: intl.formatMessage({ id: 'stockOut.type.manual' }) },
       },
       render: (_, record) => {
-        const typeInfo = TYPE_MAP[record.type];
+        const typeColors = TYPE_COLORS[record.type];
+        const typeTextMap: Record<StockOutType, string> = {
+          POINT_ORDER: intl.formatMessage({ id: 'stockOut.type.pointOrder' }),
+          TRANSFER: intl.formatMessage({ id: 'stockOut.type.transfer' }),
+          MANUAL: intl.formatMessage({ id: 'stockOut.type.manual' }),
+        };
         return (
-          <Tag color={typeInfo.color} icon={typeInfo.icon}>
-            {typeInfo.text}
+          <Tag color={typeColors.color} icon={typeColors.icon}>
+            {typeTextMap[record.type]}
           </Tag>
         );
       },
     },
     {
-      title: '目标名称',
+      title: intl.formatMessage({ id: 'stockOut.column.targetName' }),
       dataIndex: 'targetName',
       key: 'targetName',
       width: 100,
@@ -397,7 +403,7 @@ const StockOutPage: React.FC = () => {
       render: (text) => text || '-',
     },
     {
-      title: '关联订单',
+      title: intl.formatMessage({ id: 'stockOut.column.relatedOrder' }),
       dataIndex: 'relatedOrderCode',
       key: 'relatedOrderCode',
       width: 150,
@@ -405,7 +411,7 @@ const StockOutPage: React.FC = () => {
       render: (text) => text ? <code style={{ fontSize: 12 }}>{text}</code> : '-',
     },
     {
-      title: '出库仓库',
+      title: intl.formatMessage({ id: 'stockOut.column.location' }),
       dataIndex: 'location',
       key: 'location',
       width: 100,
@@ -413,7 +419,7 @@ const StockOutPage: React.FC = () => {
       render: (_, record) => record.location?.name || '-',
     },
     {
-      title: '出库/箱',
+      title: intl.formatMessage({ id: 'stockOut.column.boxQty' }),
       dataIndex: 'boxQuantity',
       key: 'boxQuantity',
       width: 80,
@@ -421,7 +427,7 @@ const StockOutPage: React.FC = () => {
       align: 'right',
     },
     {
-      title: '出库/盒',
+      title: intl.formatMessage({ id: 'stockOut.column.packQty' }),
       dataIndex: 'packQuantity',
       key: 'packQuantity',
       width: 80,
@@ -429,7 +435,7 @@ const StockOutPage: React.FC = () => {
       align: 'right',
     },
     {
-      title: '出库/包',
+      title: intl.formatMessage({ id: 'stockOut.column.pieceQty' }),
       dataIndex: 'pieceQuantity',
       key: 'pieceQuantity',
       width: 80,
@@ -437,7 +443,7 @@ const StockOutPage: React.FC = () => {
       align: 'right',
     },
     {
-      title: '备注',
+      title: intl.formatMessage({ id: 'form.label.notes' }),
       dataIndex: 'remark',
       key: 'remark',
       width: 150,
@@ -446,7 +452,7 @@ const StockOutPage: React.FC = () => {
       render: (text) => text || '-',
     },
     {
-      title: '创建人',
+      title: intl.formatMessage({ id: 'table.column.createdBy' }),
       dataIndex: 'creator',
       key: 'creator',
       width: 100,
@@ -454,7 +460,7 @@ const StockOutPage: React.FC = () => {
       render: (_, record) => record.creator?.name || '-',
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'table.column.createdAt' }),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
@@ -465,16 +471,16 @@ const StockOutPage: React.FC = () => {
       },
     },
     {
-      title: '关键词',
+      title: intl.formatMessage({ id: 'stockOut.column.keyword' }),
       dataIndex: 'keyword',
       key: 'keyword',
       hideInTable: true,
       fieldProps: {
-        placeholder: '搜索目标名称、订单号、备注',
+        placeholder: intl.formatMessage({ id: 'stockOut.search.placeholder' }),
       },
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 80,
       fixed: 'right',
@@ -485,7 +491,7 @@ const StockOutPage: React.FC = () => {
           return <span style={{ color: '#999' }}>-</span>;
         }
         return [
-          <Tooltip key="edit" title="编辑">
+          <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
             <Button
               type="link"
               size="small"
@@ -499,14 +505,14 @@ const StockOutPage: React.FC = () => {
           </Tooltip>,
           <Popconfirm
             key="delete"
-            title="确认删除"
-            description="确定要删除这条出库记录吗？"
+            title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+            description={intl.formatMessage({ id: 'stockOut.deleteConfirm' })}
             onConfirm={() => handleDelete(record)}
-            okText="确定"
-            cancelText="取消"
+            okText={intl.formatMessage({ id: 'button.confirm' })}
+            cancelText={intl.formatMessage({ id: 'button.cancel' })}
             icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
           >
-            <Tooltip title="删除">
+            <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
               <Button type="link" size="small" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>,
@@ -520,7 +526,7 @@ const StockOutPage: React.FC = () => {
     return (
       <PageContainer>
         <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <p>加载中...</p>
+          <p>{intl.formatMessage({ id: 'message.loading' })}</p>
         </div>
       </PageContainer>
     );
@@ -530,7 +536,7 @@ const StockOutPage: React.FC = () => {
     return (
       <PageContainer>
         <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <p>请先选择一个基地</p>
+          <p>{intl.formatMessage({ id: 'message.selectBaseFirst' })}</p>
         </div>
       </PageContainer>
     );
@@ -540,18 +546,24 @@ const StockOutPage: React.FC = () => {
   const statsContent = (
     <div style={{ width: 300 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="出库总数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'stockOut.stats.total' })}>
           <Space>
             <ExportOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.total}</span>
-            <span style={{ color: '#999' }}>条</span>
           </Space>
         </Descriptions.Item>
-        {stats.byType.map((item) => (
-          <Descriptions.Item key={item.type} label={TYPE_MAP[item.type]?.text || item.type}>
-            <Tag color={TYPE_MAP[item.type]?.color}>{item.count}</Tag>
-          </Descriptions.Item>
-        ))}
+        {stats.byType.map((item) => {
+          const typeTextMap: Record<StockOutType, string> = {
+            POINT_ORDER: intl.formatMessage({ id: 'stockOut.type.pointOrder' }),
+            TRANSFER: intl.formatMessage({ id: 'stockOut.type.transfer' }),
+            MANUAL: intl.formatMessage({ id: 'stockOut.type.manual' }),
+          };
+          return (
+            <Descriptions.Item key={item.type} label={typeTextMap[item.type] || item.type}>
+              <Tag color={TYPE_COLORS[item.type]?.color}>{item.count}</Tag>
+            </Descriptions.Item>
+          );
+        })}
       </Descriptions>
     </div>
   );
@@ -560,21 +572,21 @@ const StockOutPage: React.FC = () => {
   const formContent = (
     <>
       <Form.Item
-        label="出库日期"
+        label={intl.formatMessage({ id: 'stockOut.column.date' })}
         name="date"
-        rules={[{ required: true, message: '请选择出库日期' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.dateRequired' }) }]}
       >
         <DatePicker style={{ width: '100%' }} />
       </Form.Item>
 
       <Form.Item
-        label="商品"
+        label={intl.formatMessage({ id: 'stockOut.column.goods' })}
         name="goodsId"
-        rules={[{ required: true, message: '请选择商品' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.goodsRequired' }) }]}
       >
         <Select
           showSearch
-          placeholder="请选择商品"
+          placeholder={intl.formatMessage({ id: 'form.placeholder.select' })}
           options={goodsOptions}
           filterOption={(input, option) =>
             (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -583,31 +595,31 @@ const StockOutPage: React.FC = () => {
       </Form.Item>
 
       <Form.Item
-        label="出库仓库"
+        label={intl.formatMessage({ id: 'stockOut.column.location' })}
         name="locationId"
-        rules={[{ required: true, message: '请选择出库仓库' }]}
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.locationRequired' }) }]}
       >
-        <Select placeholder="请选择出库仓库" options={locationOptions} />
+        <Select placeholder={intl.formatMessage({ id: 'form.placeholder.select' })} options={locationOptions} />
       </Form.Item>
 
-      <Form.Item label="目标名称" name="targetName">
-        <Input placeholder="请输入目标名称（如点位名、客户名等）" />
+      <Form.Item label={intl.formatMessage({ id: 'stockOut.column.targetName' })} name="targetName">
+        <Input placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} />
       </Form.Item>
 
       <Space style={{ width: '100%' }} size="middle">
-        <Form.Item label="出库/箱" name="boxQuantity">
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.column.boxQty' })} name="boxQuantity">
           <InputNumber min={0} style={{ width: 100 }} />
         </Form.Item>
-        <Form.Item label="出库/盒" name="packQuantity">
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.column.packQty' })} name="packQuantity">
           <InputNumber min={0} style={{ width: 100 }} />
         </Form.Item>
-        <Form.Item label="出库/包" name="pieceQuantity">
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.column.pieceQty' })} name="pieceQuantity">
           <InputNumber min={0} style={{ width: 100 }} />
         </Form.Item>
       </Space>
 
-      <Form.Item label="备注" name="remark">
-        <TextArea rows={3} placeholder="请输入备注" />
+      <Form.Item label={intl.formatMessage({ id: 'form.label.notes' })} name="remark">
+        <TextArea rows={3} placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} />
       </Form.Item>
     </>
   );
@@ -615,7 +627,7 @@ const StockOutPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: '出库管理',
+        title: intl.formatMessage({ id: 'stockOut.title' }),
       }}
     >
       <ProTable<StockOut>
@@ -647,19 +659,19 @@ const StockOutPage: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={openCreateModal}
           >
-            手动出库
+            {intl.formatMessage({ id: 'stockOut.add' })}
           </Button>,
         ]}
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>出库列表</span>
+            <span>{intl.formatMessage({ id: 'list.title.stockOut' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              (共 {stats.total} 条)
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.total })})
             </span>
             <Popover
               content={statsContent}
-              title="统计详情"
+              title={intl.formatMessage({ id: 'stats.title' })}
               trigger="click"
               placement="bottomLeft"
             >
@@ -669,7 +681,7 @@ const StockOutPage: React.FC = () => {
                 icon={<InfoCircleOutlined />}
                 style={{ color: '#1890ff' }}
               >
-                详情
+                {intl.formatMessage({ id: 'stats.detail' })}
               </Button>
             </Popover>
           </Space>
@@ -678,7 +690,7 @@ const StockOutPage: React.FC = () => {
 
       {/* 创建出库模态框 */}
       <Modal
-        title="手动出库"
+        title={intl.formatMessage({ id: 'stockOut.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -695,7 +707,7 @@ const StockOutPage: React.FC = () => {
 
       {/* 编辑出库模态框 */}
       <Modal
-        title="编辑出库记录"
+        title={intl.formatMessage({ id: 'stockOut.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
