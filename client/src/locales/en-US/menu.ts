@@ -10,6 +10,9 @@ export default {
   'menu.base-selector': 'Base Selector',
   'menu.base': 'Base Management',
   'menu.base.overview': 'Base Overview',
+  // Global Info
+  'menu.global-info': 'Global Info',
+  'menu.global-info.all-products': 'All Products',
   // 直播基地
   'menu.live-base': 'Live Base',
   'menu.live-base.overview': 'Base Overview',
@@ -17,7 +20,7 @@ export default {
   'menu.live-base.locations': 'Live Rooms/Warehouses',
   'menu.live-base.personnel': 'Streamers/Staff',
   'menu.live-base.suppliers': 'Suppliers',
-  'menu.live-base.products': 'Products',
+  'menu.live-base.products': 'Product Settings',
   'menu.live-base.procurement': 'Procurement',
   'menu.live-base.arrivals': 'Arrivals',
   'menu.live-base.transfers': 'Transfers',
@@ -47,6 +50,9 @@ export default {
   'menu.offline-region.point-info.points': 'Point Management',
   'menu.offline-region.point-info.point-orders': 'Point Orders',
   'menu.offline-region.point-info.location-profit': 'Location Profit',
+  // Global Info
+  'menu.global-info': 'Global Info',
+  'menu.global-info.all-products': 'All Products',
   // 系统管理
   'menu.system': 'System Management',
   'menu.system.users': 'User Management',

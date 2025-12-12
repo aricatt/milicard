@@ -17,6 +17,7 @@ export class PurchaseBaseService {
       const skip = (current - 1) * pageSize;
 
       // 构建查询SQL - 关联订单明细、商品信息、供应商信息和到货统计
+      // 注意：retail_price 已从 goods 表移至 goods_local_settings 表
       let sql = `
         SELECT 
           poi.id,
@@ -32,7 +33,7 @@ export class PurchaseBaseService {
           g.id as "goodsId",
           g.code as "goodsCode",
           g.name as "goodsName",
-          g.retail_price as "retailPrice",
+          COALESCE(gls.retail_price, 0) as "retailPrice",
           g.pack_per_box as "packPerBox",
           g.piece_per_pack as "piecePerPack",
           poi.box_quantity as "purchaseBoxQty",
@@ -48,6 +49,7 @@ export class PurchaseBaseService {
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
         JOIN goods g ON poi.goods_id = g.id
         JOIN suppliers s ON po.supplier_id = s.id
+        LEFT JOIN goods_local_settings gls ON gls.goods_id = g.id AND gls.base_id = po.base_id
         LEFT JOIN (
           SELECT 
             purchase_order_id,

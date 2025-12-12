@@ -103,6 +103,7 @@ export class InventoryService {
       }
 
       // 查询库存数据
+      // 注意：retailPrice, purchasePrice 已从 goods 表移至 goods_local_settings
       const [inventory, total] = await Promise.all([
         prisma.inventory.findMany({
           where,
@@ -112,11 +113,17 @@ export class InventoryService {
                 id: true,
                 code: true,
                 name: true,
-                retailPrice: true,
-                purchasePrice: true,
                 boxQuantity: true,
                 packPerBox: true,
-                piecePerPack: true
+                piecePerPack: true,
+                localSettings: {
+                  where: { baseId: where.baseId },
+                  select: {
+                    retailPrice: true,
+                    purchasePrice: true
+                  },
+                  take: 1
+                }
               }
             },
             location: {
@@ -140,25 +147,28 @@ export class InventoryService {
       const lowStockItems = inventory.filter(item => item.stockQuantity < 10).length
 
       // 格式化响应数据
-      const formattedInventory = inventory.map(item => ({
-        id: item.id,
-        goodsId: item.goodsId,
-        locationId: item.locationId,
-        stockQuantity: item.stockQuantity,
-        averageCost: Number(item.averageCost),
-        updatedAt: item.updatedAt,
-        goods: {
-          id: item.goods.id,
-          code: item.goods.code,
-          name: this.parseMultilingualText(item.goods.name),
-          retailPrice: Number(item.goods.retailPrice),
-          purchasePrice: Number(item.goods.purchasePrice),
-          boxQuantity: item.goods.boxQuantity,
-          packPerBox: item.goods.packPerBox,
-          piecePerPack: item.goods.piecePerPack
-        },
-        location: item.location
-      }))
+      const formattedInventory = inventory.map((item: any) => {
+        const localSetting = item.goods.localSettings?.[0]
+        return {
+          id: item.id,
+          goodsId: item.goodsId,
+          locationId: item.locationId,
+          stockQuantity: item.stockQuantity,
+          averageCost: Number(item.averageCost),
+          updatedAt: item.updatedAt,
+          goods: {
+            id: item.goods.id,
+            code: item.goods.code,
+            name: this.parseMultilingualText(item.goods.name),
+            retailPrice: localSetting ? Number(localSetting.retailPrice) : 0,
+            purchasePrice: localSetting?.purchasePrice ? Number(localSetting.purchasePrice) : 0,
+            boxQuantity: item.goods.boxQuantity,
+            packPerBox: item.goods.packPerBox,
+            piecePerPack: item.goods.piecePerPack
+          },
+          location: item.location
+        }
+      })
 
       return {
         inventory: formattedInventory,

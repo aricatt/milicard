@@ -173,8 +173,6 @@ model Goods {
   name               String
   description        String?
   category           GoodsCategory       @default(CARD)
-  retailPrice        Decimal             @map("retail_price") @db.Decimal(12, 2)
-  purchasePrice      Decimal?            @map("purchase_price") @db.Decimal(12, 2)
   boxQuantity        Int                 @default(1) @map("box_quantity")
   packPerBox         Int                 @map("pack_per_box")
   piecePerPack       Int                 @map("piece_per_pack")
@@ -183,15 +181,11 @@ model Goods {
   isActive           Boolean             @default(true) @map("is_active")
   createdAt          DateTime            @default(now()) @map("created_at")
   updatedAt          DateTime            @updatedAt @map("updated_at")
-  alias              String?
   manufacturer       String
-  packPrice          Decimal?            @map("pack_price") @db.Decimal(12, 2)
-  baseId             Int                 @map("base_id")
   createdBy          String?             @map("created_by")
   updatedBy          String?             @map("updated_by")
   arrivalOrderItems  ArrivalOrderItem[]
   arrivalRecords     ArrivalRecord[]
-  base               Base                @relation(fields: [baseId], references: [id], onDelete: Cascade)
   creator            User?               @relation("GoodsCreator", fields: [createdBy], references: [id])
   updater            User?               @relation("GoodsUpdater", fields: [updatedBy], references: [id])
   inventory          Inventory[]
@@ -204,13 +198,34 @@ model Goods {
   pointGoods         PointGoods[]
   pointOrderItems    PointOrderItem[]
   pointInventory     PointInventory[]
+  localSettings      GoodsLocalSetting[]
 
   @@index([code])
   @@index([name])
+  @@index([isActive])
+  @@map("goods")
+}
+
+// 基地级商品设置（价格、别名、状态等）
+model GoodsLocalSetting {
+  id            String   @id @default(uuid())
+  goodsId       String   @map("goods_id")
+  baseId        Int      @map("base_id")
+  retailPrice   Decimal  @map("retail_price") @db.Decimal(12, 2)
+  purchasePrice Decimal? @map("purchase_price") @db.Decimal(12, 2)
+  packPrice     Decimal? @map("pack_price") @db.Decimal(12, 2)
+  alias         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  goods         Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  base          Base     @relation(fields: [baseId], references: [id], onDelete: Cascade)
+
+  @@unique([goodsId, baseId])
+  @@index([goodsId])
   @@index([baseId])
   @@index([isActive])
-  @@index([baseId, isActive])
-  @@map("goods")
+  @@map("goods_local_settings")
 }
 
 model Inventory {
@@ -586,11 +601,11 @@ model Base {
   currency         String             @default("CNY")
   language         String             @default("zh-CN")
   type             BaseType           @default(LIVE_BASE)
-  arrivalRecords   ArrivalRecord[]
-  consumptions     StockConsumption[]
-  customers        Customer[]
-  goods            Goods[]
-  inventory        Inventory[]
+  arrivalRecords      ArrivalRecord[]
+  consumptions        StockConsumption[]
+  customers           Customer[]
+  goodsLocalSettings  GoodsLocalSetting[]
+  inventory           Inventory[]
   inventoryLedgers InventoryLedger[]
   locations        Location[]
   personnel        Personnel[]

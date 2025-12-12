@@ -10,13 +10,16 @@ export default {
   'menu.base-selector': '基地选择',
   'menu.base': '基地管理',
   'menu.base.overview': '基地概览',
+  // 全局信息
+  'menu.global-info': '全局信息',
+  'menu.global-info.all-products': '所有商品',
   'menu.live-base': '直播基地',
   'menu.live-base.overview': '基地概览',
   'menu.live-base.base-list': '基地列表',
   'menu.live-base.locations': '直播间/仓库',
   'menu.live-base.personnel': '主播/仓管',
   'menu.live-base.suppliers': '供应商',
-  'menu.live-base.products': '商品',
+  'menu.live-base.products': '商品设置',
   'menu.live-base.procurement': '采购',
   'menu.live-base.arrivals': '到货',
   'menu.live-base.transfers': '调货',
@@ -46,6 +49,9 @@ export default {
   'menu.offline-region.point-info.points': '点位管理',
   'menu.offline-region.point-info.point-orders': '点位订单',
   'menu.offline-region.point-info.location-profit': '点位利润',
+  // 全局信息
+  'menu.global-info': '全局信息',
+  'menu.global-info.all-products': '所有商品',
   // 系统管理
   'menu.system': '系统管理',
   'menu.system.users': '用户管理',

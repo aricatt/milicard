@@ -163,7 +163,6 @@ export class PointOrderService {
                   id: true,
                   code: true,
                   name: true,
-                  retailPrice: true,
                   packPerBox: true,
                 },
               },
@@ -249,7 +248,6 @@ export class PointOrderService {
                 id: true,
                 code: true,
                 name: true,
-                retailPrice: true,
                 packPerBox: true,
                 piecePerPack: true,
                 imageUrl: true,
@@ -293,7 +291,7 @@ export class PointOrderService {
     for (const item of data.items) {
       const goods = await prisma.goods.findUnique({
         where: { id: item.goodsId },
-        select: { id: true, name: true, retailPrice: true, packPerBox: true },
+        select: { id: true, name: true, packPerBox: true },
       });
 
       if (!goods) {
@@ -669,7 +667,6 @@ export class PointOrderService {
               id: true,
               code: true,
               name: true,
-              retailPrice: true,
               packPerBox: true,
               piecePerPack: true,
               imageUrl: true,
@@ -681,44 +678,60 @@ export class PointOrderService {
       });
 
       // 返回商品信息，并附带点位专属配置
+      // 注意：retailPrice 已从 goods 表移至 goods_local_settings，这里使用点位专属单价
       return pointGoods.map(pg => ({
         ...pg.goods,
-        // 如果点位有专属单价，使用专属单价；否则使用商品默认价格
-        retailPrice: pg.unitPrice || pg.goods.retailPrice,
+        // 使用点位专属单价
+        retailPrice: pg.unitPrice || 0,
         maxBoxQuantity: pg.maxBoxQuantity,
         maxPackQuantity: pg.maxPackQuantity,
         pointGoodsId: pg.id,
       }));
     }
 
-    // 如果没有指定点位，返回所有商品（用于管理员场景）
-    const where: Prisma.GoodsWhereInput = {
+    // 如果没有指定点位，从基地商品设置中获取（用于管理员场景）
+    // 注意：需要从 goods_local_settings 获取价格信息
+    const settingsWhere: any = {
+      baseId: baseId,
       isActive: true,
     };
 
     if (keyword) {
-      where.OR = [
-        { name: { contains: keyword, mode: 'insensitive' } },
-        { code: { contains: keyword, mode: 'insensitive' } },
-      ];
+      settingsWhere.goods = {
+        OR: [
+          { name: { contains: keyword, mode: 'insensitive' } },
+          { code: { contains: keyword, mode: 'insensitive' } },
+        ],
+        isActive: true,
+      };
+    } else {
+      settingsWhere.goods = {
+        isActive: true,
+      };
     }
 
-    const goods = await prisma.goods.findMany({
-      where,
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        retailPrice: true,
-        packPerBox: true,
-        piecePerPack: true,
-        imageUrl: true,
+    const settings = await prisma.goodsLocalSetting.findMany({
+      where: settingsWhere,
+      include: {
+        goods: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            packPerBox: true,
+            piecePerPack: true,
+            imageUrl: true,
+          },
+        },
       },
-      orderBy: { name: 'asc' },
+      orderBy: { goods: { name: 'asc' } },
       take: 50,
     });
 
-    return goods;
+    return settings.map((s: any) => ({
+      ...s.goods,
+      retailPrice: Number(s.retailPrice),
+    }));
   }
 
   /**

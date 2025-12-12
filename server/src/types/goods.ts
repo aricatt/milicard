@@ -56,6 +56,7 @@ export interface CreateGoodsRequest {
   description?: string
   imageUrl?: string
   notes?: string
+  alias?: string  // 基地级别的商品别名
 }
 
 export interface UpdateGoodsRequest {

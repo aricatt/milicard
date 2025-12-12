@@ -47,6 +47,9 @@ export default {
   'menu.offline-region.point-info.points': 'จัดการจุด',
   'menu.offline-region.point-info.point-orders': 'คำสั่งซื้อจุด',
   'menu.offline-region.point-info.location-profit': 'กำไรจุด',
+  // 全局信息
+  'menu.global-info': 'ข้อมูลทั่วโลก',
+  'menu.global-info.all-products': 'สินค้าทั้งหมด',
   // 系统管理
   'menu.system': 'จัดการระบบ',
   'menu.system.users': 'จัดการผู้ใช้',

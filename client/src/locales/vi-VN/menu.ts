@@ -47,6 +47,9 @@ export default {
   'menu.offline-region.point-info.points': 'Quản lý điểm',
   'menu.offline-region.point-info.point-orders': 'Đơn hàng điểm',
   'menu.offline-region.point-info.location-profit': 'Lợi nhuận điểm',
+  // 全局信息
+  'menu.global-info': 'Thông tin toàn cầu',
+  'menu.global-info.all-products': 'Tất cả sản phẩm',
   // 系统管理
   'menu.system': 'Quản lý hệ thống',
   'menu.system.users': 'Quản lý người dùng',

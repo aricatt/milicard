@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   Space, 
   Tag, 
@@ -12,21 +12,16 @@ import {
   Descriptions,
   Row,
   Col,
-  Image,
   InputNumber,
   Select,
   Tooltip,
+  Alert,
 } from 'antd';
 import { 
   PlusOutlined, 
-  ExclamationCircleOutlined,
-  CheckCircleOutlined,
   EditOutlined,
   DeleteOutlined,
-  ShoppingOutlined,
   InfoCircleOutlined,
-  CloseCircleOutlined,
-  ShopOutlined,
   ExportOutlined,
   ImportOutlined,
   DownloadOutlined,
@@ -35,7 +30,6 @@ import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
-import styles from './index.less';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
 
@@ -43,15 +37,15 @@ const { TextArea } = Input;
 
 // 商品品类枚举
 enum GoodsCategory {
-  CARD = 'CARD',             // 卡牌
-  CARD_BRICK = 'CARD_BRICK', // 卡砖
-  GIFT = 'GIFT',             // 礼物
-  COLOR_PAPER = 'COLOR_PAPER', // 色纸
-  FORTUNE_SIGN = 'FORTUNE_SIGN', // 上上签
-  TEAR_CARD = 'TEAR_CARD',   // 撕撕乐
-  TOY = 'TOY',               // 玩具
-  STAMP = 'STAMP',           // 邮票
-  LUCKY_CAT = 'LUCKY_CAT'    // 招财猫
+  CARD = 'CARD',
+  CARD_BRICK = 'CARD_BRICK',
+  GIFT = 'GIFT',
+  COLOR_PAPER = 'COLOR_PAPER',
+  FORTUNE_SIGN = 'FORTUNE_SIGN',
+  TEAR_CARD = 'TEAR_CARD',
+  TOY = 'TOY',
+  STAMP = 'STAMP',
+  LUCKY_CAT = 'LUCKY_CAT'
 }
 
 // 品类中文映射
@@ -80,48 +74,45 @@ const GoodsCategoryColors: Record<GoodsCategory, string> = {
   [GoodsCategory.LUCKY_CAT]: 'red'
 };
 
-// 品类选项列表
-const categoryOptions = Object.entries(GoodsCategoryLabels).map(([value, label]) => ({
-  value,
-  label
-}));
-
-// 商品数据类型定义
-interface Product {
+// 全局商品类型（用于选择）
+interface GlobalProduct {
   id: string;
   code: string;
   name: string;
   category: GoodsCategory;
-  alias?: string;
   manufacturer: string;
-  description?: string;
-  retailPrice: number;
-  packPrice?: number;
-  purchasePrice?: number;
-  boxQuantity: number;
   packPerBox: number;
   piecePerPack: number;
-  imageUrl?: string;
-  notes?: string;
+}
+
+// 基地商品设置类型
+interface ProductSetting {
+  id: string;
+  goodsId: string;
   baseId: number;
-  isActive: boolean | string | number;
+  retailPrice: number;
+  purchasePrice?: number;
+  packPrice?: number;
+  alias?: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  // 关联的全局商品信息
+  goods: GlobalProduct;
 }
 
 // 商品统计数据类型
 interface ProductStats {
-  totalGoods: number;
-  activeGoods: number;
-  inactiveGoods: number;
-  totalManufacturers: number;
+  totalSettings: number;
+  activeSettings: number;
+  inactiveSettings: number;
 }
 
 /**
- * 商品管理页面 - ProTable 版本
- * 基地中心化的商品管理，统一管理商品信息
+ * 商品设置页面
+ * 管理基地级别的商品配置（价格、别名、状态等）
  */
-const ProductManagement: React.FC = () => {
+const ProductSettingsPage: React.FC = () => {
   const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
@@ -129,18 +120,22 @@ const ProductManagement: React.FC = () => {
   
   // 状态管理
   const [stats, setStats] = useState<ProductStats>({
-    totalGoods: 0,
-    activeGoods: 0,
-    inactiveGoods: 0,
-    totalManufacturers: 0,
+    totalSettings: 0,
+    activeSettings: 0,
+    inactiveSettings: 0,
   });
   
   // 模态框状态
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingSetting, setEditingSetting] = useState<ProductSetting | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  
+  // 全局商品列表（用于选择）
+  const [globalProducts, setGlobalProducts] = useState<GlobalProduct[]>([]);
+  const [loadingGlobalProducts, setLoadingGlobalProducts] = useState(false);
+  const [selectedGlobalProduct, setSelectedGlobalProduct] = useState<GlobalProduct | null>(null);
   
   // 表单实例
   const [createForm] = Form.useForm();
@@ -162,9 +157,34 @@ const ProductManagement: React.FC = () => {
   });
 
   /**
-   * 获取商品数据
+   * 获取全局商品列表（用于添加时选择）
    */
-  const fetchProductData = async (params: any) => {
+  const fetchGlobalProducts = async (search?: string) => {
+    setLoadingGlobalProducts(true);
+    try {
+      const result = await request('/api/v1/global-goods', {
+        method: 'GET',
+        params: {
+          pageSize: 100,
+          search,
+          isActive: true,
+        },
+      });
+      
+      if (result.success) {
+        setGlobalProducts(result.data || []);
+      }
+    } catch (error) {
+      console.error('获取全局商品列表失败:', error);
+    } finally {
+      setLoadingGlobalProducts(false);
+    }
+  };
+
+  /**
+   * 获取基地商品设置数据
+   */
+  const fetchProductSettings = async (params: any) => {
     if (!currentBase) {
       return {
         data: [],
@@ -176,32 +196,30 @@ const ProductManagement: React.FC = () => {
     try {
       const { current = 1, pageSize = 30, name, manufacturer, isActive } = params;
       
-      // 构建查询参数
       const queryParams: any = {
-        page: current,  // 商品API使用 page 而不是 current
+        page: current,
         pageSize,
       };
       
-      if (name) queryParams.search = name;  // 商品API使用 search
+      if (name) queryParams.search = name;
       if (manufacturer) queryParams.manufacturer = manufacturer;
       if (isActive !== undefined) queryParams.isActive = isActive;
 
-      const result = await request(`/api/v1/bases/${currentBase.id}/goods`, {
+      const result = await request(`/api/v1/bases/${currentBase.id}/goods-settings`, {
         method: 'GET',
         params: queryParams,
       });
       
       if (result.success) {
-        // 计算统计数据
         calculateStats(result.data || []);
         
         return {
           data: result.data || [],
           success: true,
-          total: result.pagination?.total || 0,  // 商品API返回 pagination.total
+          total: result.pagination?.total || 0,
         };
       } else {
-        message.error(result.message || '获取商品数据失败');
+        message.error(result.message || intl.formatMessage({ id: 'productSettings.message.fetchFailed' }));
         return {
           data: [],
           success: false,
@@ -209,8 +227,8 @@ const ProductManagement: React.FC = () => {
         };
       }
     } catch (error) {
-      console.error('获取商品数据失败:', error);
-      message.error('获取商品数据失败');
+      console.error('获取商品设置数据失败:', error);
+      message.error(intl.formatMessage({ id: 'productSettings.message.fetchFailed' }));
       return {
         data: [],
         success: false,
@@ -222,63 +240,63 @@ const ProductManagement: React.FC = () => {
   /**
    * 计算统计数据
    */
-  const calculateStats = (data: Product[]) => {
+  const calculateStats = (data: ProductSetting[]) => {
     const newStats: ProductStats = {
-      totalGoods: data.length,
-      activeGoods: data.filter(p => p.isActive === true || p.isActive === 'true' || p.isActive === 1).length,
-      inactiveGoods: data.filter(p => !(p.isActive === true || p.isActive === 'true' || p.isActive === 1)).length,
-      totalManufacturers: new Set(data.map(p => p.manufacturer).filter(Boolean)).size,
+      totalSettings: data.length,
+      activeSettings: data.filter(p => p.isActive).length,
+      inactiveSettings: data.filter(p => !p.isActive).length,
     };
     setStats(newStats);
   };
 
   /**
-   * 创建商品
+   * 创建商品设置
    */
   const handleCreate = async (values: any) => {
-    if (!currentBase) {
-      message.error('请先选择基地');
+    if (!currentBase || !selectedGlobalProduct) {
+      message.error(intl.formatMessage({ id: 'productSettings.message.selectProductFirst' }));
       return;
     }
 
     setCreateLoading(true);
     try {
-      const result = await request(`/api/v1/bases/${currentBase.id}/goods`, {
+      const result = await request(`/api/v1/bases/${currentBase.id}/goods-settings`, {
         method: 'POST',
         data: {
+          goodsId: selectedGlobalProduct.id,
           ...values,
-          boxQuantity: 1,  // 箱数固定为1
         },
       });
 
       if (result.success) {
-        message.success('创建成功');
+        message.success(intl.formatMessage({ id: 'productSettings.message.createSuccess' }));
         setCreateModalVisible(false);
         createForm.resetFields();
+        setSelectedGlobalProduct(null);
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '创建失败');
+        message.error(result.message || intl.formatMessage({ id: 'productSettings.message.createFailed' }));
       }
     } catch (error) {
-      console.error('创建商品失败:', error);
-      message.error('创建商品失败');
+      console.error('创建商品设置失败:', error);
+      message.error(intl.formatMessage({ id: 'productSettings.message.createFailed' }));
     } finally {
       setCreateLoading(false);
     }
   };
 
   /**
-   * 更新商品
+   * 更新商品设置
    */
   const handleUpdate = async (values: any) => {
-    if (!currentBase || !editingProduct) {
+    if (!currentBase || !editingSetting) {
       return;
     }
 
     setEditLoading(true);
     try {
       const result = await request(
-        `/api/v1/bases/${currentBase.id}/goods/${editingProduct.id}`,
+        `/api/v1/bases/${currentBase.id}/goods-settings/${editingSetting.id}`,
         {
           method: 'PUT',
           data: values,
@@ -286,108 +304,95 @@ const ProductManagement: React.FC = () => {
       );
 
       if (result.success) {
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'productSettings.message.updateSuccess' }));
         setEditModalVisible(false);
         editForm.resetFields();
-        setEditingProduct(null);
+        setEditingSetting(null);
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '更新失败');
+        message.error(result.message || intl.formatMessage({ id: 'productSettings.message.updateFailed' }));
       }
     } catch (error) {
-      console.error('更新商品失败:', error);
-      message.error('更新商品失败');
+      console.error('更新商品设置失败:', error);
+      message.error(intl.formatMessage({ id: 'productSettings.message.updateFailed' }));
     } finally {
       setEditLoading(false);
     }
   };
 
   /**
-   * 删除商品
+   * 删除商品设置
    */
-  const handleDelete = async (record: Product) => {
+  const handleDelete = async (record: ProductSetting) => {
     if (!currentBase) {
       return;
     }
 
     try {
       const result = await request(
-        `/api/v1/bases/${currentBase.id}/goods/${record.id}`,
+        `/api/v1/bases/${currentBase.id}/goods-settings/${record.id}`,
         {
           method: 'DELETE',
         }
       );
 
       if (result.success) {
-        message.success('删除成功');
+        message.success(intl.formatMessage({ id: 'productSettings.message.deleteSuccess' }));
         actionRef.current?.reload();
       } else {
-        message.error(result.message || '删除失败');
+        message.error(result.message || intl.formatMessage({ id: 'productSettings.message.deleteFailed' }));
       }
     } catch (error) {
-      console.error('删除商品失败:', error);
-      message.error('删除商品失败');
+      console.error('删除商品设置失败:', error);
+      message.error(intl.formatMessage({ id: 'productSettings.message.deleteFailed' }));
     }
   };
 
   /**
-   * 编辑商品
+   * 编辑商品设置
    */
-  const handleEdit = (record: Product) => {
-    setEditingProduct(record);
+  const handleEdit = (record: ProductSetting) => {
+    setEditingSetting(record);
     editForm.setFieldsValue({
-      name: record.name,
-      category: record.category,
-      alias: record.alias,
-      manufacturer: record.manufacturer,
-      description: record.description,
       retailPrice: typeof record.retailPrice === 'number' ? record.retailPrice : parseFloat(record.retailPrice as any || '0'),
       packPrice: typeof record.packPrice === 'number' ? record.packPrice : parseFloat(record.packPrice as any || '0'),
       purchasePrice: typeof record.purchasePrice === 'number' ? record.purchasePrice : parseFloat(record.purchasePrice as any || '0'),
-      packPerBox: record.packPerBox,
-      piecePerPack: record.piecePerPack,
-      imageUrl: record.imageUrl,
-      notes: record.notes,
+      alias: record.alias,
+      isActive: record.isActive,
     });
     setEditModalVisible(true);
   };
 
   /**
+   * 处理全局商品选择
+   */
+  const handleGlobalProductSelect = (goodsId: string) => {
+    const product = globalProducts.find(p => p.id === goodsId);
+    setSelectedGlobalProduct(product || null);
+  };
+
+  /**
    * 列定义
    */
-  const columns: ProColumns<Product>[] = [
-    {
-      title: intl.formatMessage({ id: 'table.column.id' }),
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-      hideInSearch: true,
-      hideInTable: false,
-      render: (id: any) => String(id).slice(-8),
-    },
+  const columns: ProColumns<ProductSetting>[] = [
     {
       title: intl.formatMessage({ id: 'products.column.code' }),
-      dataIndex: 'code',
+      dataIndex: ['goods', 'code'],
       key: 'code',
-      width: 140,
+      width: 160,
       fixed: 'left',
       copyable: true,
-      hideInSetting: true,
       hideInSearch: true,
-      render: (text: string) => <code style={{ fontSize: 12 }}>{text}</code>,
+      render: (_, record) => <code style={{ fontSize: 12 }}>{record.goods?.code}</code>,
     },
     {
       title: intl.formatMessage({ id: 'products.column.category' }),
-      dataIndex: 'category',
+      dataIndex: ['goods', 'category'],
       key: 'category',
-      width: 60,
-      fixed: 'left',
-      valueType: 'select',
-      valueEnum: Object.fromEntries(
-        Object.entries(GoodsCategoryLabels).map(([key, label]) => [key, { text: label }])
-      ),
+      width: 80,
+      hideInSearch: true,
       render: (_, record) => {
-        const category = record.category || GoodsCategory.CARD;
+        const category = record.goods?.category || GoodsCategory.CARD;
         return (
           <Tag color={GoodsCategoryColors[category]}>
             {GoodsCategoryLabels[category]}
@@ -400,11 +405,8 @@ const ProductManagement: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       width: 200,
-      fixed: 'left',
-      hideInSetting: true,
-      hideInSearch: false,
       ellipsis: true,
-      render: (text: string) => <strong>{text}</strong>,
+      render: (_, record) => <strong>{record.goods?.name}</strong>,
     },
     {
       title: intl.formatMessage({ id: 'products.column.alias' }),
@@ -412,16 +414,14 @@ const ProductManagement: React.FC = () => {
       key: 'alias',
       width: 150,
       hideInSearch: true,
-      hideInTable: false,
       ellipsis: true,
-      render: (text: string) => text || '-',
+      render: (text: any) => text || '-',
     },
     {
       title: intl.formatMessage({ id: 'products.column.manufacturer' }),
-      dataIndex: 'manufacturer',
+      dataIndex: ['goods', 'manufacturer'],
       key: 'manufacturer',
-      width: 60,
-      hideInSearch: false,
+      width: 100,
       ellipsis: true,
     },
     {
@@ -431,7 +431,7 @@ const ProductManagement: React.FC = () => {
       width: 120,
       hideInSearch: true,
       align: 'right',
-      render: (price: number) => (
+      render: (price: any) => (
         <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
           {typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
         </span>
@@ -443,203 +443,116 @@ const ProductManagement: React.FC = () => {
       key: 'packPrice',
       width: 100,
       hideInSearch: true,
-      hideInTable: false,
       align: 'right',
-      render: (price: number) => price ? (
+      render: (price: any) => price ? (
         <span style={{ color: '#fa8c16' }}>
           {typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
         </span>
       ) : '-',
     },
     {
-      title: intl.formatMessage({ id: 'products.column.purchasePrice' }),
-      dataIndex: 'purchasePrice',
-      key: 'purchasePrice',
+      title: intl.formatMessage({ id: 'products.column.packPerBox' }),
+      dataIndex: ['goods', 'packPerBox'],
+      key: 'packPerBox',
       width: 100,
       hideInSearch: true,
-      hideInTable: false,
-      align: 'right',
-      render: (price: number) => price ? (
-        <span style={{ color: '#52c41a' }}>
-          {typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
-        </span>
-      ) : '-',
-    },
-    {
-      title: intl.formatMessage({ id: 'products.column.boxQuantity' }),
-      dataIndex: 'boxQuantity',
-      key: 'boxQuantity',
-      width: 60,
-      hideInSearch: true,
-      hideInTable: false,
       align: 'center',
-      render: (num: number) => <Tag color="blue">{num}</Tag>,
-    },
-    {
-      title: intl.formatMessage({ id: 'products.column.packPerBox' }),
-      dataIndex: 'packPerBox',
-      key: 'packPerBox',
-      width: 60,
-      hideInSearch: true,
-      align: 'center',
-      render: (num: number) => <Tag color="cyan">{num}</Tag>,
+      render: (_, record) => (
+        <Tag color="blue">{record.goods?.packPerBox} {intl.formatMessage({ id: 'products.unit.pack' })}/箱</Tag>
+      ),
     },
     {
       title: intl.formatMessage({ id: 'products.column.piecePerPack' }),
-      dataIndex: 'piecePerPack',
+      dataIndex: ['goods', 'piecePerPack'],
       key: 'piecePerPack',
-      width: 60,
+      width: 100,
       hideInSearch: true,
       align: 'center',
-      render: (num: number) => <Tag color="geekblue">{num}</Tag>,
-    },
-    {
-      title: intl.formatMessage({ id: 'products.column.image' }),
-      dataIndex: 'imageUrl',
-      key: 'imageUrl',
-      width: 60,
-      hideInSearch: true,
-      hideInTable: false,
-      align: 'center',
-      render: (url: string) => url ? (
-        <Image
-          src={url}
-          alt="商品图片"
-          width={50}
-          height={50}
-          style={{ objectFit: 'cover', borderRadius: 4 }}
-          fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-        />
-      ) : '-',
-    },
-    {
-      title: intl.formatMessage({ id: 'table.column.notes' }),
-      dataIndex: 'notes',
-      key: 'notes',
-      width: 200,
-      ellipsis: true,
-      hideInSearch: true,
-      hideInTable: false,
-      render: (text: string) => text || '-',
+      render: (_, record) => (
+        <Tag color="green">{record.goods?.piecePerPack} {intl.formatMessage({ id: 'products.unit.piece' })}/盒</Tag>
+      ),
     },
     {
       title: intl.formatMessage({ id: 'table.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
-      width: 60,
+      width: 80,
       valueType: 'select',
       valueEnum: {
         true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
-        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Error' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Default' },
       },
-      render: (_, record) => {
-        const isActive = record.isActive === true || record.isActive === 'true' || record.isActive === 1;
-        return (
-          <Tag color={isActive ? 'green' : 'red'}>
-            {isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
-          </Tag>
-        );
-      },
-      hideInSearch: false,
-    },
-    {
-      title: intl.formatMessage({ id: 'table.column.createdAt' }),
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 130,
-      valueType: 'dateTime',
-      hideInSearch: true,
-      sorter: true,
-      render: (_, record) => {
-        if (!record.createdAt) return '-';
-        try {
-          const date = new Date(record.createdAt);
-          if (isNaN(date.getTime())) return '-';
-          return date.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-          });
-        } catch (error) {
-          return '-';
-        }
-      },
+      render: (_, record) => (
+        <Tag color={record.isActive ? 'green' : 'default'}>
+          {record.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
+        </Tag>
+      ),
     },
     {
       title: intl.formatMessage({ id: 'table.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
-      width: 170,
-      valueType: 'dateTime',
+      width: 160,
       hideInSearch: true,
-      hideInTable: false,
-      render: (_, record) => {
-        if (!record.updatedAt) return '-';
-        try {
-          const date = new Date(record.updatedAt);
-          if (isNaN(date.getTime())) return '-';
-          return date.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-          });
-        } catch (error) {
-          return '-';
-        }
-      },
+      valueType: 'dateTime',
     },
     {
       title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
-      width: 60,
+      width: 100,
       fixed: 'right',
-      valueType: 'option',
-      hideInSetting: true,
-      render: (_, record) => [
-        <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          />
-        </Tooltip>,
-        <Popconfirm
-          key="delete"
-          title={intl.formatMessage({ id: 'message.deleteConfirm' })}
-          description={`${intl.formatMessage({ id: 'message.deleteConfirmContent' })}`}
-          onConfirm={() => handleDelete(record)}
-          okText={intl.formatMessage({ id: 'button.confirm' })}
-          cancelText={intl.formatMessage({ id: 'button.cancel' })}
-          icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-        >
-          <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+      hideInSearch: true,
+      render: (_, record) => (
+        <Space size={0}>
+          <Tooltip title={intl.formatMessage({ id: 'button.edit' })}>
             <Button
               type="link"
               size="small"
-              danger
-              icon={<DeleteOutlined />}
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
             />
           </Tooltip>
-        </Popconfirm>,
-      ],
+          <Popconfirm
+            title={intl.formatMessage({ id: 'productSettings.deleteConfirm' })}
+            onConfirm={() => handleDelete(record)}
+            okText={intl.formatMessage({ id: 'button.confirm' })}
+            cancelText={intl.formatMessage({ id: 'button.cancel' })}
+          >
+            <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+              <Button
+                type="link"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+              />
+            </Tooltip>
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
-  // 等待 Context 初始化完成
+  // 统计信息内容
+  const statsContent = (
+    <Descriptions column={1} size="small">
+      <Descriptions.Item label={intl.formatMessage({ id: 'stats.totalGoods' })}>
+        {stats.totalSettings}
+      </Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'stats.activeGoods' })}>
+        <Tag color="green">{stats.activeSettings}</Tag>
+      </Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'stats.inactiveGoods' })}>
+        <Tag color="default">{stats.inactiveSettings}</Tag>
+      </Descriptions.Item>
+    </Descriptions>
+  );
+
+  // 未选择基地时的提示
   if (!initialized) {
     return (
-      <PageContainer>
+      <PageContainer header={{ title: false }}>
         <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <p>加载中...</p>
+          {intl.formatMessage({ id: 'message.loading' })}
         </div>
       </PageContainer>
     );
@@ -647,99 +560,51 @@ const ProductManagement: React.FC = () => {
 
   if (!currentBase) {
     return (
-      <PageContainer>
-        <div style={{ textAlign: 'center', padding: '50px 0' }}>
-          <p>请先选择一个基地</p>
-        </div>
+      <PageContainer header={{ title: false }}>
+        <Alert
+          message={intl.formatMessage({ id: 'message.selectBaseFirst' })}
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
       </PageContainer>
     );
   }
 
-  // 统计详情弹出内容
-  const statsContent = (
-    <div style={{ width: 300 }}>
-      <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="商品总数">
-          <Space>
-            <ShoppingOutlined />
-            <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.totalGoods}</span>
-            <span style={{ color: '#999' }}>个</span>
-          </Space>
-        </Descriptions.Item>
-        <Descriptions.Item label="启用商品">
-          <Space>
-            <CheckCircleOutlined style={{ color: '#52c41a' }} />
-            <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.activeGoods}</span>
-            <span style={{ color: '#999' }}>({stats.totalGoods > 0 ? ((stats.activeGoods / stats.totalGoods) * 100).toFixed(1) : 0}%)</span>
-          </Space>
-        </Descriptions.Item>
-        <Descriptions.Item label="禁用商品">
-          <Space>
-            <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
-            <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.inactiveGoods}</span>
-            <span style={{ color: '#999' }}>({stats.totalGoods > 0 ? ((stats.inactiveGoods / stats.totalGoods) * 100).toFixed(1) : 0}%)</span>
-          </Space>
-        </Descriptions.Item>
-        <Descriptions.Item label="厂家数量">
-          <Space>
-            <ShopOutlined style={{ color: '#722ed1' }} />
-            <span style={{ color: '#722ed1', fontWeight: 'bold' }}>{stats.totalManufacturers}</span>
-            <span style={{ color: '#999' }}>家</span>
-          </Space>
-        </Descriptions.Item>
-      </Descriptions>
-    </div>
-  );
-
   return (
     <PageContainer header={{ title: false }}>
-      {/* ProTable */}
-      <ProTable<Product>
-        columns={columns}
+      <ProTable<ProductSetting>
         actionRef={actionRef}
-        request={fetchProductData}
+        columns={columns}
+        request={fetchProductSettings}
         rowKey="id"
         
-        // 列状态配置 - 持久化到 localStorage
         columnsState={{
-          persistenceKey: 'product-table-columns',
+          persistenceKey: 'product-settings-table-columns',
           persistenceType: 'localStorage',
           defaultValue: {
-            // 默认隐藏的列
-            id: { show: false },
             alias: { show: false },
             packPrice: { show: false },
-            purchasePrice: { show: false },
-            imageUrl: { show: false },
-            notes: { show: false },
             updatedAt: { show: false },
           },
         }}
         
-        // 搜索表单配置
         search={{
           labelWidth: 'auto',
           defaultCollapsed: false,
-          optionRender: (searchConfig, formProps, dom) => [
-            ...dom.reverse(),
-          ],
         }}
         
-        // 工具栏配置
         options={{
           setting: {
             listsHeight: 400,
             draggable: true,
           },
-          reload: () => {
-            actionRef.current?.reload();
-          },
+          reload: () => actionRef.current?.reload(),
           density: true,
           fullScreen: true,
         }}
         
-        // 表格配置
-        scroll={{ x: 1600 }}
+        scroll={{ x: 1400 }}
         pagination={{
           defaultPageSize: 20,
           showSizeChanger: true,
@@ -747,7 +612,6 @@ const ProductManagement: React.FC = () => {
           pageSizeOptions: ['10', '20', '30', '50', '100'],
         }}
         
-        // 工具栏按钮
         toolBarRender={() => [
           <Button
             key="template"
@@ -774,19 +638,21 @@ const ProductManagement: React.FC = () => {
             key="create"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setCreateModalVisible(true)}
+            onClick={() => {
+              fetchGlobalProducts();
+              setCreateModalVisible(true);
+            }}
           >
-            {intl.formatMessage({ id: 'products.add' })}
+            {intl.formatMessage({ id: 'productSettings.add' })}
           </Button>,
         ]}
         
-        // 表格属性
         dateFormatter="string"
         headerTitle={
           <Space>
-            <span>{intl.formatMessage({ id: 'list.title.products' })}</span>
+            <span>{intl.formatMessage({ id: 'productSettings.title' })}</span>
             <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
-              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalGoods })})
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalSettings })})
             </span>
             <Popover
               content={statsContent}
@@ -807,86 +673,75 @@ const ProductManagement: React.FC = () => {
         }
       />
 
-      {/* 创建商品模态框 */}
+      {/* 添加商品设置模态框 */}
       <Modal
-        title={intl.formatMessage({ id: 'products.add' })}
+        title={intl.formatMessage({ id: 'productSettings.add' })}
         open={createModalVisible}
         onOk={() => createForm.submit()}
         onCancel={() => {
           setCreateModalVisible(false);
           createForm.resetFields();
+          setSelectedGlobalProduct(null);
         }}
         confirmLoading={createLoading}
         width={600}
+        destroyOnHidden
       >
         <Form
           form={createForm}
           layout="vertical"
           onFinish={handleCreate}
         >
-          <Row gutter={16}>
-            <Col span={16}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.name' })}
-                name="name"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.nameRequired' }) },
-                  { min: 2, max: 100, message: intl.formatMessage({ id: 'products.form.nameLength' }) }
-                ]}
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.namePlaceholder' })} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.category' })}
-                name="category"
-                initialValue={GoodsCategory.CARD}
-                rules={[{ required: true, message: intl.formatMessage({ id: 'products.form.categoryRequired' }) }]}
-              >
-                <Select
-                  placeholder={intl.formatMessage({ id: 'products.form.categoryPlaceholder' })}
-                  options={categoryOptions}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.alias' })}
-                name="alias"
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.manufacturer' })}
-                name="manufacturer"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.manufacturerRequired' }) },
-                  { min: 2, max: 50, message: intl.formatMessage({ id: 'products.form.manufacturerLength' }) }
-                ]}
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.manufacturerPlaceholder' })} />
-              </Form.Item>
-            </Col>
-          </Row>
-
+          {/* 选择全局商品 */}
           <Form.Item
-            label={intl.formatMessage({ id: 'products.form.description' })}
-            name="description"
+            label={intl.formatMessage({ id: 'productSettings.form.selectProduct' })}
+            required
           >
-            <TextArea
-              rows={3}
-              placeholder={intl.formatMessage({ id: 'products.form.descriptionPlaceholder' })}
-              maxLength={500}
-              showCount
-            />
+            <Select
+              showSearch
+              placeholder={intl.formatMessage({ id: 'productSettings.form.selectProductPlaceholder' })}
+              loading={loadingGlobalProducts}
+              filterOption={false}
+              onSearch={fetchGlobalProducts}
+              onChange={handleGlobalProductSelect}
+              value={selectedGlobalProduct?.id}
+              optionLabelProp="label"
+              style={{ width: '100%' }}
+            >
+              {globalProducts.map((product) => (
+                <Select.Option key={product.id} value={product.id} label={product.name}>
+                  <div>
+                    <div><strong>{product.name}</strong></div>
+                    <div style={{ fontSize: 12, color: '#999' }}>
+                      {product.code} | {product.manufacturer} | {GoodsCategoryLabels[product.category]}
+                    </div>
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
 
+          {/* 显示选中商品的信息 */}
+          {selectedGlobalProduct && (
+            <Descriptions size="small" column={2} style={{ marginBottom: 16 }} bordered>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.code' })}>
+                {selectedGlobalProduct.code}
+              </Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.category' })}>
+                <Tag color={GoodsCategoryColors[selectedGlobalProduct.category]}>
+                  {GoodsCategoryLabels[selectedGlobalProduct.category]}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.manufacturer' })}>
+                {selectedGlobalProduct.manufacturer}
+              </Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.spec' })}>
+                {selectedGlobalProduct.packPerBox}盒/箱, {selectedGlobalProduct.piecePerPack}包/盒
+              </Descriptions.Item>
+            </Descriptions>
+          )}
+
+          {/* 基地级配置字段 */}
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -902,6 +757,8 @@ const ProductManagement: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
                   min={0}
                   precision={2}
+                  addonBefore="¥"
+                  addonAfter="/箱"
                 />
               </Form.Item>
             </Col>
@@ -918,162 +775,81 @@ const ProductManagement: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
                   min={0}
                   precision={2}
+                  addonBefore="¥"
+                  addonAfter="/盒"
                 />
               </Form.Item>
             </Col>
           </Row>
 
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
-                label={intl.formatMessage({ id: 'products.form.boxQuantity' })}
-                name="boxQuantity"
-                initialValue={1}
-                extra={intl.formatMessage({ id: 'products.form.boxQuantityHint' })}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={1}
-                  disabled
-                  min={1}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.packPerBox' })}
-                name="packPerBox"
+                label={intl.formatMessage({ id: 'products.form.purchasePrice' })}
+                name="purchasePrice"
                 rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.packPerBoxRequired' }) },
-                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.packPerBoxMin' }) }
+                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.purchasePriceMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.packPerBoxPlaceholder' })}
-                  min={1}
+                  placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
-                label={intl.formatMessage({ id: 'products.form.piecePerPack' })}
-                name="piecePerPack"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.piecePerPackRequired' }) },
-                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.piecePerPackMin' }) }
-                ]}
+                label={intl.formatMessage({ id: 'products.form.alias' })}
+                name="alias"
               >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.piecePerPackPlaceholder' })}
-                  min={1}
-                />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item
-            label={intl.formatMessage({ id: 'products.form.imageUrl' })}
-            name="imageUrl"
-          >
-            <Input placeholder={intl.formatMessage({ id: 'products.form.imageUrlPlaceholder' })} />
-          </Form.Item>
-
-          <Form.Item
-            label={intl.formatMessage({ id: 'products.form.notes' })}
-            name="notes"
-          >
-            <TextArea
-              rows={3}
-              placeholder={intl.formatMessage({ id: 'products.form.notesPlaceholder' })}
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
         </Form>
       </Modal>
 
-      {/* 编辑商品模态框 */}
+      {/* 编辑商品设置模态框 */}
       <Modal
-        title={intl.formatMessage({ id: 'products.edit' })}
+        title={intl.formatMessage({ id: 'productSettings.edit' })}
         open={editModalVisible}
         onOk={() => editForm.submit()}
         onCancel={() => {
           setEditModalVisible(false);
           editForm.resetFields();
-          setEditingProduct(null);
+          setEditingSetting(null);
         }}
         confirmLoading={editLoading}
         width={600}
+        destroyOnHidden
       >
         <Form
           form={editForm}
           layout="vertical"
           onFinish={handleUpdate}
         >
-          <Row gutter={16}>
-            <Col span={16}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.name' })}
-                name="name"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.nameRequired' }) },
-                  { min: 2, max: 100, message: intl.formatMessage({ id: 'products.form.nameLength' }) }
-                ]}
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.namePlaceholder' })} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.category' })}
-                name="category"
-                rules={[{ required: true, message: intl.formatMessage({ id: 'products.form.categoryRequired' }) }]}
-              >
-                <Select
-                  placeholder={intl.formatMessage({ id: 'products.form.categoryPlaceholder' })}
-                  options={categoryOptions}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* 显示商品信息（只读） */}
+          {editingSetting && (
+            <Descriptions size="small" column={2} style={{ marginBottom: 16 }} bordered>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.name' })}>
+                <strong>{editingSetting.goods?.name}</strong>
+              </Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.code' })}>
+                {editingSetting.goods?.code}
+              </Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.manufacturer' })}>
+                {editingSetting.goods?.manufacturer}
+              </Descriptions.Item>
+              <Descriptions.Item label={intl.formatMessage({ id: 'products.column.spec' })}>
+                {editingSetting.goods?.packPerBox}盒/箱, {editingSetting.goods?.piecePerPack}包/盒
+              </Descriptions.Item>
+            </Descriptions>
+          )}
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.alias' })}
-                name="alias"
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.manufacturer' })}
-                name="manufacturer"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.manufacturerRequired' }) },
-                  { min: 2, max: 50, message: intl.formatMessage({ id: 'products.form.manufacturerLength' }) }
-                ]}
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.manufacturerPlaceholder' })} />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            label={intl.formatMessage({ id: 'products.form.description' })}
-            name="description"
-          >
-            <TextArea
-              rows={3}
-              placeholder={intl.formatMessage({ id: 'products.form.descriptionPlaceholder' })}
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-
+          {/* 基地级配置字段 */}
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -1089,6 +865,8 @@ const ProductManagement: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
                   min={0}
                   precision={2}
+                  addonBefore="¥"
+                  addonAfter="/箱"
                 />
               </Form.Item>
             </Col>
@@ -1105,6 +883,8 @@ const ProductManagement: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
                   min={0}
                   precision={2}
+                  addonBefore="¥"
+                  addonAfter="/盒"
                 />
               </Form.Item>
             </Col>
@@ -1113,80 +893,56 @@ const ProductManagement: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label={intl.formatMessage({ id: 'products.form.packPerBox' })}
-                name="packPerBox"
+                label={intl.formatMessage({ id: 'products.form.purchasePrice' })}
+                name="purchasePrice"
                 rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.packPerBoxRequired' }) },
-                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.packPerBoxMin' }) }
+                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.purchasePriceMin' }) }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.packPerBoxPlaceholder' })}
-                  min={1}
+                  placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
+                  min={0}
+                  precision={2}
+                  addonBefore="¥"
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label={intl.formatMessage({ id: 'products.form.piecePerPack' })}
-                name="piecePerPack"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.piecePerPackRequired' }) },
-                  { type: 'number', min: 1, message: intl.formatMessage({ id: 'products.form.piecePerPackMin' }) }
-                ]}
+                label={intl.formatMessage({ id: 'products.form.alias' })}
+                name="alias"
               >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.piecePerPackPlaceholder' })}
-                  min={1}
-                />
+                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
               </Form.Item>
             </Col>
           </Row>
 
           <Form.Item
-            label={intl.formatMessage({ id: 'products.form.imageUrl' })}
-            name="imageUrl"
+            label={intl.formatMessage({ id: 'products.form.status' })}
+            name="isActive"
           >
-            <Input placeholder={intl.formatMessage({ id: 'products.form.imageUrlPlaceholder' })} />
-          </Form.Item>
-
-          <Form.Item
-            label={intl.formatMessage({ id: 'products.form.notes' })}
-            name="notes"
-          >
-            <TextArea
-              rows={3}
-              placeholder={intl.formatMessage({ id: 'products.form.notesPlaceholder' })}
-              maxLength={500}
-              showCount
+            <Select
+              options={[
+                { value: true, label: intl.formatMessage({ id: 'status.enabled' }) },
+                { value: false, label: intl.formatMessage({ id: 'status.disabled' }) },
+              ]}
             />
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* 导入商品模态框 */}
+      {/* 导入模态框 */}
       <ImportModal
-        title="导入商品数据"
-        open={importModalVisible}
+        visible={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
         loading={importLoading}
         progress={importProgress}
-        onImport={handleImport}
-        width={700}
-        fields={[
-          { field: '品类', required: false, description: '卡牌/卡砖/礼物/色纸/上上签/撕撕乐/玩具/邮票/招财猫', example: '卡牌' },
-          { field: '商品名称', required: true, description: '商品名称（基地内唯一）', example: '琦趣创想航海王' },
-          { field: '商品别名', required: false, description: '商品别名或简称', example: '' },
-          { field: '厂家名称', required: true, description: '生产厂家名称', example: '琦趣创想' },
-          { field: '零售价(一箱)', required: true, description: '一箱的零售价格', example: '22356' },
-          { field: '多少盒1箱', required: true, description: '每箱包含多少盒', example: '36' },
-          { field: '多少包1盒', required: true, description: '每盒包含多少包', example: '10' },
-        ]}
+        title={intl.formatMessage({ id: 'products.import.title' })}
       />
     </PageContainer>
   );
 };
 
-export default ProductManagement;
+export default ProductSettingsPage;

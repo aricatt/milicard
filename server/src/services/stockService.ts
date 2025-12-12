@@ -479,8 +479,15 @@ export class StockService {
     try {
       const { goodsName, goodsCode, locationId, current = 1, pageSize = 20 } = params || {};
 
-      // 构建商品查询条件
-      const goodsWhere: any = { baseId, isActive: true };
+      // 构建商品查询条件 - 商品现在是全局的，通过 localSettings 关联基地
+      const goodsWhere: any = {
+        localSettings: {
+          some: {
+            baseId,
+            isActive: true,
+          },
+        },
+      };
       if (goodsName) {
         goodsWhere.name = { contains: goodsName, mode: 'insensitive' };
       }
@@ -583,9 +590,17 @@ export class StockService {
     lowStockCount: number;
   }> {
     try {
-      // 获取所有商品
+      // 获取所有商品 - 商品现在是全局的，通过 localSettings 关联基地
+      const goodsWhere: any = {
+        localSettings: {
+          some: {
+            baseId,
+            isActive: true,
+          },
+        },
+      };
       const allGoods = await prisma.goods.findMany({
-        where: { baseId, isActive: true },
+        where: goodsWhere,
         select: { id: true, packPerBox: true, piecePerPack: true },
       });
 

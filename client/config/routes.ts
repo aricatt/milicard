@@ -55,6 +55,26 @@ export default [
     component: './BaseSelector',
     layout: false,
   },
+  // 全局信息 - 不依赖基地的全局数据管理
+  {
+    path: '/global-info',
+    name: 'global-info',
+    icon: 'global',
+    routes: [
+      {
+        path: '/global-info',
+        redirect: '/global-info/all-products',
+      },
+      // 所有商品（全局商品管理）
+      {
+        name: 'all-products',
+        icon: 'gift',
+        path: '/global-info/all-products',
+        component: './global-info/all-products',
+        access: 'canAccessProducts',
+      },
+    ],
+  },
   // 直播基地管理系统 - 所有功能都在直播基地下
   {
     path: '/live-base',
