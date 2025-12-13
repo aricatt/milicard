@@ -1,11 +1,11 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
   ModalForm,
   PageContainer,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Button, Popconfirm } from 'antd';
+import { App, Button, Popconfirm, Tooltip } from 'antd';
 import React, { useRef, useState } from 'react';
 import { useIntl } from '@umijs/max';
 
@@ -48,7 +48,7 @@ function ListPageTemplate<T extends Record<string, any>>({
   const [createModalOpen, handleModalOpen] = useState<boolean>(false);
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
   const [currentRow, setCurrentRow] = useState<T>();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | null>(null);
 
   const handleAdd = async (fields: any) => {
     if (!onAdd) return false;
@@ -119,17 +119,17 @@ function ListPageTemplate<T extends Record<string, any>>({
         
         if (onUpdate && updateFormFields) {
           actions.push(
-            <Button
-              key="edit"
-              type="link"
-              size="small"
-              onClick={() => {
-                setCurrentRow(record);
-                handleUpdateModalOpen(true);
-              }}
-            >
-              {intl.formatMessage({ id: 'button.edit' })}
-            </Button>
+            <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setCurrentRow(record);
+                  handleUpdateModalOpen(true);
+                }}
+              />
+            </Tooltip>
           );
         }
 
@@ -147,9 +147,9 @@ function ListPageTemplate<T extends Record<string, any>>({
               okText={intl.formatMessage({ id: 'button.confirm' })}
               cancelText={intl.formatMessage({ id: 'button.cancel' })}
             >
-              <Button type="link" size="small" danger>
-                {intl.formatMessage({ id: 'button.delete' })}
-              </Button>
+              <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+              </Tooltip>
             </Popconfirm>
           );
         }

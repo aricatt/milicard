@@ -10,6 +10,7 @@ import {
   message,
   Button,
   Popconfirm,
+  Tooltip,
   Popover,
   Descriptions,
   Alert
@@ -445,15 +446,14 @@ const SubDistrictsPage: React.FC = () => {
       valueType: 'option',
       hideInSetting: true,
       render: (_, record) => [
-        <Button
-          key="edit"
-          type="link"
-          size="small"
-          icon={<EditOutlined />}
-          onClick={() => handleEdit(record)}
-        >
-          {intl.formatMessage({ id: 'button.edit' })}
-        </Button>,
+        <Tooltip key="edit" title={intl.formatMessage({ id: 'button.edit' })}>
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          />
+        </Tooltip>,
         <Popconfirm
           key="delete"
           title={intl.formatMessage({ id: 'message.deleteConfirm' })}
@@ -463,9 +463,9 @@ const SubDistrictsPage: React.FC = () => {
           cancelText={intl.formatMessage({ id: 'button.cancel' })}
           icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
         >
-          <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-            {intl.formatMessage({ id: 'button.delete' })}
-          </Button>
+          <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+          </Tooltip>
         </Popconfirm>,
       ],
     },
