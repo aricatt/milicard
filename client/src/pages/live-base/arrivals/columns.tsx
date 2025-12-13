@@ -4,6 +4,7 @@ import { DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { ArrivalRecord } from './types';
 import type { IntlShape } from 'react-intl';
+import GoodsNameText from '@/components/GoodsNameText';
 
 /**
  * 生成采购名称：采购日期 + 商品名称
@@ -55,17 +56,18 @@ export const getColumns = (
     title: intl?.formatMessage({ id: 'procurement.column.product' }) || '采购名称',
     key: 'purchaseName',
     width: 280,
-    ellipsis: true,
     hideInSearch: true,
-    render: (_, record) => getPurchaseName(record.purchaseDate, record.goodsName),
+    render: (_, record) => (
+      <GoodsNameText text={getPurchaseName(record.purchaseDate, record.goodsName)} />
+    ),
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 200,
-    ellipsis: true,
     hideInSetting: true,
+    render: (_, record) => <GoodsNameText text={record.goodsName} />,
   },
   {
     title: intl?.formatMessage({ id: 'arrivals.column.location' }) || '直播间',

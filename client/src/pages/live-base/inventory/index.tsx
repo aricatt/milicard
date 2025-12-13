@@ -26,6 +26,7 @@ import { useBase } from '@/contexts/BaseContext';
 import { useIntl } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 import styles from './index.less';
+import GoodsNameText from '@/components/GoodsNameText';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -117,7 +118,7 @@ const InventoryManagement: React.FC = () => {
       key: 'goodsName',
       width: 200,
       fixed: 'left',
-      render: (text: string) => <strong>{text}</strong>,
+      render: (text: string) => <GoodsNameText text={text} />,
     },
     {
       title: intl.formatMessage({ id: 'table.column.description' }),

@@ -7,6 +7,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOu
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import OrderForm from './components/OrderForm';
+import GoodsNameText from '@/components/GoodsNameText';
 
 // 订单状态
 const ORDER_STATUS = {
@@ -578,7 +579,7 @@ const PointOrdersPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: ['goods', 'name'],
-      ellipsis: true,
+      render: (text: string) => <GoodsNameText text={text} />,
     },
     {
       title: intl.formatMessage({ id: 'pointOrders.column.boxQty' }),
@@ -917,7 +918,12 @@ const PointOrdersPage: React.FC = () => {
                 rowKey="goodsId"
                 pagination={false}
                 columns={[
-                  { title: intl.formatMessage({ id: 'products.column.name' }), dataIndex: 'goodsName', width: 150 },
+                  {
+                    title: intl.formatMessage({ id: 'products.column.name' }),
+                    dataIndex: 'goodsName',
+                    width: 150,
+                    render: (text: string) => <GoodsNameText text={text} />,
+                  },
                   { 
                     title: intl.formatMessage({ id: 'pointOrders.ship.required' }), 
                     key: 'required',

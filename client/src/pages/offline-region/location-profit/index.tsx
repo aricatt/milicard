@@ -5,6 +5,7 @@ import { Button, message, Popconfirm, Space, Tag, Typography, Card, Table, Descr
 import { PlusOutlined, DeleteOutlined, CalculatorOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
+import GoodsNameText from '@/components/GoodsNameText';
 
 const { Text, Title } = Typography;
 
@@ -451,7 +452,9 @@ const LocationProfitPage: React.FC = () => {
                         title: '商品',
                         dataIndex: 'goodsName',
                         key: 'goodsName',
-                        render: (_, record) => `${record.goodsCode}-${record.goodsName}`,
+                        render: (_, record) => (
+                          <GoodsNameText text={`${record.goodsCode}-${record.goodsName}`} />
+                        ),
                       },
                       {
                         title: '数量(盒)',

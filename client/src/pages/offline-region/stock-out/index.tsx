@@ -31,6 +31,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
+import GoodsNameText from '@/components/GoodsNameText';
 
 const { TextArea } = Input;
 
@@ -365,8 +366,7 @@ const StockOutPage: React.FC = () => {
       key: 'goods',
       width: 200,
       hideInSearch: true,
-      ellipsis: true,
-      render: (_, record) => record.goods?.name || '-',
+      render: (_, record) => <GoodsNameText text={record.goods?.name} />,
     },
     {
       title: intl.formatMessage({ id: 'stockOut.column.type' }),

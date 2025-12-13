@@ -4,6 +4,7 @@ import { DeleteOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { TransferRecord } from './types';
 import type { IntlShape } from 'react-intl';
+import GoodsNameText from '@/components/GoodsNameText';
 
 /**
  * 获取ProTable列定义
@@ -34,13 +35,8 @@ export const getColumns = (
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 220,
-    ellipsis: true,
     hideInSetting: true,
-    render: (_, record) => (
-      <span style={{ fontWeight: 500 }}>
-        {record.goodsName || '-'}
-      </span>
-    ),
+    render: (_, record) => <GoodsNameText text={record.goodsName} />,
   },
   {
     title: intl?.formatMessage({ id: 'transfers.column.fromLocation' }) || '调出直播间',

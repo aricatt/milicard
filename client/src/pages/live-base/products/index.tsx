@@ -32,6 +32,7 @@ import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
+import GoodsNameText from '@/components/GoodsNameText';
 
 const { TextArea } = Input;
 
@@ -116,7 +117,7 @@ const ProductSettingsPage: React.FC = () => {
   const { currentBase, initialized } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | null>(null);
   
   // 状态管理
   const [stats, setStats] = useState<ProductStats>({
@@ -405,8 +406,7 @@ const ProductSettingsPage: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       width: 200,
-      ellipsis: true,
-      render: (_, record) => <strong>{record.goods?.name}</strong>,
+      render: (_, record) => <GoodsNameText text={record.goods?.name} />,
     },
     {
       title: intl.formatMessage({ id: 'products.column.alias' }),
@@ -934,7 +934,7 @@ const ProductSettingsPage: React.FC = () => {
 
       {/* 导入模态框 */}
       <ImportModal
-        visible={importModalVisible}
+        open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         onImport={handleImport}
         loading={importLoading}

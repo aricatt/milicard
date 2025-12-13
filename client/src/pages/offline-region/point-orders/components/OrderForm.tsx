@@ -4,6 +4,7 @@ import { PlusOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons'
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
+import GoodsNameText from '@/components/GoodsNameText';
 
 interface PointOption {
   id: string;
@@ -294,7 +295,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
     {
       title: intl.formatMessage({ id: 'pointOrders.form.goodsName' }),
       dataIndex: ['goods', 'name'],
-      ellipsis: true,
+      render: (text: string) => <GoodsNameText text={text} />,
     },
     {
       title: intl.formatMessage({ id: 'pointOrders.form.boxQuantity' }),

@@ -5,6 +5,7 @@ import type { ProColumns } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 import type { ConsumptionRecord } from './types';
 import type { IntlShape } from 'react-intl';
+import GoodsNameText from '@/components/GoodsNameText';
 
 interface ColumnsConfig {
   onDelete: (record: ConsumptionRecord) => void;
@@ -61,10 +62,9 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 180,
-    ellipsis: true,
     render: (_, record) => (
       <Tooltip title={record.goodsName}>
-        <strong>{record.goodsName}</strong>
+        <GoodsNameText text={record.goodsName} />
       </Tooltip>
     ),
   },

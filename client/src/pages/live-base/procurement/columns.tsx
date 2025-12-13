@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
 import type { IntlShape } from 'react-intl';
+import GoodsNameText from '@/components/GoodsNameText';
 
 /**
  * 向下取整到2位小数
@@ -51,7 +52,6 @@ export const getColumns = (
     title: intl?.formatMessage({ id: 'procurement.column.purchaseName' }) || '采购名称',
     key: 'purchaseName',
     width: 280,
-    ellipsis: true,
     hideInSearch: true,
     render: (_, record) => {
       // 动态生成：采购日期 + 商品名称
@@ -59,7 +59,7 @@ export const getColumns = (
         ? record.purchaseDate.split('T')[0] 
         : '';
       const goodsName = record.goodsName || '';
-      return date && goodsName ? `${date}${goodsName}` : '-';
+      return <GoodsNameText text={date && goodsName ? `${date}${goodsName}` : '-'} />;
     },
   },
   {
@@ -67,8 +67,8 @@ export const getColumns = (
     dataIndex: 'goodsName',
     key: 'goodsName',
     width: 200,
-    ellipsis: true,
     hideInSetting: true,
+    render: (_, record) => <GoodsNameText text={record.goodsName} />,
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.supplier' }) || '供应商',

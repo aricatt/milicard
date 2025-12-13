@@ -19,6 +19,7 @@ import {
 import { DollarOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
+import GoodsNameText from '@/components/GoodsNameText';
 
 /**
  * 应付信息接口
@@ -173,8 +174,8 @@ const PayablesPage: React.FC = () => {
       dataIndex: 'goodsName',
       key: 'goodsName',
       width: 200,
-      ellipsis: true,
       hideInSearch: true,
+      render: (_, record) => <GoodsNameText text={record.goodsName} />,
     },
     {
       title: intl.formatMessage({ id: 'payables.column.totalAmount' }),

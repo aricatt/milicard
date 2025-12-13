@@ -21,6 +21,7 @@ import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
+import GoodsNameText from '@/components/GoodsNameText';
 
 // 实时库存数据类型
 interface RealTimeStock {
@@ -115,7 +116,7 @@ const RealTimeStockPage: React.FC = () => {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'goodsName',
       width: 200,
-      ellipsis: true,
+      render: (_, record) => <GoodsNameText text={record.goodsName} />,
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.boxQty' }),
