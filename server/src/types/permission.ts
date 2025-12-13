@@ -34,7 +34,8 @@ export enum ResourceModule {
   // 基础数据
   CUSTOMER = 'customer',
   SUPPLIER = 'supplier',
-  GOODS = 'goods',
+  GOODS = 'goods',                         // 全局商品 + 品类管理
+  GOODS_LOCAL_SETTING = 'goods_local_setting', // 基地商品设置（依赖 GOODS:read）
   
   // 库存管理
   INVENTORY = 'inventory',
@@ -179,6 +180,13 @@ export const PERMISSION_PRESETS = {
   ]
 } as const
 
+// 权限依赖关系配置
+// 某些权限需要先开启依赖权限才能生效
+export const PERMISSION_DEPENDENCIES: Record<string, PermissionString[]> = {
+  // 基地商品设置的所有操作都依赖全局商品的查看权限
+  [ResourceModule.GOODS_LOCAL_SETTING]: [`${ResourceModule.GOODS}:${PermissionAction.READ}`],
+}
+
 // 系统预定义角色权限（与 seed.ts 中的角色对应）
 export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
   // 系统管理员 - 拥有所有权限
@@ -196,6 +204,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.CUSTOMER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.SUPPLIER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS_LOCAL_SETTING),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.INVENTORY),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PURCHASE_ORDER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ARRIVAL_ORDER),
@@ -222,6 +231,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.CUSTOMER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.SUPPLIER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS_LOCAL_SETTING),
     
     // 库存管理
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.INVENTORY),
@@ -279,10 +289,11 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
   
   // 仓管 - 管理仓库库存和到货调货
   WAREHOUSE_KEEPER: [
-    // 商品：查看和创建、编辑基础信息
+    // 全局商品：只读（用于查看商品信息）
     `${ResourceModule.GOODS}:${PermissionAction.READ}`,
-    `${ResourceModule.GOODS}:${PermissionAction.CREATE}`,
-    `${ResourceModule.GOODS}:${PermissionAction.UPDATE}`,
+    
+    // 基地商品设置：完全管理（录入基地价格、别名等）
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GOODS_LOCAL_SETTING),
     
     // 采购管理：完全管理
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PURCHASE_ORDER),

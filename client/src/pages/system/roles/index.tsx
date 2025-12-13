@@ -93,6 +93,10 @@ const ACTIONS = BASE_ACTIONS;
 // 权限依赖关系配置
 // key: 主权限模块, value: 依赖的权限列表（建议同时开启）
 const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; description: string }> = {
+  goods_local_setting: {
+    permissions: ['goods:read'],
+    description: '基地商品设置需要查看全局商品列表',
+  },
   purchase_order: {
     permissions: ['supplier:read', 'goods:read'],
     description: '采购管理需要查看供应商和商品列表',
@@ -127,7 +131,8 @@ const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; descripti
 const MODULE_LABELS: Record<string, string> = {
   purchase_order: '采购管理',
   supplier: '供应商',
-  goods: '商品',
+  goods: '全局商品+品类',
+  goods_local_setting: '基地商品设置',
   arrival_order: '到货管理',
   location: '地点',
   stock_transfer: '调货管理',
