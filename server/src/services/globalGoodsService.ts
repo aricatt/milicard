@@ -8,7 +8,7 @@ import { CodeGenerator } from '../utils/codeGenerator'
 export interface GlobalGoodsData {
   code?: string
   name: string
-  category?: string
+  categoryId?: number
   manufacturer: string
   description?: string
   boxQuantity?: number
@@ -24,7 +24,7 @@ export interface GlobalGoodsQueryParams {
   pageSize?: number
   search?: string
   manufacturer?: string
-  category?: string
+  categoryId?: number
   isActive?: boolean
 }
 
@@ -57,7 +57,7 @@ export class GlobalGoodsService {
         data: {
           code: goodsCode,
           name: data.name,
-          category: (data.category as any) || 'CARD',
+          categoryId: data.categoryId,
           manufacturer: data.manufacturer,
           description: data.description,
           boxQuantity: 1,
@@ -102,7 +102,7 @@ export class GlobalGoodsService {
         where: { id },
         data: {
           ...(data.name && { name: data.name }),
-          ...(data.category && { category: data.category as any }),
+          ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
           ...(data.manufacturer && { manufacturer: data.manufacturer }),
           ...(data.description !== undefined && { description: data.description }),
           ...(data.packPerBox && { packPerBox: data.packPerBox }),
@@ -195,7 +195,7 @@ export class GlobalGoodsService {
       pageSize = 20,
       search,
       manufacturer,
-      category,
+      categoryId,
       isActive
     } = params
 
@@ -212,8 +212,8 @@ export class GlobalGoodsService {
       where.manufacturer = { contains: manufacturer, mode: 'insensitive' }
     }
 
-    if (category) {
-      where.category = category
+    if (categoryId) {
+      where.categoryId = categoryId
     }
 
     if (isActive !== undefined) {
@@ -226,7 +226,10 @@ export class GlobalGoodsService {
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        include: {
+          category: true
+        }
       })
     ])
 

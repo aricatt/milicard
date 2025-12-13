@@ -90,7 +90,7 @@ export class GoodsService {
           data: {
             code: goodsCode,
             name: data.name,
-            category: data.category || 'CARD',
+            categoryId: data.categoryId,
             manufacturer: data.manufacturer,
             description: data.description,
             boxQuantity: 1,
@@ -157,7 +157,7 @@ export class GoodsService {
         search,
         isActive,
         manufacturer,
-        category
+        categoryId
       } = params
 
       const skip = (page - 1) * pageSize
@@ -181,8 +181,8 @@ export class GoodsService {
         goodsWhere.manufacturer = { contains: manufacturer, mode: 'insensitive' }
       }
 
-      if (category) {
-        goodsWhere.category = category
+      if (categoryId) {
+        goodsWhere.categoryId = categoryId
       }
 
       if (Object.keys(goodsWhere).length > 0) {
@@ -210,7 +210,8 @@ export class GoodsService {
             goods: {
               include: {
                 creator: true,
-                updater: true
+                updater: true,
+                category: true
               }
             },
             base: true
@@ -345,7 +346,7 @@ export class GoodsService {
 
       // 全局属性
       if (data.name) globalUpdates.name = data.name
-      if (data.category) globalUpdates.category = data.category
+      if (data.categoryId !== undefined) globalUpdates.categoryId = data.categoryId
       if (data.manufacturer) globalUpdates.manufacturer = data.manufacturer
       if (data.description !== undefined) globalUpdates.description = data.description
       if (data.packPerBox) globalUpdates.packPerBox = data.packPerBox
@@ -509,7 +510,8 @@ export class GoodsService {
       id: goods.id,
       code: goods.code,
       name: goods.name,
-      category: goods.category as GoodsCategory,
+      categoryId: goods.categoryId,
+      categoryName: goods.category?.name || null,
       alias: setting.alias,
       manufacturer: goods.manufacturer,
       description: goods.description,
@@ -539,7 +541,8 @@ export class GoodsService {
       id: goods.id,
       code: goods.code,
       name: goods.name,
-      category: goods.category as GoodsCategory,
+      categoryId: goods.categoryId,
+      categoryName: goods.category?.name || null,
       alias: null,
       manufacturer: goods.manufacturer,
       description: goods.description,

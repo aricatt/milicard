@@ -44,11 +44,10 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
   const [importProgress, setImportProgress] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // Excel列配置（导出用，包含所有字段）
+  // Excel列配置（导出用，包含所有字段，不包含品类编码）
   const exportColumns = [
     { header: '商品编码', key: 'code', width: 20 },
-    { header: '品类编码', key: 'categoryCode', width: 12 },
-    { header: '品类名称', key: 'categoryName', width: 12 },
+    { header: '品类', key: 'categoryName', width: 12 },
     { header: '商品名称', key: 'name', width: 35 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
     { header: '多少盒1箱', key: 'packPerBox', width: 12 },
@@ -58,11 +57,10 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
     { header: '创建时间', key: 'createdAt', width: 20 },
   ];
 
-  // 导入模板列配置（只包含导入需要的字段）
+  // 导入模板列配置（只包含导入需要的字段，不包含品类编码）
   const importColumns = [
     { header: '商品编码', key: 'code', width: 20 },
-    { header: '品类编码', key: 'categoryCode', width: 12 },
-    { header: '品类名称', key: 'categoryName', width: 12 },
+    { header: '品类', key: 'categoryName', width: 12 },
     { header: '商品名称', key: 'name', width: 35 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
     { header: '多少盒1箱', key: 'packPerBox', width: 12 },
@@ -101,13 +99,11 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
 
       const dataList = result.success && result.data ? result.data : [];
 
-      // 转换数据格式
-      const exportData = dataList.map((item: GlobalProduct) => {
-        const cat = item.categoryId ? categoryMap.get(item.categoryId) : null;
+      // 转换数据格式（使用后端返回的品类关联信息）
+      const exportData = dataList.map((item: any) => {
         return {
           code: item.code,
-          categoryCode: cat?.code || item.category || '',
-          categoryName: cat?.name || '',
+          categoryName: item.category?.name || '',
           name: item.name,
           manufacturer: item.manufacturer,
           packPerBox: item.packPerBox,

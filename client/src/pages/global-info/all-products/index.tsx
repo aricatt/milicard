@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 import { 
   Space, 
   Tag, 
@@ -34,57 +34,34 @@ import { request, useIntl } from '@umijs/max';
 
 const { TextArea } = Input;
 
-// 商品品类枚举
-enum GoodsCategory {
-  CARD = 'CARD',
-  CARD_BRICK = 'CARD_BRICK',
-  GIFT = 'GIFT',
-  COLOR_PAPER = 'COLOR_PAPER',
-  FORTUNE_SIGN = 'FORTUNE_SIGN',
-  TEAR_CARD = 'TEAR_CARD',
-  TOY = 'TOY',
-  STAMP = 'STAMP',
-  LUCKY_CAT = 'LUCKY_CAT'
+// 品类数据类型
+interface Category {
+  id: number;
+  code: string;
+  name: string;
+  isActive: boolean;
 }
 
-// 品类中文映射
-const GoodsCategoryLabels: Record<GoodsCategory, string> = {
-  [GoodsCategory.CARD]: '卡牌',
-  [GoodsCategory.CARD_BRICK]: '卡砖',
-  [GoodsCategory.GIFT]: '礼物',
-  [GoodsCategory.COLOR_PAPER]: '色纸',
-  [GoodsCategory.FORTUNE_SIGN]: '上上签',
-  [GoodsCategory.TEAR_CARD]: '撕撕乐',
-  [GoodsCategory.TOY]: '玩具',
-  [GoodsCategory.STAMP]: '邮票',
-  [GoodsCategory.LUCKY_CAT]: '招财猫'
+// 品类颜色映射（根据品类编码）
+const CategoryColors: Record<string, string> = {
+  'CARD': 'blue',
+  'CARD_BRICK': 'cyan',
+  'GIFT': 'magenta',
+  'COLOR_PAPER': 'purple',
+  'FORTUNE_SIGN': 'gold',
+  'TEAR_CARD': 'orange',
+  'TOY': 'green',
+  'STAMP': 'geekblue',
+  'LUCKY_CAT': 'red'
 };
-
-// 品类颜色映射
-const GoodsCategoryColors: Record<GoodsCategory, string> = {
-  [GoodsCategory.CARD]: 'blue',
-  [GoodsCategory.CARD_BRICK]: 'cyan',
-  [GoodsCategory.GIFT]: 'magenta',
-  [GoodsCategory.COLOR_PAPER]: 'purple',
-  [GoodsCategory.FORTUNE_SIGN]: 'gold',
-  [GoodsCategory.TEAR_CARD]: 'orange',
-  [GoodsCategory.TOY]: 'green',
-  [GoodsCategory.STAMP]: 'geekblue',
-  [GoodsCategory.LUCKY_CAT]: 'red'
-};
-
-// 品类选项列表
-const categoryOptions = Object.entries(GoodsCategoryLabels).map(([value, label]) => ({
-  value,
-  label
-}));
 
 // 全局商品数据类型定义（不包含基地级字段）
 interface GlobalProduct {
   id: string;
   code: string;
   name: string;
-  category: GoodsCategory;
+  categoryId?: number;
+  category?: Category;  // 后端返回的品类关联对象
   manufacturer: string;
   description?: string;
   boxQuantity: number;
@@ -129,9 +106,25 @@ const GlobalProductManagement: React.FC = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   
+  // 品类列表
+  const [categories, setCategories] = useState<Category[]>([]);
+  
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
+  // 获取品类列表
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await request('/api/v1/categories/all', { method: 'GET' });
+        setCategories(result || []);
+      } catch (error) {
+        console.error('获取品类列表失败:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // 使用导入导出 hook
   const {
@@ -311,7 +304,7 @@ const GlobalProductManagement: React.FC = () => {
     setEditingProduct(record);
     editForm.setFieldsValue({
       name: record.name,
-      category: record.category,
+      categoryId: record.categoryId,
       manufacturer: record.manufacturer,
       description: record.description,
       packPerBox: record.packPerBox,
@@ -339,19 +332,21 @@ const GlobalProductManagement: React.FC = () => {
     },
     {
       title: intl.formatMessage({ id: 'products.column.category' }),
-      dataIndex: 'category',
-      key: 'category',
-      width: 80,
+      dataIndex: 'categoryId',
+      key: 'categoryId',
+      width: 100,
       valueType: 'select',
       valueEnum: Object.fromEntries(
-        Object.entries(GoodsCategoryLabels).map(([key, label]) => [key, { text: label }])
+        categories.map(cat => [cat.id, { text: cat.name }])
       ),
       render: (_, record) => {
-        const category = record.category || GoodsCategory.CARD;
-        return (
-          <Tag color={GoodsCategoryColors[category]}>
-            {GoodsCategoryLabels[category]}
-          </Tag>
+        const categoryName = record.category?.name || '';
+        const categoryCode = record.category?.code || '';
+        const color = CategoryColors[categoryCode] || 'default';
+        return categoryName ? (
+          <Tag color={color}>{categoryName}</Tag>
+        ) : (
+          <Tag color="default">未分类</Tag>
         );
       },
     },
@@ -494,13 +489,12 @@ const GlobalProductManagement: React.FC = () => {
         <Col span={8}>
           <Form.Item
             label={intl.formatMessage({ id: 'products.form.category' })}
-            name="category"
-            initialValue={GoodsCategory.CARD}
+            name="categoryId"
             rules={[{ required: true, message: intl.formatMessage({ id: 'products.form.categoryRequired' }) }]}
           >
             <Select
               placeholder={intl.formatMessage({ id: 'products.form.categoryPlaceholder' })}
-              options={categoryOptions}
+              options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
             />
           </Form.Item>
         </Col>
