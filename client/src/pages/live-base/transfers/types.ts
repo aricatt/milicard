@@ -2,6 +2,14 @@
  * 调货管理相关类型定义
  */
 
+// 多语言名称类型
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 // 调货记录数据类型
 export interface TransferRecord {
   id: string;
@@ -9,6 +17,7 @@ export interface TransferRecord {
   goodsId: string;                // 商品ID
   goodsCode?: string;             // 商品编号
   goodsName: string;              // 商品名称
+  goodsNameI18n?: NameI18n | null; // 商品多语言名称
   sourceLocationId: number;       // 调出直播间ID
   sourceLocationName: string;     // 调出直播间名称
   sourceHandlerId?: string;       // 调出主播ID

@@ -453,7 +453,7 @@ const LocationProfitPage: React.FC = () => {
                         dataIndex: 'goodsName',
                         key: 'goodsName',
                         render: (_, record) => (
-                          <GoodsNameText text={`${record.goodsCode}-${record.goodsName}`} />
+                          <GoodsNameText text={`${record.goodsCode}-${record.goodsName}`} nameI18n={record.goodsNameI18n} />
                         ),
                       },
                       {

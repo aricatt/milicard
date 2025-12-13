@@ -366,7 +366,7 @@ const StockOutPage: React.FC = () => {
       key: 'goods',
       width: 200,
       hideInSearch: true,
-      render: (_, record) => <GoodsNameText text={record.goods?.name} />,
+      render: (_, record) => <GoodsNameText text={record.goods?.name} nameI18n={record.goods?.nameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'stockOut.column.type' }),

@@ -579,7 +579,7 @@ const PointOrdersPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: ['goods', 'name'],
-      render: (text: string) => <GoodsNameText text={text} />,
+      render: (text: string, record: any) => <GoodsNameText text={text} nameI18n={record.goods?.nameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'pointOrders.column.boxQty' }),
@@ -922,7 +922,7 @@ const PointOrdersPage: React.FC = () => {
                     title: intl.formatMessage({ id: 'products.column.name' }),
                     dataIndex: 'goodsName',
                     width: 150,
-                    render: (text: string) => <GoodsNameText text={text} />,
+                    render: (text: string, record: any) => <GoodsNameText text={text} nameI18n={record.goodsNameI18n} />,
                   },
                   { 
                     title: intl.formatMessage({ id: 'pointOrders.ship.required' }), 

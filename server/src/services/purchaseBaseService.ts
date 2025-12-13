@@ -33,6 +33,7 @@ export class PurchaseBaseService {
           g.id as "goodsId",
           g.code as "goodsCode",
           g.name as "goodsName",
+          g.name_i18n as "goodsNameI18n",
           COALESCE(gls.retail_price, 0) as "retailPrice",
           g.pack_per_box as "packPerBox",
           g.piece_per_pack as "piecePerPack",
@@ -149,6 +150,7 @@ export class PurchaseBaseService {
           goodsId: item.goodsId,          // 返回商品ID
           goodsCode: item.goodsCode,
           goodsName: item.goodsName,
+          goodsNameI18n: item.goodsNameI18n,
           retailPrice: Number(item.retailPrice),
           purchaseBoxQty,
           purchasePackQty,

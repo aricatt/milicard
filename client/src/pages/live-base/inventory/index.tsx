@@ -118,7 +118,7 @@ const InventoryManagement: React.FC = () => {
       key: 'goodsName',
       width: 200,
       fixed: 'left',
-      render: (text: string) => <GoodsNameText text={text} />,
+      render: (text: string, record: any) => <GoodsNameText text={text} nameI18n={record.goods?.nameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'table.column.description' }),

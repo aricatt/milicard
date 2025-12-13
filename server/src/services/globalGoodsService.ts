@@ -5,9 +5,20 @@ import { CodeGenerator } from '../utils/codeGenerator'
 /**
  * 全局商品数据类型
  */
+/**
+ * 多语言名称类型
+ */
+export interface NameI18n {
+  en?: string
+  th?: string
+  vi?: string
+  [key: string]: string | undefined
+}
+
 export interface GlobalGoodsData {
   code?: string
   name: string
+  nameI18n?: NameI18n
   categoryId?: number
   manufacturer: string
   description?: string
@@ -57,6 +68,7 @@ export class GlobalGoodsService {
         data: {
           code: goodsCode,
           name: data.name,
+          nameI18n: data.nameI18n || undefined,
           categoryId: data.categoryId,
           manufacturer: data.manufacturer,
           description: data.description,
@@ -102,6 +114,7 @@ export class GlobalGoodsService {
         where: { id },
         data: {
           ...(data.name && { name: data.name }),
+          ...(data.nameI18n !== undefined && { nameI18n: data.nameI18n }),
           ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
           ...(data.manufacturer && { manufacturer: data.manufacturer }),
           ...(data.description !== undefined && { description: data.description }),

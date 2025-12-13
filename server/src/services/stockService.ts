@@ -15,10 +15,18 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
 
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 export interface StockInfo {
   goodsId: string;
   goodsCode: string;
   goodsName: string;
+  goodsNameI18n?: NameI18n | null;
   packPerBox: number;
   piecePerPack: number;
   locationId: number;
@@ -292,6 +300,7 @@ export class StockService {
           goodsId: goods.id,
           goodsCode: goods.code,
           goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
+          goodsNameI18n: goods.nameI18n as NameI18n | null,
           packPerBox: goods.packPerBox || 1,
           piecePerPack: goods.piecePerPack || 1,
           locationId,
@@ -559,6 +568,7 @@ export class StockService {
           goodsId: goods.id,
           goodsCode: goods.code,
           goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
+          goodsNameI18n: goods.nameI18n as NameI18n | null,
           packPerBox,
           piecePerPack,
           stockBox: totalBox,

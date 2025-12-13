@@ -2,6 +2,14 @@
  * 采购管理相关类型定义
  */
 
+// 多语言名称类型
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 // 采购订单数据类型（对应CSV结构）
 export interface PurchaseOrder {
   id: string;
@@ -11,6 +19,7 @@ export interface PurchaseOrder {
   purchaseDate: string;         // 采购日期
   goodsCode: string;            // 商品编号（关联商品表）
   goodsName: string;            // 商品名称
+  goodsNameI18n?: NameI18n | null; // 商品多语言名称
   retailPrice?: number;         // 零售价
   discount?: number;            // 折扣
   supplierCode: string;         // 供应商编号（关联供应商表）

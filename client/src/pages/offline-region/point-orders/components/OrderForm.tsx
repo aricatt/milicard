@@ -295,7 +295,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
     {
       title: intl.formatMessage({ id: 'pointOrders.form.goodsName' }),
       dataIndex: ['goods', 'name'],
-      render: (text: string) => <GoodsNameText text={text} />,
+      render: (text: string, record: any) => <GoodsNameText text={text} nameI18n={record.goods?.nameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'pointOrders.form.boxQuantity' }),

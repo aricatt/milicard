@@ -780,6 +780,17 @@ export default {
   'products.form.namePlaceholder': 'กรอกชื่อสินค้า',
   'products.form.nameRequired': 'กรุณากรอกชื่อสินค้า',
   'products.form.nameLength': 'ชื่อสินค้าต้องมี 2-100 ตัวอักษร',
+  'products.form.nameEn': 'ชื่อภาษาอังกฤษ',
+  'products.form.nameEnPlaceholder': 'กรอกชื่อภาษาอังกฤษ (ไม่บังคับ)',
+  'products.form.nameTh': 'ชื่อภาษาไทย',
+  'products.form.nameThPlaceholder': 'กรอกชื่อภาษาไทย (ไม่บังคับ)',
+  'products.form.nameVi': 'ชื่อภาษาเวียดนาม',
+  'products.form.nameViPlaceholder': 'กรอกชื่อภาษาเวียดนาม (ไม่บังคับ)',
+  'products.translate.tooltip': 'ตั้งค่าชื่อหลายภาษา',
+  'products.translate.title': 'แปลชื่อสินค้า',
+  'products.translate.originalName': 'ชื่อเดิม (ภาษาจีนตัวย่อ)',
+  'products.translate.success': 'บันทึกการแปลสำเร็จ',
+  'products.translate.failed': 'บันทึกการแปลไม่สำเร็จ',
   'products.form.categoryRequired': 'กรุณาเลือกหมวดหมู่',
   'products.form.categoryPlaceholder': 'เลือกหมวดหมู่',
   'products.form.aliasPlaceholder': 'กรอกชื่อเล่นสินค้า',
@@ -1195,7 +1206,6 @@ export default {
   'productSettings.message.deleteFailed': 'ลบไม่สำเร็จ',
 
   // ==================== ตารางทั่วไป ====================
-  'table.column.action': 'การดำเนินการ',
   'table.pagination.totalItems': 'ทั้งหมด {total} รายการ',
 
   // ==================== ปุ่มทั่วไป ====================

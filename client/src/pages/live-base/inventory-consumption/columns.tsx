@@ -64,7 +64,7 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     width: 180,
     render: (_, record) => (
       <Tooltip title={record.goodsName}>
-        <GoodsNameText text={record.goodsName} />
+        <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />
       </Tooltip>
     ),
   },

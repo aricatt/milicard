@@ -28,12 +28,12 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request, useIntl } from '@umijs/max';
+import { request, useIntl, getLocale } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
 import type { FieldDescription } from '@/components/ImportModal';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getLocalizedGoodsName } from '@/components/GoodsNameText';
 import GlobalGoodsSelectModal from '@/components/GlobalGoodsSelectModal';
 
 const { TextArea } = Input;
@@ -77,11 +77,20 @@ const GoodsCategoryColors: Record<GoodsCategory, string> = {
   [GoodsCategory.LUCKY_CAT]: 'red'
 };
 
+// 多语言名称类型
+interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 // 全局商品类型（用于选择）
 interface GlobalProduct {
   id: string;
   code: string;
   name: string;
+  nameI18n?: NameI18n | null;
   categoryId?: number;
   category?: {
     id: number;
@@ -399,7 +408,7 @@ const ProductSettingsPage: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       width: 200,
-      render: (_, record) => <GoodsNameText text={record.goods?.name} />,
+      render: (_, record) => <GoodsNameText text={record.goods?.name} nameI18n={record.goods?.nameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'products.column.alias' }),
@@ -567,6 +576,7 @@ const ProductSettingsPage: React.FC = () => {
   return (
     <PageContainer header={{ title: false }}>
       <ProTable<ProductSetting>
+        key={`product-settings-${getLocale()}`}
         actionRef={actionRef}
         columns={columns}
         request={fetchProductSettings}
@@ -827,7 +837,7 @@ const ProductSettingsPage: React.FC = () => {
           {editingSetting && (
             <Descriptions size="small" column={2} style={{ marginBottom: 16 }} bordered>
               <Descriptions.Item label={intl.formatMessage({ id: 'products.column.name' })}>
-                <strong>{editingSetting.goods?.name}</strong>
+                <strong>{getLocalizedGoodsName(editingSetting.goods?.name, editingSetting.goods?.nameI18n)}</strong>
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'products.column.code' })}>
                 {editingSetting.goods?.code}

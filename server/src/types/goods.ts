@@ -79,10 +79,18 @@ export interface GoodsQueryParams {
   categoryId?: number
 }
 
+export interface NameI18n {
+  en?: string
+  th?: string
+  vi?: string
+  [key: string]: string | undefined
+}
+
 export interface GoodsResponse {
   id: string
   code: string
   name: string
+  nameI18n?: NameI18n | null
   categoryId: number | null
   categoryName?: string | null
   manufacturer: string

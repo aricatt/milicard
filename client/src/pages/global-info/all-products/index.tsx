@@ -24,13 +24,14 @@ import {
   DownloadOutlined,
   UploadOutlined,
   FileExcelOutlined,
+  TranslationOutlined,
 } from '@ant-design/icons';
 import { useGlobalProductExcel } from './useGlobalProductExcel';
 import ImportModal from '@/components/ImportModal';
 import type { FieldDescription } from '@/components/ImportModal';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request, useIntl } from '@umijs/max';
+import { request, useIntl, getLocale } from '@umijs/max';
 
 const { TextArea } = Input;
 
@@ -55,11 +56,20 @@ const CategoryColors: Record<string, string> = {
   'LUCKY_CAT': 'red'
 };
 
+// 多语言名称类型
+interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 // 全局商品数据类型定义（不包含基地级字段）
 interface GlobalProduct {
   id: string;
   code: string;
   name: string;
+  nameI18n?: NameI18n;
   categoryId?: number;
   category?: Category;  // 后端返回的品类关联对象
   manufacturer: string;
@@ -105,6 +115,12 @@ const GlobalProductManagement: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<GlobalProduct | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  
+  // 翻译弹窗状态
+  const [translateModalVisible, setTranslateModalVisible] = useState(false);
+  const [translatingProduct, setTranslatingProduct] = useState<GlobalProduct | null>(null);
+  const [translateLoading, setTranslateLoading] = useState(false);
+  const [translateForm] = Form.useForm();
   
   // 品类列表
   const [categories, setCategories] = useState<Category[]>([]);
@@ -354,9 +370,38 @@ const GlobalProductManagement: React.FC = () => {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'name',
       key: 'name',
-      width: 200,
+      width: 220,
       ellipsis: true,
-      render: (text: any) => <strong>{text}</strong>,
+      render: (text: any, record: GlobalProduct) => {
+        // 根据当前语言获取对应的翻译名称
+        const locale = getLocale();
+        const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
+        const displayName = (localeKey && record.nameI18n?.[localeKey]) || record.name;
+        
+        return (
+          <Space size={4}>
+            <strong>{displayName}</strong>
+            <Tooltip title={intl.formatMessage({ id: 'products.translate.tooltip' })}>
+              <Button
+                type="text"
+                size="small"
+                icon={<TranslationOutlined />}
+                style={{ color: record.nameI18n && Object.keys(record.nameI18n).length > 0 ? '#52c41a' : '#999' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTranslatingProduct(record);
+                  translateForm.setFieldsValue({
+                    en: record.nameI18n?.en || '',
+                    th: record.nameI18n?.th || '',
+                    vi: record.nameI18n?.vi || '',
+                  });
+                  setTranslateModalVisible(true);
+                }}
+              />
+            </Tooltip>
+          </Space>
+        );
+      },
     },
     {
       title: intl.formatMessage({ id: 'products.column.manufacturer' }),
@@ -747,6 +792,86 @@ const GlobalProductManagement: React.FC = () => {
         fields={importFields}
         width={700}
       />
+
+      {/* 翻译编辑弹窗 */}
+      <Modal
+        title={
+          <Space>
+            <TranslationOutlined />
+            {intl.formatMessage({ id: 'products.translate.title' })}
+          </Space>
+        }
+        open={translateModalVisible}
+        onOk={() => translateForm.submit()}
+        onCancel={() => {
+          setTranslateModalVisible(false);
+          setTranslatingProduct(null);
+          translateForm.resetFields();
+        }}
+        confirmLoading={translateLoading}
+        width={500}
+        destroyOnHidden
+      >
+        {translatingProduct && (
+          <div style={{ marginBottom: 16, padding: '8px 12px', background: '#f5f5f5', borderRadius: 4 }}>
+            <div style={{ color: '#666', fontSize: 12 }}>{intl.formatMessage({ id: 'products.translate.originalName' })}</div>
+            <div style={{ fontWeight: 'bold' }}>{translatingProduct.name}</div>
+          </div>
+        )}
+        <Form
+          form={translateForm}
+          layout="vertical"
+          onFinish={async (values) => {
+            if (!translatingProduct) return;
+            setTranslateLoading(true);
+            try {
+              const nameI18n: Record<string, string> = {};
+              if (values.en?.trim()) nameI18n.en = values.en.trim();
+              if (values.th?.trim()) nameI18n.th = values.th.trim();
+              if (values.vi?.trim()) nameI18n.vi = values.vi.trim();
+              
+              const result = await request(`/api/v1/global-goods/${translatingProduct.id}`, {
+                method: 'PUT',
+                data: { nameI18n: Object.keys(nameI18n).length > 0 ? nameI18n : null },
+              });
+              
+              if (result.success) {
+                message.success(intl.formatMessage({ id: 'products.translate.success' }));
+                setTranslateModalVisible(false);
+                setTranslatingProduct(null);
+                translateForm.resetFields();
+                actionRef.current?.reload();
+              } else {
+                message.error(result.message || intl.formatMessage({ id: 'products.translate.failed' }));
+              }
+            } catch (error) {
+              console.error('保存翻译失败:', error);
+              message.error(intl.formatMessage({ id: 'products.translate.failed' }));
+            } finally {
+              setTranslateLoading(false);
+            }
+          }}
+        >
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.nameEn' })}
+            name="en"
+          >
+            <Input placeholder={intl.formatMessage({ id: 'products.form.nameEnPlaceholder' })} />
+          </Form.Item>
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.nameTh' })}
+            name="th"
+          >
+            <Input placeholder={intl.formatMessage({ id: 'products.form.nameThPlaceholder' })} />
+          </Form.Item>
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.nameVi' })}
+            name="vi"
+          >
+            <Input placeholder={intl.formatMessage({ id: 'products.form.nameViPlaceholder' })} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 };

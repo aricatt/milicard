@@ -1,3 +1,11 @@
+// 多语言名称类型
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 // 消耗记录数据类型
 export interface ConsumptionRecord {
   id: string;
@@ -5,6 +13,7 @@ export interface ConsumptionRecord {
   goodsId: string;
   goodsCode?: string;
   goodsName?: string;
+  goodsNameI18n?: NameI18n | null;
   packPerBox?: number;
   piecePerPack?: number;
   locationId: number;

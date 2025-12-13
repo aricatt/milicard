@@ -780,6 +780,17 @@ export default {
   'products.form.namePlaceholder': 'Nhập tên sản phẩm',
   'products.form.nameRequired': 'Vui lòng nhập tên sản phẩm',
   'products.form.nameLength': 'Tên sản phẩm phải từ 2-100 ký tự',
+  'products.form.nameEn': 'Tên tiếng Anh',
+  'products.form.nameEnPlaceholder': 'Nhập tên tiếng Anh (không bắt buộc)',
+  'products.form.nameTh': 'Tên tiếng Thái',
+  'products.form.nameThPlaceholder': 'Nhập tên tiếng Thái (không bắt buộc)',
+  'products.form.nameVi': 'Tên tiếng Việt',
+  'products.form.nameViPlaceholder': 'Nhập tên tiếng Việt (không bắt buộc)',
+  'products.translate.tooltip': 'Đặt tên đa ngôn ngữ',
+  'products.translate.title': 'Dịch tên sản phẩm',
+  'products.translate.originalName': 'Tên gốc (Tiếng Trung giản thể)',
+  'products.translate.success': 'Lưu bản dịch thành công',
+  'products.translate.failed': 'Lưu bản dịch thất bại',
   'products.form.categoryRequired': 'Vui lòng chọn danh mục',
   'products.form.categoryPlaceholder': 'Chọn danh mục',
   'products.form.aliasPlaceholder': 'Nhập tên khác của sản phẩm',
@@ -1195,7 +1206,6 @@ export default {
   'productSettings.message.deleteFailed': 'Xóa thất bại',
 
   // ==================== Bảng chung ====================
-  'table.column.action': 'Thao tác',
   'table.pagination.totalItems': 'Tổng {total} mục',
 
   // ==================== Nút chung ====================

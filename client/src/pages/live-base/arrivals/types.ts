@@ -1,4 +1,14 @@
 /**
+ * 多语言名称类型
+ */
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
+/**
  * 到货记录数据类型
  */
 export interface ArrivalRecord {
@@ -9,6 +19,7 @@ export interface ArrivalRecord {
   purchaseDate: string;          // 采购日期（从关联采购单获取，用于生成采购名称）
   goodsId: string;
   goodsName: string;             // 商品名称
+  goodsNameI18n?: NameI18n | null; // 商品多语言名称
   goodsCode: string;
   locationId: number;
   locationName: string;          // 直播间（仓库）名称

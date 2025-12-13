@@ -29,12 +29,20 @@ export interface CreateConsumptionRequest {
   notes?: string;
 }
 
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 export interface ConsumptionResponse {
   id: string;
   consumptionDate: string;
   goodsId: string;
   goodsCode?: string;
   goodsName?: string;
+  goodsNameI18n?: NameI18n | null;
   packPerBox?: number;
   piecePerPack?: number;
   locationId: number;
@@ -108,7 +116,7 @@ export class ConsumptionService {
         prisma.stockConsumption.findMany({
           where,
           include: {
-            goods: { select: { id: true, code: true, name: true, packPerBox: true, piecePerPack: true } },
+            goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
             location: { select: { id: true, name: true } },
             handler: { select: { id: true, name: true } },
             base: { select: { id: true, name: true } }
@@ -129,6 +137,7 @@ export class ConsumptionService {
         goodsId: record.goodsId,
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
+        goodsNameI18n: record.goods?.nameI18n as any,
         packPerBox: record.goods?.packPerBox || 1,
         piecePerPack: record.goods?.piecePerPack || 1,
         locationId: record.locationId,
@@ -257,7 +266,7 @@ export class ConsumptionService {
           updatedBy: userId
         },
         include: {
-          goods: { select: { id: true, code: true, name: true, packPerBox: true, piecePerPack: true } },
+          goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
           location: { select: { id: true, name: true } },
           handler: { select: { id: true, name: true } },
           base: { select: { id: true, name: true } }
@@ -277,6 +286,7 @@ export class ConsumptionService {
         goodsId: record.goodsId,
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
+        goodsNameI18n: record.goods?.nameI18n as any,
         packPerBox: record.goods?.packPerBox || 1,
         piecePerPack: record.goods?.piecePerPack || 1,
         locationId: record.locationId,
@@ -562,7 +572,7 @@ export class ConsumptionService {
           updatedBy: userId
         },
         include: {
-          goods: { select: { id: true, code: true, name: true, packPerBox: true, piecePerPack: true } },
+          goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
           location: { select: { id: true, name: true } },
           handler: { select: { id: true, name: true } },
           base: { select: { id: true, name: true } }
@@ -583,6 +593,7 @@ export class ConsumptionService {
         goodsId: record.goodsId,
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
+        goodsNameI18n: record.goods?.nameI18n as any,
         packPerBox: record.goods?.packPerBox || 1,
         piecePerPack: record.goods?.piecePerPack || 1,
         locationId: record.locationId,

@@ -43,12 +43,20 @@ export interface TransferQueryParams {
   endDate?: string;
 }
 
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 export interface TransferResponse {
   id: string;
   transferDate: string;
   goodsId: string;
   goodsCode?: string;
   goodsName: string;
+  goodsNameI18n?: NameI18n | null;
   sourceLocationId: number;
   sourceLocationName: string;
   sourceHandlerName?: string;

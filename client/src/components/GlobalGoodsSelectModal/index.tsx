@@ -1,15 +1,24 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Modal, Table, Input, Select, Tag, Button, Space, Row, Col, message } from 'antd';
 import { SearchOutlined, ReloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { request, useIntl } from '@umijs/max';
+import { request, useIntl, getLocale } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 import debounce from 'lodash/debounce';
+
+// 多语言名称类型
+interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
 
 // 全局商品类型
 interface GlobalProduct {
   id: string;
   code: string;
   name: string;
+  nameI18n?: NameI18n;
   categoryId?: number;
   category?: {
     id: number;
@@ -182,6 +191,12 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
       key: 'name',
       width: 200,
       ellipsis: true,
+      render: (_, record) => {
+        const locale = getLocale();
+        const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
+        const displayName = (localeKey && record.nameI18n?.[localeKey]) || record.name;
+        return displayName;
+      },
     },
     {
       title: intl.formatMessage({ id: 'products.column.category' }),

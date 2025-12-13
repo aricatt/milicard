@@ -23,11 +23,20 @@ import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import GoodsNameText from '@/components/GoodsNameText';
 
+// 多语言名称类型
+interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 // 实时库存数据类型
 interface RealTimeStock {
   goodsId: string;
   goodsCode: string;
   goodsName: string;
+  goodsNameI18n?: NameI18n | null;
   packPerBox: number;
   piecePerPack: number;
   stockBox: number;
@@ -116,7 +125,7 @@ const RealTimeStockPage: React.FC = () => {
       title: intl.formatMessage({ id: 'form.label.name' }),
       dataIndex: 'goodsName',
       width: 200,
-      render: (_, record) => <GoodsNameText text={record.goodsName} />,
+      render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.boxQty' }),

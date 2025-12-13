@@ -175,7 +175,7 @@ const PayablesPage: React.FC = () => {
       key: 'goodsName',
       width: 200,
       hideInSearch: true,
-      render: (_, record) => <GoodsNameText text={record.goodsName} />,
+      render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
     },
     {
       title: intl.formatMessage({ id: 'payables.column.totalAmount' }),

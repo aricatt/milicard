@@ -49,6 +49,9 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
     { header: '商品编码', key: 'code', width: 20 },
     { header: '品类', key: 'categoryName', width: 12 },
     { header: '商品名称', key: 'name', width: 35 },
+    { header: '英文名称', key: 'nameEn', width: 35 },
+    { header: '泰语名称', key: 'nameTh', width: 35 },
+    { header: '越南语名称', key: 'nameVi', width: 35 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
     { header: '多少盒1箱', key: 'packPerBox', width: 12 },
     { header: '多少包1盒', key: 'piecePerPack', width: 12 },
@@ -62,6 +65,9 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
     { header: '商品编码', key: 'code', width: 20 },
     { header: '品类', key: 'categoryName', width: 12 },
     { header: '商品名称', key: 'name', width: 35 },
+    { header: '英文名称', key: 'nameEn', width: 35 },
+    { header: '泰语名称', key: 'nameTh', width: 35 },
+    { header: '越南语名称', key: 'nameVi', width: 35 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
     { header: '多少盒1箱', key: 'packPerBox', width: 12 },
     { header: '多少包1盒', key: 'piecePerPack', width: 12 },
@@ -101,10 +107,14 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
 
       // 转换数据格式（使用后端返回的品类关联信息）
       const exportData = dataList.map((item: any) => {
+        const nameI18n = item.nameI18n || {};
         return {
           code: item.code,
           categoryName: item.category?.name || '',
           name: item.name,
+          nameEn: nameI18n.en || '',
+          nameTh: nameI18n.th || '',
+          nameVi: nameI18n.vi || '',
           manufacturer: item.manufacturer,
           packPerBox: item.packPerBox,
           piecePerPack: item.piecePerPack,
@@ -182,9 +192,19 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
         const categoryName = String(row['品类名称'] || '').trim();
         let categoryId = categoryCodeMap.get(categoryCode) || categoryNameMap.get(categoryName);
         
+        // 构建多语言名称对象
+        const nameEn = String(row['英文名称'] || '').trim();
+        const nameTh = String(row['泰语名称'] || '').trim();
+        const nameVi = String(row['越南语名称'] || '').trim();
+        const nameI18n: Record<string, string> = {};
+        if (nameEn) nameI18n.en = nameEn;
+        if (nameTh) nameI18n.th = nameTh;
+        if (nameVi) nameI18n.vi = nameVi;
+        
         return {
           code: String(row['商品编码'] || '').trim() || undefined,
           name: String(row['商品名称'] || '').trim(),
+          nameI18n: Object.keys(nameI18n).length > 0 ? nameI18n : undefined,
           categoryId,
           manufacturer: String(row['厂家名称'] || '').trim(),
           packPerBox: parseInt(row['多少盒1箱'] || '0'),
@@ -326,6 +346,9 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
         categoryCode: 'CARD',
         categoryName: '卡牌',
         name: '琦趣创想航海王 和之国篇',
+        nameEn: 'One Piece Wano Country',
+        nameTh: 'วันพีซ วาโนะคุนิ',
+        nameVi: 'One Piece Wano',
         manufacturer: '琦趣创想',
         packPerBox: 36,
         piecePerPack: 10,
@@ -336,6 +359,9 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
         categoryCode: 'TOY',
         categoryName: '玩具',
         name: '名侦探柯南挂件-星绽版-第1弹',
+        nameEn: 'Detective Conan Keychain',
+        nameTh: '',
+        nameVi: '',
         manufacturer: '卡游',
         packPerBox: 36,
         piecePerPack: 12,
@@ -346,6 +372,9 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
         categoryCode: 'CARD_BRICK',
         categoryName: '卡砖',
         name: '灵魂重生收藏卡',
+        nameEn: 'Soul Rebirth Collection',
+        nameTh: '',
+        nameVi: '',
         manufacturer: '万画云游',
         packPerBox: 24,
         piecePerPack: 15,
