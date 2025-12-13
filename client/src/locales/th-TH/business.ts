@@ -68,6 +68,8 @@ export default {
   'unit.pack': 'แพ็ค',
   'unit.piece': 'ชิ้น',
   'unit.item': 'รายการ',
+  'unit.perBox': '/กล่อง',
+  'unit.perPack': '/แพ็ค',
   'unit.pricePerPack': 'ราคา/แพ็ค',
   'unit.yuan': 'หยวน',
 
@@ -1170,6 +1172,12 @@ export default {
   'productSettings.deleteConfirm': 'คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้ออกจากฐานปัจจุบัน?',
   'productSettings.form.selectProduct': 'เลือกสินค้า',
   'productSettings.form.selectProductPlaceholder': 'ค้นหาและเลือกสินค้า',
+  'productSettings.form.clickToSelect': 'คลิกเพื่อเลือกสินค้า',
+  'productSettings.form.reselect': 'เลือกใหม่',
+  'productSettings.search.placeholder': 'ค้นหาด้วยรหัสหรือชื่อ',
+  'productSettings.filter.category': 'เลือกหมวดหมู่',
+  'productSettings.filter.manufacturer': 'เลือกผู้ผลิต',
+  'productSettings.alreadyAdded': 'เพิ่มแล้ว',
   'productSettings.message.selectProductFirst': 'กรุณาเลือกสินค้าก่อน',
   'productSettings.message.fetchFailed': 'ไม่สามารถโหลดการตั้งค่าสินค้า',
   'productSettings.message.createSuccess': 'เพิ่มสำเร็จ',
@@ -1178,4 +1186,14 @@ export default {
   'productSettings.message.updateFailed': 'อัปเดตไม่สำเร็จ',
   'productSettings.message.deleteSuccess': 'ลบสำเร็จ',
   'productSettings.message.deleteFailed': 'ลบไม่สำเร็จ',
+
+  // ==================== ตารางทั่วไป ====================
+  'table.column.action': 'การดำเนินการ',
+  'table.pagination.totalItems': 'ทั้งหมด {total} รายการ',
+
+  // ==================== ปุ่มทั่วไป ====================
+  'button.select': 'เลือก',
+
+  // ==================== สินค้าทั่วไป ====================
+  'products.uncategorized': 'ไม่มีหมวดหมู่',
 };

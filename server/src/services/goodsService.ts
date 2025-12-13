@@ -23,7 +23,9 @@ import {
 export class GoodsService {
   /**
    * 创建商品 (基地级别)
-   * 会同时创建全局商品记录和基地设置记录
+   * 支持两种方式：
+   * 1. 通过 globalGoodsId 关联现有全局商品到基地
+   * 2. 创建新的全局商品并关联到基地
    */
   static async createGoods(baseId: number, data: CreateGoodsRequest, userId: string): Promise<GoodsResponse> {
     try {
@@ -39,21 +41,22 @@ export class GoodsService {
         )
       }
 
-      // 自动生成商品编号 (如果未提供)
-      let goodsCode = data.code
-      if (!goodsCode) {
-        goodsCode = await CodeGenerator.generateGoodsCode()
-      }
-
-      // 检查商品编码是否已存在（全局唯一）
-      const existingGoods = await prisma.goods.findUnique({
-        where: { code: goodsCode }
-      })
-
       let goods: any
 
-      if (existingGoods) {
-        // 商品已存在，检查该基地是否已配置
+      // 方式1：通过 globalGoodsId 关联现有全局商品
+      if (data.globalGoodsId) {
+        const existingGoods = await prisma.goods.findUnique({
+          where: { id: data.globalGoodsId }
+        })
+
+        if (!existingGoods) {
+          throw new GoodsError(
+            GoodsErrorType.NOT_FOUND,
+            `全局商品 ${data.globalGoodsId} 不存在`
+          )
+        }
+
+        // 检查该基地是否已配置该商品
         const existingSetting = await prisma.goodsLocalSetting.findUnique({
           where: {
             goodsId_baseId: {
@@ -66,7 +69,7 @@ export class GoodsService {
         if (existingSetting) {
           throw new GoodsError(
             GoodsErrorType.DUPLICATE_CODE,
-            `商品编码 ${goodsCode} 在基地 ${base.name} 中已存在`
+            `商品 ${existingGoods.name} 在基地 ${base.name} 中已存在`
           )
         }
 
@@ -75,7 +78,7 @@ export class GoodsService {
           data: {
             goodsId: existingGoods.id,
             baseId: baseId,
-            retailPrice: data.retailPrice,
+            retailPrice: data.retailPrice ?? 0,
             purchasePrice: data.purchasePrice,
             packPrice: data.packPrice,
             alias: data.alias,
@@ -85,34 +88,95 @@ export class GoodsService {
 
         goods = existingGoods
       } else {
-        // 创建新商品和基地设置
-        goods = await prisma.goods.create({
-          data: {
-            code: goodsCode,
-            name: data.name,
-            categoryId: data.categoryId,
-            manufacturer: data.manufacturer,
-            description: data.description,
-            boxQuantity: 1,
-            packPerBox: data.packPerBox,
-            piecePerPack: data.piecePerPack,
-            imageUrl: data.imageUrl,
-            notes: data.notes,
-            isActive: true,
-            createdBy: userId,
-            updatedBy: userId,
-            localSettings: {
-              create: {
-                baseId: baseId,
-                retailPrice: data.retailPrice,
-                purchasePrice: data.purchasePrice,
-                packPrice: data.packPrice,
-                alias: data.alias,
-                isActive: true
+        // 方式2：创建新的全局商品并关联到基地
+        
+        // 验证必填字段
+        if (!data.name) {
+          throw new GoodsError(
+            GoodsErrorType.VALIDATION_ERROR,
+            '商品名称不能为空'
+          )
+        }
+        if (!data.manufacturer) {
+          throw new GoodsError(
+            GoodsErrorType.VALIDATION_ERROR,
+            '厂家名称不能为空'
+          )
+        }
+
+        // 自动生成商品编号 (如果未提供)
+        let goodsCode = data.code
+        if (!goodsCode) {
+          goodsCode = await CodeGenerator.generateGoodsCode()
+        }
+
+        // 检查商品编码是否已存在（全局唯一）
+        const existingGoods = await prisma.goods.findUnique({
+          where: { code: goodsCode }
+        })
+
+        if (existingGoods) {
+          // 商品已存在，检查该基地是否已配置
+          const existingSetting = await prisma.goodsLocalSetting.findUnique({
+            where: {
+              goodsId_baseId: {
+                goodsId: existingGoods.id,
+                baseId: baseId
               }
             }
+          })
+
+          if (existingSetting) {
+            throw new GoodsError(
+              GoodsErrorType.DUPLICATE_CODE,
+              `商品编码 ${goodsCode} 在基地 ${base.name} 中已存在`
+            )
           }
-        })
+
+          // 为现有商品添加基地设置
+          await prisma.goodsLocalSetting.create({
+            data: {
+              goodsId: existingGoods.id,
+              baseId: baseId,
+              retailPrice: data.retailPrice ?? 0,
+              purchasePrice: data.purchasePrice,
+              packPrice: data.packPrice,
+              alias: data.alias,
+              isActive: true
+            }
+          })
+
+          goods = existingGoods
+        } else {
+          // 创建新商品和基地设置
+          goods = await prisma.goods.create({
+            data: {
+              code: goodsCode,
+              name: data.name,
+              categoryId: data.categoryId,
+              manufacturer: data.manufacturer,
+              description: data.description,
+              boxQuantity: 1,
+              packPerBox: data.packPerBox ?? 1,
+              piecePerPack: data.piecePerPack ?? 1,
+              imageUrl: data.imageUrl,
+              notes: data.notes,
+              isActive: true,
+              createdBy: userId,
+              updatedBy: userId,
+              localSettings: {
+                create: {
+                  baseId: baseId,
+                  retailPrice: data.retailPrice ?? 0,
+                  purchasePrice: data.purchasePrice,
+                  packPrice: data.packPrice,
+                  alias: data.alias,
+                  isActive: true
+                }
+              }
+            }
+          })
+        }
       }
 
       logger.info('商品创建成功', {

@@ -11,14 +11,14 @@ export class GlobalGoodsController {
    */
   static async list(req: Request, res: Response) {
     try {
-      const { page, pageSize, search, manufacturer, category, isActive } = req.query
+      const { page, pageSize, search, manufacturer, categoryId, isActive } = req.query
 
       const result = await GlobalGoodsService.list({
         page: page ? parseInt(page as string) : 1,
         pageSize: pageSize ? parseInt(pageSize as string) : 20,
         search: search as string,
         manufacturer: manufacturer as string,
-        category: category as string,
+        categoryId: categoryId ? parseInt(categoryId as string) : undefined,
         isActive: isActive !== undefined ? isActive === 'true' : undefined
       })
 
@@ -133,6 +133,26 @@ export class GlobalGoodsController {
       res.status(error.message?.includes('不存在') ? 404 : 400).json({
         success: false,
         message: error.message || '删除全局商品失败'
+      })
+    }
+  }
+
+  /**
+   * 获取所有厂家列表（用于筛选）
+   */
+  static async getManufacturers(req: Request, res: Response) {
+    try {
+      const manufacturers = await GlobalGoodsService.getManufacturers()
+
+      res.json({
+        success: true,
+        data: manufacturers
+      })
+    } catch (error: any) {
+      logger.error('获取厂家列表失败', { error })
+      res.status(500).json({
+        success: false,
+        message: error.message || '获取厂家列表失败'
       })
     }
   }

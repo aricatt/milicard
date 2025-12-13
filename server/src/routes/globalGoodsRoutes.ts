@@ -9,6 +9,7 @@ router.use(authenticateToken)
 
 // 全局商品路由
 router.get('/', GlobalGoodsController.list)
+router.get('/manufacturers', GlobalGoodsController.getManufacturers)
 router.get('/:id', GlobalGoodsController.getById)
 router.post('/', GlobalGoodsController.create)
 router.put('/:id', GlobalGoodsController.update)

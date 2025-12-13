@@ -243,4 +243,24 @@ export class GlobalGoodsService {
       }
     }
   }
+
+  /**
+   * 获取所有厂家列表（去重）
+   */
+  static async getManufacturers(): Promise<string[]> {
+    const result = await prisma.goods.findMany({
+      select: {
+        manufacturer: true
+      },
+      distinct: ['manufacturer'],
+      where: {
+        isActive: true
+      },
+      orderBy: {
+        manufacturer: 'asc'
+      }
+    })
+
+    return result.map(item => item.manufacturer)
+  }
 }

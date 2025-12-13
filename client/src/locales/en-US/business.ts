@@ -68,6 +68,8 @@ export default {
   'unit.pack': 'Pack',
   'unit.piece': 'Piece',
   'unit.item': 'Item',
+  'unit.perBox': '/Box',
+  'unit.perPack': '/Pack',
   'unit.pricePerPack': 'Price/Pack',
   'unit.yuan': 'Yuan',
 
@@ -1170,6 +1172,12 @@ export default {
   'productSettings.deleteConfirm': 'Are you sure you want to remove this product from the current base?',
   'productSettings.form.selectProduct': 'Select Product',
   'productSettings.form.selectProductPlaceholder': 'Search and select product',
+  'productSettings.form.clickToSelect': 'Click to select product',
+  'productSettings.form.reselect': 'Reselect',
+  'productSettings.search.placeholder': 'Search by code or name',
+  'productSettings.filter.category': 'Select category',
+  'productSettings.filter.manufacturer': 'Select manufacturer',
+  'productSettings.alreadyAdded': 'Added',
   'productSettings.message.selectProductFirst': 'Please select a product first',
   'productSettings.message.fetchFailed': 'Failed to fetch product settings',
   'productSettings.message.createSuccess': 'Added successfully',
@@ -1178,4 +1186,15 @@ export default {
   'productSettings.message.updateFailed': 'Failed to update',
   'productSettings.message.deleteSuccess': 'Removed successfully',
   'productSettings.message.deleteFailed': 'Failed to remove',
+
+  // ==================== Common Table ====================
+  'table.column.action': 'Action',
+  'table.pagination.totalItems': 'Total {total} items',
+
+  // ==================== Common Buttons ====================
+  'button.select': 'Select',
+  'button.reset': 'Reset',
+
+  // ==================== Products Common ====================
+  'products.uncategorized': 'Uncategorized',
 };

@@ -372,7 +372,7 @@ const GlobalProductManagement: React.FC = () => {
       width: 100,
       hideInSearch: true,
       align: 'center',
-      render: (value: any) => <Tag color="blue">{value} {intl.formatMessage({ id: 'products.unit.pack' })}/箱</Tag>,
+      render: (value: any) => <Tag color="blue">{value}</Tag>,
     },
     {
       title: intl.formatMessage({ id: 'products.column.piecePerPack' }),
@@ -381,7 +381,7 @@ const GlobalProductManagement: React.FC = () => {
       width: 100,
       hideInSearch: true,
       align: 'center',
-      render: (value: any) => <Tag color="green">{value} {intl.formatMessage({ id: 'products.unit.piece' })}/盒</Tag>,
+      render: (value: any) => <Tag color="green">{value}</Tag>,
     },
     {
       title: intl.formatMessage({ id: 'products.column.description' }),

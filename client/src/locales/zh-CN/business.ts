@@ -68,6 +68,8 @@ export default {
   'unit.pack': '盒',
   'unit.piece': '包',
   'unit.item': '个',
+  'unit.perBox': '/箱',
+  'unit.perPack': '/盒',
   'unit.pricePerPack': '单价/盒',
   'unit.yuan': '元',
 
@@ -693,7 +695,6 @@ export default {
   'locations.form.contactPhone': '联系电话',
   'locations.form.contactPhonePlaceholder': '请输入联系电话',
   'locations.form.status': '状态',
-  'locations.edit': '编辑位置',
   'locations.stats.total': '总位置数',
   'locations.stats.mainWarehouse': '总仓库',
   'locations.stats.warehouse': '子仓库',
@@ -731,7 +732,6 @@ export default {
   'personnel.form.emailInvalid': '请输入正确的邮箱地址',
   'personnel.form.notes': '备注',
   'personnel.form.notesPlaceholder': '请输入备注信息',
-  'personnel.edit': '编辑人员',
   'personnel.stats.total': '人员总数',
   'personnel.stats.anchors': '主播',
   'personnel.stats.warehouseKeepers': '仓管',
@@ -1172,6 +1172,12 @@ export default {
   'productSettings.deleteConfirm': '确定要从当前基地移除该商品吗？',
   'productSettings.form.selectProduct': '选择商品',
   'productSettings.form.selectProductPlaceholder': '搜索并选择商品',
+  'productSettings.form.clickToSelect': '点击选择商品',
+  'productSettings.form.reselect': '重新选择',
+  'productSettings.search.placeholder': '搜索商品编号或名称',
+  'productSettings.filter.category': '选择品类',
+  'productSettings.filter.manufacturer': '选择厂家',
+  'productSettings.alreadyAdded': '已添加',
   'productSettings.message.selectProductFirst': '请先选择商品',
   'productSettings.message.fetchFailed': '获取商品设置失败',
   'productSettings.message.createSuccess': '添加成功',
@@ -1180,4 +1186,14 @@ export default {
   'productSettings.message.updateFailed': '更新失败',
   'productSettings.message.deleteSuccess': '移除成功',
   'productSettings.message.deleteFailed': '移除失败',
+
+  // ==================== 通用表格 ====================
+  'table.column.action': '操作',
+  'table.pagination.totalItems': '共 {total} 条',
+
+  // ==================== 通用按钮 ====================
+  'button.select': '选择',
+
+  // ==================== 商品通用 ====================
+  'products.uncategorized': '未分类',
 };

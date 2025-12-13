@@ -34,6 +34,7 @@ import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
 import type { FieldDescription } from '@/components/ImportModal';
 import GoodsNameText from '@/components/GoodsNameText';
+import GlobalGoodsSelectModal from '@/components/GlobalGoodsSelectModal';
 
 const { TextArea } = Input;
 
@@ -81,7 +82,12 @@ interface GlobalProduct {
   id: string;
   code: string;
   name: string;
-  category: GoodsCategory;
+  categoryId?: number;
+  category?: {
+    id: number;
+    code: string;
+    name: string;
+  };
   manufacturer: string;
   packPerBox: number;
   piecePerPack: number;
@@ -134,10 +140,10 @@ const ProductSettingsPage: React.FC = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   
-  // 全局商品列表（用于选择）
-  const [globalProducts, setGlobalProducts] = useState<GlobalProduct[]>([]);
-  const [loadingGlobalProducts, setLoadingGlobalProducts] = useState(false);
+  // 全局商品选择
+  const [goodsSelectModalVisible, setGoodsSelectModalVisible] = useState(false);
   const [selectedGlobalProduct, setSelectedGlobalProduct] = useState<GlobalProduct | null>(null);
+  const [existingGoodsIds, setExistingGoodsIds] = useState<string[]>([]);
   
   // 表单实例
   const [createForm] = Form.useForm();
@@ -166,31 +172,6 @@ const ProductSettingsPage: React.FC = () => {
     { field: '零售价(一箱)', required: true, description: '本基地的零售价格（单位：分）', example: '22356' },
     { field: '采购价(一箱)', required: false, description: '本基地的采购价格（单位：分）', example: '18000' },
   ];
-
-  /**
-   * 获取全局商品列表（用于添加时选择）
-   */
-  const fetchGlobalProducts = async (search?: string) => {
-    setLoadingGlobalProducts(true);
-    try {
-      const result = await request('/api/v1/global-goods', {
-        method: 'GET',
-        params: {
-          pageSize: 100,
-          search,
-          isActive: true,
-        },
-      });
-      
-      if (result.success) {
-        setGlobalProducts(result.data || []);
-      }
-    } catch (error) {
-      console.error('获取全局商品列表失败:', error);
-    } finally {
-      setLoadingGlobalProducts(false);
-    }
-  };
 
   /**
    * 获取基地商品设置数据
@@ -223,6 +204,8 @@ const ProductSettingsPage: React.FC = () => {
       
       if (result.success) {
         calculateStats(result.data || []);
+        // 更新已存在的商品ID列表（用于商品选择弹窗排除）
+        setExistingGoodsIds((result.data || []).map((item: ProductSetting) => item.goodsId));
         
         return {
           data: result.data || [],
@@ -468,7 +451,7 @@ const ProductSettingsPage: React.FC = () => {
       hideInSearch: true,
       align: 'center',
       render: (_, record) => (
-        <Tag color="blue">{record.goods?.packPerBox} {intl.formatMessage({ id: 'products.unit.pack' })}/箱</Tag>
+        <Tag color="blue">{record.goods?.packPerBox}</Tag>
       ),
     },
     {
@@ -479,7 +462,7 @@ const ProductSettingsPage: React.FC = () => {
       hideInSearch: true,
       align: 'center',
       render: (_, record) => (
-        <Tag color="green">{record.goods?.piecePerPack} {intl.formatMessage({ id: 'products.unit.piece' })}/盒</Tag>
+        <Tag color="green">{record.goods?.piecePerPack}</Tag>
       ),
     },
     {
@@ -649,7 +632,8 @@ const ProductSettingsPage: React.FC = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => {
-              fetchGlobalProducts();
+              setSelectedGlobalProduct(null);
+              createForm.resetFields();
               setCreateModalVisible(true);
             }}
           >
@@ -707,28 +691,25 @@ const ProductSettingsPage: React.FC = () => {
             label={intl.formatMessage({ id: 'productSettings.form.selectProduct' })}
             required
           >
-            <Select
-              showSearch
-              placeholder={intl.formatMessage({ id: 'productSettings.form.selectProductPlaceholder' })}
-              loading={loadingGlobalProducts}
-              filterOption={false}
-              onSearch={fetchGlobalProducts}
-              onChange={handleGlobalProductSelect}
-              value={selectedGlobalProduct?.id}
-              optionLabelProp="label"
-              style={{ width: '100%' }}
-            >
-              {globalProducts.map((product) => (
-                <Select.Option key={product.id} value={product.id} label={product.name}>
-                  <div>
-                    <div><strong>{product.name}</strong></div>
-                    <div style={{ fontSize: 12, color: '#999' }}>
-                      {product.code} | {product.manufacturer} | {GoodsCategoryLabels[product.category]}
-                    </div>
-                  </div>
-                </Select.Option>
-              ))}
-            </Select>
+            {selectedGlobalProduct ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Tag color="blue" style={{ margin: 0 }}>
+                  {selectedGlobalProduct.code}
+                </Tag>
+                <span style={{ flex: 1 }}>{selectedGlobalProduct.name}</span>
+                <Button size="small" onClick={() => setGoodsSelectModalVisible(true)}>
+                  {intl.formatMessage({ id: 'productSettings.form.reselect' })}
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                type="dashed" 
+                style={{ width: '100%' }}
+                onClick={() => setGoodsSelectModalVisible(true)}
+              >
+                <PlusOutlined /> {intl.formatMessage({ id: 'productSettings.form.clickToSelect' })}
+              </Button>
+            )}
           </Form.Item>
 
           {/* 显示选中商品的信息 */}
@@ -738,15 +719,15 @@ const ProductSettingsPage: React.FC = () => {
                 {selectedGlobalProduct.code}
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'products.column.category' })}>
-                <Tag color={GoodsCategoryColors[selectedGlobalProduct.category]}>
-                  {GoodsCategoryLabels[selectedGlobalProduct.category]}
+                <Tag color={GoodsCategoryColors[selectedGlobalProduct.category?.code || ''] || 'default'}>
+                  {selectedGlobalProduct.category?.name || '未分类'}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'products.column.manufacturer' })}>
                 {selectedGlobalProduct.manufacturer}
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'products.column.spec' })}>
-                {selectedGlobalProduct.packPerBox}盒/箱, {selectedGlobalProduct.piecePerPack}包/盒
+                {selectedGlobalProduct.packPerBox} / {selectedGlobalProduct.piecePerPack}
               </Descriptions.Item>
             </Descriptions>
           )}
@@ -767,8 +748,7 @@ const ProductSettingsPage: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
                   min={0}
                   precision={2}
-                  addonBefore="¥"
-                  addonAfter="/箱"
+                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
                 />
               </Form.Item>
             </Col>
@@ -785,8 +765,7 @@ const ProductSettingsPage: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
                   min={0}
                   precision={2}
-                  addonBefore="¥"
-                  addonAfter="/盒"
+                  addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
                 />
               </Form.Item>
             </Col>
@@ -806,7 +785,7 @@ const ProductSettingsPage: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
                   min={0}
                   precision={2}
-                  addonBefore="¥"
+                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
                 />
               </Form.Item>
             </Col>
@@ -854,7 +833,7 @@ const ProductSettingsPage: React.FC = () => {
                 {editingSetting.goods?.manufacturer}
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'products.column.spec' })}>
-                {editingSetting.goods?.packPerBox}盒/箱, {editingSetting.goods?.piecePerPack}包/盒
+                {editingSetting.goods?.packPerBox} / {editingSetting.goods?.piecePerPack}
               </Descriptions.Item>
             </Descriptions>
           )}
@@ -875,8 +854,7 @@ const ProductSettingsPage: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
                   min={0}
                   precision={2}
-                  addonBefore="¥"
-                  addonAfter="/箱"
+                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
                 />
               </Form.Item>
             </Col>
@@ -893,8 +871,7 @@ const ProductSettingsPage: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
                   min={0}
                   precision={2}
-                  addonBefore="¥"
-                  addonAfter="/盒"
+                  addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
                 />
               </Form.Item>
             </Col>
@@ -914,7 +891,7 @@ const ProductSettingsPage: React.FC = () => {
                   placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
                   min={0}
                   precision={2}
-                  addonBefore="¥"
+                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
                 />
               </Form.Item>
             </Col>
@@ -953,6 +930,18 @@ const ProductSettingsPage: React.FC = () => {
         fields={importFields}
         onDownloadTemplate={handleDownloadTemplate}
         width={700}
+      />
+
+      {/* 全局商品选择弹窗 */}
+      <GlobalGoodsSelectModal
+        open={goodsSelectModalVisible}
+        onCancel={() => setGoodsSelectModalVisible(false)}
+        onSelect={(product) => {
+          setSelectedGlobalProduct(product);
+          setGoodsSelectModalVisible(false);
+        }}
+        excludeIds={existingGoodsIds}
+        title={intl.formatMessage({ id: 'productSettings.form.selectProduct' })}
       />
     </PageContainer>
   );

@@ -68,6 +68,8 @@ export default {
   'unit.pack': 'Hộp',
   'unit.piece': 'Gói',
   'unit.item': 'Cái',
+  'unit.perBox': '/Thùng',
+  'unit.perPack': '/Hộp',
   'unit.pricePerPack': 'Đơn giá/Hộp',
   'unit.yuan': 'Nhân dân tệ',
 
@@ -1170,6 +1172,12 @@ export default {
   'productSettings.deleteConfirm': 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi cơ sở hiện tại?',
   'productSettings.form.selectProduct': 'Chọn sản phẩm',
   'productSettings.form.selectProductPlaceholder': 'Tìm kiếm và chọn sản phẩm',
+  'productSettings.form.clickToSelect': 'Nhấp để chọn sản phẩm',
+  'productSettings.form.reselect': 'Chọn lại',
+  'productSettings.search.placeholder': 'Tìm kiếm theo mã hoặc tên',
+  'productSettings.filter.category': 'Chọn danh mục',
+  'productSettings.filter.manufacturer': 'Chọn nhà sản xuất',
+  'productSettings.alreadyAdded': 'Đã thêm',
   'productSettings.message.selectProductFirst': 'Vui lòng chọn sản phẩm trước',
   'productSettings.message.fetchFailed': 'Không thể tải cài đặt sản phẩm',
   'productSettings.message.createSuccess': 'Thêm thành công',
@@ -1178,4 +1186,14 @@ export default {
   'productSettings.message.updateFailed': 'Cập nhật thất bại',
   'productSettings.message.deleteSuccess': 'Xóa thành công',
   'productSettings.message.deleteFailed': 'Xóa thất bại',
+
+  // ==================== Bảng chung ====================
+  'table.column.action': 'Thao tác',
+  'table.pagination.totalItems': 'Tổng {total} mục',
+
+  // ==================== Nút chung ====================
+  'button.select': 'Chọn',
+
+  // ==================== Sản phẩm chung ====================
+  'products.uncategorized': 'Chưa phân loại',
 };

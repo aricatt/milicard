@@ -32,18 +32,24 @@ export enum GoodsUnit {
 }
 
 export interface CreateGoodsRequest {
+  // 方式1：关联现有全局商品到基地
+  globalGoodsId?: string
+  
+  // 方式2：创建新的全局商品并关联到基地
   code?: string
-  name: string
+  name?: string
   categoryId?: number
-  manufacturer: string
-  retailPrice: number
-  packPerBox: number
-  piecePerPack: number
-  packPrice?: number
-  purchasePrice?: number
+  manufacturer?: string
+  packPerBox?: number
+  piecePerPack?: number
   description?: string
   imageUrl?: string
   notes?: string
+  
+  // 基地级别设置（两种方式都需要）
+  retailPrice?: number
+  packPrice?: number
+  purchasePrice?: number
   alias?: string  // 基地级别的商品别名
 }
 
