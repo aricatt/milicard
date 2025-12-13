@@ -38,10 +38,12 @@ if (typeof window !== 'undefined') {
   const originalError = console.error;
   console.error = (...args) => {
     const fullMsg = args.map(a => String(a)).join(' ');
-    // 过滤 React Fragment autoFocus 警告和 giveFreely 相关错误
+    // 过滤已知的非关键错误
     if (fullMsg.includes('autoFocus') ||
         fullMsg.includes('giveFreely') ||
-        fullMsg.includes('payload')) {
+        fullMsg.includes('payload') ||
+        fullMsg.includes('Static function can not consume context') ||
+        fullMsg.includes('Lazy element type must resolve')) {
       return;
     }
     originalError.apply(console, args);

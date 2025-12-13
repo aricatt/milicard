@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { PageContainer, ProTable, ModalForm, ProFormSelect, ProFormDateRangePicker, ProFormTextArea } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { Button, message, Popconfirm, Space, Tag, Typography, Card, Table, Descriptions, Spin, Alert, Divider, Tooltip } from 'antd';
@@ -340,7 +340,7 @@ const LocationProfitPage: React.FC = () => {
         rowKey="id"
         search={false}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
         }}
         toolBarRender={() => [

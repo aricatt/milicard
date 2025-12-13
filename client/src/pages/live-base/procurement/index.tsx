@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 import { 
   Space, 
   Modal,
@@ -417,7 +417,7 @@ const ProcurementManagement: React.FC = () => {
         }}
         rowKey="id"
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
           pageSizeOptions: ['10', '20', '30', '50', '100'],

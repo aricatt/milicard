@@ -1,6 +1,15 @@
 /**
- * 商品Excel导入导出Hook
- * 封装商品相关的Excel操作逻辑
+ * 基地商品Excel导入导出Hook
+ * 
+ * 重要说明：
+ * 商品数据已分离为两部分：
+ * 1. 全局商品（Goods）：商品编码、名称、品类、厂商、拆分关系等 - 在"所有商品"页管理
+ * 2. 基地级设置（GoodsLocalSetting）：价格、别名等 - 在本页管理
+ * 
+ * 本页导入功能：
+ * - 根据商品编码匹配已有的全局商品
+ * - 只更新/创建基地级设置（价格、别名）
+ * - 如果全局商品不存在，提示用户先在"所有商品"页添加
  */
 import { useState } from 'react';
 import { message, Modal } from 'antd';
@@ -8,50 +17,12 @@ import type { UploadProps } from 'antd';
 import { request } from '@umijs/max';
 import { exportToExcel, readExcelFile, downloadTemplate, validateImportData, formatDateTime } from '@/utils/excelUtils';
 
-// 商品品类枚举
-enum GoodsCategory {
-  CARD = 'CARD',             // 卡牌
-  CARD_BRICK = 'CARD_BRICK', // 卡砖
-  GIFT = 'GIFT',             // 礼物
-  COLOR_PAPER = 'COLOR_PAPER', // 色纸
-  FORTUNE_SIGN = 'FORTUNE_SIGN', // 上上签
-  TEAR_CARD = 'TEAR_CARD',   // 撕撕乐
-  TOY = 'TOY',               // 玩具
-  STAMP = 'STAMP',           // 邮票
-  LUCKY_CAT = 'LUCKY_CAT'    // 招财猫
-}
-
-// 品类中文映射
-const GoodsCategoryLabels: Record<GoodsCategory, string> = {
-  [GoodsCategory.CARD]: '卡牌',
-  [GoodsCategory.CARD_BRICK]: '卡砖',
-  [GoodsCategory.GIFT]: '礼物',
-  [GoodsCategory.COLOR_PAPER]: '色纸',
-  [GoodsCategory.FORTUNE_SIGN]: '上上签',
-  [GoodsCategory.TEAR_CARD]: '撕撕乐',
-  [GoodsCategory.TOY]: '玩具',
-  [GoodsCategory.STAMP]: '邮票',
-  [GoodsCategory.LUCKY_CAT]: '招财猫'
-};
-
-// 品类反向映射（中文 -> 枚举值）
-const GoodsCategoryReverse: Record<string, GoodsCategory> = {
-  '卡牌': GoodsCategory.CARD,
-  '卡砖': GoodsCategory.CARD_BRICK,
-  '礼物': GoodsCategory.GIFT,
-  '色纸': GoodsCategory.COLOR_PAPER,
-  '上上签': GoodsCategory.FORTUNE_SIGN,
-  '撕撕乐': GoodsCategory.TEAR_CARD,
-  '玩具': GoodsCategory.TOY,
-  '邮票': GoodsCategory.STAMP,
-  '招财猫': GoodsCategory.LUCKY_CAT
-};
-
 interface Product {
   id: string;
   code: string;
   name: string;
-  category: GoodsCategory;
+  category?: string;
+  categoryName?: string;
   alias?: string;
   manufacturer: string;
   retailPrice: number;
@@ -62,6 +33,7 @@ interface Product {
   piecePerPack: number;
   imageUrl?: string;
   notes?: string;
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -76,19 +48,28 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
 
-  // Excel列配置
-  const excelColumns = [
-    { header: 'ID', key: 'id', width: 8 },
+  // Excel列配置（导出用，包含所有字段）
+  const exportColumns = [
     { header: '商品编号', key: 'code', width: 20 },
-    { header: '品类', key: 'category', width: 10 },
     { header: '商品名称', key: 'name', width: 35 },
-    { header: '商品别名', key: 'alias', width: 25 },
+    { header: '品类', key: 'categoryName', width: 12 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
-    { header: '零售价(一箱)', key: 'retailPrice', width: 12 },
-    { header: '箱数量', key: 'boxQuantity', width: 8 },
+    { header: '商品别名', key: 'alias', width: 25 },
+    { header: '零售价(一箱)', key: 'retailPrice', width: 14 },
+    { header: '采购价(一箱)', key: 'purchasePrice', width: 14 },
     { header: '多少盒1箱', key: 'packPerBox', width: 12 },
     { header: '多少包1盒', key: 'piecePerPack', width: 12 },
+    { header: '状态', key: 'status', width: 8 },
     { header: '创建时间', key: 'createdAt', width: 20 },
+  ];
+
+  // 导入模板列配置（只包含导入需要的字段）
+  const importColumns = [
+    { header: '商品编号', key: 'code', width: 20 },
+    { header: '商品名称', key: 'name', width: 35 },
+    { header: '商品别名', key: 'alias', width: 25 },
+    { header: '零售价(一箱)', key: 'retailPrice', width: 14 },
+    { header: '采购价(一箱)', key: 'purchasePrice', width: 14 },
   ];
 
   // 导出商品数据
@@ -103,25 +84,29 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       message.destroy();
 
-      // 允许导出空表（可作为导入模板使用）
       const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式
       const exportData = dataList.map((item: Product) => ({
-        id: item.id,
         code: item.code,
-        category: GoodsCategoryLabels[item.category] || '卡牌',
         name: item.name,
-        alias: item.alias || '',
+        categoryName: item.categoryName || item.category || '',
         manufacturer: item.manufacturer,
+        alias: item.alias || '',
         retailPrice: item.retailPrice,
-        boxQuantity: item.boxQuantity || 1,
+        purchasePrice: item.purchasePrice || '',
         packPerBox: item.packPerBox,
         piecePerPack: item.piecePerPack,
+        status: item.isActive ? '启用' : '禁用',
         createdAt: formatDateTime(item.createdAt),
       }));
 
-      exportToExcel(exportData, excelColumns, '商品列表', `商品列表_${baseName}`);
+      const exportResult = exportToExcel(exportData, exportColumns, '基地商品列表', `商品列表_${baseName}`);
+      if (exportResult.success) {
+        message.success(`成功导出 ${exportData.length} 条商品数据`);
+      } else {
+        message.error(exportResult.error || '导出失败');
+      }
     } catch (error) {
       console.error('导出失败:', error);
       message.error('导出失败，请重试');
@@ -146,30 +131,69 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       message.loading(`准备导入 ${jsonData.length} 条数据...`, 0);
 
-      // 转换数据格式
-      const importData = jsonData.map((row: any) => {
-        const categoryStr = String(row['品类'] || '').trim();
-        const category = GoodsCategoryReverse[categoryStr] || GoodsCategory.CARD;
-        return {
-          code: String(row['商品编号'] || '').trim() || undefined, // 保留源编号，空则自动生成
-          name: String(row['商品名称'] || '').trim(),
-          category,
-          alias: String(row['商品别名'] || '').trim() || undefined,
-          manufacturer: String(row['厂家名称'] || '').trim(),
-          retailPrice: parseFloat(row['零售价(一箱)'] || '0'),
-          packPerBox: parseInt(row['多少盒1箱'] || '0'),
-          piecePerPack: parseInt(row['多少包1盒'] || '0'),
-          boxQuantity: 1,
-        };
+      // 获取全局商品列表用于匹配
+      const globalGoodsResult = await request('/api/v1/global-goods', {
+        method: 'GET',
+        params: { page: 1, pageSize: 10000 },
       });
+
+      const globalGoods = globalGoodsResult.success && globalGoodsResult.data ? globalGoodsResult.data : [];
+      const globalGoodsCodeMap = new Map(globalGoods.map((g: any) => [g.code, g]));
+      const globalGoodsNameMap = new Map(globalGoods.map((g: any) => [g.name, g]));
+
+      // 获取当前基地已有的商品
+      const existingGoodsResult = await request(`/api/v1/bases/${baseId}/goods`, {
+        method: 'GET',
+        params: { page: 1, pageSize: 10000 },
+      });
+      const existingGoods = existingGoodsResult.success && existingGoodsResult.data ? existingGoodsResult.data : [];
+      const existingGoodsIdSet = new Set(existingGoods.map((g: any) => g.id));
+
+      // 检查是否有不存在的全局商品
+      const missingGoods: string[] = [];
+      const importData: any[] = [];
+
+      jsonData.forEach((row: any, index: number) => {
+        const code = String(row['商品编号'] || '').trim();
+        const name = String(row['商品名称'] || '').trim();
+        
+        // 优先按编号匹配，其次按名称匹配
+        let globalProduct = code ? globalGoodsCodeMap.get(code) : null;
+        if (!globalProduct && name) {
+          globalProduct = globalGoodsNameMap.get(name);
+        }
+
+        if (!globalProduct) {
+          missingGoods.push(`第${index + 2}行：${code || name || '(空)'}`);
+        } else {
+          importData.push({
+            globalGoodsId: globalProduct.id,
+            globalGoodsCode: globalProduct.code,
+            globalGoodsName: globalProduct.name,
+            alias: String(row['商品别名'] || '').trim() || undefined,
+            retailPrice: parseFloat(row['零售价(一箱)'] || '0'),
+            purchasePrice: parseFloat(row['采购价(一箱)'] || '0') || undefined,
+            isNew: !existingGoodsIdSet.has(globalProduct.id),
+          });
+        }
+      });
+
+      if (missingGoods.length > 0) {
+        message.destroy();
+        const missingList = missingGoods.slice(0, 10).join('\n');
+        const moreCount = missingGoods.length > 10 ? `\n...还有 ${missingGoods.length - 10} 条` : '';
+        Modal.error({
+          title: '发现不存在的商品',
+          content: `以下商品在全局商品库中不存在，请先到「全局信息 > 所有商品」页面添加后再导入：\n\n${missingList}${moreCount}`,
+          width: 600,
+        });
+        setImportLoading(false);
+        return;
+      }
 
       // 数据验证
       const errors = validateImportData(importData, [
-        { field: 'name', required: true, message: '商品名称不能为空' },
-        { field: 'manufacturer', required: true, message: '厂家名称不能为空' },
-        { field: 'retailPrice', required: true, type: 'number', min: 0, message: '零售价必须大于0' },
-        { field: 'packPerBox', required: true, type: 'number', min: 1, message: '盒/箱数量必须大于0' },
-        { field: 'piecePerPack', required: true, type: 'number', min: 1, message: '包/盒数量必须大于0' },
+        { field: 'retailPrice', required: true, type: 'number', min: 0, message: '零售价必须大于等于0' },
       ]);
 
       if (errors.length > 0) {
@@ -185,88 +209,67 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
         return;
       }
 
-      // 获取现有商品列表用于去重检查
-      message.loading('正在检查重复数据...', 0);
-      const existingGoods = await request(`/api/v1/bases/${baseId}/goods`, {
-        method: 'GET',
-        params: { page: 1, pageSize: 10000 },
-      });
       message.destroy();
-
-      // 构建去重Map: 商品名称和商品编号都需要检查（基地内唯一）
-      const existingNameMap = new Map<string, string>();
-      const existingCodeMap = new Map<string, string>();
-      if (existingGoods.success && existingGoods.data) {
-        existingGoods.data.forEach((goods: any) => {
-          existingNameMap.set(goods.name, goods.id);
-          if (goods.code) {
-            existingCodeMap.set(goods.code, goods.id);
-          }
-        });
-      }
 
       // 批量导入
       let successCount = 0;
+      let updateCount = 0;
       let failCount = 0;
-      let skipCount = 0;
       const failedItems: string[] = [];
-      const skippedItems: string[] = [];
 
       for (let i = 0; i < importData.length; i++) {
         const item = importData[i];
         setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
-        // 检查是否重复（商品名称或编号，基地内唯一）
-        if (existingNameMap.has(item.name)) {
-          skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.name}（名称已存在）`);
-          continue;
-        }
-        if (item.code && existingCodeMap.has(item.code)) {
-          skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.code}（编号已存在）`);
-          continue;
-        }
-
         try {
-          const result = await request(`/api/v1/bases/${baseId}/goods`, {
-            method: 'POST',
-            data: item,
-          });
+          if (item.isNew) {
+            // 新增：关联全局商品到当前基地
+            const result = await request(`/api/v1/bases/${baseId}/goods`, {
+              method: 'POST',
+              data: {
+                globalGoodsId: item.globalGoodsId,
+                alias: item.alias,
+                retailPrice: item.retailPrice,
+                purchasePrice: item.purchasePrice,
+              },
+            });
 
-          if (result.success) {
-            successCount++;
-            // 添加到去重Map，避免同一批次内的重复
-            existingNameMap.set(item.name, result.data?.id || '');
-            if (item.code) {
-              existingCodeMap.set(item.code, result.data?.id || '');
+            if (result.success) {
+              successCount++;
+            } else {
+              failCount++;
+              failedItems.push(`${item.globalGoodsName} - ${result.message || '创建失败'}`);
             }
           } else {
-            failCount++;
-            failedItems.push(`第${i + 2}行：${item.name} - ${result.message || '创建失败'}`);
+            // 更新：更新基地级设置
+            const result = await request(`/api/v1/bases/${baseId}/goods/${item.globalGoodsId}`, {
+              method: 'PUT',
+              data: {
+                alias: item.alias,
+                retailPrice: item.retailPrice,
+                purchasePrice: item.purchasePrice,
+              },
+            });
+
+            if (result.success) {
+              updateCount++;
+            } else {
+              failCount++;
+              failedItems.push(`${item.globalGoodsName} - ${result.message || '更新失败'}`);
+            }
           }
         } catch (error: any) {
           failCount++;
-          failedItems.push(`第${i + 2}行：${item.name} - ${error.message || '网络错误'}`);
+          failedItems.push(`${item.globalGoodsName} - ${error.message || '网络错误'}`);
         }
       }
 
-      message.destroy();
-
       // 显示导入结果
-      if (failCount === 0 && skipCount === 0) {
-        message.success(`导入完成！成功导入 ${successCount} 条商品`);
+      if (failCount === 0) {
+        message.success(`导入完成！新增 ${successCount} 条，更新 ${updateCount} 条`);
       } else {
-        let content = `成功导入：${successCount} 条\n跳过重复：${skipCount} 条\n失败：${failCount} 条`;
+        let content = `新增：${successCount} 条\n更新：${updateCount} 条\n失败：${failCount} 条`;
         
-        // 显示跳过的数据
-        if (skipCount > 0) {
-          const skippedList = skippedItems.slice(0, 5).join('\n');
-          const moreSkipped = skippedItems.length > 5 ? `\n...还有 ${skippedItems.length - 5} 条重复` : '';
-          content += `\n\n跳过的重复数据：\n${skippedList}${moreSkipped}`;
-        }
-        
-        // 显示失败的数据
         if (failCount > 0) {
           const failedList = failedItems.slice(0, 5).join('\n');
           const moreFailures = failedItems.length > 5 ? `\n...还有 ${failedItems.length - 5} 条失败` : '';
@@ -295,47 +298,32 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
   const handleDownloadTemplate = () => {
     const templateData = [
       {
-        id: '（导入时此列会被忽略）',
-        code: '（系统自动生成）',
-        category: '卡牌',
+        code: 'GOODS-ABC123',
         name: '琦趣创想航海王 和之国篇',
-        alias: '',
-        manufacturer: '琦趣创想',
+        alias: '航海王和之国',
         retailPrice: 22356,
-        boxQuantity: 1,
-        packPerBox: 36,
-        piecePerPack: 10,
-        createdAt: '（系统自动生成）',
+        purchasePrice: 18000,
       },
       {
-        id: '',
-        code: '',
-        category: '玩具',
+        code: 'GOODS-DEF456',
         name: '名侦探柯南挂件-星绽版-第1弹',
         alias: '',
-        manufacturer: '卡游',
         retailPrice: 19440,
-        boxQuantity: 1,
-        packPerBox: 36,
-        piecePerPack: 12,
-        createdAt: '',
-      },
-      {
-        id: '',
-        code: '',
-        category: '卡砖',
-        name: '灵魂重生收藏卡',
-        alias: '',
-        manufacturer: '万画云游',
-        retailPrice: 24300,
-        boxQuantity: 1,
-        packPerBox: 24,
-        piecePerPack: 15,
-        createdAt: '',
+        purchasePrice: 15000,
       },
     ];
 
-    downloadTemplate(templateData, excelColumns, '商品导入模板', '商品导入模板');
+    const result = downloadTemplate(
+      templateData, 
+      importColumns, 
+      '基地商品导入模板', 
+      `商品导入模板_${baseName}`
+    );
+    if (result.success) {
+      message.success('模板下载成功');
+    } else {
+      message.error(result.error || '模板下载失败');
+    }
   };
 
   return {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
@@ -320,7 +320,7 @@ const PayablesPage: React.FC = () => {
         rowKey="id"
         scroll={{ x: 1200 }}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
         }}

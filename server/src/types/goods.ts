@@ -4,30 +4,18 @@
   DISCONTINUED = 'DISCONTINUED'
 }
 
-// 商品品类枚举
+// 品类已迁移到数据库表 categories
+// 保留旧的枚举以便向后兼容
 export enum GoodsCategory {
-  CARD = 'CARD',             // 卡牌
-  CARD_BRICK = 'CARD_BRICK', // 卡砖
-  GIFT = 'GIFT',             // 礼物
-  COLOR_PAPER = 'COLOR_PAPER', // 色纸
-  FORTUNE_SIGN = 'FORTUNE_SIGN', // 上上签
-  TEAR_CARD = 'TEAR_CARD',   // 撕撕乐
-  TOY = 'TOY',               // 玩具
-  STAMP = 'STAMP',           // 邮票
-  LUCKY_CAT = 'LUCKY_CAT'    // 招财猫
-}
-
-// 品类中文映射
-export const GoodsCategoryLabels: Record<GoodsCategory, string> = {
-  [GoodsCategory.CARD]: '卡牌',
-  [GoodsCategory.CARD_BRICK]: '卡砖',
-  [GoodsCategory.GIFT]: '礼物',
-  [GoodsCategory.COLOR_PAPER]: '色纸',
-  [GoodsCategory.FORTUNE_SIGN]: '上上签',
-  [GoodsCategory.TEAR_CARD]: '撕撕乐',
-  [GoodsCategory.TOY]: '玩具',
-  [GoodsCategory.STAMP]: '邮票',
-  [GoodsCategory.LUCKY_CAT]: '招财猫'
+  CARD = 'CARD',
+  CARD_BRICK = 'CARD_BRICK',
+  GIFT = 'GIFT',
+  COLOR_PAPER = 'COLOR_PAPER',
+  FORTUNE_SIGN = 'FORTUNE_SIGN',
+  TEAR_CARD = 'TEAR_CARD',
+  TOY = 'TOY',
+  STAMP = 'STAMP',
+  LUCKY_CAT = 'LUCKY_CAT'
 }
 
 export enum GoodsUnit {
@@ -46,7 +34,7 @@ export enum GoodsUnit {
 export interface CreateGoodsRequest {
   code?: string
   name: string
-  category?: GoodsCategory
+  categoryId?: number
   manufacturer: string
   retailPrice: number
   packPerBox: number
@@ -62,7 +50,7 @@ export interface CreateGoodsRequest {
 export interface UpdateGoodsRequest {
   code?: string
   name?: string
-  category?: GoodsCategory
+  categoryId?: number
   alias?: string
   manufacturer?: string
   retailPrice?: number
@@ -82,14 +70,15 @@ export interface GoodsQueryParams {
   search?: string
   isActive?: boolean
   manufacturer?: string
-  category?: GoodsCategory
+  categoryId?: number
 }
 
 export interface GoodsResponse {
   id: string
   code: string
   name: string
-  category: GoodsCategory
+  categoryId: number | null
+  categoryName?: string | null
   manufacturer: string
   retailPrice: number
   packPerBox: number

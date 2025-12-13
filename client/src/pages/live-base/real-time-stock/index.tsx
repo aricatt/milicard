@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 import {
   Space,
   Tag,
@@ -309,7 +309,7 @@ const RealTimeStockPage: React.FC = () => {
         }}
         columns={columns}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
         }}

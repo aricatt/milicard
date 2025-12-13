@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
@@ -419,7 +419,7 @@ const PointsPage: React.FC = () => {
         request={fetchPoints}
         columns={columns}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
         }}
       />

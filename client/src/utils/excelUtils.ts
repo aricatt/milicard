@@ -4,7 +4,6 @@
  */
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { message } from 'antd';
 
 /**
  * 导出数据到Excel
@@ -52,16 +51,10 @@ export const exportToExcel = (
     const fullFileName = `${fileName}_${timestamp}.xlsx`;
     saveAs(new Blob([wbout], { type: 'application/octet-stream' }), fullFileName);
 
-    if (data && data.length > 0) {
-      message.success(`成功导出 ${data.length} 条数据`);
-    } else {
-      message.success('已导出空表模板');
-    }
-    return true;
+    return { success: true, count: data?.length || 0 };
   } catch (error) {
     console.error('导出失败:', error);
-    message.error('导出失败，请重试');
-    return false;
+    return { success: false, error: '导出失败，请重试' };
   }
 };
 
@@ -131,12 +124,10 @@ export const downloadTemplate = (
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     saveAs(new Blob([wbout], { type: 'application/octet-stream' }), `${fileName}.xlsx`);
 
-    message.success('模板下载成功');
-    return true;
+    return { success: true };
   } catch (error) {
     console.error('模板下载失败:', error);
-    message.error('模板下载失败');
-    return false;
+    return { success: false, error: '模板下载失败' };
   }
 };
 

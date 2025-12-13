@@ -167,12 +167,31 @@ model Customer {
   @@map("customers")
 }
 
+// 商品品类表
+model Category {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique // 品类编码，如 CARD, TOY
+  name        String   // 品类名称，如 卡牌, 玩具
+  description String?  // 品类描述
+  sortOrder   Int      @default(0) @map("sort_order") // 排序
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  goods       Goods[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("categories")
+}
+
 model Goods {
   id                 String              @id @default(uuid())
   code               String              @unique
   name               String
   description        String?
-  category           GoodsCategory       @default(CARD)
+  categoryId         Int?                @map("category_id")
+  category           Category?           @relation(fields: [categoryId], references: [id])
   boxQuantity        Int                 @default(1) @map("box_quantity")
   packPerBox         Int                 @map("pack_per_box")
   piecePerPack       Int                 @map("piece_per_pack")
@@ -203,6 +222,7 @@ model Goods {
   @@index([code])
   @@index([name])
   @@index([isActive])
+  @@index([categoryId])
   @@map("goods")
 }
 
@@ -1095,15 +1115,3 @@ enum PaymentStatus {
   PAID
 }
 
-/// 商品品类
-enum GoodsCategory {
-  CARD          // 卡牌
-  CARD_BRICK    // 卡砖
-  GIFT          // 礼物
-  COLOR_PAPER   // 色纸
-  FORTUNE_SIGN  // 上上签
-  TEAR_CARD     // 撕撕乐
-  TOY           // 玩具
-  STAMP         // 邮票
-  LUCKY_CAT     // 招财猫
-}

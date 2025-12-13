@@ -12,6 +12,7 @@ export default {
   'menu.base.overview': 'Base Overview',
   // Global Info
   'menu.global-info': 'Global Info',
+  'menu.global-info.categories': 'Product Categories',
   'menu.global-info.all-products': 'All Products',
   // 直播基地
   'menu.live-base': 'Live Base',
@@ -50,9 +51,7 @@ export default {
   'menu.offline-region.point-info.points': 'Point Management',
   'menu.offline-region.point-info.point-orders': 'Point Orders',
   'menu.offline-region.point-info.location-profit': 'Location Profit',
-  // Global Info
-  'menu.global-info': 'Global Info',
-  'menu.global-info.all-products': 'All Products',
+  // Global Info (duplicate removed, see line 14-16)
   // 系统管理
   'menu.system': 'System Management',
   'menu.system.users': 'User Management',

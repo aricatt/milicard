@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   Table, 
   Card, 
@@ -95,7 +95,7 @@ const SalesManagement: React.FC = () => {
   const [dateRange, setDateRange] = useState<[any, any] | null>(null);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 10,
     total: 0,
   });
 

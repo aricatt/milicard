@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
 import {
@@ -716,7 +716,7 @@ const AnchorProfitPage: React.FC = () => {
           },
         }}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
         }}

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { 
   Space, 
   Tag, 
@@ -21,7 +21,13 @@ import {
   EditOutlined,
   DeleteOutlined,
   InfoCircleOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
+import { useGlobalProductExcel } from './useGlobalProductExcel';
+import ImportModal from '@/components/ImportModal';
+import type { FieldDescription } from '@/components/ImportModal';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
@@ -126,6 +132,31 @@ const GlobalProductManagement: React.FC = () => {
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
+  // 使用导入导出 hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useGlobalProductExcel({
+    onImportSuccess: () => actionRef.current?.reload(),
+  });
+
+  // 导入字段说明
+  const importFields: FieldDescription[] = [
+    { field: '商品编码', required: false, description: '可选，留空则系统自动生成', example: 'GOODS-ABC123' },
+    { field: '品类编码', required: true, description: '必须是系统中已存在的品类编码', example: 'CARD' },
+    { field: '品类名称', required: false, description: '如果品类编码为空，则使用品类名称匹配', example: '卡牌' },
+    { field: '商品名称', required: true, description: '商品的完整名称', example: '航海王和之国篇' },
+    { field: '厂家名称', required: true, description: '生产厂家名称', example: '琦趣创想' },
+    { field: '多少盒1箱', required: true, description: '每箱包含的盒数', example: '36' },
+    { field: '多少包1盒', required: true, description: '每盒包含的包数', example: '10' },
+    { field: '描述', required: false, description: '商品描述信息', example: '' },
+  ];
 
   /**
    * 获取全局商品数据
@@ -601,13 +632,34 @@ const GlobalProductManagement: React.FC = () => {
         
         scroll={{ x: 1200 }}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
           pageSizeOptions: ['10', '20', '30', '50', '100'],
         }}
         
         toolBarRender={() => [
+          <Button
+            key="template"
+            icon={<FileExcelOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            下载模板
+          </Button>,
+          <Button
+            key="import"
+            icon={<UploadOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<DownloadOutlined />}
+            onClick={handleExport}
+          >
+            导出
+          </Button>,
           <Button
             key="create"
             type="primary"
@@ -688,6 +740,19 @@ const GlobalProductManagement: React.FC = () => {
           {renderFormFields(true)}
         </Form>
       </Modal>
+
+      {/* 导入模态框 */}
+      <ImportModal
+        title="导入全局商品"
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        loading={importLoading}
+        progress={importProgress}
+        onImport={handleImport}
+        onDownloadTemplate={handleDownloadTemplate}
+        fields={importFields}
+        width={700}
+      />
     </PageContainer>
   );
 };

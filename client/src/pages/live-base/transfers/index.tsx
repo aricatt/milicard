@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { 
   Button, 
   Space, 
@@ -285,7 +285,7 @@ const TransferManagement: React.FC = () => {
         }}
         rowKey="id"
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
         }}

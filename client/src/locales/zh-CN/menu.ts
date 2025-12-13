@@ -12,6 +12,7 @@ export default {
   'menu.base.overview': '基地概览',
   // 全局信息
   'menu.global-info': '全局信息',
+  'menu.global-info.categories': '商品品类',
   'menu.global-info.all-products': '所有商品',
   'menu.live-base': '直播基地',
   'menu.live-base.overview': '基地概览',
@@ -49,9 +50,7 @@ export default {
   'menu.offline-region.point-info.points': '点位管理',
   'menu.offline-region.point-info.point-orders': '点位订单',
   'menu.offline-region.point-info.location-profit': '点位利润',
-  // 全局信息
-  'menu.global-info': '全局信息',
-  'menu.global-info.all-products': '所有商品',
+  // 全局信息 (duplicate removed)
   // 系统管理
   'menu.system': '系统管理',
   'menu.system.users': '用户管理',

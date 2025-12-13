@@ -63,7 +63,15 @@ export default [
     routes: [
       {
         path: '/global-info',
-        redirect: '/global-info/all-products',
+        redirect: '/global-info/categories',
+      },
+      // 商品品类
+      {
+        name: 'categories',
+        icon: 'appstore',
+        path: '/global-info/categories',
+        component: './global-info/categories',
+        access: 'canAccessProducts',
       },
       // 所有商品（全局商品管理）
       {

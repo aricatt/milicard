@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import {
   Space,
   Tag,
@@ -645,7 +645,7 @@ const StockOutPage: React.FC = () => {
         }}
         scroll={{ x: 1600 }}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
           pageSizeOptions: ['10', '20', '30', '50', '100'],

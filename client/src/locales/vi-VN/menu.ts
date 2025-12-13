@@ -49,6 +49,7 @@ export default {
   'menu.offline-region.point-info.location-profit': 'Lợi nhuận điểm',
   // 全局信息
   'menu.global-info': 'Thông tin toàn cầu',
+  'menu.global-info.categories': 'Danh mục sản phẩm',
   'menu.global-info.all-products': 'Tất cả sản phẩm',
   // 系统管理
   'menu.system': 'Quản lý hệ thống',

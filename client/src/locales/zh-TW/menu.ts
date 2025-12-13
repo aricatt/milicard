@@ -49,6 +49,7 @@ export default {
   'menu.offline-region.point-info.location-profit': '點位利潤',
   // 全局信息
   'menu.global-info': '全局信息',
+  'menu.global-info.categories': '商品品類',
   'menu.global-info.all-products': '所有商品',
   // 系統管理
   'menu.system': '系統管理',

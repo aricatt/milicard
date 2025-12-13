@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { 
   Card, 
   Space, 
@@ -563,7 +563,7 @@ const PersonnelManagement: React.FC = () => {
         // 表格配置
         scroll={{ x: 1400 }}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
           pageSizeOptions: ['10', '20', '30', '50', '100'],

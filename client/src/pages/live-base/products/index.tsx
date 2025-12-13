@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 import { 
   Space, 
   Tag, 
@@ -32,6 +32,7 @@ import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
+import type { FieldDescription } from '@/components/ImportModal';
 import GoodsNameText from '@/components/GoodsNameText';
 
 const { TextArea } = Input;
@@ -156,6 +157,15 @@ const ProductSettingsPage: React.FC = () => {
     baseName: currentBase?.name || '',
     onImportSuccess: () => actionRef.current?.reload(),
   });
+
+  // 导入字段说明
+  const importFields: FieldDescription[] = [
+    { field: '商品编号', required: true, description: '必须是全局商品库中已存在的商品编号', example: 'GOODS-ABC123' },
+    { field: '商品名称', required: false, description: '如果商品编号为空，则使用商品名称匹配', example: '航海王和之国篇' },
+    { field: '商品别名', required: false, description: '本基地使用的商品别名', example: '航海王' },
+    { field: '零售价(一箱)', required: true, description: '本基地的零售价格（单位：分）', example: '22356' },
+    { field: '采购价(一箱)', required: false, description: '本基地的采购价格（单位：分）', example: '18000' },
+  ];
 
   /**
    * 获取全局商品列表（用于添加时选择）
@@ -606,7 +616,7 @@ const ProductSettingsPage: React.FC = () => {
         
         scroll={{ x: 1400 }}
         pagination={{
-          defaultPageSize: 20,
+          defaultPageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
           pageSizeOptions: ['10', '20', '30', '50', '100'],
@@ -940,6 +950,9 @@ const ProductSettingsPage: React.FC = () => {
         loading={importLoading}
         progress={importProgress}
         title={intl.formatMessage({ id: 'products.import.title' })}
+        fields={importFields}
+        onDownloadTemplate={handleDownloadTemplate}
+        width={700}
       />
     </PageContainer>
   );
