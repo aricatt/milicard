@@ -1165,6 +1165,13 @@ export default {
   'categories.message.operationFailed': 'Operation failed',
   'categories.message.deleteFailed': 'Failed to delete',
 
+  // Category Import
+  'categories.import.title': 'Import Categories',
+  'categories.import.codeDesc': 'Unique category code, only uppercase letters and underscores allowed',
+  'categories.import.nameDesc': 'Category display name',
+  'categories.import.descriptionDesc': 'Category description (optional)',
+  'categories.import.sortOrderDesc': 'Sort order, smaller number comes first (optional, default 0)',
+
   // ==================== Product Settings (Base Level) ====================
   'productSettings.title': 'Product Settings',
   'productSettings.add': 'Add Product',
@@ -1188,12 +1195,10 @@ export default {
   'productSettings.message.deleteFailed': 'Failed to remove',
 
   // ==================== Common Table ====================
-  'table.column.action': 'Action',
   'table.pagination.totalItems': 'Total {total} items',
 
   // ==================== Common Buttons ====================
   'button.select': 'Select',
-  'button.reset': 'Reset',
 
   // ==================== Products Common ====================
   'products.uncategorized': 'Uncategorized',

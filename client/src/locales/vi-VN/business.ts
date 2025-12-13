@@ -1165,6 +1165,13 @@ export default {
   'categories.message.operationFailed': 'Thao tác thất bại',
   'categories.message.deleteFailed': 'Xóa thất bại',
 
+  // Nhập danh mục
+  'categories.import.title': 'Nhập danh mục sản phẩm',
+  'categories.import.codeDesc': 'Mã danh mục duy nhất, chỉ cho phép chữ in hoa và dấu gạch dưới',
+  'categories.import.nameDesc': 'Tên hiển thị của danh mục',
+  'categories.import.descriptionDesc': 'Mô tả danh mục (không bắt buộc)',
+  'categories.import.sortOrderDesc': 'Thứ tự sắp xếp, số nhỏ hơn đứng trước (không bắt buộc, mặc định 0)',
+
   // ==================== Cài đặt sản phẩm (cấp cơ sở) ====================
   'productSettings.title': 'Cài đặt sản phẩm',
   'productSettings.add': 'Thêm sản phẩm',

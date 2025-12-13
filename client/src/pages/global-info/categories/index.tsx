@@ -15,7 +15,12 @@ import {
   PlusOutlined, 
   EditOutlined,
   DeleteOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
+import { useCategoryExcel } from './useCategoryExcel';
+import ImportModal from '@/components/ImportModal';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
@@ -41,6 +46,27 @@ const CategoriesPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 导入导出功能
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useCategoryExcel({
+    onImportSuccess: () => actionRef.current?.reload(),
+  });
+
+  // 导入字段说明
+  const importFields = [
+    { field: intl.formatMessage({ id: 'categories.form.code' }), description: intl.formatMessage({ id: 'categories.import.codeDesc' }), required: true },
+    { field: intl.formatMessage({ id: 'categories.form.name' }), description: intl.formatMessage({ id: 'categories.import.nameDesc' }), required: true },
+    { field: intl.formatMessage({ id: 'categories.form.description' }), description: intl.formatMessage({ id: 'categories.import.descriptionDesc' }), required: false },
+    { field: intl.formatMessage({ id: 'categories.form.sortOrder' }), description: intl.formatMessage({ id: 'categories.import.sortOrderDesc' }), required: false },
+  ];
 
   const fetchCategories = async (params: any) => {
     try {
@@ -231,6 +257,27 @@ const CategoriesPage: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button
+            key="template"
+            icon={<FileExcelOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
+          </Button>,
+          <Button
+            key="import"
+            icon={<UploadOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            {intl.formatMessage({ id: 'button.import' })}
+          </Button>,
+          <Button
+            key="export"
+            icon={<DownloadOutlined />}
+            onClick={handleExport}
+          >
+            {intl.formatMessage({ id: 'button.export' })}
+          </Button>,
+          <Button
             key="add"
             type="primary"
             icon={<PlusOutlined />}
@@ -302,6 +349,17 @@ const CategoriesPage: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 导入弹窗 */}
+      <ImportModal
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        loading={importLoading}
+        progress={importProgress}
+        title={intl.formatMessage({ id: 'categories.import.title' })}
+        fields={importFields}
+      />
     </PageContainer>
   );
 };

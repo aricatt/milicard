@@ -1165,6 +1165,13 @@ export default {
   'categories.message.operationFailed': 'ดำเนินการไม่สำเร็จ',
   'categories.message.deleteFailed': 'ลบไม่สำเร็จ',
 
+  // นำเข้าหมวดหมู่
+  'categories.import.title': 'นำเข้าหมวดหมู่สินค้า',
+  'categories.import.codeDesc': 'รหัสหมวดหมู่ที่ไม่ซ้ำกัน ใช้ตัวอักษรพิมพ์ใหญ่และขีดล่างเท่านั้น',
+  'categories.import.nameDesc': 'ชื่อที่แสดงของหมวดหมู่',
+  'categories.import.descriptionDesc': 'คำอธิบายหมวดหมู่ (ไม่บังคับ)',
+  'categories.import.sortOrderDesc': 'ลำดับการเรียง ตัวเลขน้อยมาก่อน (ไม่บังคับ ค่าเริ่มต้น 0)',
+
   // ==================== การตั้งค่าสินค้า (ระดับฐาน) ====================
   'productSettings.title': 'การตั้งค่าสินค้า',
   'productSettings.add': 'เพิ่มสินค้า',

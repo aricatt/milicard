@@ -1165,6 +1165,13 @@ export default {
   'categories.message.operationFailed': '操作失败',
   'categories.message.deleteFailed': '删除失败',
 
+  // 品类导入
+  'categories.import.title': '导入商品品类',
+  'categories.import.codeDesc': '品类唯一编码，只能包含大写字母和下划线',
+  'categories.import.nameDesc': '品类显示名称',
+  'categories.import.descriptionDesc': '品类描述信息（选填）',
+  'categories.import.sortOrderDesc': '排序序号，数字越小越靠前（选填，默认0）',
+
   // ==================== 商品设置（基地级） ====================
   'productSettings.title': '商品设置',
   'productSettings.add': '添加商品',
