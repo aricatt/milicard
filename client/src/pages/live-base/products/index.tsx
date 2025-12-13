@@ -633,7 +633,6 @@ const ProductSettingsPage: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => {
               setSelectedGlobalProduct(null);
-              createForm.resetFields();
               setCreateModalVisible(true);
             }}
           >
@@ -674,8 +673,12 @@ const ProductSettingsPage: React.FC = () => {
         onOk={() => createForm.submit()}
         onCancel={() => {
           setCreateModalVisible(false);
-          createForm.resetFields();
           setSelectedGlobalProduct(null);
+        }}
+        afterOpenChange={(open) => {
+          if (open) {
+            createForm.resetFields();
+          }
         }}
         confirmLoading={createLoading}
         width={600}
