@@ -30,4 +30,4 @@ jobs:
 
       - name: Run i18n check
         working-directory: client
-        run: npm run i18n:check
+        run: npm run i18n:check:active

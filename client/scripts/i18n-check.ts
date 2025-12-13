@@ -25,6 +25,27 @@ function listLocaleDirs(localesRoot: string): string[] {
     .map((fullPath) => path.basename(fullPath));
 }
 
+function parseLangList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function filterLangs(allLangs: string[], include: string[], exclude: string[]): string[] {
+  let langs = [...allLangs];
+  if (include.length) {
+    const includeSet = new Set(include);
+    langs = langs.filter((l) => includeSet.has(l));
+  }
+  if (exclude.length) {
+    const excludeSet = new Set(exclude);
+    langs = langs.filter((l) => !excludeSet.has(l));
+  }
+  return langs;
+}
+
 function listLocaleFiles(localeDir: string): string[] {
   return fs
     .readdirSync(localeDir)
@@ -97,7 +118,10 @@ async function main(): Promise<void> {
     throw new Error(`No locale files found in base locale directory: ${baseDir}`);
   }
 
-  const langs = listLocaleDirs(localesRoot).filter((l) => l !== baseLang).sort();
+  const allLangs = listLocaleDirs(localesRoot).filter((l) => l !== baseLang).sort();
+  const includeLangs = parseLangList(process.env.I18N_INCLUDE);
+  const excludeLangs = parseLangList(process.env.I18N_EXCLUDE);
+  const langs = filterLangs(allLangs, includeLangs, excludeLangs).sort();
 
   let hasError = false;
 
@@ -157,7 +181,9 @@ async function main(): Promise<void> {
   }
 
   // eslint-disable-next-line no-console
-  console.log(`[i18n-check] OK. Base=${baseLang}, locales checked=${langs.length}.`);
+  console.log(
+    `[i18n-check] OK. Base=${baseLang}, locales checked=${langs.length}: ${langs.join(', ')}`,
+  );
 }
 
 main().catch((err) => {

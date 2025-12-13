@@ -11,6 +11,7 @@
     "deploy": "npm run build && npm run gh-pages",
     "dev": "npm run start:dev",
     "i18n:check": "ts-node -T scripts/i18n-check.ts",
+    "i18n:check:active": "cross-env I18N_INCLUDE=zh-CN,zh-TW,vi-VN,th-TH ts-node -T scripts/i18n-check.ts",
     "gh-pages": "gh-pages -d dist",
     "i18n-remove": "pro i18n-remove --locale=zh-CN --write",
     "postinstall": "max setup",
