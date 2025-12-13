@@ -36,7 +36,7 @@ interface Category {
 const CategoriesPage: React.FC = () => {
   const intl = useIntl();
   const { message } = App.useApp();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -59,7 +59,7 @@ const CategoriesPage: React.FC = () => {
         total: response.pagination?.total || 0,
       };
     } catch (error) {
-      message.error('获取品类列表失败');
+      message.error(intl.formatMessage({ id: 'categories.message.fetchFailed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -74,13 +74,13 @@ const CategoriesPage: React.FC = () => {
           method: 'PUT',
           data: values,
         });
-        message.success('品类更新成功');
+        message.success(intl.formatMessage({ id: 'categories.message.updateSuccess' }));
       } else {
         await request('/api/v1/categories', {
           method: 'POST',
           data: values,
         });
-        message.success('品类创建成功');
+        message.success(intl.formatMessage({ id: 'categories.message.createSuccess' }));
       }
 
       setModalVisible(false);
@@ -88,7 +88,7 @@ const CategoriesPage: React.FC = () => {
       setEditingCategory(null);
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.response?.data?.error || '操作失败');
+      message.error(error?.response?.data?.error || intl.formatMessage({ id: 'categories.message.operationFailed' }));
     } finally {
       setLoading(false);
     }
@@ -99,10 +99,10 @@ const CategoriesPage: React.FC = () => {
       await request(`/api/v1/categories/${id}`, {
         method: 'DELETE',
       });
-      message.success('品类删除成功');
+      message.success(intl.formatMessage({ id: 'categories.message.deleteSuccess' }));
       actionRef.current?.reload();
     } catch (error: any) {
-      message.error(error?.response?.data?.error || '删除失败');
+      message.error(error?.response?.data?.error || intl.formatMessage({ id: 'categories.message.deleteFailed' }));
     }
   };
 
@@ -127,54 +127,54 @@ const CategoriesPage: React.FC = () => {
 
   const columns: ProColumns<Category>[] = [
     {
-      title: '品类编码',
+      title: intl.formatMessage({ id: 'categories.column.code' }),
       dataIndex: 'code',
       width: 120,
       copyable: true,
     },
     {
-      title: '品类名称',
+      title: intl.formatMessage({ id: 'categories.column.name' }),
       dataIndex: 'name',
       width: 120,
     },
     {
-      title: '描述',
+      title: intl.formatMessage({ id: 'categories.column.description' }),
       dataIndex: 'description',
       width: 200,
       ellipsis: true,
       search: false,
     },
     {
-      title: '排序',
+      title: intl.formatMessage({ id: 'categories.column.sortOrder' }),
       dataIndex: 'sortOrder',
       width: 80,
       search: false,
       sorter: true,
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'categories.column.status' }),
       dataIndex: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Default' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Default' },
       },
       render: (_, record) => (
         <Tag color={record.isActive ? 'green' : 'default'}>
-          {record.isActive ? '启用' : '禁用'}
+          {record.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
         </Tag>
       ),
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'categories.column.createdAt' }),
       dataIndex: 'createdAt',
       valueType: 'dateTime',
       width: 160,
       search: false,
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       valueType: 'option',
       width: 120,
       fixed: 'right',
@@ -186,14 +186,14 @@ const CategoriesPage: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => openEditModal(record)}
           >
-            编辑
+            {intl.formatMessage({ id: 'button.edit' })}
           </Button>
           <Popconfirm
-            title="确定删除该品类吗？"
-            description="删除后无法恢复，且该品类下不能有商品"
+            title={intl.formatMessage({ id: 'categories.deleteConfirm' })}
+            description={intl.formatMessage({ id: 'categories.deleteDescription' })}
             onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
+            okText={intl.formatMessage({ id: 'button.confirm' })}
+            cancelText={intl.formatMessage({ id: 'button.cancel' })}
           >
             <Button
               type="link"
@@ -201,7 +201,7 @@ const CategoriesPage: React.FC = () => {
               danger
               icon={<DeleteOutlined />}
             >
-              删除
+              {intl.formatMessage({ id: 'button.delete' })}
             </Button>
           </Popconfirm>
         </Space>
@@ -212,8 +212,8 @@ const CategoriesPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: intl.formatMessage({ id: 'menu.global-info.categories', defaultMessage: '商品品类' }),
-        subTitle: '管理商品品类信息',
+        title: intl.formatMessage({ id: 'categories.title' }),
+        subTitle: intl.formatMessage({ id: 'categories.subTitle' }),
       }}
     >
       <ProTable<Category>
@@ -236,13 +236,13 @@ const CategoriesPage: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={openAddModal}
           >
-            新增品类
+            {intl.formatMessage({ id: 'categories.add' })}
           </Button>,
         ]}
       />
 
       <Modal
-        title={editingCategory ? '编辑品类' : '新增品类'}
+        title={editingCategory ? intl.formatMessage({ id: 'categories.edit' }) : intl.formatMessage({ id: 'categories.add' })}
         open={modalVisible}
         onOk={handleSubmit}
         onCancel={() => {
@@ -251,7 +251,7 @@ const CategoriesPage: React.FC = () => {
           setEditingCategory(null);
         }}
         confirmLoading={loading}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}
@@ -260,45 +260,45 @@ const CategoriesPage: React.FC = () => {
         >
           <Form.Item
             name="code"
-            label="品类编码"
+            label={intl.formatMessage({ id: 'categories.form.code' })}
             rules={[
-              { required: true, message: '请输入品类编码' },
-              { pattern: /^[A-Z_]+$/, message: '编码只能包含大写字母和下划线' },
+              { required: true, message: intl.formatMessage({ id: 'categories.form.codeRequired' }) },
+              { pattern: /^[A-Z_]+$/, message: intl.formatMessage({ id: 'categories.form.codePattern' }) },
             ]}
-            tooltip="编码用于系统内部标识，如 CARD, TOY"
+            tooltip={intl.formatMessage({ id: 'categories.form.codeTooltip' })}
           >
             <Input 
-              placeholder="请输入品类编码，如 CARD" 
+              placeholder={intl.formatMessage({ id: 'categories.form.codePlaceholder' })} 
               disabled={!!editingCategory}
               style={{ textTransform: 'uppercase' }}
             />
           </Form.Item>
           <Form.Item
             name="name"
-            label="品类名称"
-            rules={[{ required: true, message: '请输入品类名称' }]}
+            label={intl.formatMessage({ id: 'categories.form.name' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'categories.form.nameRequired' }) }]}
           >
-            <Input placeholder="请输入品类名称，如 卡牌" />
+            <Input placeholder={intl.formatMessage({ id: 'categories.form.namePlaceholder' })} />
           </Form.Item>
           <Form.Item
             name="description"
-            label="描述"
+            label={intl.formatMessage({ id: 'categories.form.description' })}
           >
-            <TextArea rows={3} placeholder="请输入品类描述（可选）" />
+            <TextArea rows={3} placeholder={intl.formatMessage({ id: 'categories.form.descriptionPlaceholder' })} />
           </Form.Item>
           <Form.Item
             name="sortOrder"
-            label="排序"
-            tooltip="数字越小排序越靠前"
+            label={intl.formatMessage({ id: 'categories.form.sortOrder' })}
+            tooltip={intl.formatMessage({ id: 'categories.form.sortOrderTooltip' })}
           >
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
             name="isActive"
-            label="状态"
+            label={intl.formatMessage({ id: 'categories.form.status' })}
             valuePropName="checked"
           >
-            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+            <Switch checkedChildren={intl.formatMessage({ id: 'status.enabled' })} unCheckedChildren={intl.formatMessage({ id: 'status.disabled' })} />
           </Form.Item>
         </Form>
       </Modal>
