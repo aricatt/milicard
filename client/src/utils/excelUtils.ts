@@ -94,12 +94,14 @@ export const readExcelFile = (file: File): Promise<any[]> => {
  * @param columns 列配置
  * @param sheetName 工作表名称
  * @param fileName 文件名
+ * @param instructions 可选的导入说明数组，会添加到单独的"说明"工作表
  */
 export const downloadTemplate = (
   templateData: any[],
   columns: Array<{ header: string; key: string; width?: number }>,
   sheetName: string,
-  fileName: string
+  fileName: string,
+  instructions?: string[]
 ) => {
   try {
     // 转换模板数据
@@ -120,6 +122,14 @@ export const downloadTemplate = (
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+    // 如果有导入说明，添加到单独的工作表
+    if (instructions && instructions.length > 0) {
+      const instructionData = instructions.map((text) => [text]);
+      const instructionWs = XLSX.utils.aoa_to_sheet(instructionData);
+      instructionWs['!cols'] = [{ wch: 80 }];
+      XLSX.utils.book_append_sheet(wb, instructionWs, '导入说明');
+    }
 
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     saveAs(new Blob([wbout], { type: 'application/octet-stream' }), `${fileName}.xlsx`);

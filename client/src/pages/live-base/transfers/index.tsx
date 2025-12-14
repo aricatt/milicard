@@ -535,7 +535,8 @@ const TransferManagement: React.FC = () => {
         width={700}
         fields={[
           { field: '调货日期', required: true, description: '调货日期，格式YYYY-MM-DD', example: '2025-11-24' },
-          { field: '商品', required: true, description: '需与系统中商品名称完全匹配', example: '商品名称示例' },
+          { field: '品类', required: true, description: '商品品类，与商品名称组合匹配商品', example: '卡牌' },
+          { field: '商品', required: true, description: '与品类组合匹配，需在全局商品库中存在', example: '商品名称示例' },
           { field: '调出直播间', required: true, description: '需与系统中直播间名称匹配', example: 'Live Room 1' },
           { field: '调出主播', required: true, description: '需与系统中主播姓名匹配', example: 'Lin' },
           { field: '调入直播间', required: true, description: '需与系统中直播间名称匹配', example: 'Live Room 2' },

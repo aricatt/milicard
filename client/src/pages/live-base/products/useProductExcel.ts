@@ -7,7 +7,9 @@
  * 2. 基地级设置（GoodsLocalSetting）：价格、别名等 - 在本页管理
  * 
  * 本页导入功能：
- * - 根据商品编码匹配已有的全局商品
+ * - 商品匹配规则（按优先级）：
+ *   1. 如果提供了商品编号，优先按编号精确匹配
+ *   2. 如果没有编号或编号匹配失败，按「品类 + 商品名称」组合匹配
  * - 只更新/创建基地级设置（价格、别名）
  * - 如果全局商品不存在，提示用户先在"所有商品"页添加
  */
@@ -51,8 +53,8 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
   // Excel列配置（导出用，包含所有字段）
   const exportColumns = [
     { header: '商品编号', key: 'code', width: 20 },
-    { header: '商品名称', key: 'name', width: 35 },
     { header: '品类', key: 'categoryName', width: 12 },
+    { header: '商品名称', key: 'name', width: 35 },
     { header: '厂家名称', key: 'manufacturer', width: 15 },
     { header: '商品别名', key: 'alias', width: 25 },
     { header: '零售价(一箱)', key: 'retailPrice', width: 14 },
@@ -66,6 +68,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
   // 导入模板列配置（只包含导入需要的字段）
   const importColumns = [
     { header: '商品编号', key: 'code', width: 20 },
+    { header: '品类', key: 'categoryName', width: 12 },
     { header: '商品名称', key: 'name', width: 35 },
     { header: '商品别名', key: 'alias', width: 25 },
     { header: '零售价(一箱)', key: 'retailPrice', width: 14 },
@@ -137,9 +140,15 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
         params: { page: 1, pageSize: 10000 },
       });
 
-      const globalGoods = globalGoodsResult.success && globalGoodsResult.data ? globalGoodsResult.data : [];
-      const globalGoodsCodeMap = new Map(globalGoods.map((g: any) => [g.code, g]));
-      const globalGoodsNameMap = new Map(globalGoods.map((g: any) => [g.name, g]));
+      const globalGoods: any[] = globalGoodsResult.success && globalGoodsResult.data ? globalGoodsResult.data : [];
+      // 按编号索引
+      const globalGoodsCodeMap = new Map<string, any>(globalGoods.map((g) => [g.code, g]));
+      // 按「品类+名称」组合索引
+      const globalGoodsCategoryNameMap = new Map<string, any>(globalGoods.map((g) => {
+        const categoryName = g.categoryName || g.category?.name || '';
+        const key = `${categoryName}|${g.name}`;
+        return [key, g];
+      }));
 
       // 获取当前基地已有的商品
       const existingGoodsResult = await request(`/api/v1/bases/${baseId}/goods`, {
@@ -155,16 +164,21 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       jsonData.forEach((row: any, index: number) => {
         const code = String(row['商品编号'] || '').trim();
+        const categoryName = String(row['品类'] || '').trim();
         const name = String(row['商品名称'] || '').trim();
         
-        // 优先按编号匹配，其次按名称匹配
+        // 匹配规则：
+        // 1. 如果有商品编号，优先按编号精确匹配
+        // 2. 如果没有编号或编号匹配失败，按「品类 + 商品名称」组合匹配
         let globalProduct = code ? globalGoodsCodeMap.get(code) : null;
-        if (!globalProduct && name) {
-          globalProduct = globalGoodsNameMap.get(name);
+        if (!globalProduct && categoryName && name) {
+          const categoryNameKey = `${categoryName}|${name}`;
+          globalProduct = globalGoodsCategoryNameMap.get(categoryNameKey);
         }
 
         if (!globalProduct) {
-          missingGoods.push(`第${index + 2}行：${code || name || '(空)'}`);
+          const identifier = code || (categoryName && name ? `[${categoryName}]${name}` : name || '(空)');
+          missingGoods.push(`第${index + 2}行：${identifier}`);
         } else {
           importData.push({
             globalGoodsId: globalProduct.id,
@@ -299,13 +313,15 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
     const templateData = [
       {
         code: 'GOODS-ABC123',
+        categoryName: '卡牌',
         name: '琦趣创想航海王 和之国篇',
         alias: '航海王和之国',
         retailPrice: 22356,
         purchasePrice: 18000,
       },
       {
-        code: 'GOODS-DEF456',
+        code: '',
+        categoryName: '礼物',
         name: '名侦探柯南挂件-星绽版-第1弹',
         alias: '',
         retailPrice: 19440,
@@ -313,11 +329,23 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       },
     ];
 
+    // 添加导入说明
+    const instructions = [
+      '【导入说明】',
+      '1. 商品匹配规则（按优先级）：',
+      '   - 如果填写了「商品编号」，优先按编号精确匹配全局商品',
+      '   - 如果没有编号或编号匹配失败，按「品类 + 商品名称」组合匹配',
+      '2. 必填字段：「品类」和「商品名称」至少需要填写（除非有商品编号）',
+      '3. 商品必须先在「全局信息 > 所有商品」页面添加后才能导入',
+      '4. 本导入只更新基地级设置（零售价、采购价、别名），不会修改全局商品信息',
+    ];
+
     const result = downloadTemplate(
       templateData, 
       importColumns, 
       '基地商品导入模板', 
-      `商品导入模板_${baseName}`
+      `商品导入模板_${baseName}`,
+      instructions
     );
     if (result.success) {
       message.success('模板下载成功');

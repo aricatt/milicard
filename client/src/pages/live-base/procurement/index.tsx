@@ -550,8 +550,9 @@ const ProcurementManagement: React.FC = () => {
         fields={[
           { field: '采购日期', required: true, description: '采购日期，格式YYYY-MM-DD', example: '2025-11-17' },
           { field: '采购编号', required: false, description: '留空自动生成，填写已存在编号则更新', example: '' },
-          { field: '商品名称', required: true, description: '需与系统中商品名称完全匹配', example: '名侦探柯南挂件' },
-          { field: '供应商', required: true, description: '需与系统中供应商名称完全匹配', example: '咸鱼' },
+          { field: '品类', required: true, description: '商品品类，与商品名称组合匹配商品', example: '卡牌' },
+          { field: '商品名称', required: true, description: '与品类组合匹配，需在全局商品库中存在', example: '名侦探柯南挂件' },
+          { field: '供应商', required: true, description: '供应商名称', example: '咸鱼' },
           { field: '采购箱', required: false, description: '采购箱数', example: '0' },
           { field: '采购盒', required: false, description: '采购盒数', example: '17' },
           { field: '采购包', required: false, description: '采购包数', example: '0' },

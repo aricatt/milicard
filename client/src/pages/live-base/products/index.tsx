@@ -175,8 +175,9 @@ const ProductSettingsPage: React.FC = () => {
 
   // 导入字段说明
   const importFields: FieldDescription[] = [
-    { field: '商品编号', required: true, description: '必须是全局商品库中已存在的商品编号', example: 'GOODS-ABC123' },
-    { field: '商品名称', required: false, description: '如果商品编号为空，则使用商品名称匹配', example: '航海王和之国篇' },
+    { field: '商品编号', required: false, description: '全局商品编号，优先按编号精确匹配', example: 'GOODS-ABC123' },
+    { field: '品类', required: false, description: '商品品类，与商品名称组合匹配（编号为空时使用）', example: '卡牌' },
+    { field: '商品名称', required: false, description: '商品名称，与品类组合匹配（编号为空时使用）', example: '航海王和之国篇' },
     { field: '商品别名', required: false, description: '本基地使用的商品别名', example: '航海王' },
     { field: '零售价(一箱)', required: true, description: '本基地的零售价格（单位：分）', example: '22356' },
     { field: '采购价(一箱)', required: false, description: '本基地的采购价格（单位：分）', example: '18000' },
