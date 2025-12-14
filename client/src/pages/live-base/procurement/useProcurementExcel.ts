@@ -25,6 +25,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
     { header: '采购日期', key: 'purchaseDate', width: 12 },
     { header: '采购编号', key: 'orderNo', width: 20 },
     { header: '采购名称', key: 'purchaseName', width: 35 },
+    { header: '品类', key: 'categoryName', width: 10 },
     { header: '商品名称', key: 'goodsName', width: 35 },
     { header: '零售价', key: 'retailPrice', width: 12 },
     { header: '折扣%', key: 'discount', width: 10 },
@@ -93,6 +94,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
           purchaseDate: item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN') : '',
           orderNo: item.orderNo,
           purchaseName: `${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN').replace(/\//g, '-') : ''}${item.goodsName || ''}`,
+          categoryName: item.categoryName || '',
           goodsName: item.goodsName || '',
           retailPrice,
           discount: (Math.floor(discount * 100) / 100).toFixed(2),
@@ -168,11 +170,12 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       };
 
       // 转换数据格式 - 只导入必要字段，跳过动态计算字段
-      // 需要导入：采购日期、采购编号、商品名称、供应商、采购箱/盒/包、拿货单价箱、实付金额
+      // 需要导入：采购日期、采购编号、品类、商品名称、供应商、采购箱/盒/包、拿货单价箱、实付金额
       // 跳过：ID、采购名称、零售价、折扣、到货数量、相差数量、拿货单价盒/包、应付金额、应付总金额、未支付金额、创建时间
       const importData = jsonData.map((row: any) => ({
         orderNo: String(row['采购编号'] || '').trim(),  // 用于判断更新还是新增
         purchaseDate: excelDateToString(row['采购日期']),
+        categoryName: String(row['品类'] || '').trim(),
         goodsName: String(row['商品名称'] || '').trim(),
         supplierName: String(row['供应商'] || '').trim(),
         purchaseBoxQty: parseInt(row['采购箱'] || '0') || 0,
@@ -186,6 +189,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       const errors = validateImportData(importData, [
         { field: 'purchaseDate', required: true, message: '采购日期不能为空' },
         { field: 'supplierName', required: true, message: '供应商不能为空' },
+        { field: 'categoryName', required: true, message: '品类不能为空' },
         { field: 'goodsName', required: true, message: '商品名称不能为空' },
         { field: 'unitPriceBox', required: true, type: 'number', min: 0, message: '拿货单价箱必须大于等于0' },
       ]);
@@ -221,7 +225,8 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
             actualAmount: item.actualAmount,
             items: [
               {
-                goodsName: item.goodsName,  // 通过商品名称关联
+                categoryName: item.categoryName,  // 品类名称
+                goodsName: item.goodsName,  // 通过品类+商品名称关联
                 boxQuantity: item.purchaseBoxQty,
                 packQuantity: item.purchasePackQty,
                 pieceQuantity: item.purchasePieceQty,
@@ -303,6 +308,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
   const importTemplateColumns = [
     { header: '采购日期', key: 'purchaseDate', width: 12 },
     { header: '采购编号', key: 'orderNo', width: 20 },
+    { header: '品类', key: 'categoryName', width: 10 },
     { header: '商品名称', key: 'goodsName', width: 35 },
     { header: '供应商', key: 'supplierName', width: 15 },
     { header: '采购箱', key: 'purchaseBoxQty', width: 10 },
@@ -318,6 +324,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       {
         purchaseDate: '2025-11-17',
         orderNo: '（留空则自动生成）',
+        categoryName: '卡牌',
         goodsName: '名侦探柯南挂件-星绽版-第1弹',
         supplierName: '咸鱼',
         purchaseBoxQty: 0,
@@ -329,6 +336,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       {
         purchaseDate: '2025-11-17',
         orderNo: '',
+        categoryName: '卡牌',
         goodsName: '卡游柯南揭秘包1元包',
         supplierName: '江西小精灵',
         purchaseBoxQty: 1,

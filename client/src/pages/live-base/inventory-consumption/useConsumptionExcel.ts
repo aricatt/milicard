@@ -12,6 +12,7 @@ interface UseConsumptionExcelProps {
 
 interface ImportRecord {
   consumptionDate: string;
+  categoryName: string;
   goodsName: string;
   locationName: string;
   handlerName: string;
@@ -85,6 +86,7 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
 
       const exportData = dataList.map((record: any) => ({
         '消耗日期': dayjs(record.consumptionDate).format('YYYY-MM-DD'),
+        '品类': record.categoryName || '',
         '商品': record.goodsName || '',
         '直播间': record.locationName || '',
         '主播': record.handlerName || '',
@@ -105,7 +107,7 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
 
       // 如果没有数据，创建只有列头的空表
       const headers = [
-        '消耗日期', '商品', '直播间', '主播', 
+        '消耗日期', '品类', '商品', '直播间', '主播', 
         '期初/箱', '期初/盒', '期初/包',
         '期末/箱', '期末/盒', '期末/包',
         '消耗/箱', '消耗/盒', '消耗/包',
@@ -138,6 +140,7 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
     const templateData = [
       {
         '消耗日期': '2025-01-01',
+        '品类': '卡牌',
         '商品': '商品名称（必须与系统中商品名称一致）',
         '直播间': '直播间名称（必须与系统中直播间名称一致）',
         '主播': '主播姓名（必须与系统中主播姓名一致）',
@@ -182,6 +185,7 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
 
       const records: ImportRecord[] = jsonData.map((row) => ({
         consumptionDate: row['消耗日期'] || row['日期'] || '',
+        categoryName: row['品类'] || '',
         goodsName: row['商品'] || row['商品名称'] || '',
         locationName: row['直播间'] || row['位置'] || '',
         handlerName: row['主播'] || row['经手人'] || '',
@@ -201,9 +205,9 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         setImportProgress(Math.round(((i + 1) / records.length) * 100));
 
         // 验证必填字段
-        if (!record.consumptionDate || !record.goodsName || !record.locationName || !record.handlerName) {
+        if (!record.consumptionDate || !record.categoryName || !record.goodsName || !record.locationName || !record.handlerName) {
           failCount++;
-          errors.push(`第${i + 2}行: 缺少必填字段（消耗日期、商品、直播间、主播）`);
+          errors.push(`第${i + 2}行: 缺少必填字段（消耗日期、品类、商品、直播间、主播）`);
           continue;
         }
 

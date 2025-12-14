@@ -124,6 +124,16 @@ const RealTimeStockPage: React.FC = () => {
       copyable: true,
     },
     {
+      title: intl.formatMessage({ id: 'realTimeStock.column.category' }),
+      dataIndex: 'categoryName',
+      width: 80,
+      search: false,
+      render: (_, record) => {
+        if (!record.categoryName) return '-';
+        return <Tag color="geekblue">{record.categoryName}</Tag>;
+      },
+    },
+    {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'goodsName',
       width: 200,
@@ -131,9 +141,6 @@ const RealTimeStockPage: React.FC = () => {
         <GoodsNameText 
           text={record.goodsName} 
           nameI18n={record.goodsNameI18n}
-          categoryCode={record.categoryCode}
-          categoryName={record.categoryName}
-          showCategory={true}
         />
       ),
     },

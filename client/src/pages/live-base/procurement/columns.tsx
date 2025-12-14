@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
 import type { IntlShape } from 'react-intl';
-import GoodsNameText, { getGoodsNameWithCategory } from '@/components/GoodsNameText';
+import GoodsNameText from '@/components/GoodsNameText';
 
 /**
  * 向下取整到2位小数
@@ -74,6 +74,17 @@ export const getColumns = (
     },
   },
   {
+    title: intl?.formatMessage({ id: 'procurement.column.category' }) || '品类',
+    dataIndex: 'categoryName',
+    key: 'categoryName',
+    width: 80,
+    hideInSearch: true,
+    render: (_, record) => {
+      if (!record.categoryName) return '-';
+      return <Tag color="blue">{record.categoryName}</Tag>;
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'procurement.column.product' }) || '商品名称',
     dataIndex: 'goodsName',
     key: 'goodsName',
@@ -83,9 +94,6 @@ export const getColumns = (
       <GoodsNameText 
         text={record.goodsName} 
         nameI18n={record.goodsNameI18n}
-        categoryCode={record.categoryCode}
-        categoryName={record.categoryName}
-        showCategory={true}
       />
     ),
   },

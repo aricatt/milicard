@@ -31,6 +31,17 @@ export const getColumns = (
     hideInSetting: true,
   },
   {
+    title: intl?.formatMessage({ id: 'transfers.column.category' }) || '品类',
+    dataIndex: 'categoryName',
+    key: 'categoryName',
+    width: 80,
+    hideInSearch: true,
+    render: (_, record) => {
+      if (!record.categoryName) return '-';
+      return <Tag color="cyan">{record.categoryName}</Tag>;
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'transfers.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
@@ -40,9 +51,6 @@ export const getColumns = (
       <GoodsNameText 
         text={record.goodsName} 
         nameI18n={record.goodsNameI18n}
-        categoryCode={record.categoryCode}
-        categoryName={record.categoryName}
-        showCategory={true}
       />
     ),
   },

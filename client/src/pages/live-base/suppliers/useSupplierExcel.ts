@@ -154,28 +154,51 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
       }
 
       // 批量导入
-      let successCount = 0;
+      let createCount = 0;  // 新建数量
+      let updateCount = 0;  // 更新数量
       let failCount = 0;
       let skipCount = 0;
       const failedItems: string[] = [];
       const skippedItems: string[] = [];
+      const updatedItems: string[] = [];
 
       for (let i = 0; i < importData.length; i++) {
         const item = importData[i];
         setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
-        // 检查是否重复（供应商名称或编号，基地内唯一）
-        if (existingNameMap.has(item.name)) {
-          skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.name}（名称已存在）`);
-          continue;
-        }
-        if (item.code && existingCodeMap.has(item.code)) {
-          skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.code}（编号已存在）`);
+        // 检查是否通过编号匹配到已存在的供应商（用于更新）
+        const existingIdByCode = item.code ? existingCodeMap.get(item.code) : undefined;
+        
+        if (existingIdByCode) {
+          // 编号已存在，执行更新操作
+          try {
+            const result = await request(`/api/v1/bases/${baseId}/suppliers/${existingIdByCode}`, {
+              method: 'PUT',
+              data: item,
+            });
+
+            if (result.success) {
+              updateCount++;
+              updatedItems.push(`第${i + 2}行：${item.code} - ${item.name}`);
+            } else {
+              failCount++;
+              failedItems.push(`第${i + 2}行：${item.name} - ${result.message || '更新失败'}`);
+            }
+          } catch (error: any) {
+            failCount++;
+            failedItems.push(`第${i + 2}行：${item.name} - ${error.message || '网络错误'}`);
+          }
           continue;
         }
 
+        // 检查名称是否重复（无编号的情况下）
+        if (existingNameMap.has(item.name)) {
+          skipCount++;
+          skippedItems.push(`第${i + 2}行：${item.name}（名称已存在，无编号无法更新）`);
+          continue;
+        }
+
+        // 新建供应商
         try {
           const result = await request(`/api/v1/bases/${baseId}/suppliers`, {
             method: 'POST',
@@ -183,7 +206,7 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
           });
 
           if (result.success) {
-            successCount++;
+            createCount++;
             // 添加到去重Map，避免同一批次内的重复
             existingNameMap.set(item.name, result.data?.id || '');
             if (item.code) {
@@ -203,15 +226,26 @@ export const useSupplierExcel = ({ baseId, baseName, onImportSuccess }: UseSuppl
 
       // 显示导入结果
       if (failCount === 0 && skipCount === 0) {
-        message.success(`导入完成！成功导入 ${successCount} 条供应商`);
+        if (updateCount > 0) {
+          message.success(`导入完成！新建 ${createCount} 条，更新 ${updateCount} 条供应商`);
+        } else {
+          message.success(`导入完成！成功导入 ${createCount} 条供应商`);
+        }
       } else {
-        let content = `成功导入：${successCount} 条\n跳过重复：${skipCount} 条\n失败：${failCount} 条`;
+        let content = `新建：${createCount} 条\n更新：${updateCount} 条\n跳过：${skipCount} 条\n失败：${failCount} 条`;
+        
+        // 显示更新的数据
+        if (updateCount > 0) {
+          const updatedList = updatedItems.slice(0, 5).join('\n');
+          const moreUpdated = updatedItems.length > 5 ? `\n...还有 ${updatedItems.length - 5} 条更新` : '';
+          content += `\n\n更新的供应商：\n${updatedList}${moreUpdated}`;
+        }
         
         // 显示跳过的数据
         if (skipCount > 0) {
           const skippedList = skippedItems.slice(0, 5).join('\n');
-          const moreSkipped = skippedItems.length > 5 ? `\n...还有 ${skippedItems.length - 5} 条重复` : '';
-          content += `\n\n跳过的重复数据：\n${skippedList}${moreSkipped}`;
+          const moreSkipped = skippedItems.length > 5 ? `\n...还有 ${skippedItems.length - 5} 条跳过` : '';
+          content += `\n\n跳过的数据：\n${skippedList}${moreSkipped}`;
         }
         
         // 显示失败的数据

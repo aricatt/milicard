@@ -68,6 +68,17 @@ export const getColumns = (
     },
   },
   {
+    title: intl?.formatMessage({ id: 'arrivals.column.category' }) || '品类',
+    dataIndex: 'categoryName',
+    key: 'categoryName',
+    width: 80,
+    hideInSearch: true,
+    render: (_, record) => {
+      if (!record.categoryName) return '-';
+      return <Tag color="blue">{record.categoryName}</Tag>;
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'arrivals.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
@@ -77,9 +88,6 @@ export const getColumns = (
       <GoodsNameText 
         text={record.goodsName} 
         nameI18n={record.goodsNameI18n}
-        categoryCode={record.categoryCode}
-        categoryName={record.categoryName}
-        showCategory={true}
       />
     ),
   },

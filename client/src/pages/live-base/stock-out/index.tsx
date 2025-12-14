@@ -371,6 +371,18 @@ const StockOutPage: React.FC = () => {
       },
     },
     {
+      title: intl.formatMessage({ id: 'stockOut.column.category' }),
+      dataIndex: 'category',
+      key: 'category',
+      width: 80,
+      hideInSearch: true,
+      render: (_, record) => {
+        const categoryName = record.goods?.category?.name;
+        if (!categoryName) return '-';
+        return <Tag color="orange">{categoryName}</Tag>;
+      },
+    },
+    {
       title: intl.formatMessage({ id: 'stockOut.column.goods' }),
       dataIndex: 'goods',
       key: 'goods',
@@ -380,9 +392,6 @@ const StockOutPage: React.FC = () => {
         <GoodsNameText 
           text={record.goods?.name} 
           nameI18n={record.goods?.nameI18n}
-          categoryCode={record.goods?.category?.code}
-          categoryName={record.goods?.category?.name}
-          showCategory={true}
         />
       ),
     },

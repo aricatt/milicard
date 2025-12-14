@@ -122,6 +122,7 @@ export default {
   'procurement.edit': '编辑采购',
   'procurement.column.orderNo': '采购编号',
   'procurement.column.date': '采购日期',
+  'procurement.column.category': '品类',
   'procurement.column.product': '商品',
   'procurement.column.supplier': '供应商',
   'procurement.column.quantity': '采购数量',
@@ -155,6 +156,7 @@ export default {
   'arrivals.column.date': '到货日期',
   'arrivals.column.orderNo': '采购编号',
   'arrivals.column.purchaseName': '采购名称',
+  'arrivals.column.category': '品类',
   'arrivals.column.product': '商品',
   'arrivals.column.location': '直播间',
   'arrivals.column.anchor': '主播',
@@ -168,6 +170,7 @@ export default {
   'transfers.add': '新增调货',
   'transfers.edit': '编辑调货',
   'transfers.column.date': '调货日期',
+  'transfers.column.category': '品类',
   'transfers.column.product': '商品',
   'transfers.column.fromLocation': '调出直播间',
   'transfers.column.fromAnchor': '调出主播',
@@ -183,6 +186,7 @@ export default {
   'consumption.add': '新增消耗',
   'consumption.edit': '编辑消耗',
   'consumption.column.date': '消耗日期',
+  'consumption.column.category': '品类',
   'consumption.column.product': '商品',
   'consumption.column.location': '直播间',
   'consumption.column.anchor': '主播',
@@ -297,6 +301,7 @@ export default {
 
   // ==================== 实时库存 ====================
   'realTimeStock.title': '实时库存',
+  'realTimeStock.column.category': '品类',
   'realTimeStock.column.product': '商品',
   'realTimeStock.column.location': '位置',
   'realTimeStock.column.boxQty': '库存/箱',
@@ -335,6 +340,7 @@ export default {
   'stockOut.add': '手动出库',
   'stockOut.edit': '编辑出库记录',
   'stockOut.column.date': '出库日期',
+  'stockOut.column.category': '品类',
   'stockOut.column.goods': '商品',
   'stockOut.column.type': '出库类型',
   'stockOut.column.targetName': '目标名称',
@@ -1211,7 +1217,6 @@ export default {
   'productSettings.message.deleteFailed': '移除失败',
 
   // ==================== 通用表格 ====================
-  'table.column.action': '操作',
   'table.pagination.totalItems': '共 {total} 条',
 
   // ==================== 通用按钮 ====================

@@ -24,6 +24,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
     { header: 'ID', key: 'id', width: 8 },
     { header: '调货日期', key: 'transferDate', width: 12 },
     { header: '商品编号', key: 'goodsCode', width: 20 },
+    { header: '品类', key: 'categoryName', width: 10 },
     { header: '商品', key: 'goodsName', width: 35 },
     { header: '调出直播间', key: 'sourceLocationName', width: 15 },
     { header: '调出主播', key: 'sourceHandlerName', width: 10 },
@@ -56,6 +57,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
         id: item.id,
         transferDate: item.transferDate ? item.transferDate.split('T')[0] : '',
         goodsCode: item.goodsCode || '',
+        categoryName: item.categoryName || '',
         goodsName: item.goodsName || '',
         sourceLocationName: item.sourceLocationName || '',
         sourceHandlerName: item.sourceHandlerName || '',
@@ -96,6 +98,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
       // 转换数据格式
       const importData = jsonData.map((row: any) => ({
         transferDate: row['调货日期'] ? String(row['调货日期']).trim() : '',
+        categoryName: String(row['品类'] || '').trim(),
         goodsName: String(row['商品'] || '').trim(),
         sourceLocationName: String(row['调出直播间'] || '').trim(),
         sourceHandlerName: String(row['调出主播'] || '').trim(),
@@ -110,6 +113,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
       // 数据验证
       const errors = validateImportData(importData, [
         { field: 'transferDate', required: true, message: '调货日期不能为空' },
+        { field: 'categoryName', required: true, message: '品类不能为空' },
         { field: 'goodsName', required: true, message: '商品不能为空' },
         { field: 'sourceLocationName', required: true, message: '调出直播间不能为空' },
         { field: 'sourceHandlerName', required: true, message: '调出主播不能为空' },
@@ -189,6 +193,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
   // 导入模板列配置
   const importTemplateColumns = [
     { header: '调货日期', key: 'transferDate', width: 12 },
+    { header: '品类', key: 'categoryName', width: 10 },
     { header: '商品', key: 'goodsName', width: 35 },
     { header: '调出直播间', key: 'sourceLocationName', width: 15 },
     { header: '调出主播', key: 'sourceHandlerName', width: 10 },
@@ -205,6 +210,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
     const templateData = [
       {
         transferDate: '2025-11-24',
+        categoryName: '卡牌',
         goodsName: '商品名称示例',
         sourceLocationName: 'Live Room 1',
         sourceHandlerName: 'Lin',
@@ -217,6 +223,7 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
       },
       {
         transferDate: '2025-11-25',
+        categoryName: '卡砖',
         goodsName: '另一个商品',
         sourceLocationName: 'Live Room 2',
         sourceHandlerName: 'Sai',

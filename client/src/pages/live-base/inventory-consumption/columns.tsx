@@ -58,6 +58,17 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     render: (_, record) => dayjs(record.consumptionDate).format('YYYY-MM-DD'),
   },
   {
+    title: intl?.formatMessage({ id: 'consumption.column.category' }) || '品类',
+    dataIndex: 'categoryName',
+    key: 'categoryName',
+    width: 80,
+    search: false,
+    render: (_, record) => {
+      if (!record.categoryName) return '-';
+      return <Tag color="purple">{record.categoryName}</Tag>;
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'consumption.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
@@ -67,9 +78,6 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
         <GoodsNameText 
           text={record.goodsName} 
           nameI18n={record.goodsNameI18n}
-          categoryCode={record.categoryCode}
-          categoryName={record.categoryName}
-          showCategory={true}
         />
       </Tooltip>
     ),
