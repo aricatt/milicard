@@ -781,7 +781,7 @@ const StockOutPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: intl.formatMessage({ id: 'stockOut.title' }),
+        title: false,
       }}
     >
       <ProTable<StockOut>

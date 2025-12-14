@@ -394,7 +394,7 @@ const PointsPage: React.FC = () => {
   };
 
   return (
-    <PageContainer>
+    <PageContainer header={{ title: false }}>
       <ProTable<PointItem>
         headerTitle={intl.formatMessage({ id: 'list.title.points' })}
         actionRef={actionRef}

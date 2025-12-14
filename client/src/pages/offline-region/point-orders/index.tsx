@@ -620,8 +620,7 @@ const PointOrdersPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: intl.formatMessage({ id: 'pointOrders.title' }),
-        subTitle: intl.formatMessage({ id: 'pointOrders.subTitle' }),
+        title: false,
       }}
     >
       {/* 统计卡片 */}

@@ -12,8 +12,7 @@ const ReceivablesPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: intl.formatMessage({ id: 'receivables.title' }),
-        subTitle: intl.formatMessage({ id: 'receivables.subTitle' }),
+        title: false,
       }}
     >
       <Card>

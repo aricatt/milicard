@@ -136,6 +136,8 @@ export const layout: RunTimeLayoutConfig = ({
       content: initialState?.currentUser?.name,
     },
     footerRender: () => <Footer />,
+    // 默认展开的菜单
+    defaultOpenAll: true,
     // 根据当前基地类型动态过滤菜单
     menuDataRender: (menuData: MenuDataItem[]) => {
       // 从 localStorage 获取当前基地类型

@@ -32,6 +32,7 @@ import type { FieldDescription } from '@/components/ImportModal';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl, getLocale } from '@umijs/max';
+import { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 const { TextArea } = Input;
 
@@ -359,10 +360,11 @@ const GlobalProductManagement: React.FC = () => {
         const categoryName = record.category?.name || '';
         const categoryCode = record.category?.code || '';
         const color = CategoryColors[categoryCode] || 'default';
-        return categoryName ? (
-          <Tag color={color}>{categoryName}</Tag>
+        const displayName = getCategoryDisplayName(categoryCode, categoryName, getLocale());
+        return displayName ? (
+          <Tag color={color}>{displayName}</Tag>
         ) : (
-          <Tag color="default">未分类</Tag>
+          <Tag color="default">{intl.formatMessage({ id: 'products.uncategorized' })}</Tag>
         );
       },
     },
@@ -683,21 +685,21 @@ const GlobalProductManagement: React.FC = () => {
             icon={<FileExcelOutlined />}
             onClick={handleDownloadTemplate}
           >
-            下载模板
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
           </Button>,
           <Button
             key="import"
             icon={<UploadOutlined />}
             onClick={() => setImportModalVisible(true)}
           >
-            导入
+            {intl.formatMessage({ id: 'button.import' })}
           </Button>,
           <Button
             key="export"
             icon={<DownloadOutlined />}
             onClick={handleExport}
           >
-            导出
+            {intl.formatMessage({ id: 'button.export' })}
           </Button>,
           <Button
             key="create"

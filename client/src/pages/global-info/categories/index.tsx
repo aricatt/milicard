@@ -238,8 +238,7 @@ const CategoriesPage: React.FC = () => {
   return (
     <PageContainer
       header={{
-        title: intl.formatMessage({ id: 'categories.title' }),
-        subTitle: intl.formatMessage({ id: 'categories.subTitle' }),
+        title: false,
       }}
     >
       <ProTable<Category>
