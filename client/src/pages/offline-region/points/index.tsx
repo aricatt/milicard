@@ -612,17 +612,22 @@ const PointsPage: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {pointGoods.map((pg) => {
-                            const boxPrice = pg.unitPrice || Number(pg.goods.retailPrice);
-                            const packPrice = boxPrice / (pg.goods.packPerBox || 1);
+                          {pointGoods.map((pg: any) => {
+                            // 专属单价：只有用户主动设置时才显示
+                            const exclusivePrice = Number(pg.unitPrice) || 0;
+                            // 系统默认单价：基地本地设置的零售价
+                            const systemPrice = Number(pg.goods.baseRetailPrice) || 0;
+                            // 用于计算盒单价的价格：优先专属单价，其次系统价格
+                            const effectivePrice = exclusivePrice > 0 ? exclusivePrice : systemPrice;
+                            const packPrice = effectivePrice > 0 ? effectivePrice / (pg.goods.packPerBox || 1) : 0;
                             return (
                               <tr key={pg.id}>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>{pg.goods.name}</td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'right' }}>
-                                  {boxPrice.toFixed(2)}
+                                  {exclusivePrice > 0 ? exclusivePrice.toFixed(2) : '-'}
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'right' }}>
-                                  {packPrice.toFixed(2)}
+                                  {packPrice > 0 ? packPrice.toFixed(2) : '-'}
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'center' }}>
                                   {pg.maxBoxQuantity ?? intl.formatMessage({ id: 'points.goods.noLimit' })}

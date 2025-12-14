@@ -157,7 +157,7 @@ const GlobalProductManagement: React.FC = () => {
 
   // 导入字段说明
   const importFields: FieldDescription[] = [
-    { field: '商品编码', required: false, description: '可选，留空则系统自动生成', example: 'GOODS-ABC123' },
+    { field: '商品编码', required: false, description: '可选，留空则系统自动生成', example: 'GOODS-J37SVPYQEXJ' },
     { field: '品类编码', required: true, description: '必须是系统中已存在的品类编码', example: 'CARD' },
     { field: '品类名称', required: false, description: '如果品类编码为空，则使用品类名称匹配', example: '卡牌' },
     { field: '商品名称', required: true, description: '商品的完整名称', example: '航海王和之国篇' },

@@ -1115,6 +1115,7 @@ export default {
   'pointOrders.form.customerNotes': '备注',
   'pointOrders.form.customerNotesPlaceholder': '订单备注',
   'pointOrders.form.goodsDetails': '商品明细',
+  'pointOrders.form.selectGoods': '选择商品',
   'pointOrders.form.searchGoods': '搜索商品',
   'pointOrders.form.selectPointFirst': '请先选择点位',
   'pointOrders.form.noGoodsAvailable': '该点位暂无可购商品',

@@ -312,7 +312,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
   const handleDownloadTemplate = () => {
     const templateData = [
       {
-        code: 'GOODS-ABC123',
+        code: 'GOODS-J37SVPYQEXJ',
         categoryName: '卡牌',
         name: '琦趣创想航海王 和之国篇',
         alias: '航海王和之国',

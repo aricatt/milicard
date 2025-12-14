@@ -1115,6 +1115,7 @@ export default {
   'pointOrders.form.customerNotes': 'Notes',
   'pointOrders.form.customerNotesPlaceholder': 'Order notes',
   'pointOrders.form.goodsDetails': 'Product Details',
+  'pointOrders.form.selectGoods': 'Select Product',
   'pointOrders.form.searchGoods': 'Search products',
   'pointOrders.form.selectPointFirst': 'Please select point first',
   'pointOrders.form.noGoodsAvailable': 'No products available for this point',

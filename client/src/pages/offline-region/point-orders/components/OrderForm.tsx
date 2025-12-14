@@ -5,6 +5,7 @@ import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
 import GoodsNameText from '@/components/GoodsNameText';
+import PointGoodsSelectModal from '@/components/PointGoodsSelectModal';
 
 interface PointOption {
   id: string;
@@ -62,6 +63,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
   const [goodsLoading, setGoodsLoading] = useState(false);
   const [orderItems, setOrderItems] = useState<OrderItemData[]>([]);
   const [selectedGoodsId, setSelectedGoodsId] = useState<string | null>(null);
+  const [goodsSelectModalVisible, setGoodsSelectModalVisible] = useState(false);
 
   const isEdit = !!order;
 
@@ -170,7 +172,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
     }
   };
 
-  // 添加商品
+  // 添加商品（从下拉框）
   const handleAddGoods = () => {
     if (!selectedGoodsId) {
       message.warning(intl.formatMessage({ id: 'pointOrders.message.selectGoodsFirst' }));
@@ -203,6 +205,45 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
 
     setOrderItems([...orderItems, newItem]);
     setSelectedGoodsId(null);
+  };
+
+  // 从弹窗选择商品
+  const handleSelectGoodsFromModal = (item: any) => {
+    // 检查是否已添加
+    if (orderItems.some((orderItem) => orderItem.goodsId === item.goodsId)) {
+      message.warning(intl.formatMessage({ id: 'pointOrders.message.goodsAlreadyAdded' }));
+      return;
+    }
+
+    // 优先使用专属单价，其次使用系统价格（基地本地设置的零售价）
+    const exclusivePrice = Number(item.unitPrice) || 0;
+    const systemPrice = Number(item.goods.baseRetailPrice) || 0;
+    const effectiveBoxPrice = exclusivePrice > 0 ? exclusivePrice : systemPrice;
+    const packPerBox = item.goods.packPerBox || 1;
+    const packPrice = effectiveBoxPrice > 0 ? effectiveBoxPrice / packPerBox : 0; // 盒单价
+
+    const newItem: OrderItemData = {
+      key: `item-${Date.now()}`,
+      goodsId: item.goodsId,
+      goods: {
+        id: item.goods.id,
+        code: item.goods.code,
+        name: item.goods.name,
+        retailPrice: effectiveBoxPrice,
+        packPerBox: item.goods.packPerBox,
+        piecePerPack: item.goods.piecePerPack,
+        imageUrl: item.goods.imageUrl,
+        maxBoxQuantity: item.maxBoxQuantity,
+        maxPackQuantity: item.maxPackQuantity,
+      },
+      boxQuantity: 0,
+      packQuantity: 1,
+      unitPrice: packPrice, // 使用盒单价
+      totalPrice: packPrice, // 初始1盒的价格
+    };
+
+    setOrderItems([...orderItems, newItem]);
+    setGoodsSelectModalVisible(false);
   };
 
   // 删除商品
@@ -448,42 +489,14 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
           title={intl.formatMessage({ id: 'pointOrders.form.goodsDetails' })}
           size="small"
           extra={
-            <Space>
-              <Select
-                showSearch
-                placeholder={selectedPoint ? intl.formatMessage({ id: 'pointOrders.form.searchGoods' }) : intl.formatMessage({ id: 'pointOrders.form.selectPointFirst' })}
-                disabled={!selectedPoint}
-                style={{ width: 280 }}
-                loading={goodsLoading}
-                filterOption={false}
-                onSearch={(keyword) => fetchGoods(keyword, selectedPoint?.id)}
-                value={selectedGoodsId}
-                onChange={setSelectedGoodsId}
-                optionLabelProp="label"
-                notFoundContent={goods.length === 0 ? intl.formatMessage({ id: 'pointOrders.form.noGoodsAvailable' }) : intl.formatMessage({ id: 'pointOrders.form.goodsNotFound' })}
-              >
-                {goods.map((g) => {
-                  // 计算盒单价显示
-                  const boxPrice = Number(g.retailPrice) || 0;
-                  const packPerBox = g.packPerBox || 1;
-                  const packPrice = boxPrice / packPerBox;
-                  return (
-                    <Select.Option key={g.id} value={g.id} label={g.name}>
-                      <div>
-                        <div>{g.name}</div>
-                        <div style={{ fontSize: 12, color: '#999' }}>
-                          {packPrice.toFixed(2)}/盒 ({boxPrice.toFixed(2)}/箱)
-                          {g.maxBoxQuantity && ` 限${g.maxBoxQuantity}箱`}
-                        </div>
-                      </div>
-                    </Select.Option>
-                  );
-                })}
-              </Select>
-              <Button type="primary" icon={<PlusOutlined />} onClick={handleAddGoods}>
-                {intl.formatMessage({ id: 'pointOrders.form.addGoods' })}
-              </Button>
-            </Space>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              disabled={!selectedPoint}
+              onClick={() => setGoodsSelectModalVisible(true)}
+            >
+              {intl.formatMessage({ id: 'pointOrders.form.addGoods' })}
+            </Button>
           }
         >
           {orderItems.length > 0 ? (
@@ -512,6 +525,18 @@ const OrderForm: React.FC<OrderFormProps> = ({ visible, order, onClose, onSucces
           )}
         </Card>
       </Form>
+
+      {/* 商品选择弹窗 */}
+      {selectedPoint && currentBase?.id && (
+        <PointGoodsSelectModal
+          open={goodsSelectModalVisible}
+          onCancel={() => setGoodsSelectModalVisible(false)}
+          onSelect={handleSelectGoodsFromModal}
+          pointId={selectedPoint.id}
+          baseId={currentBase.id}
+          excludeGoodsIds={orderItems.map(item => item.goodsId)}
+        />
+      )}
     </Modal>
   );
 };

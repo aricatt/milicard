@@ -122,9 +122,24 @@ const ArrivalManagement: React.FC = () => {
       
       if (result.success && result.data) {
         // 保存采购订单完整信息（包括id和goodsId）
+        // 过滤掉已完全到货的采购单（到货数量 >= 采购数量）
         const orderMap = new Map();
         result.data.forEach((item: any) => {
-          if (!orderMap.has(item.orderNo)) {
+          // 判断是否已完全到货
+          const purchaseBox = item.purchaseBoxQty || 0;
+          const purchasePack = item.purchasePackQty || 0;
+          const purchasePiece = item.purchasePieceQty || 0;
+          const arrivedBox = item.arrivedBoxQty || 0;
+          const arrivedPack = item.arrivedPackQty || 0;
+          const arrivedPiece = item.arrivedPieceQty || 0;
+          
+          // 如果到货数量已经大于等于采购数量，则认为已完全到货，不显示
+          const isFullyArrived = arrivedBox >= purchaseBox && 
+                                  arrivedPack >= purchasePack && 
+                                  arrivedPiece >= purchasePiece &&
+                                  (purchaseBox > 0 || purchasePack > 0 || purchasePiece > 0);
+          
+          if (!orderMap.has(item.orderNo) && !isFullyArrived) {
             // 格式化采购日期为 YYYY-MM-DD
             const dateStr = item.purchaseDate 
               ? item.purchaseDate.split('T')[0] 

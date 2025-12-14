@@ -301,17 +301,6 @@ const TransferManagement: React.FC = () => {
           density: true,
         }}
         toolBarRender={() => [
-          <Popover
-            key="stats"
-            content={statsContent}
-            title={intl.formatMessage({ id: 'button.detail' })}
-            trigger="hover"
-            placement="bottomRight"
-          >
-            <Button icon={<InfoCircleOutlined />}>
-              {intl.formatMessage({ id: 'button.detail' })}
-            </Button>
-          </Popover>,
           <Button
             key="template"
             icon={<DownloadOutlined />}
@@ -353,9 +342,24 @@ const TransferManagement: React.FC = () => {
         headerTitle={
           <Space>
             <span>{intl.formatMessage({ id: 'list.title.transfers' })}</span>
-            <span style={{ fontSize: 12, color: '#999' }}>
-              {intl.formatMessage({ id: 'stats.count' }, { count: stats.totalRecords })}
+            <span style={{ color: '#999', fontSize: 14, fontWeight: 'normal' }}>
+              ({intl.formatMessage({ id: 'stats.count' }, { count: stats.totalRecords })})
             </span>
+            <Popover
+              content={statsContent}
+              title={intl.formatMessage({ id: 'stats.title' })}
+              trigger="click"
+              placement="bottomLeft"
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<InfoCircleOutlined />}
+                style={{ color: '#1890ff' }}
+              >
+                {intl.formatMessage({ id: 'stats.detail' })}
+              </Button>
+            </Popover>
           </Space>
         }
       />

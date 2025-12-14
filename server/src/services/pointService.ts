@@ -400,10 +400,16 @@ export class PointService {
             id: true,
             code: true,
             name: true,
-            retailPrice: true,
             packPerBox: true,
             piecePerPack: true,
             imageUrl: true,
+            category: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+              },
+            },
           },
         },
       },
@@ -504,6 +510,16 @@ export class PointService {
    * 获取点位可采购商品列表
    */
   static async getPointGoods(pointId: string) {
+    // 先获取点位信息以获取 baseId
+    const point = await prisma.point.findUnique({
+      where: { id: pointId },
+      select: { baseId: true },
+    });
+
+    if (!point) {
+      throw new Error('点位不存在');
+    }
+
     const pointGoods = await prisma.pointGoods.findMany({
       where: { pointId },
       include: {
@@ -512,17 +528,40 @@ export class PointService {
             id: true,
             code: true,
             name: true,
-            retailPrice: true,
             packPerBox: true,
             piecePerPack: true,
             imageUrl: true,
+            category: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+              },
+            },
+            localSettings: {
+              where: { baseId: point.baseId },
+              select: {
+                retailPrice: true,
+              },
+            },
           },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return pointGoods;
+    // 处理返回数据，将 localSettings 中的 retailPrice 提取出来作为后备价格
+    return pointGoods.map((pg) => ({
+      ...pg,
+      goods: {
+        ...pg.goods,
+        // 如果没有设置专属单价，使用基地本地设置的零售价
+        baseRetailPrice: pg.goods.localSettings?.[0]?.retailPrice 
+          ? Number(pg.goods.localSettings[0].retailPrice) 
+          : null,
+        localSettings: undefined, // 移除 localSettings 字段
+      },
+    }));
   }
 
   /**
@@ -563,7 +602,6 @@ export class PointService {
               id: true,
               code: true,
               name: true,
-              retailPrice: true,
               packPerBox: true,
             },
           },
@@ -585,7 +623,6 @@ export class PointService {
             id: true,
             code: true,
             name: true,
-            retailPrice: true,
             packPerBox: true,
           },
         },
@@ -619,7 +656,6 @@ export class PointService {
             id: true,
             code: true,
             name: true,
-            retailPrice: true,
             packPerBox: true,
           },
         },
