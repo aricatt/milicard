@@ -76,7 +76,7 @@ const LocationProfitPage: React.FC = () => {
         setPointOptions(result.data || []);
       }
     } catch (error) {
-      console.error('获取点位列表失败:', error);
+      console.error('Failed to fetch point list:', error);
     }
   };
 
@@ -102,7 +102,7 @@ const LocationProfitPage: React.FC = () => {
         total: result.total || 0,
       };
     } catch (error) {
-      console.error('获取利润列表失败:', error);
+      console.error('Failed to fetch profit list:', error);
       return { data: [], success: false, total: 0 };
     }
   };
@@ -131,7 +131,7 @@ const LocationProfitPage: React.FC = () => {
         setPreviewData(null);
       }
     } catch (error) {
-      console.error('预览失败:', error);
+      console.error('Preview failed:', error);
       setPreviewData(null);
     } finally {
       setPreviewLoading(false);
@@ -297,7 +297,7 @@ const LocationProfitPage: React.FC = () => {
       key: 'createdAt',
       width: 160,
       search: false,
-      render: (_, record) => new Date(record.createdAt).toLocaleString('zh-CN'),
+      render: (_, record) => new Date(record.createdAt).toLocaleString(),
     },
     {
       title: intl.formatMessage({ id: 'table.column.operation' }),
@@ -417,29 +417,29 @@ const LocationProfitPage: React.FC = () => {
         {previewData && !previewLoading && (
           <Card 
             size="small" 
-            title={<><CalculatorOutlined /> 利润计算预览</>}
+            title={<><CalculatorOutlined /> {intl.formatMessage({ id: 'locationProfit.preview.title' })}</>}
             style={{ marginBottom: 16 }}
           >
             {previewData.orderCount === 0 ? (
               <Alert
                 type="warning"
-                message="该日期范围内没有已完成的订单"
-                description="利润计算基于已完成（COMPLETED）、已送达（DELIVERED）或配送中（SHIPPING）状态的订单。"
+                message={intl.formatMessage({ id: 'locationProfit.preview.noOrders' })}
+                description={intl.formatMessage({ id: 'locationProfit.preview.noOrdersDesc' })}
               />
             ) : (
               <>
                 <Descriptions column={2} size="small">
-                  <Descriptions.Item label="订单数量">
-                    <Text strong>{previewData.orderCount} 单</Text>
+                  <Descriptions.Item label={intl.formatMessage({ id: 'locationProfit.preview.orderCount' })}>
+                    <Text strong>{previewData.orderCount}</Text>
                   </Descriptions.Item>
-                  <Descriptions.Item label="拿货金额">
+                  <Descriptions.Item label={intl.formatMessage({ id: 'locationProfit.preview.salesAmount' })}>
                     <Text strong style={{ color: '#1890ff' }}>
                       {formatAmount(previewData.totalSalesAmount)}
                     </Text>
                   </Descriptions.Item>
                 </Descriptions>
 
-                <Divider style={{ margin: '12px 0' }}>商品成本明细</Divider>
+                <Divider style={{ margin: '12px 0' }}>{intl.formatMessage({ id: 'locationProfit.preview.costDetails' })}</Divider>
 
                 {previewData.goodsCostDetails.length > 0 ? (
                   <Table
@@ -449,28 +449,28 @@ const LocationProfitPage: React.FC = () => {
                     pagination={false}
                     columns={[
                       {
-                        title: '商品',
+                        title: intl.formatMessage({ id: 'products.column.name' }),
                         dataIndex: 'goodsName',
                         key: 'goodsName',
-                        render: (_, record) => (
+                        render: (_, record: any) => (
                           <GoodsNameText text={`${record.goodsCode}-${record.goodsName}`} nameI18n={record.goodsNameI18n} />
                         ),
                       },
                       {
-                        title: '数量(盒)',
+                        title: intl.formatMessage({ id: 'locationProfit.preview.packQty' }),
                         dataIndex: 'totalPackQuantity',
                         key: 'totalPackQuantity',
                         align: 'right',
                       },
                       {
-                        title: '平均成本/盒',
+                        title: intl.formatMessage({ id: 'locationProfit.preview.avgCostPerPack' }),
                         dataIndex: 'avgCostPerPack',
                         key: 'avgCostPerPack',
                         align: 'right',
                         render: (v) => formatAmount(v),
                       },
                       {
-                        title: '成本小计',
+                        title: intl.formatMessage({ id: 'locationProfit.preview.costSubtotal' }),
                         dataIndex: 'totalCost',
                         key: 'totalCost',
                         align: 'right',
@@ -480,7 +480,7 @@ const LocationProfitPage: React.FC = () => {
                     summary={() => (
                       <Table.Summary.Row>
                         <Table.Summary.Cell index={0} colSpan={3}>
-                          <Text strong>采购成本合计</Text>
+                          <Text strong>{intl.formatMessage({ id: 'locationProfit.preview.totalCost' })}</Text>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={1} align="right">
                           <Text strong>{formatAmount(previewData.totalCostAmount)}</Text>
@@ -489,19 +489,19 @@ const LocationProfitPage: React.FC = () => {
                     )}
                   />
                 ) : (
-                  <Alert type="info" message="没有商品成本记录（可能没有采购记录）" />
+                  <Alert type="info" message={intl.formatMessage({ id: 'locationProfit.preview.noCostRecord' })} />
                 )}
 
-                <Divider style={{ margin: '12px 0' }}>利润计算结果</Divider>
+                <Divider style={{ margin: '12px 0' }}>{intl.formatMessage({ id: 'locationProfit.preview.profitResult' })}</Divider>
 
                 <Descriptions column={1} size="small">
-                  <Descriptions.Item label="拿货金额">
+                  <Descriptions.Item label={intl.formatMessage({ id: 'locationProfit.preview.salesAmount' })}>
                     {formatAmount(previewData.totalSalesAmount)}
                   </Descriptions.Item>
-                  <Descriptions.Item label="采购成本">
+                  <Descriptions.Item label={intl.formatMessage({ id: 'locationProfit.preview.purchaseCost' })}>
                     - {formatAmount(previewData.totalCostAmount)}
                   </Descriptions.Item>
-                  <Descriptions.Item label="利润金额">
+                  <Descriptions.Item label={intl.formatMessage({ id: 'locationProfit.column.profitAmount' })}>
                     <Text 
                       strong 
                       type={previewData.profitAmount >= 0 ? 'success' : 'danger'}
@@ -510,7 +510,7 @@ const LocationProfitPage: React.FC = () => {
                       = {formatAmount(previewData.profitAmount)}
                     </Text>
                   </Descriptions.Item>
-                  <Descriptions.Item label="利润率">
+                  <Descriptions.Item label={intl.formatMessage({ id: 'locationProfit.column.profitRate' })}>
                     <Tag color={previewData.profitRate >= 0 ? 'green' : 'red'}>
                       {previewData.profitRate.toFixed(2)}%
                     </Tag>

@@ -7,23 +7,23 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOu
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import OrderForm from './components/OrderForm';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
-// 订单状态
+// 订单状态 - 使用 key 用于国际化
 const ORDER_STATUS = {
-  PENDING: { text: '待确认', color: 'orange' },
-  CONFIRMED: { text: '已确认', color: 'blue' },
-  SHIPPING: { text: '配送中', color: 'cyan' },
-  DELIVERED: { text: '已送达', color: 'green' },
-  COMPLETED: { text: '已完成', color: 'default' },
-  CANCELLED: { text: '已取消', color: 'red' },
+  PENDING: { key: 'pointOrders.status.pending', color: 'orange' },
+  CONFIRMED: { key: 'pointOrders.status.confirmed', color: 'blue' },
+  SHIPPING: { key: 'pointOrders.status.shipping', color: 'cyan' },
+  DELIVERED: { key: 'pointOrders.status.delivered', color: 'green' },
+  COMPLETED: { key: 'pointOrders.status.completed', color: 'default' },
+  CANCELLED: { key: 'pointOrders.status.cancelled', color: 'red' },
 };
 
-// 付款状态
+// 付款状态 - 使用 key 用于国际化
 const PAYMENT_STATUS = {
-  UNPAID: { text: '未付款', color: 'red' },
-  PARTIAL: { text: '部分付款', color: 'orange' },
-  PAID: { text: '已付款', color: 'green' },
+  UNPAID: { key: 'pointOrders.paymentStatus.unpaid', color: 'red' },
+  PARTIAL: { key: 'pointOrders.paymentStatus.partial', color: 'orange' },
+  PAID: { key: 'pointOrders.paymentStatus.paid', color: 'green' },
 };
 
 interface OrderItem {
@@ -97,12 +97,12 @@ interface OrderStats {
   unpaidAmount: number;
 }
 
-// 收款方式
+// 收款方式 - 使用 key 用于国际化
 const PAYMENT_METHODS = [
-  { value: '现金', label: '现金' },
-  { value: '微信', label: '微信' },
-  { value: '支付宝', label: '支付宝' },
-  { value: '银行转账', label: '银行转账' },
+  { value: 'cash', key: 'pointOrders.paymentMethod.cash' },
+  { value: 'wechat', key: 'pointOrders.paymentMethod.wechat' },
+  { value: 'alipay', key: 'pointOrders.paymentMethod.alipay' },
+  { value: 'bank', key: 'pointOrders.paymentMethod.bank' },
 ];
 
 const PointOrdersPage: React.FC = () => {
@@ -460,11 +460,11 @@ const PointOrdersPage: React.FC = () => {
       width: 100,
       valueType: 'select',
       valueEnum: Object.fromEntries(
-        Object.entries(ORDER_STATUS).map(([key, val]) => [key, { text: val.text }])
+        Object.entries(ORDER_STATUS).map(([key, val]) => [key, { text: intl.formatMessage({ id: val.key }) }])
       ),
       render: (_, record) => {
-        const status = ORDER_STATUS[record.status] || { text: record.status, color: 'default' };
-        return <Tag color={status.color}>{status.text}</Tag>;
+        const status = ORDER_STATUS[record.status] || { key: 'pointOrders.status.pending', color: 'default' };
+        return <Tag color={status.color}>{intl.formatMessage({ id: status.key })}</Tag>;
       },
     },
     {
@@ -473,11 +473,11 @@ const PointOrdersPage: React.FC = () => {
       width: 100,
       valueType: 'select',
       valueEnum: Object.fromEntries(
-        Object.entries(PAYMENT_STATUS).map(([key, val]) => [key, { text: val.text }])
+        Object.entries(PAYMENT_STATUS).map(([key, val]) => [key, { text: intl.formatMessage({ id: val.key }) }])
       ),
       render: (_, record) => {
-        const status = PAYMENT_STATUS[record.paymentStatus] || { text: record.paymentStatus, color: 'default' };
-        return <Tag color={status.color}>{status.text}</Tag>;
+        const status = PAYMENT_STATUS[record.paymentStatus] || { key: 'pointOrders.paymentStatus.unpaid', color: 'default' };
+        return <Tag color={status.color}>{intl.formatMessage({ id: status.key })}</Tag>;
       },
     },
     {
@@ -571,6 +571,14 @@ const PointOrdersPage: React.FC = () => {
 
   // 订单明细列
   const itemColumns = [
+    {
+      title: intl.formatMessage({ id: 'table.column.category' }),
+      dataIndex: ['goods', 'category'],
+      width: 100,
+      render: (category: any) => category ? (
+        <Tag color="blue">{getCategoryDisplayName(category.code, category.name, intl.locale)}</Tag>
+      ) : '-',
+    },
     {
       title: intl.formatMessage({ id: 'products.column.code' }),
       dataIndex: ['goods', 'code'],
@@ -706,12 +714,12 @@ const PointOrdersPage: React.FC = () => {
               <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.detail.pointCode' })}>{detailOrder.point.code}</Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.status' })}>
                 <Tag color={ORDER_STATUS[detailOrder.status]?.color}>
-                  {ORDER_STATUS[detailOrder.status]?.text}
+                  {intl.formatMessage({ id: ORDER_STATUS[detailOrder.status]?.key || 'pointOrders.status.pending' })}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.paymentStatus' })}>
                 <Tag color={PAYMENT_STATUS[detailOrder.paymentStatus]?.color}>
-                  {PAYMENT_STATUS[detailOrder.paymentStatus]?.text}
+                  {intl.formatMessage({ id: PAYMENT_STATUS[detailOrder.paymentStatus]?.key || 'pointOrders.paymentStatus.unpaid' })}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label={intl.formatMessage({ id: 'pointOrders.column.amount' })}>

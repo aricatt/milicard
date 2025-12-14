@@ -7,6 +7,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOu
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import PointForm from './components/PointForm';
+import { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 interface PointItem {
   id: string;
@@ -602,6 +603,7 @@ const PointsPage: React.FC = () => {
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ background: '#fafafa' }}>
+                            <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'table.column.category' })}</th>
                             <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'form.label.name' })}</th>
                             <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'points.goods.unitPrice' })}</th>
                             <th style={{ padding: 8, border: '1px solid #f0f0f0' }}>{intl.formatMessage({ id: 'unit.pricePerPack' })}</th>
@@ -620,8 +622,14 @@ const PointsPage: React.FC = () => {
                             // 用于计算盒单价的价格：优先专属单价，其次系统价格
                             const effectivePrice = exclusivePrice > 0 ? exclusivePrice : systemPrice;
                             const packPrice = effectivePrice > 0 ? effectivePrice / (pg.goods.packPerBox || 1) : 0;
+                            const category = pg.goods.category;
                             return (
                               <tr key={pg.id}>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>
+                                  {category ? (
+                                    <Tag color="blue">{getCategoryDisplayName(category.code, category.name, intl.locale)}</Tag>
+                                  ) : '-'}
+                                </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>{pg.goods.name}</td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'right' }}>
                                   {exclusivePrice > 0 ? exclusivePrice.toFixed(2) : '-'}

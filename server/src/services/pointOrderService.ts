@@ -252,6 +252,13 @@ export class PointOrderService {
                 packPerBox: true,
                 piecePerPack: true,
                 imageUrl: true,
+                category: {
+                  select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
