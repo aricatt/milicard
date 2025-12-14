@@ -94,7 +94,11 @@ export class ArrivalRecordService {
           orderBy: { arrivalDate: 'desc' },
           include: {
             purchaseOrder: true,
-            goods: true,
+            goods: {
+              include: {
+                category: true
+              }
+            },
             location: true,
             handler: true,
             base: true
@@ -113,6 +117,8 @@ export class ArrivalRecordService {
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         goodsNameI18n: record.goods?.nameI18n as any,
+        categoryCode: (record.goods as any)?.category?.code || '',
+        categoryName: (record.goods as any)?.category?.name || '',
         locationId: record.locationId,
         locationName: record.location?.name || '',
         handlerId: record.handlerId,

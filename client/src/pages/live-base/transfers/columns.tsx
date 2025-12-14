@@ -36,7 +36,15 @@ export const getColumns = (
     key: 'goodsName',
     width: 220,
     hideInSetting: true,
-    render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
+    render: (_, record) => (
+      <GoodsNameText 
+        text={record.goodsName} 
+        nameI18n={record.goodsNameI18n}
+        categoryCode={record.categoryCode}
+        categoryName={record.categoryName}
+        showCategory={true}
+      />
+    ),
   },
   {
     title: intl?.formatMessage({ id: 'transfers.column.fromLocation' }) || '调出直播间',

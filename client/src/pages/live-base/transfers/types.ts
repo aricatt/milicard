@@ -18,6 +18,8 @@ export interface TransferRecord {
   goodsCode?: string;             // 商品编号
   goodsName: string;              // 商品名称
   goodsNameI18n?: NameI18n | null; // 商品多语言名称
+  categoryCode?: string;          // 品类编号
+  categoryName?: string;          // 品类名称
   sourceLocationId: number;       // 调出直播间ID
   sourceLocationName: string;     // 调出直播间名称
   sourceHandlerId?: string;       // 调出主播ID
@@ -82,4 +84,7 @@ export interface GoodsOption {
   id: string;
   code: string;
   name: string;
+  nameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
 }

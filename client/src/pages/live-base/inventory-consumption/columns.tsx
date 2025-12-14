@@ -64,7 +64,13 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     width: 180,
     render: (_, record) => (
       <Tooltip title={record.goodsName}>
-        <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />
+        <GoodsNameText 
+          text={record.goodsName} 
+          nameI18n={record.goodsNameI18n}
+          categoryCode={record.categoryCode}
+          categoryName={record.categoryName}
+          showCategory={true}
+        />
       </Tooltip>
     ),
   },

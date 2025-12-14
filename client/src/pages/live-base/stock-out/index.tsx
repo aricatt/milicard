@@ -59,8 +59,13 @@ interface StockOut {
     id: string;
     code: string;
     name: string;
+    nameI18n?: { en?: string; th?: string; vi?: string; [key: string]: string | undefined } | null;
     packPerBox: number;
     piecePerPack: number;
+    category?: {
+      code: string;
+      name: string;
+    };
   };
   location?: {
     id: number;
@@ -131,10 +136,15 @@ const StockOutPage: React.FC = () => {
       });
       if (result.success) {
         setGoodsOptions(
-          (result.data || []).map((g: any) => ({
-            label: `${g.name} (${g.code})`,
-            value: g.id,
-          }))
+          (result.data || []).map((g: any) => {
+            const categoryDisplay = g.categoryCode 
+              ? `[${g.categoryName || g.categoryCode}]` 
+              : '';
+            return {
+              label: `${categoryDisplay}${g.name} (${g.code})`,
+              value: g.id,
+            };
+          })
         );
       }
     } catch (error) {
@@ -366,7 +376,15 @@ const StockOutPage: React.FC = () => {
       key: 'goods',
       width: 200,
       hideInSearch: true,
-      render: (_, record) => <GoodsNameText text={record.goods?.name} nameI18n={record.goods?.nameI18n} />,
+      render: (_, record) => (
+        <GoodsNameText 
+          text={record.goods?.name} 
+          nameI18n={record.goods?.nameI18n}
+          categoryCode={record.goods?.category?.code}
+          categoryName={record.goods?.category?.name}
+          showCategory={true}
+        />
+      ),
     },
     {
       title: intl.formatMessage({ id: 'stockOut.column.type' }),

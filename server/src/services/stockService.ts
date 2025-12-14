@@ -27,6 +27,8 @@ export interface StockInfo {
   goodsCode: string;
   goodsName: string;
   goodsNameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
   packPerBox: number;
   piecePerPack: number;
   locationId: number;
@@ -171,13 +173,27 @@ export class StockService {
         piece: consumptionSum._sum.pieceQuantity || 0,
       };
 
-      // 计算当前库存
-      const currentBox = arrival.box + transferIn.box - transferOut.box - stockOut.box - consumption.box;
-      const currentPack = arrival.pack + transferIn.pack - transferOut.pack - stockOut.pack - consumption.pack;
-      const currentPiece = arrival.piece + transferIn.piece - transferOut.piece - stockOut.piece - consumption.piece;
+      // 计算当前库存（原始值）
+      let currentBox = arrival.box + transferIn.box - transferOut.box - stockOut.box - consumption.box;
+      let currentPack = arrival.pack + transferIn.pack - transferOut.pack - stockOut.pack - consumption.pack;
+      let currentPiece = arrival.piece + transferIn.piece - transferOut.piece - stockOut.piece - consumption.piece;
 
-      // 转换为总盒数（标准化）
+      // 转换为总盒数（标准化）- 用于计算总量
       const totalPacks = currentBox * packPerBox + currentPack + Math.floor(currentPiece / piecePerPack);
+
+      // 标准化库存显示：处理负数借位
+      // 包数为负时，向盒数借位
+      if (currentPiece < 0) {
+        const borrowPacks = Math.ceil(Math.abs(currentPiece) / piecePerPack);
+        currentPack -= borrowPacks;
+        currentPiece += borrowPacks * piecePerPack;
+      }
+      // 盒数为负时，向箱数借位
+      if (currentPack < 0) {
+        const borrowBoxes = Math.ceil(Math.abs(currentPack) / packPerBox);
+        currentBox -= borrowBoxes;
+        currentPack += borrowBoxes * packPerBox;
+      }
 
       return {
         arrivalBox: arrival.box,
@@ -281,8 +297,15 @@ export class StockService {
             id: true,
             code: true,
             name: true,
+            nameI18n: true,
             packPerBox: true,
             piecePerPack: true,
+            category: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
           },
         });
 
@@ -301,6 +324,8 @@ export class StockService {
           goodsCode: goods.code,
           goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
           goodsNameI18n: goods.nameI18n as NameI18n | null,
+          categoryCode: goods.category?.code || '',
+          categoryName: goods.category?.name || '',
           packPerBox: goods.packPerBox || 1,
           piecePerPack: goods.piecePerPack || 1,
           locationId,
@@ -515,8 +540,15 @@ export class StockService {
             id: true,
             code: true,
             name: true,
+            nameI18n: true,
             packPerBox: true,
             piecePerPack: true,
+            category: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
           },
         }),
         prisma.goods.count({ where: goodsWhere }),
@@ -569,6 +601,8 @@ export class StockService {
           goodsCode: goods.code,
           goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
           goodsNameI18n: goods.nameI18n as NameI18n | null,
+          categoryCode: goods.category?.code || '',
+          categoryName: goods.category?.name || '',
           packPerBox,
           piecePerPack,
           stockBox: totalBox,

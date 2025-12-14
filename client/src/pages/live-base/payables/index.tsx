@@ -29,6 +29,9 @@ interface PayableInfo {
   purchaseName: string;
   supplierName: string;
   goodsName: string;
+  goodsNameI18n?: { en?: string; th?: string; vi?: string; [key: string]: string | undefined } | null;
+  categoryCode?: string;
+  categoryName?: string;
   totalAmount: number;
   paidAmount: number;
   unpaidAmount: number;
@@ -175,7 +178,15 @@ const PayablesPage: React.FC = () => {
       key: 'goodsName',
       width: 200,
       hideInSearch: true,
-      render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
+      render: (_, record) => (
+        <GoodsNameText 
+          text={record.goodsName} 
+          nameI18n={record.goodsNameI18n}
+          categoryCode={record.categoryCode}
+          categoryName={record.categoryName}
+          showCategory={true}
+        />
+      ),
     },
     {
       title: intl.formatMessage({ id: 'payables.column.totalAmount' }),
@@ -340,35 +351,35 @@ const PayablesPage: React.FC = () => {
         onCancel={() => setPaymentModalVisible(false)}
         confirmLoading={paymentLoading}
         width={500}
-        destroyOnHidden
+        destroyOnClose
       >
-        {currentPayable && (
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.purchaseName' })}>
-                {currentPayable.purchaseName}
-              </Descriptions.Item>
-              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.supplier' })}>
-                {currentPayable.supplierName}
-              </Descriptions.Item>
-              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.totalAmount' })}>
-                <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
-                  ¥ {currentPayable.totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
-                </span>
-              </Descriptions.Item>
-              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.paidAmount' })}>
-                <span style={{ color: '#52c41a' }}>
-                  ¥ {currentPayable.paidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
-                </span>
-              </Descriptions.Item>
-              <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.unpaidAmount' })}>
-                <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
-                  ¥ {currentPayable.unpaidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
-                </span>
-              </Descriptions.Item>
-            </Descriptions>
+        <Form form={form} layout="vertical">
+          {currentPayable && (
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <Descriptions column={1} bordered size="small">
+                <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.purchaseName' })}>
+                  {currentPayable.purchaseName}
+                </Descriptions.Item>
+                <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.supplier' })}>
+                  {currentPayable.supplierName}
+                </Descriptions.Item>
+                <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.totalAmount' })}>
+                  <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                    ¥ {currentPayable.totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                  </span>
+                </Descriptions.Item>
+                <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.paidAmount' })}>
+                  <span style={{ color: '#52c41a' }}>
+                    ¥ {currentPayable.paidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                  </span>
+                </Descriptions.Item>
+                <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.unpaidAmount' })}>
+                  <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
+                    ¥ {currentPayable.unpaidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                  </span>
+                </Descriptions.Item>
+              </Descriptions>
 
-            <Form form={form} layout="vertical">
               <Form.Item
                 name="paymentAmount"
                 label={intl.formatMessage({ id: 'payables.form.paymentAmount' })}
@@ -400,9 +411,9 @@ const PayablesPage: React.FC = () => {
                   {intl.formatMessage({ id: 'payables.action.payFull' })}
                 </Button>
               </div>
-            </Form>
-          </Space>
-        )}
+            </Space>
+          )}
+        </Form>
       </Modal>
     </PageContainer>
   );

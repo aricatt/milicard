@@ -546,7 +546,12 @@ const ConsumptionManagement: React.FC = () => {
                   loading={optionsLoading}
                   showSearch
                   optionFilterProp="label"
-                  options={goodsOptions.map(g => ({ value: g.id, label: g.name }))}
+                  options={goodsOptions.map(g => {
+                    const categoryDisplay = g.categoryCode 
+                      ? `[${g.categoryName || g.categoryCode}]` 
+                      : '';
+                    return { value: g.id, label: `${categoryDisplay}${g.name}` };
+                  })}
                   onChange={handleFormFieldChange}
                 />
               </Form.Item>

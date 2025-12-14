@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
 import type { IntlShape } from 'react-intl';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getGoodsNameWithCategory } from '@/components/GoodsNameText';
 
 /**
  * 向下取整到2位小数
@@ -51,24 +51,43 @@ export const getColumns = (
   {
     title: intl?.formatMessage({ id: 'procurement.column.purchaseName' }) || '采购名称',
     key: 'purchaseName',
-    width: 280,
+    width: 320,
     hideInSearch: true,
     render: (_, record) => {
-      // 动态生成：采购日期 + 商品名称
+      // 动态生成：采购日期 + [品类] + 商品名称（换行显示）
       const date = record.purchaseDate 
         ? record.purchaseDate.split('T')[0] 
         : '';
-      const goodsName = record.goodsName || '';
-      return <GoodsNameText text={date && goodsName ? `${date}${goodsName}` : '-'} />;
+      if (!date) return '-';
+      return (
+        <div style={{ lineHeight: 1.4 }}>
+          <div style={{ color: '#666', fontSize: '12px' }}>{date}</div>
+          <GoodsNameText 
+            text={record.goodsName} 
+            nameI18n={record.goodsNameI18n}
+            categoryCode={record.categoryCode}
+            categoryName={record.categoryName}
+            showCategory={true}
+          />
+        </div>
+      );
     },
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.product' }) || '商品名称',
     dataIndex: 'goodsName',
     key: 'goodsName',
-    width: 200,
+    width: 220,
     hideInSetting: true,
-    render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
+    render: (_, record) => (
+      <GoodsNameText 
+        text={record.goodsName} 
+        nameI18n={record.goodsNameI18n}
+        categoryCode={record.categoryCode}
+        categoryName={record.categoryName}
+        showCategory={true}
+      />
+    ),
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.supplier' }) || '供应商',

@@ -14,6 +14,8 @@ export interface ConsumptionRecord {
   goodsCode?: string;
   goodsName?: string;
   goodsNameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
   packPerBox?: number;
   piecePerPack?: number;
   locationId: number;
@@ -77,4 +79,7 @@ export interface GoodsOption {
   id: string;
   code: string;
   name: string;
+  nameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
 }

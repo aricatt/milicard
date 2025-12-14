@@ -7,14 +7,6 @@ import type { IntlShape } from 'react-intl';
 import GoodsNameText from '@/components/GoodsNameText';
 
 /**
- * 生成采购名称：采购日期 + 商品名称
- */
-const getPurchaseName = (purchaseDate: string, goodsName: string): string => {
-  if (!purchaseDate || !goodsName) return '-';
-  return `${purchaseDate}${goodsName}`;
-};
-
-/**
  * 获取ProTable列定义
  */
 export const getColumns = (
@@ -53,21 +45,43 @@ export const getColumns = (
     ),
   },
   {
-    title: intl?.formatMessage({ id: 'procurement.column.product' }) || '采购名称',
+    title: intl?.formatMessage({ id: 'arrivals.column.purchaseName' }) || '采购名称',
     key: 'purchaseName',
-    width: 280,
+    width: 320,
     hideInSearch: true,
-    render: (_, record) => (
-      <GoodsNameText text={getPurchaseName(record.purchaseDate, record.goodsName)} />
-    ),
+    render: (_, record) => {
+      // 动态生成：采购日期 + [品类] + 商品名称（换行显示）
+      const date = record.purchaseDate || '';
+      if (!date) return '-';
+      return (
+        <div style={{ lineHeight: 1.4 }}>
+          <div style={{ color: '#666', fontSize: '12px' }}>{date}</div>
+          <GoodsNameText 
+            text={record.goodsName} 
+            nameI18n={record.goodsNameI18n}
+            categoryCode={record.categoryCode}
+            categoryName={record.categoryName}
+            showCategory={true}
+          />
+        </div>
+      );
+    },
   },
   {
-    title: intl?.formatMessage({ id: 'procurement.column.product' }) || '商品',
+    title: intl?.formatMessage({ id: 'arrivals.column.product' }) || '商品',
     dataIndex: 'goodsName',
     key: 'goodsName',
-    width: 200,
+    width: 220,
     hideInSetting: true,
-    render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
+    render: (_, record) => (
+      <GoodsNameText 
+        text={record.goodsName} 
+        nameI18n={record.goodsNameI18n}
+        categoryCode={record.categoryCode}
+        categoryName={record.categoryName}
+        showCategory={true}
+      />
+    ),
   },
   {
     title: intl?.formatMessage({ id: 'arrivals.column.location' }) || '直播间',

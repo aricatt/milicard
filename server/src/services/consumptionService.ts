@@ -116,7 +116,12 @@ export class ConsumptionService {
         prisma.stockConsumption.findMany({
           where,
           include: {
-            goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
+            goods: { 
+              select: { 
+                id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true,
+                category: { select: { code: true, name: true } }
+              } 
+            },
             location: { select: { id: true, name: true } },
             handler: { select: { id: true, name: true } },
             base: { select: { id: true, name: true } }
@@ -138,6 +143,8 @@ export class ConsumptionService {
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         goodsNameI18n: record.goods?.nameI18n as any,
+        categoryCode: (record.goods as any)?.category?.code || '',
+        categoryName: (record.goods as any)?.category?.name || '',
         packPerBox: record.goods?.packPerBox || 1,
         piecePerPack: record.goods?.piecePerPack || 1,
         locationId: record.locationId,
@@ -188,13 +195,21 @@ export class ConsumptionService {
         throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
       }
 
-      // 验证商品是否存在
-      const goods = await prisma.goods.findFirst({
-        where: { id: data.goodsId, baseId }
+      // 验证商品是否存在且在该基地有配置
+      const goodsSetting = await prisma.goodsLocalSetting.findFirst({
+        where: {
+          goodsId: data.goodsId,
+          baseId: baseId,
+          isActive: true
+        },
+        include: {
+          goods: true
+        }
       });
-      if (!goods) {
-        throw new BaseError('商品不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      if (!goodsSetting || !goodsSetting.goods) {
+        throw new BaseError('商品不存在或未在该基地启用', BaseErrorType.RESOURCE_NOT_FOUND);
       }
+      const goods = goodsSetting.goods;
 
       // 验证位置是否存在
       const location = await prisma.location.findFirst({
@@ -491,13 +506,23 @@ export class ConsumptionService {
         throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
       }
 
-      // 根据名称查找商品
-      const goods = await prisma.goods.findFirst({
-        where: { name: data.goodsName, baseId }
+      // 根据名称查找商品（通过基地配置）
+      const goodsSetting = await prisma.goodsLocalSetting.findFirst({
+        where: {
+          baseId: baseId,
+          isActive: true,
+          goods: {
+            name: data.goodsName
+          }
+        },
+        include: {
+          goods: true
+        }
       });
-      if (!goods) {
-        throw new BaseError(`商品不存在: ${data.goodsName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      if (!goodsSetting || !goodsSetting.goods) {
+        throw new BaseError(`商品不存在或未在该基地启用: ${data.goodsName}`, BaseErrorType.RESOURCE_NOT_FOUND);
       }
+      const goods = goodsSetting.goods;
 
       // 根据名称查找位置
       const location = await prisma.location.findFirst({

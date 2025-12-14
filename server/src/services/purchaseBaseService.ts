@@ -34,6 +34,8 @@ export class PurchaseBaseService {
           g.code as "goodsCode",
           g.name as "goodsName",
           g.name_i18n as "goodsNameI18n",
+          c.code as "categoryCode",
+          c.name as "categoryName",
           COALESCE(gls.retail_price, 0) as "retailPrice",
           g.pack_per_box as "packPerBox",
           g.piece_per_pack as "piecePerPack",
@@ -50,6 +52,7 @@ export class PurchaseBaseService {
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
         JOIN goods g ON poi.goods_id = g.id
         JOIN suppliers s ON po.supplier_id = s.id
+        LEFT JOIN categories c ON g.category_id = c.id
         LEFT JOIN goods_local_settings gls ON gls.goods_id = g.id AND gls.base_id = po.base_id
         LEFT JOIN (
           SELECT 
@@ -151,6 +154,8 @@ export class PurchaseBaseService {
           goodsCode: item.goodsCode,
           goodsName: item.goodsName,
           goodsNameI18n: item.goodsNameI18n,
+          categoryCode: item.categoryCode || '',
+          categoryName: item.categoryName || '',
           retailPrice: Number(item.retailPrice),
           purchaseBoxQty,
           purchasePackQty,

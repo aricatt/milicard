@@ -92,7 +92,14 @@ export class TransferRecordService {
               select: {
                 id: true,
                 code: true,
-                name: true
+                name: true,
+                nameI18n: true,
+                category: {
+                  select: {
+                    code: true,
+                    name: true
+                  }
+                }
               }
             },
             sourceLocation: {
@@ -141,6 +148,8 @@ export class TransferRecordService {
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         goodsNameI18n: record.goods?.nameI18n as any,
+        categoryCode: (record.goods as any)?.category?.code || '',
+        categoryName: (record.goods as any)?.category?.name || '',
         sourceLocationId: record.sourceLocationId,
         sourceLocationName: record.sourceLocation?.name || '',
         sourceHandlerName: record.sourceHandler?.name || '',
@@ -200,22 +209,29 @@ export class TransferRecordService {
         throw new BaseError('调出位置和调入位置不能相同', BaseErrorType.VALIDATION_ERROR);
       }
 
-      // 验证商品是否存在且属于该基地
-      const goods = await prisma.goods.findFirst({
+      // 验证商品是否存在且在该基地有配置
+      const goodsSetting = await prisma.goodsLocalSetting.findFirst({
         where: {
-          id: data.goodsId,
-          baseId: baseId
+          goodsId: data.goodsId,
+          baseId: baseId,
+          isActive: true
         },
-        select: {
-          id: true,
-          code: true,
-          name: true
+        include: {
+          goods: {
+            select: {
+              id: true,
+              code: true,
+              name: true
+            }
+          }
         }
       });
 
-      if (!goods) {
-        throw new BaseError('商品不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      if (!goodsSetting || !goodsSetting.goods) {
+        throw new BaseError('商品不存在或未在该基地启用', BaseErrorType.RESOURCE_NOT_FOUND);
       }
+      
+      const goods = goodsSetting.goods;
 
       // 验证调出位置是否存在且属于该基地
       const sourceLocation = await prisma.location.findFirst({
@@ -308,7 +324,14 @@ export class TransferRecordService {
             select: {
               id: true,
               code: true,
-              name: true
+              name: true,
+              nameI18n: true,
+              category: {
+                select: {
+                  code: true,
+                  name: true
+                }
+              }
             }
           },
           sourceLocation: {
@@ -362,11 +385,15 @@ export class TransferRecordService {
         goodsCode: record.goods?.code || '',
         goodsName: record.goods?.name || '',
         goodsNameI18n: record.goods?.nameI18n as any,
+        categoryCode: record.goods?.category?.code || '',
+        categoryName: record.goods?.category?.name || '',
         sourceLocationId: record.sourceLocationId,
         sourceLocationName: record.sourceLocation?.name || '',
+        sourceHandlerId: record.sourceHandlerId,
         sourceHandlerName: record.sourceHandler?.name || '',
         destinationLocationId: record.destinationLocationId,
         destinationLocationName: record.destinationLocation?.name || '',
+        destinationHandlerId: record.destinationHandlerId,
         destinationHandlerName: record.destinationHandler?.name || '',
         handlerId: record.sourceHandlerId,
         handlerName: record.sourceHandler?.name || '',
@@ -430,7 +457,14 @@ export class TransferRecordService {
             select: {
               id: true,
               code: true,
-              name: true
+              name: true,
+              nameI18n: true,
+              category: {
+                select: {
+                  code: true,
+                  name: true
+                }
+              }
             }
           },
           sourceLocation: {
@@ -447,7 +481,14 @@ export class TransferRecordService {
               type: true
             }
           },
-          handler: {
+          sourceHandler: {
+            select: {
+              id: true,
+              name: true,
+              role: true
+            }
+          },
+          destinationHandler: {
             select: {
               id: true,
               name: true,
@@ -477,12 +518,18 @@ export class TransferRecordService {
         goodsId: record.goodsId,
         goodsName: record.goods?.name || '',
         goodsNameI18n: record.goods?.nameI18n as any,
+        categoryCode: record.goods?.category?.code || '',
+        categoryName: record.goods?.category?.name || '',
         sourceLocationId: record.sourceLocationId,
         sourceLocationName: record.sourceLocation?.name || '',
         destinationLocationId: record.destinationLocationId,
         destinationLocationName: record.destinationLocation?.name || '',
-        handlerId: record.handlerId,
-        handlerName: record.handler?.name || '',
+        sourceHandlerId: record.sourceHandlerId,
+        sourceHandlerName: record.sourceHandler?.name || '',
+        destinationHandlerId: record.destinationHandlerId,
+        destinationHandlerName: record.destinationHandler?.name || '',
+        handlerId: record.sourceHandlerId,
+        handlerName: record.sourceHandler?.name || '',
         baseId: record.baseId,
         baseName: record.base?.name || '',
         boxQuantity: record.boxQuantity,
@@ -645,17 +692,25 @@ export class TransferRecordService {
         throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
       }
 
-      // 根据商品名称查找商品
-      const goods = await prisma.goods.findFirst({
+      // 根据商品名称查找商品（通过基地配置）
+      const goodsSetting = await prisma.goodsLocalSetting.findFirst({
         where: {
-          name: data.goodsName,
-          baseId: baseId
+          baseId: baseId,
+          isActive: true,
+          goods: {
+            name: data.goodsName
+          }
+        },
+        include: {
+          goods: true
         }
       });
 
-      if (!goods) {
-        throw new BaseError(`商品不存在: ${data.goodsName}`, BaseErrorType.RESOURCE_NOT_FOUND);
+      if (!goodsSetting || !goodsSetting.goods) {
+        throw new BaseError(`商品不存在或未在该基地启用: ${data.goodsName}`, BaseErrorType.RESOURCE_NOT_FOUND);
       }
+      
+      const goods = goodsSetting.goods;
 
       // 根据名称查找调出位置
       const sourceLocation = await prisma.location.findFirst({

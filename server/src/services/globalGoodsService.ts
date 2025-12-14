@@ -63,6 +63,19 @@ export class GlobalGoodsService {
         throw new Error(`商品编码 ${goodsCode} 已存在`)
       }
 
+      // 检查品类+商品名称是否已存在
+      if (data.categoryId && data.name) {
+        const duplicateGoods = await prisma.goods.findFirst({
+          where: {
+            categoryId: data.categoryId,
+            name: data.name
+          }
+        })
+        if (duplicateGoods) {
+          throw new Error(`该品类下已存在同名商品「${data.name}」`)
+        }
+      }
+
       // 创建商品
       const goods = await prisma.goods.create({
         data: {

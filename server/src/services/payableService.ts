@@ -11,6 +11,9 @@ export interface PayableInfo {
   purchaseName: string;        // 采购名称：日期+商品名称
   supplierName: string;        // 供应商名称
   goodsName: string;           // 商品名称
+  goodsNameI18n?: any;         // 商品名称国际化
+  categoryCode?: string;       // 品类编号
+  categoryName?: string;       // 品类名称
   totalAmount: number;         // 应付总金额
   paidAmount: number;          // 已付金额
   unpaidAmount: number;        // 未付金额
@@ -87,7 +90,16 @@ export class PayableService {
           supplier: true,
           items: {
             include: {
-              goods: true,
+              goods: {
+                include: {
+                  category: {
+                    select: {
+                      code: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -106,8 +118,12 @@ export class PayableService {
       const paidAmount = Number(order.actualAmount) || 0;
       const unpaidAmount = totalAmount - paidAmount;
 
-      // 获取第一个商品名称（采购单通常只有一个商品）
-      const goodsName = order.items[0]?.goods?.name || '';
+      // 获取第一个商品信息（采购单通常只有一个商品）
+      const firstGoods = order.items[0]?.goods;
+      const goodsName = firstGoods?.name || '';
+      const goodsNameI18n = firstGoods?.nameI18n || null;
+      const categoryCode = firstGoods?.category?.code || '';
+      const categoryName = firstGoods?.category?.name || '';
       
       // 格式化采购日期
       const dateStr = order.purchaseDate
@@ -126,6 +142,9 @@ export class PayableService {
         purchaseName: purchaseNameStr,
         supplierName: order.supplier?.name || '',
         goodsName,
+        goodsNameI18n,
+        categoryCode,
+        categoryName,
         totalAmount,
         paidAmount,
         unpaidAmount,

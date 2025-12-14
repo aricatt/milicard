@@ -21,6 +21,8 @@ export interface ArrivalRecord {
   goodsName: string;             // 商品名称
   goodsNameI18n?: NameI18n | null; // 商品多语言名称
   goodsCode: string;
+  categoryCode?: string;         // 品类编号
+  categoryName?: string;         // 品类名称
   locationId: number;
   locationName: string;          // 直播间（仓库）名称
   handlerId: string;

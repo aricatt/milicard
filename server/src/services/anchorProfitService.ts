@@ -379,6 +379,12 @@ export class AnchorProfitService {
               name: true,
               packPerBox: true,  // 多少盒/箱
               piecePerPack: true, // 多少包/盒
+              category: {
+                select: {
+                  code: true,
+                  name: true,
+                }
+              }
             } 
           },
           location: { select: { name: true } },
@@ -403,17 +409,24 @@ export class AnchorProfitService {
           Number(c.packQuantity) * unitPricePerPack +
           Number(c.pieceQuantity) * unitPricePerPiece;
           
+        // 品类显示
+        const categoryDisplay = c.goods.category 
+          ? `[${c.goods.category.name || c.goods.category.code}]` 
+          : '';
+        
         return {
           id: c.id,
           consumptionDate: c.consumptionDate,
           goodsName: c.goods.name,
+          categoryCode: c.goods.category?.code || '',
+          categoryName: c.goods.category?.name || '',
           locationName: c.location.name,
           handlerName: c.handler.name,
           boxQuantity: c.boxQuantity,
           packQuantity: c.packQuantity,
           pieceQuantity: c.pieceQuantity,
           consumptionAmount,
-          label: `${c.consumptionDate.toISOString().split('T')[0]} - ${c.goods.name} (${c.boxQuantity}箱${c.packQuantity}盒${c.pieceQuantity}包) ¥${consumptionAmount.toFixed(2)}`,
+          label: `${c.consumptionDate.toISOString().split('T')[0]} - ${categoryDisplay}${c.goods.name} (${c.boxQuantity}箱${c.packQuantity}盒${c.pieceQuantity}包) ¥${consumptionAmount.toFixed(2)}`,
         };
       });
 

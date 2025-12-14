@@ -92,6 +92,7 @@ export interface GoodsResponse {
   name: string
   nameI18n?: NameI18n | null
   categoryId: number | null
+  categoryCode?: string | null
   categoryName?: string | null
   manufacturer: string
   retailPrice: number

@@ -57,11 +57,15 @@ export interface TransferResponse {
   goodsCode?: string;
   goodsName: string;
   goodsNameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
   sourceLocationId: number;
   sourceLocationName: string;
+  sourceHandlerId?: string;
   sourceHandlerName?: string;
   destinationLocationId: number;
   destinationLocationName: string;
+  destinationHandlerId?: string;
   destinationHandlerName?: string;
   handlerId: string;
   handlerName: string;

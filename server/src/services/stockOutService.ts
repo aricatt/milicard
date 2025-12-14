@@ -165,8 +165,15 @@ class StockOutService {
               id: true,
               code: true,
               name: true,
+              nameI18n: true,
               packPerBox: true,
               piecePerPack: true,
+              category: {
+                select: {
+                  code: true,
+                  name: true,
+                },
+              },
             },
           },
           location: {
@@ -214,8 +221,15 @@ class StockOutService {
             id: true,
             code: true,
             name: true,
+            nameI18n: true,
             packPerBox: true,
             piecePerPack: true,
+            category: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
           },
         },
         location: {

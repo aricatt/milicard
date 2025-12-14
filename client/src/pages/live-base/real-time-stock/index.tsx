@@ -37,6 +37,8 @@ interface RealTimeStock {
   goodsCode: string;
   goodsName: string;
   goodsNameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
   packPerBox: number;
   piecePerPack: number;
   stockBox: number;
@@ -125,7 +127,15 @@ const RealTimeStockPage: React.FC = () => {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'goodsName',
       width: 200,
-      render: (_, record) => <GoodsNameText text={record.goodsName} nameI18n={record.goodsNameI18n} />,
+      render: (_, record) => (
+        <GoodsNameText 
+          text={record.goodsName} 
+          nameI18n={record.goodsNameI18n}
+          categoryCode={record.categoryCode}
+          categoryName={record.categoryName}
+          showCategory={true}
+        />
+      ),
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.boxQty' }),

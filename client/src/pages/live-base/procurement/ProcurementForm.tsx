@@ -1,9 +1,10 @@
 import React from 'react';
 import { Form, DatePicker, Select, InputNumber, Row, Col, Tag } from 'antd';
-import { useIntl } from '@umijs/max';
+import { useIntl, getLocale } from '@umijs/max';
 import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
 import type { GoodsOption, SupplierOption, ProcurementFormValues } from './types';
+import { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 const { Option } = Select;
 
@@ -132,11 +133,15 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
             String(option?.children || '').toLowerCase().includes(input.toLowerCase())
           }
         >
-          {goodsOptions.map(goods => (
-            <Option key={goods.code} value={goods.code}>
-              {goods.name}
-            </Option>
-          ))}
+          {goodsOptions.map(goods => {
+            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, getLocale());
+            const displayName = categoryDisplay ? `[${categoryDisplay}]${goods.name}` : goods.name;
+            return (
+              <Option key={goods.code} value={goods.code}>
+                {displayName}
+              </Option>
+            );
+          })}
         </Select>
       </Form.Item>
 

@@ -404,7 +404,12 @@ const TransferManagement: React.FC = () => {
                   showSearch
                   optionFilterProp="label"
                   loading={optionsLoading}
-                  options={goodsOptions.map(g => ({ value: g.id, label: g.name }))}
+                  options={goodsOptions.map(g => {
+                    const categoryDisplay = g.categoryCode 
+                      ? `[${g.categoryName || g.categoryCode}]` 
+                      : '';
+                    return { value: g.id, label: `${categoryDisplay}${g.name}` };
+                  })}
                 />
               </Form.Item>
             </Col>

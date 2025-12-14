@@ -129,15 +129,21 @@ const ArrivalManagement: React.FC = () => {
             const dateStr = item.purchaseDate 
               ? item.purchaseDate.split('T')[0] 
               : '';
+            // 品类显示：中文显示品类名称，其他语言显示品类编号
+            const categoryDisplay = item.categoryCode 
+              ? `[${item.categoryName || item.categoryCode}]` 
+              : '';
             orderMap.set(item.orderNo, {
               id: item.id,                    // 采购订单ID
               orderNo: item.orderNo,
               goodsId: item.goodsId,          // 商品ID
               purchaseDate: dateStr,
               goodsName: item.goodsName,
+              categoryCode: item.categoryCode,
+              categoryName: item.categoryName,
               supplierName: item.supplierName,
-              // 生成采购名称：采购日期 + 商品名称
-              purchaseName: `${dateStr}${item.goodsName || ''}`,
+              // 生成采购名称：采购日期 + [品类] + 商品名称
+              purchaseName: `${dateStr}${categoryDisplay}${item.goodsName || ''}`,
             });
           }
         });

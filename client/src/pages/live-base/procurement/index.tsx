@@ -107,9 +107,12 @@ const ProcurementManagement: React.FC = () => {
         const options = result.data.map((item: any) => ({
           code: item.code,
           name: item.name,
+          nameI18n: item.nameI18n,
           retailPrice: item.retailPrice,
           packPerBox: item.packPerBox || 1,      // 多少盒1箱
           piecePerPack: item.piecePerPack || 1,  // 多少包1盒
+          categoryCode: item.categoryCode || '',
+          categoryName: item.categoryName || '',
         }));
         setGoodsOptions(options);
       }
