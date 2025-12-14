@@ -4,7 +4,7 @@ import { DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { ArrivalRecord } from './types';
 import type { IntlShape } from 'react-intl';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 /**
  * 获取ProTable列定义
@@ -74,8 +74,9 @@ export const getColumns = (
     width: 80,
     hideInSearch: true,
     render: (_, record) => {
-      if (!record.categoryName) return '-';
-      return <Tag color="blue">{record.categoryName}</Tag>;
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      if (!displayName) return '-';
+      return <Tag color="blue">{displayName}</Tag>;
     },
   },
   {

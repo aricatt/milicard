@@ -30,7 +30,7 @@ import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 const { TextArea } = Input;
 
@@ -377,9 +377,11 @@ const StockOutPage: React.FC = () => {
       width: 80,
       hideInSearch: true,
       render: (_, record) => {
+        const categoryCode = record.goods?.category?.code;
         const categoryName = record.goods?.category?.name;
-        if (!categoryName) return '-';
-        return <Tag color="orange">{categoryName}</Tag>;
+        const displayName = getCategoryDisplayName(categoryCode, categoryName, intl.locale);
+        if (!displayName) return '-';
+        return <Tag color="orange">{displayName}</Tag>;
       },
     },
     {

@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import type { PurchaseOrder } from './types';
 import type { IntlShape } from 'react-intl';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 /**
  * 向下取整到2位小数
@@ -80,8 +80,9 @@ export const getColumns = (
     width: 80,
     hideInSearch: true,
     render: (_, record) => {
-      if (!record.categoryName) return '-';
-      return <Tag color="blue">{record.categoryName}</Tag>;
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      if (!displayName) return '-';
+      return <Tag color="blue">{displayName}</Tag>;
     },
   },
   {

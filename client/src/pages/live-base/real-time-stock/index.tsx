@@ -21,7 +21,7 @@ import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 // 多语言名称类型
 interface NameI18n {
@@ -129,8 +129,9 @@ const RealTimeStockPage: React.FC = () => {
       width: 80,
       search: false,
       render: (_, record) => {
-        if (!record.categoryName) return '-';
-        return <Tag color="geekblue">{record.categoryName}</Tag>;
+        const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl.locale);
+        if (!displayName) return '-';
+        return <Tag color="geekblue">{displayName}</Tag>;
       },
     },
     {

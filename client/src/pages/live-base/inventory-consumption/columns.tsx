@@ -5,7 +5,7 @@ import type { ProColumns } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 import type { ConsumptionRecord } from './types';
 import type { IntlShape } from 'react-intl';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 interface ColumnsConfig {
   onDelete: (record: ConsumptionRecord) => void;
@@ -64,8 +64,9 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     width: 80,
     search: false,
     render: (_, record) => {
-      if (!record.categoryName) return '-';
-      return <Tag color="purple">{record.categoryName}</Tag>;
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      if (!displayName) return '-';
+      return <Tag color="purple">{displayName}</Tag>;
     },
   },
   {
