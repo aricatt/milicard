@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma, PointOrderStatus, PaymentStatus } from '@prisma/client';
 import { logger } from '../utils/logger';
 import { StockService } from './stockService';
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper';
 
 const prisma = new PrismaClient();
 
@@ -647,10 +648,7 @@ export class PointOrderService {
 
       if (keyword) {
         pointGoodsWhere.goods = {
-          OR: [
-            { name: { contains: keyword, mode: 'insensitive' } },
-            { code: { contains: keyword, mode: 'insensitive' } },
-          ],
+          OR: buildGoodsSearchConditions(keyword),
           isActive: true,
         };
       } else {
@@ -698,10 +696,7 @@ export class PointOrderService {
 
     if (keyword) {
       settingsWhere.goods = {
-        OR: [
-          { name: { contains: keyword, mode: 'insensitive' } },
-          { code: { contains: keyword, mode: 'insensitive' } },
-        ],
+        OR: buildGoodsSearchConditions(keyword),
         isActive: true,
       };
     } else {

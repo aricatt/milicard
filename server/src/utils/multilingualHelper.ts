@@ -111,6 +111,65 @@ export class MultilingualHelper {
   }
 }
 
+// 支持的多语言字段键名（用于 nameI18n JSON 字段搜索）
+// 注意：这里使用的是 JSON 字段内的键名格式（下划线分隔）
+export const SUPPORTED_I18N_KEYS = ['en', 'th', 'vi', 'zh_TW'] as const
+
+/**
+ * 生成多语言名称搜索条件
+ * 用于 Prisma 查询中搜索 nameI18n JSON 字段
+ * @param search 搜索关键词
+ * @param fieldName JSON 字段名，默认为 'nameI18n'
+ * @returns Prisma OR 条件数组
+ */
+export function buildI18nSearchConditions(search: string, fieldName: string = 'nameI18n'): any[] {
+  return SUPPORTED_I18N_KEYS.map(key => ({
+    [fieldName]: {
+      path: [key],
+      string_contains: search,
+    }
+  }))
+}
+
+/**
+ * 生成包含主名称和多语言名称的完整搜索条件
+ * @param search 搜索关键词
+ * @param includeCode 是否包含编号搜索
+ * @returns Prisma OR 条件数组
+ */
+export function buildGoodsSearchConditions(search: string, includeCode: boolean = true): any[] {
+  const conditions: any[] = [
+    { name: { contains: search, mode: 'insensitive' } },
+    ...buildI18nSearchConditions(search),
+  ]
+  
+  if (includeCode) {
+    conditions.unshift({ code: { contains: search, mode: 'insensitive' } })
+  }
+  
+  return conditions
+}
+
+/**
+ * 生成关联商品的多语言搜索条件（用于关联查询）
+ * @param search 搜索关键词
+ * @param relationField 关联字段名，默认为 'goods'
+ * @returns Prisma OR 条件数组
+ */
+export function buildRelatedGoodsSearchConditions(search: string, relationField: string = 'goods'): any[] {
+  return [
+    { [relationField]: { name: { contains: search, mode: 'insensitive' } } },
+    ...SUPPORTED_I18N_KEYS.map(key => ({
+      [relationField]: {
+        nameI18n: {
+          path: [key],
+          string_contains: search,
+        }
+      }
+    }))
+  ]
+}
+
 // Express中间件：自动处理多语言响应
 export const withMultilingualResponse = (multilingualFields: string[]) => {
   return (req: any, res: any, next: any) => {

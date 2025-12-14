@@ -3,6 +3,7 @@
  */
 import { prisma } from '../utils/database';
 import { StockOutType, Prisma } from '@prisma/client';
+import { buildRelatedGoodsSearchConditions } from '../utils/multilingualHelper';
 
 export interface CreateStockOutDto {
   baseId: number;
@@ -151,7 +152,7 @@ class StockOutService {
         { targetName: { contains: keyword, mode: 'insensitive' } },
         { relatedOrderCode: { contains: keyword, mode: 'insensitive' } },
         { remark: { contains: keyword, mode: 'insensitive' } },
-        { goods: { name: { contains: keyword, mode: 'insensitive' } } },
+        ...buildRelatedGoodsSearchConditions(keyword),
       ];
     }
 

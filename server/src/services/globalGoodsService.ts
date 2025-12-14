@@ -1,6 +1,7 @@
 import { prisma } from '../utils/database'
 import { logger } from '../utils/logger'
 import { CodeGenerator } from '../utils/codeGenerator'
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper'
 
 /**
  * 全局商品数据类型
@@ -228,10 +229,7 @@ export class GlobalGoodsService {
     const where: any = {}
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } }
-      ]
+      where.OR = buildGoodsSearchConditions(search)
     }
 
     if (manufacturer) {

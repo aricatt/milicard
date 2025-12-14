@@ -14,6 +14,7 @@
 
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper';
 
 export interface NameI18n {
   en?: string;
@@ -523,7 +524,8 @@ export class StockService {
         },
       };
       if (goodsName) {
-        goodsWhere.name = { contains: goodsName, mode: 'insensitive' };
+        // 搜索支持：名称、多语言名称
+        goodsWhere.OR = buildGoodsSearchConditions(goodsName, false);
       }
       if (goodsCode) {
         goodsWhere.code = { contains: goodsCode, mode: 'insensitive' };

@@ -1,6 +1,7 @@
 import { prisma } from '../utils/database'
 import { logger } from '../utils/logger'
 import { CodeGenerator } from '../utils/codeGenerator'
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper'
 import {
   CreateGoodsRequest,
   UpdateGoodsRequest,
@@ -235,10 +236,8 @@ export class GoodsService {
       const goodsWhere: any = {}
       
       if (search) {
-        goodsWhere.OR = [
-          { code: { contains: search, mode: 'insensitive' } },
-          { name: { contains: search, mode: 'insensitive' } }
-        ]
+        // 搜索支持：编号、名称、多语言名称
+        goodsWhere.OR = buildGoodsSearchConditions(search)
       }
 
       if (manufacturer) {

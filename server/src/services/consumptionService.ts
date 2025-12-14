@@ -1,6 +1,7 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
 import { BaseError, BaseErrorType } from '../types/base';
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper';
 
 export interface ConsumptionQueryParams {
   current?: number;
@@ -90,7 +91,7 @@ export class ConsumptionService {
 
       if (goodsName) {
         where.goods = {
-          name: { contains: goodsName, mode: 'insensitive' }
+          OR: buildGoodsSearchConditions(goodsName, false)
         };
       }
 

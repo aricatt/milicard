@@ -1,5 +1,6 @@
 import { prisma } from '../utils/database'
 import { logger } from '../utils/logger'
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper'
 
 /**
  * 基地商品设置数据类型
@@ -231,10 +232,7 @@ export class GoodsLocalSettingService {
     const goodsWhere: any = {}
     
     if (search) {
-      goodsWhere.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } }
-      ]
+      goodsWhere.OR = buildGoodsSearchConditions(search)
     }
 
     if (manufacturer) {
@@ -285,17 +283,18 @@ export class GoodsLocalSettingService {
 
     if (params?.search) {
       where.goods = {
-        OR: [
-          { name: { contains: params.search, mode: 'insensitive' } },
-          { code: { contains: params.search, mode: 'insensitive' } }
-        ]
+        OR: buildGoodsSearchConditions(params.search)
       }
     }
 
     const settings = await prisma.goodsLocalSetting.findMany({
       where,
       include: {
-        goods: true
+        goods: {
+          include: {
+            category: true
+          }
+        }
       },
       orderBy: {
         goods: {
