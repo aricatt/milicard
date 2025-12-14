@@ -28,10 +28,11 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request, useIntl } from '@umijs/max';
+import { request, useIntl, getLocale } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getLocalizedGoodsName, getCategoryDisplayName } from '@/components/GoodsNameText';
+import BaseGoodsSelectModal, { type BaseGoodsItem } from '@/components/BaseGoodsSelectModal';
 
 const { TextArea } = Input;
 
@@ -60,6 +61,7 @@ interface StockOut {
     id: string;
     code: string;
     name: string;
+    nameI18n?: { en?: string; th?: string; vi?: string; [key: string]: string | undefined } | null;
     packPerBox: number;
     piecePerPack: number;
   };
@@ -113,32 +115,56 @@ const StockOutPage: React.FC = () => {
   const [editLoading, setEditLoading] = useState(false);
 
   // 下拉选项
-  const [goodsOptions, setGoodsOptions] = useState<any[]>([]);
   const [locationOptions, setLocationOptions] = useState<any[]>([]);
+  
+  // 商品选择弹窗状态
+  const [goodsSelectModalVisible, setGoodsSelectModalVisible] = useState(false);
+  const [selectedGoods, setSelectedGoods] = useState<BaseGoodsItem | null>(null);
+  const [editSelectedGoods, setEditSelectedGoods] = useState<BaseGoodsItem | null>(null);
+  
+  // 库存信息
+  const [stockInfo, setStockInfo] = useState<{ currentBox: number; currentPack: number; currentPiece: number } | null>(null);
+  const [stockLoading, setStockLoading] = useState(false);
 
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
 
   /**
-   * 获取商品列表
+   * 获取商品库存信息
    */
-  const fetchGoods = async () => {
-    if (!currentBase) return;
+  const fetchStockInfo = async (goodsId: string, locationId?: number) => {
+    if (!currentBase || !goodsId) {
+      setStockInfo(null);
+      return;
+    }
+    
+    setStockLoading(true);
     try {
-      const result = await request(`/api/v1/bases/${currentBase.id}/goods`, {
-        params: { pageSize: 1000, isActive: true },
+      const locId = locationId || createForm.getFieldValue('locationId') || editForm.getFieldValue('locationId');
+      if (!locId) {
+        setStockInfo(null);
+        return;
+      }
+      
+      const result = await request(`/api/v1/bases/${currentBase.id}/stock`, {
+        params: { goodsId, locationId: locId },
       });
-      if (result.success) {
-        setGoodsOptions(
-          (result.data || []).map((g: any) => ({
-            label: `${g.name} (${g.code})`,
-            value: g.id,
-          }))
-        );
+      
+      if (result.success && result.data) {
+        setStockInfo({
+          currentBox: result.data.currentBox || 0,
+          currentPack: result.data.currentPack || 0,
+          currentPiece: result.data.currentPiece || 0,
+        });
+      } else {
+        setStockInfo({ currentBox: 0, currentPack: 0, currentPiece: 0 });
       }
     } catch (error) {
-      console.error('Failed to fetch goods:', error);
+      console.error('Failed to fetch stock info:', error);
+      setStockInfo({ currentBox: 0, currentPack: 0, currentPiece: 0 });
+    } finally {
+      setStockLoading(false);
     }
   };
 
@@ -225,6 +251,23 @@ const StockOutPage: React.FC = () => {
    */
   const handleCreate = async (values: any) => {
     if (!currentBase) return;
+
+    // 库存检查
+    const boxQty = values.boxQuantity || 0;
+    const packQty = values.packQuantity || 0;
+    const pieceQty = values.pieceQuantity || 0;
+    
+    if (boxQty === 0 && packQty === 0 && pieceQty === 0) {
+      message.error(intl.formatMessage({ id: 'stockOut.form.quantityRequired' }));
+      return;
+    }
+    
+    if (stockInfo) {
+      if (boxQty > stockInfo.currentBox || packQty > stockInfo.currentPack || pieceQty > stockInfo.currentPiece) {
+        message.error(intl.formatMessage({ id: 'stockOut.form.insufficientStock' }));
+        return;
+      }
+    }
 
     setCreateLoading(true);
     try {
@@ -334,8 +377,10 @@ const StockOutPage: React.FC = () => {
    * 打开创建模态框
    */
   const openCreateModal = () => {
-    fetchGoods();
     fetchLocations();
+    setSelectedGoods(null);
+    setStockInfo(null);
+    createForm.resetFields();
     createForm.setFieldsValue({
       date: dayjs(),
       boxQuantity: 0,
@@ -497,8 +542,19 @@ const StockOutPage: React.FC = () => {
               size="small"
               icon={<EditOutlined />}
               onClick={() => {
-                fetchGoods();
                 fetchLocations();
+                // 设置编辑时选中的商品
+                if (record.goods) {
+                  setEditSelectedGoods({
+                    id: record.goods.id,
+                    code: record.goods.code,
+                    name: record.goods.name,
+                    nameI18n: record.goods.nameI18n || undefined,
+                    packPerBox: record.goods.packPerBox,
+                    piecePerPack: record.goods.piecePerPack,
+                    isActive: true,
+                  });
+                }
                 handleEdit(record);
               }}
             />
@@ -568,7 +624,7 @@ const StockOutPage: React.FC = () => {
     </div>
   );
 
-  // 表单内容
+  // 创建表单内容
   const formContent = (
     <>
       <Form.Item
@@ -581,17 +637,115 @@ const StockOutPage: React.FC = () => {
 
       <Form.Item
         label={intl.formatMessage({ id: 'stockOut.column.goods' })}
-        name="goodsId"
-        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.goodsRequired' }) }]}
+        required
       >
-        <Select
-          showSearch
-          placeholder={intl.formatMessage({ id: 'form.placeholder.select' })}
-          options={goodsOptions}
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
+        {selectedGoods ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Tag color="blue">{selectedGoods.code}</Tag>
+            <span style={{ flex: 1 }}>
+              {getLocalizedGoodsName(selectedGoods.name, selectedGoods.nameI18n, getLocale())}
+            </span>
+            <Button size="small" onClick={() => setGoodsSelectModalVisible(true)}>
+              {intl.formatMessage({ id: 'stockOut.form.reselect' })}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            type="dashed"
+            style={{ width: '100%' }}
+            onClick={() => setGoodsSelectModalVisible(true)}
+          >
+            <PlusOutlined /> {intl.formatMessage({ id: 'stockOut.form.clickToSelect' })}
+          </Button>
+        )}
+      </Form.Item>
+      <Form.Item name="goodsId" hidden rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.goodsRequired' }) }]}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        label={intl.formatMessage({ id: 'stockOut.column.location' })}
+        name="locationId"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.locationRequired' }) }]}
+      >
+        <Select 
+          placeholder={intl.formatMessage({ id: 'form.placeholder.select' })} 
+          options={locationOptions}
+          onChange={(value) => {
+            if (selectedGoods) {
+              fetchStockInfo(selectedGoods.id, value);
+            }
+          }}
         />
+      </Form.Item>
+      
+      {/* 库存信息显示 */}
+      {selectedGoods && stockInfo && (
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.form.currentStock' })}>
+          <Space>
+            <Tag color={stockInfo.currentBox > 0 ? 'green' : 'red'}>
+              {intl.formatMessage({ id: 'stockOut.column.boxQty' })}: {stockInfo.currentBox}
+            </Tag>
+            <Tag color={stockInfo.currentPack > 0 ? 'green' : 'red'}>
+              {intl.formatMessage({ id: 'stockOut.column.packQty' })}: {stockInfo.currentPack}
+            </Tag>
+            <Tag color={stockInfo.currentPiece > 0 ? 'green' : 'red'}>
+              {intl.formatMessage({ id: 'stockOut.column.pieceQty' })}: {stockInfo.currentPiece}
+            </Tag>
+          </Space>
+        </Form.Item>
+      )}
+
+      <Form.Item label={intl.formatMessage({ id: 'stockOut.column.targetName' })} name="targetName">
+        <Input placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} />
+      </Form.Item>
+
+      <Space style={{ width: '100%' }} size="middle">
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.column.boxQty' })} name="boxQuantity">
+          <InputNumber min={0} style={{ width: 100 }} />
+        </Form.Item>
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.column.packQty' })} name="packQuantity">
+          <InputNumber min={0} style={{ width: 100 }} />
+        </Form.Item>
+        <Form.Item label={intl.formatMessage({ id: 'stockOut.column.pieceQty' })} name="pieceQuantity">
+          <InputNumber min={0} style={{ width: 100 }} />
+        </Form.Item>
+      </Space>
+
+      <Form.Item label={intl.formatMessage({ id: 'form.label.notes' })} name="remark">
+        <TextArea rows={3} placeholder={intl.formatMessage({ id: 'form.placeholder.input' })} />
+      </Form.Item>
+    </>
+  );
+
+  // 编辑表单内容（使用 editSelectedGoods）
+  const editFormContent = (
+    <>
+      <Form.Item
+        label={intl.formatMessage({ id: 'stockOut.column.date' })}
+        name="date"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.dateRequired' }) }]}
+      >
+        <DatePicker style={{ width: '100%' }} />
+      </Form.Item>
+
+      <Form.Item
+        label={intl.formatMessage({ id: 'stockOut.column.goods' })}
+        required
+      >
+        {editSelectedGoods ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Tag color="blue">{editSelectedGoods.code}</Tag>
+            <span style={{ flex: 1 }}>
+              {getLocalizedGoodsName(editSelectedGoods.name, editSelectedGoods.nameI18n, getLocale())}
+            </span>
+          </div>
+        ) : (
+          <span style={{ color: '#999' }}>-</span>
+        )}
+      </Form.Item>
+      <Form.Item name="goodsId" hidden rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.goodsRequired' }) }]}>
+        <Input />
       </Form.Item>
 
       <Form.Item
@@ -714,14 +868,33 @@ const StockOutPage: React.FC = () => {
           setEditModalVisible(false);
           editForm.resetFields();
           setEditingRecord(null);
+          setEditSelectedGoods(null);
         }}
         confirmLoading={editLoading}
         width={600}
       >
         <Form form={editForm} layout="vertical" onFinish={handleUpdate}>
-          {formContent}
+          {editFormContent}
         </Form>
       </Modal>
+
+      {/* 商品选择弹窗 */}
+      <BaseGoodsSelectModal
+        open={goodsSelectModalVisible}
+        onCancel={() => setGoodsSelectModalVisible(false)}
+        onSelect={(goods) => {
+          setSelectedGoods(goods);
+          createForm.setFieldsValue({ goodsId: goods.id });
+          setGoodsSelectModalVisible(false);
+          // 获取库存信息
+          const locationId = createForm.getFieldValue('locationId');
+          if (locationId) {
+            fetchStockInfo(goods.id, locationId);
+          }
+        }}
+        baseId={currentBase?.id || 0}
+        title={intl.formatMessage({ id: 'stockOut.form.selectGoods' })}
+      />
     </PageContainer>
   );
 };

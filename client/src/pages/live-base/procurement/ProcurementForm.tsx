@@ -4,7 +4,7 @@ import { useIntl, getLocale } from '@umijs/max';
 import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
 import type { GoodsOption, SupplierOption, ProcurementFormValues } from './types';
-import { getCategoryDisplayName } from '@/components/GoodsNameText';
+import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 
 const { Option } = Select;
 
@@ -134,8 +134,10 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           }
         >
           {goodsOptions.map(goods => {
-            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, getLocale());
-            const displayName = categoryDisplay ? `[${categoryDisplay}]${goods.name}` : goods.name;
+            const locale = getLocale();
+            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, locale);
+            const goodsName = getLocalizedGoodsName(goods.name, goods.nameI18n, locale);
+            const displayName = categoryDisplay ? `[${categoryDisplay}]${goodsName}` : goodsName;
             return (
               <Option key={goods.code} value={goods.code}>
                 {displayName}

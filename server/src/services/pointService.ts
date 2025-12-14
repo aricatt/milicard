@@ -528,6 +528,7 @@ export class PointService {
             id: true,
             code: true,
             name: true,
+            nameI18n: true,
             packPerBox: true,
             piecePerPack: true,
             imageUrl: true,

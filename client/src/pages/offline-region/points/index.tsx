@@ -7,7 +7,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOu
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import PointForm from './components/PointForm';
-import { getCategoryDisplayName } from '@/components/GoodsNameText';
+import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 
 interface PointItem {
   id: string;
@@ -630,7 +630,7 @@ const PointsPage: React.FC = () => {
                                     <Tag color="blue">{getCategoryDisplayName(category.code, category.name, intl.locale)}</Tag>
                                   ) : '-'}
                                 </td>
-                                <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>{pg.goods.name}</td>
+                                <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>{getLocalizedGoodsName(pg.goods.name, pg.goods.nameI18n, intl.locale)}</td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0', textAlign: 'right' }}>
                                   {exclusivePrice > 0 ? exclusivePrice.toFixed(2) : '-'}
                                 </td>

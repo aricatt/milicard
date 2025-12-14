@@ -171,8 +171,10 @@ const PointGoodsSelectModal: React.FC<PointGoodsSelectModalProps> = ({
   // 获取多语言商品名称
   const getLocalizedName = (name: string, nameI18n?: NameI18n) => {
     if (!nameI18n) return name;
-    if (locale === 'zh-CN') return name;
-    return nameI18n[locale.replace('-', '_').toLowerCase()] || nameI18n.en || name;
+    if (locale === 'zh-CN' || locale === 'zh-TW') return name;
+    // 将 locale 转换为 nameI18n 的键名：en-US -> en, th-TH -> th, vi-VN -> vi
+    const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
+    return (localeKey && nameI18n[localeKey]) || name;
   };
 
   // 获取品类显示名称

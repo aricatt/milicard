@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Modal, Table, Input, Select, Tag, Button, Space, Row, Col, message } from 'antd';
+import { Modal, Table, Input, Select, Tag, Button, Row, Col, message } from 'antd';
 import { SearchOutlined, ReloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { request, useIntl, getLocale } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
@@ -13,19 +13,15 @@ interface NameI18n {
   [key: string]: string | undefined;
 }
 
-// 全局商品类型
-interface GlobalProduct {
+// 基地商品类型
+export interface BaseGoodsItem {
   id: string;
   code: string;
   name: string;
   nameI18n?: NameI18n;
-  categoryId?: number;
-  category?: {
-    id: number;
-    code: string;
-    name: string;
-  };
-  manufacturer: string;
+  categoryCode?: string;
+  categoryName?: string;
+  manufacturer?: string;
   packPerBox: number;
   piecePerPack: number;
   isActive: boolean;
@@ -39,10 +35,11 @@ interface Category {
 }
 
 // 组件属性
-interface GlobalGoodsSelectModalProps {
+interface BaseGoodsSelectModalProps {
   open: boolean;
   onCancel: () => void;
-  onSelect: (product: GlobalProduct) => void;
+  onSelect: (goods: BaseGoodsItem) => void;
+  baseId: number;
   excludeIds?: string[];  // 排除已选择的商品ID
   title?: string;
 }
@@ -61,32 +58,34 @@ const CategoryColors: Record<string, string> = {
 };
 
 /**
- * 全局商品选择弹窗
+ * 基地商品选择弹窗
  * 支持搜索、分页、品类筛选
+ * 用于出库、调货等需要选择基地商品的场景
  */
-const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
+const BaseGoodsSelectModal: React.FC<BaseGoodsSelectModalProps> = ({
   open,
   onCancel,
   onSelect,
+  baseId,
   excludeIds = [],
   title,
 }) => {
   const intl = useIntl();
-  const modalTitle = title || intl.formatMessage({ id: 'productSettings.form.selectProduct' });
+  const locale = getLocale();
+  const modalTitle = title || intl.formatMessage({ id: 'stockOut.form.selectGoods' });
+  
   // 状态
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState<GlobalProduct[]>([]);
+  const [goods, setGoods] = useState<BaseGoodsItem[]>([]);
   const [total, setTotal] = useState(0);
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchText, setSearchText] = useState('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>();
-  const [selectedManufacturer, setSelectedManufacturer] = useState<string | undefined>();
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState<string | undefined>();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [manufacturers, setManufacturers] = useState<string[]>([]);
   
   // 已排除的商品ID集合
-  const excludeIdSet = new Set(excludeIds);
+  const excludeIdSet = useMemo(() => new Set(excludeIds), [excludeIds]);
 
   // 获取品类列表
   const fetchCategories = async () => {
@@ -98,45 +97,34 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
     }
   };
 
-  // 获取厂家列表
-  const fetchManufacturers = async () => {
-    try {
-      const result = await request('/api/v1/global-goods/manufacturers', { method: 'GET' });
-      if (result.success) {
-        setManufacturers(result.data || []);
-      }
-    } catch (error) {
-      console.error('获取厂家列表失败:', error);
-    }
-  };
-
   // 获取商品列表
-  const fetchProducts = useCallback(async () => {
+  const fetchGoods = useCallback(async () => {
+    if (!baseId) return;
+    
     setLoading(true);
     try {
-      const result = await request('/api/v1/global-goods', {
+      const result = await request(`/api/v1/bases/${baseId}/goods`, {
         method: 'GET',
         params: {
           page: current,
           pageSize,
-          search: searchText || undefined,
-          categoryId: selectedCategoryId,
-          manufacturer: selectedManufacturer,
+          keyword: searchText || undefined,
+          categoryCode: selectedCategoryCode,
           isActive: true,
         },
       });
 
       if (result.success) {
-        setProducts(result.data || []);
-        setTotal(result.pagination?.total || 0);
+        setGoods(result.data || []);
+        setTotal(result.pagination?.total || result.data?.length || 0);
       }
     } catch (error) {
       console.error('获取商品列表失败:', error);
-      message.error('获取商品列表失败');
+      message.error(intl.formatMessage({ id: 'message.fetchFailed' }));
     } finally {
       setLoading(false);
     }
-  }, [current, pageSize, searchText, selectedCategoryId, selectedManufacturer]);
+  }, [baseId, current, pageSize, searchText, selectedCategoryCode, intl]);
 
   // 防抖搜索
   const debouncedSearch = useRef(
@@ -148,36 +136,53 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
 
   // 弹窗打开时加载数据
   useEffect(() => {
-    if (open) {
+    if (open && baseId) {
       fetchCategories();
-      fetchManufacturers();
-      fetchProducts();
+      fetchGoods();
+      // 重置状态
+      setSearchText('');
+      setSelectedCategoryCode(undefined);
+      setCurrent(1);
     }
-  }, [open]);
+  }, [open, baseId]);
 
   // 筛选条件变化时重新加载
   useEffect(() => {
-    if (open) {
-      fetchProducts();
+    if (open && baseId) {
+      fetchGoods();
     }
-  }, [current, pageSize, searchText, selectedCategoryId, selectedManufacturer, open]);
+  }, [current, pageSize, searchText, selectedCategoryCode]);
 
   // 重置筛选
   const handleReset = () => {
     setSearchText('');
-    setSelectedCategoryId(undefined);
-    setSelectedManufacturer(undefined);
+    setSelectedCategoryCode(undefined);
     setCurrent(1);
   };
 
   // 选择商品
-  const handleSelect = (record: GlobalProduct) => {
+  const handleSelect = (record: BaseGoodsItem) => {
     onSelect(record);
     onCancel();
   };
 
+  // 获取多语言商品名称
+  const getLocalizedName = (name: string, nameI18n?: NameI18n) => {
+    if (!nameI18n) return name;
+    if (locale === 'zh-CN' || locale === 'zh-TW') return name;
+    const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
+    return (localeKey && nameI18n[localeKey]) || name;
+  };
+
+  // 获取品类显示名称
+  const getCategoryDisplayName = (categoryCode?: string, categoryName?: string) => {
+    if (!categoryCode) return '-';
+    if (locale === 'zh-CN') return categoryName || categoryCode;
+    return categoryCode;
+  };
+
   // 表格列定义
-  const columns: ColumnsType<GlobalProduct> = useMemo(() => [
+  const columns: ColumnsType<BaseGoodsItem> = useMemo(() => [
     {
       title: intl.formatMessage({ id: 'products.column.code' }),
       dataIndex: 'code',
@@ -191,37 +196,21 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
       key: 'name',
       width: 200,
       ellipsis: true,
-      render: (_, record) => {
-        const locale = getLocale();
-        const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
-        const displayName = (localeKey && record.nameI18n?.[localeKey]) || record.name;
-        return displayName;
-      },
+      render: (name, record) => getLocalizedName(name, record.nameI18n),
     },
     {
       title: intl.formatMessage({ id: 'products.column.category' }),
-      dataIndex: 'category',
       key: 'category',
       width: 100,
       render: (_, record) => {
-        const categoryName = record.category?.name || '';
-        const categoryCode = record.category?.code || '';
+        const categoryCode = record.categoryCode || '';
+        const categoryName = record.categoryName || '';
         const color = CategoryColors[categoryCode] || 'default';
         if (!categoryCode) {
           return <Tag color="default">{intl.formatMessage({ id: 'products.uncategorized' })}</Tag>;
         }
-        // 中文显示品类名称，其他语言显示品类编号
-        const locale = getLocale();
-        const displayName = locale === 'zh-CN' ? categoryName : categoryCode;
-        return <Tag color={color}>{displayName}</Tag>;
+        return <Tag color={color}>{getCategoryDisplayName(categoryCode, categoryName)}</Tag>;
       },
-    },
-    {
-      title: intl.formatMessage({ id: 'products.column.manufacturer' }),
-      dataIndex: 'manufacturer',
-      key: 'manufacturer',
-      width: 120,
-      ellipsis: true,
     },
     {
       title: intl.formatMessage({ id: 'products.column.spec' }),
@@ -247,7 +236,7 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
         );
       },
     },
-  ], [intl, excludeIdSet]);
+  ], [intl, excludeIdSet, locale]);
 
   return (
     <Modal
@@ -256,11 +245,11 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
       onCancel={onCancel}
       width={900}
       footer={null}
-      destroyOnHidden
+      destroyOnClose
     >
       {/* 筛选区域 */}
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col span={8}>
+        <Col span={10}>
           <Input
             placeholder={intl.formatMessage({ id: 'productSettings.search.placeholder' })}
             prefix={<SearchOutlined />}
@@ -268,34 +257,20 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
             onChange={(e) => debouncedSearch(e.target.value)}
           />
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Select
             placeholder={intl.formatMessage({ id: 'productSettings.filter.category' })}
             allowClear
             style={{ width: '100%' }}
-            value={selectedCategoryId}
+            value={selectedCategoryCode}
             onChange={(value) => {
-              setSelectedCategoryId(value);
+              setSelectedCategoryCode(value);
               setCurrent(1);
             }}
-            options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
+            options={categories.map(cat => ({ value: cat.code, label: locale === 'zh-CN' ? cat.name : cat.code }))}
           />
         </Col>
         <Col span={6}>
-          <Select
-            placeholder={intl.formatMessage({ id: 'productSettings.filter.manufacturer' })}
-            allowClear
-            showSearch
-            style={{ width: '100%' }}
-            value={selectedManufacturer}
-            onChange={(value) => {
-              setSelectedManufacturer(value);
-              setCurrent(1);
-            }}
-            options={manufacturers.map(m => ({ value: m, label: m }))}
-          />
-        </Col>
-        <Col span={4}>
           <Button icon={<ReloadOutlined />} onClick={handleReset}>
             {intl.formatMessage({ id: 'button.reset' })}
           </Button>
@@ -306,10 +281,10 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={products}
+        dataSource={goods}
         loading={loading}
         size="small"
-        scroll={{ x: 800, y: 400 }}
+        scroll={{ x: 700, y: 400 }}
         pagination={{
           current,
           pageSize,
@@ -328,4 +303,4 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
   );
 };
 
-export default GlobalGoodsSelectModal;
+export default BaseGoodsSelectModal;

@@ -21,9 +21,10 @@ import {
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
-import { request, useIntl } from '@umijs/max';
+import { request, useIntl, getLocale } from '@umijs/max';
 import dayjs from 'dayjs';
 import { getColumns } from './columns';
+import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 import { useArrivalExcel } from './useArrivalExcel';
 import ImportModal from '@/components/ImportModal';
 import type { ArrivalRecord, ArrivalStats, ArrivalFormValues } from './types';
@@ -145,20 +146,24 @@ const ArrivalManagement: React.FC = () => {
               ? item.purchaseDate.split('T')[0] 
               : '';
             // 品类显示：中文显示品类名称，其他语言显示品类编号
+            const locale = getLocale();
             const categoryDisplay = item.categoryCode 
-              ? `[${item.categoryName || item.categoryCode}]` 
+              ? `[${getCategoryDisplayName(item.categoryCode, item.categoryName, locale)}]` 
               : '';
+            // 商品名称翻译
+            const goodsName = getLocalizedGoodsName(item.goodsName, item.goodsNameI18n, locale);
             orderMap.set(item.orderNo, {
               id: item.id,                    // 采购订单ID
               orderNo: item.orderNo,
               goodsId: item.goodsId,          // 商品ID
               purchaseDate: dateStr,
-              goodsName: item.goodsName,
+              goodsName: goodsName,
+              goodsNameI18n: item.goodsNameI18n,
               categoryCode: item.categoryCode,
               categoryName: item.categoryName,
               supplierName: item.supplierName,
               // 生成采购名称：采购日期 + [品类] + 商品名称
-              purchaseName: `${dateStr}${categoryDisplay}${item.goodsName || ''}`,
+              purchaseName: `${dateStr}${categoryDisplay}${goodsName || ''}`,
             });
           }
         });
