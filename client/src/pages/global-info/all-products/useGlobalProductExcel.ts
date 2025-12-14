@@ -156,21 +156,41 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
 
       // 获取品类列表
       const cats = await fetchCategories();
-      const categoryCodeMap = new Map(cats.map(c => [c.code, c.id]));
       const categoryNameMap = new Map(cats.map(c => [c.name, c.id]));
 
-      // 检查是否有新品类
+      // 先检查必填字段：品类和商品名称
+      const missingFields: string[] = [];
+      jsonData.forEach((row: any, index: number) => {
+        const category = String(row['品类'] || '').trim();
+        const name = String(row['商品名称'] || '').trim();
+        if (!category) {
+          missingFields.push(`第${index + 2}行：缺少品类`);
+        }
+        if (!name) {
+          missingFields.push(`第${index + 2}行：缺少商品名称`);
+        }
+      });
+
+      if (missingFields.length > 0) {
+        message.destroy();
+        const errorList = missingFields.slice(0, 10).join('\n');
+        const moreErrors = missingFields.length > 10 ? `\n...还有 ${missingFields.length - 10} 个错误` : '';
+        Modal.error({
+          title: '必填字段缺失',
+          content: `品类和商品名称为必填项，请补充后重新导入：\n\n${errorList}${moreErrors}`,
+          width: 500,
+        });
+        setImportLoading(false);
+        return;
+      }
+
+      // 检查是否有不存在的品类
       const newCategories: string[] = [];
       jsonData.forEach((row: any) => {
-        const categoryCode = String(row['品类编码'] || '').trim();
-        const categoryName = String(row['品类名称'] || '').trim();
-        if (categoryCode && !categoryCodeMap.has(categoryCode)) {
-          if (!newCategories.includes(categoryCode)) {
-            newCategories.push(categoryCode);
-          }
-        } else if (!categoryCode && categoryName && !categoryNameMap.has(categoryName)) {
-          if (!newCategories.includes(categoryName)) {
-            newCategories.push(categoryName);
+        const category = String(row['品类'] || '').trim();
+        if (category && !categoryNameMap.has(category)) {
+          if (!newCategories.includes(category)) {
+            newCategories.push(category);
           }
         }
       });
@@ -178,7 +198,7 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
       if (newCategories.length > 0) {
         message.destroy();
         Modal.error({
-          title: '发现新品类',
+          title: '品类不存在',
           content: `以下品类在系统中不存在，请先到「商品品类」页面添加后再导入：\n\n${newCategories.join('\n')}`,
           width: 500,
         });
@@ -188,9 +208,8 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
 
       // 转换数据格式
       const importData = jsonData.map((row: any) => {
-        const categoryCode = String(row['品类编码'] || '').trim();
-        const categoryName = String(row['品类名称'] || '').trim();
-        let categoryId = categoryCodeMap.get(categoryCode) || categoryNameMap.get(categoryName);
+        const category = String(row['品类'] || '').trim();
+        const categoryId = categoryNameMap.get(category);
         
         // 构建多语言名称对象
         const nameEn = String(row['英文名称'] || '').trim();
@@ -256,28 +275,51 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
       }
 
       // 批量导入
-      let successCount = 0;
+      let createCount = 0;  // 新建数量
+      let updateCount = 0;  // 更新数量
       let failCount = 0;
       let skipCount = 0;
       const failedItems: string[] = [];
       const skippedItems: string[] = [];
+      const updatedItems: string[] = [];
 
       for (let i = 0; i < importData.length; i++) {
         const item = importData[i];
         setImportProgress(Math.round(((i + 1) / importData.length) * 100));
 
-        // 检查是否重复
-        if (existingNameMap.has(item.name)) {
-          skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.name}（名称已存在）`);
-          continue;
-        }
-        if (item.code && existingCodeMap.has(item.code)) {
-          skipCount++;
-          skippedItems.push(`第${i + 2}行：${item.code}（编号已存在）`);
+        // 检查是否通过编号匹配到已存在的商品（用于更新）
+        const existingIdByCode = item.code ? existingCodeMap.get(item.code) : undefined;
+        
+        if (existingIdByCode) {
+          // 编号已存在，执行更新操作
+          try {
+            const result = await request(`/api/v1/global-goods/${existingIdByCode}`, {
+              method: 'PUT',
+              data: item,
+            });
+
+            if (result.success) {
+              updateCount++;
+              updatedItems.push(`第${i + 2}行：${item.code} - ${item.name}`);
+            } else {
+              failCount++;
+              failedItems.push(`第${i + 2}行：${item.name} - ${result.message || '更新失败'}`);
+            }
+          } catch (error: any) {
+            failCount++;
+            failedItems.push(`第${i + 2}行：${item.name} - ${error.message || '网络错误'}`);
+          }
           continue;
         }
 
+        // 检查名称是否重复（无编号的情况下）
+        if (existingNameMap.has(item.name)) {
+          skipCount++;
+          skippedItems.push(`第${i + 2}行：${item.name}（名称已存在，无编号无法更新）`);
+          continue;
+        }
+
+        // 新建商品
         try {
           const result = await request('/api/v1/global-goods', {
             method: 'POST',
@@ -285,7 +327,7 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
           });
 
           if (result.success) {
-            successCount++;
+            createCount++;
             existingNameMap.set(item.name, result.data?.id || '');
             if (item.code) {
               existingCodeMap.set(item.code, result.data?.id || '');
@@ -303,15 +345,26 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
       message.destroy();
 
       // 显示导入结果
+      const totalSuccess = createCount + updateCount;
       if (failCount === 0 && skipCount === 0) {
-        message.success(`导入完成！成功导入 ${successCount} 条商品`);
+        if (updateCount > 0) {
+          message.success(`导入完成！新建 ${createCount} 条，更新 ${updateCount} 条商品`);
+        } else {
+          message.success(`导入完成！成功导入 ${createCount} 条商品`);
+        }
       } else {
-        let content = `成功导入：${successCount} 条\n跳过重复：${skipCount} 条\n失败：${failCount} 条`;
+        let content = `新建：${createCount} 条\n更新：${updateCount} 条\n跳过：${skipCount} 条\n失败：${failCount} 条`;
+        
+        if (updateCount > 0) {
+          const updatedList = updatedItems.slice(0, 5).join('\n');
+          const moreUpdated = updatedItems.length > 5 ? `\n...还有 ${updatedItems.length - 5} 条更新` : '';
+          content += `\n\n更新的商品：\n${updatedList}${moreUpdated}`;
+        }
         
         if (skipCount > 0) {
           const skippedList = skippedItems.slice(0, 5).join('\n');
-          const moreSkipped = skippedItems.length > 5 ? `\n...还有 ${skippedItems.length - 5} 条重复` : '';
-          content += `\n\n跳过的重复数据：\n${skippedList}${moreSkipped}`;
+          const moreSkipped = skippedItems.length > 5 ? `\n...还有 ${skippedItems.length - 5} 条跳过` : '';
+          content += `\n\n跳过的数据：\n${skippedList}${moreSkipped}`;
         }
         
         if (failCount > 0) {
@@ -343,7 +396,6 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
     const templateData = [
       {
         code: '',
-        categoryCode: 'CARD',
         categoryName: '卡牌',
         name: '琦趣创想航海王 和之国篇',
         nameEn: 'One Piece Wano Country',
@@ -356,7 +408,6 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
       },
       {
         code: '',
-        categoryCode: 'TOY',
         categoryName: '玩具',
         name: '名侦探柯南挂件-星绽版-第1弹',
         nameEn: 'Detective Conan Keychain',
@@ -369,7 +420,6 @@ export const useGlobalProductExcel = ({ onImportSuccess }: UseGlobalProductExcel
       },
       {
         code: '',
-        categoryCode: 'CARD_BRICK',
         categoryName: '卡砖',
         name: '灵魂重生收藏卡',
         nameEn: 'Soul Rebirth Collection',

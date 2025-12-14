@@ -186,9 +186,11 @@ const PersonnelManagement: React.FC = () => {
       } else {
         message.error(result.message || '创建失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('创建人员失败:', error);
-      message.error('创建人员失败');
+      // 尝试获取后端返回的错误信息
+      const errorMsg = error?.response?.data?.message || error?.data?.message || '创建人员失败';
+      message.error(errorMsg);
     } finally {
       setCreateLoading(false);
     }

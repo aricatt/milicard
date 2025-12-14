@@ -35,11 +35,21 @@ export class PersonnelBaseController {
       const personnelData = req.body;
       const createdBy = req.user?.id || 'system'; // 从JWT中获取用户ID
 
+      // 记录收到的数据用于调试
+      logger.info('创建人员请求', { 
+        baseId, 
+        personnelData,
+        hasName: !!personnelData?.name,
+        hasRole: !!personnelData?.role,
+        service: 'milicard-api' 
+      });
+
       // 基本验证
-      if (!personnelData.name || !personnelData.role) {
+      if (!personnelData?.name || !personnelData?.role) {
         return res.status(400).json({
           success: false,
-          message: '姓名和角色为必填项'
+          message: '姓名和角色为必填项',
+          debug: { receivedData: personnelData }
         });
       }
 
