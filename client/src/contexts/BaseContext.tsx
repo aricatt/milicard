@@ -41,12 +41,21 @@ export interface BaseInfo {
   updatedAt: string;
 }
 
+// 货币汇率信息
+interface CurrencyRateInfo {
+  currencyCode: string;
+  currencyName: string | null;
+  fixedRate: number;
+  liveRate: number | null;
+}
+
 // 基地上下文接口
 interface BaseContextType {
   currentBase: BaseInfo | null;
   baseList: BaseInfo[];
   loading: boolean;
   initialized: boolean; // 标识 Context 是否已完成初始化
+  currencyRate: CurrencyRateInfo | null; // 当前基地的货币汇率
   setCurrentBase: (base: BaseInfo | null) => void;
   refreshBaseList: () => Promise<void>;
   clearBaseContext: () => void;
@@ -64,6 +73,7 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [baseList, setBaseList] = useState<BaseInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [currencyRate, setCurrencyRate] = useState<CurrencyRateInfo | null>(null);
 
   // 从本地存储恢复基地信息
   useEffect(() => {
@@ -129,7 +139,48 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const clearBaseContext = () => {
     setCurrentBase(null);
     setBaseList([]);
+    setCurrencyRate(null);
   };
+
+  // 获取当前基地货币的汇率
+  const fetchCurrencyRate = async (currencyCode: string) => {
+    if (!currencyCode || currencyCode === 'CNY') {
+      // 人民币汇率固定为1
+      setCurrencyRate({
+        currencyCode: 'CNY',
+        currencyName: '人民币',
+        fixedRate: 1,
+        liveRate: 1,
+      });
+      return;
+    }
+    try {
+      const result = await request('/api/v1/currency-rates/with-live-rates', {
+        method: 'GET',
+      });
+      if (result.success && result.data) {
+        const rate = result.data.find((r: CurrencyRateInfo) => r.currencyCode === currencyCode);
+        if (rate) {
+          setCurrencyRate(rate);
+        } else {
+          // 未找到该货币的汇率配置
+          setCurrencyRate(null);
+        }
+      }
+    } catch (error) {
+      console.error('获取货币汇率失败:', error);
+      setCurrencyRate(null);
+    }
+  };
+
+  // 当基地变化时，获取对应货币的汇率
+  useEffect(() => {
+    if (currentBase?.currency) {
+      fetchCurrencyRate(currentBase.currency);
+    } else {
+      setCurrencyRate(null);
+    }
+  }, [currentBase?.currency]);
 
   // 初始化时获取基地列表
   useEffect(() => {
@@ -141,6 +192,7 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     baseList,
     loading,
     initialized,
+    currencyRate,
     setCurrentBase,
     refreshBaseList,
     clearBaseContext,

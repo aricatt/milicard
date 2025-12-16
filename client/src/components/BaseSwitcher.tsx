@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Dropdown, Space, Typography, Avatar, Modal, App, Tag } from 'antd';
 import { SwapOutlined, HomeOutlined, PlusOutlined } from '@ant-design/icons';
 import { history } from '@umijs/max';
-import { useBase, useBaseCurrency, BaseInfo, BaseType } from '@/contexts/BaseContext';
+import { useBase, BaseInfo, BaseType } from '@/contexts/BaseContext';
 import { getCurrencySymbol } from '@/utils/currency';
 import type { MenuProps } from 'antd';
 
@@ -14,12 +14,13 @@ const { Text } = Typography;
  */
 const BaseSwitcher: React.FC = () => {
   // 安全地使用 useBase，如果不在 BaseProvider 中则返回 null
-  let currentBase, baseList, setCurrentBase;
+  let currentBase, baseList, setCurrentBase, currencyRate;
   try {
     const baseContext = useBase();
     currentBase = baseContext.currentBase;
     baseList = baseContext.baseList;
     setCurrentBase = baseContext.setCurrentBase;
+    currencyRate = baseContext.currencyRate;
   } catch (error) {
     // 如果不在 BaseProvider 中，则不显示基地切换器
     return null;
@@ -118,6 +119,11 @@ const BaseSwitcher: React.FC = () => {
             <Tag color="blue" style={{ margin: 0 }}>
               {getCurrencySymbol(currentBase.currency)}
             </Tag>
+            {currencyRate && currencyRate.fixedRate !== 1 && (
+              <Tag color="green" style={{ margin: 0 }}>
+                1¥ = {currencyRate.fixedRate.toFixed(2)}{getCurrencySymbol(currentBase.currency)}
+              </Tag>
+            )}
             <SwapOutlined style={{ fontSize: '12px', color: '#999' }} />
           </Space>
         </Button>
