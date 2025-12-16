@@ -7,6 +7,7 @@ import {
   Button,
   Popover,
   Descriptions,
+  Checkbox,
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -38,7 +39,7 @@ import dayjs from 'dayjs';
  * 包含ProTable、Excel导入导出、商品/供应商关联选择
  */
 const ProcurementManagement: React.FC = () => {
-  const { currentBase, initialized } = useBase();
+  const { currentBase, initialized, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
@@ -68,9 +69,26 @@ const ProcurementManagement: React.FC = () => {
   const [goodsLoading, setGoodsLoading] = useState(false);
   const [supplierLoading, setSupplierLoading] = useState(false);
   
+  // 以人民币显示金额
+  const [showInCNY, setShowInCNY] = useState(false);
+  
   // 表单实例
   const [createForm] = Form.useForm<ProcurementFormValues>();
   const [editForm] = Form.useForm<ProcurementFormValues>();
+
+  // 获取当前汇率
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
+  
+  // 表单使用的汇率（可编辑）
+  const [formExchangeRate, setFormExchangeRate] = useState<number>(currentExchangeRate);
+  
+  // 当基地汇率变化时，更新表单汇率
+  useEffect(() => {
+    if (currencyRate?.fixedRate) {
+      setFormExchangeRate(currencyRate.fixedRate);
+    }
+  }, [currencyRate?.fixedRate]);
   
   // Excel导入导出Hook
   const {
@@ -84,6 +102,9 @@ const ProcurementManagement: React.FC = () => {
   } = useProcurementExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
+    currencyCode: currentCurrencyCode,
+    exchangeRate: currentExchangeRate,
+    showInCNY,
     onImportSuccess: () => {
       actionRef.current?.reload();
       loadStats();
@@ -367,7 +388,7 @@ const ProcurementManagement: React.FC = () => {
   );
 
   // 获取列定义
-  const columns = getColumns(handleEdit, handleDelete, handleLogistics, intl);
+  const columns = getColumns(handleEdit, handleDelete, handleLogistics, intl, showInCNY, currentExchangeRate);
 
   if (!currentBase) {
     return (
@@ -437,6 +458,15 @@ const ProcurementManagement: React.FC = () => {
           density: true,
         }}
         toolBarRender={() => [
+          currentCurrencyCode !== 'CNY' && (
+            <Checkbox
+              key="showInCNY"
+              checked={showInCNY}
+              onChange={(e) => setShowInCNY(e.target.checked)}
+            >
+              {intl.formatMessage({ id: 'products.showInCNY' })}
+            </Checkbox>
+          ),
           <Button
             key="template"
             icon={<DownloadOutlined />}
@@ -512,6 +542,9 @@ const ProcurementManagement: React.FC = () => {
           goodsLoading={goodsLoading}
           supplierLoading={supplierLoading}
           onFinish={handleCreate}
+          currencyCode={currentCurrencyCode}
+          exchangeRate={formExchangeRate}
+          onExchangeRateChange={setFormExchangeRate}
         />
       </Modal>
 
@@ -535,6 +568,9 @@ const ProcurementManagement: React.FC = () => {
           goodsLoading={goodsLoading}
           supplierLoading={supplierLoading}
           onFinish={handleUpdate}
+          currencyCode={currentCurrencyCode}
+          exchangeRate={formExchangeRate}
+          onExchangeRateChange={setFormExchangeRate}
         />
       </Modal>
 
@@ -556,8 +592,8 @@ const ProcurementManagement: React.FC = () => {
           { field: '采购箱', required: false, description: '采购箱数', example: '0' },
           { field: '采购盒', required: false, description: '采购盒数', example: '17' },
           { field: '采购包', required: false, description: '采购包数', example: '0' },
-          { field: '拿货单价箱', required: true, description: '每箱拿货单价', example: '9697.5' },
-          { field: '实付金额', required: false, description: '实际支付金额', example: '4995' },
+          { field: '拿货单价箱', required: true, description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, example: `[${currentCurrencyCode}]9697.5 或 [CNY]2500` },
+          { field: '实付金额', required: false, description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, example: `[${currentCurrencyCode}]4995 或 [CNY]1200` },
         ]}
       />
 

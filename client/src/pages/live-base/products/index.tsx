@@ -192,6 +192,7 @@ const ProductSettingsPage: React.FC = () => {
     baseName: currentBase?.name || '',
     currencyCode: currentCurrencyCode,
     exchangeRate: currentExchangeRate,
+    showInCNY,
     onImportSuccess: () => actionRef.current?.reload(),
   });
 

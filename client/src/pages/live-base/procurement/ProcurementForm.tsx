@@ -1,10 +1,13 @@
 import React from 'react';
-import { Form, DatePicker, Select, InputNumber, Row, Col, Tag } from 'antd';
+import { Form, DatePicker, Select, InputNumber, Row, Col, Tag, Alert, Space, Tooltip } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { useIntl, getLocale } from '@umijs/max';
 import dayjs from 'dayjs';
 import type { FormInstance } from 'antd';
 import type { GoodsOption, SupplierOption, ProcurementFormValues } from './types';
 import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
+import DualCurrencyInput from '@/components/DualCurrencyInput';
+import { getCurrencySymbol } from '@/utils/currency';
 
 const { Option } = Select;
 
@@ -15,6 +18,9 @@ interface ProcurementFormProps {
   goodsLoading: boolean;
   supplierLoading: boolean;
   onFinish: (values: ProcurementFormValues) => void;
+  currencyCode: string;
+  exchangeRate: number;
+  onExchangeRateChange: (rate: number) => void;
 }
 
 /**
@@ -28,8 +34,12 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
   goodsLoading,
   supplierLoading,
   onFinish,
+  currencyCode,
+  exchangeRate,
+  onExchangeRateChange,
 }) => {
   const intl = useIntl();
+  const isCNY = currencyCode === 'CNY';
   /**
    * 商品选择变化时，自动填充零售价和拆分关系
    */
@@ -108,6 +118,31 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         actualAmount: 0,
       }}
     >
+      {/* 汇率设置（非人民币基地显示） */}
+      {!isCNY && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={
+            <Space>
+              <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+              <InputNumber
+                value={exchangeRate}
+                onChange={(val) => onExchangeRateChange(val || 1)}
+                min={0.000001}
+                precision={6}
+                style={{ width: 150 }}
+              />
+              <span>{getCurrencySymbol(currencyCode)}</span>
+              <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+              </Tooltip>
+            </Space>
+          }
+        />
+      )}
+
       {/* 采购日期 */}
       <Form.Item
         label={intl.formatMessage({ id: 'procurement.form.purchaseDate' })}
@@ -186,26 +221,27 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         <input />
       </Form.Item>
 
+      {/* 拿货单价/箱 - 双货币输入 */}
+      <Form.Item
+        label={intl.formatMessage({ id: 'procurement.form.unitPriceBox' })}
+        name="unitPriceBox"
+        rules={[
+          { required: true, message: intl.formatMessage({ id: 'procurement.form.unitPriceBoxRequired' }) },
+          { type: 'number', min: 0.01, message: intl.formatMessage({ id: 'procurement.form.unitPriceBoxMin' }) }
+        ]}
+      >
+        <DualCurrencyInput
+          currencyCode={currencyCode}
+          exchangeRate={exchangeRate}
+          placeholder={intl.formatMessage({ id: 'procurement.form.unitPriceBoxPlaceholder' })}
+          precision={2}
+          min={0.01}
+          onChange={handleUnitPriceBoxChange}
+        />
+      </Form.Item>
+
       {/* 采购箱 */}
       <Row gutter={16}>
-        <Col span={8}>
-          <Form.Item
-            label={intl.formatMessage({ id: 'procurement.form.unitPriceBox' })}
-            name="unitPriceBox"
-            rules={[
-              { required: true, message: intl.formatMessage({ id: 'procurement.form.unitPriceBoxRequired' }) },
-              { type: 'number', min: 0.01, message: intl.formatMessage({ id: 'procurement.form.unitPriceBoxMin' }) }
-            ]}
-          >
-            <InputNumber
-              style={{ width: '100%' }}
-              placeholder={intl.formatMessage({ id: 'procurement.form.unitPriceBoxPlaceholder' })}
-              precision={2}
-              min={0.01}
-              onChange={handleUnitPriceBoxChange}
-            />
-          </Form.Item>
-        </Col>
         <Col span={8}>
           <Form.Item
             label={intl.formatMessage({ id: 'procurement.form.purchaseBoxQty' })}
@@ -419,19 +455,19 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         }}
       </Form.Item>
 
-      {/* 实付金额（手动输入） */}
+      {/* 实付金额（双货币输入） */}
       <Form.Item
         label={intl.formatMessage({ id: 'procurement.form.actualAmount' })}
         name="actualAmount"
         rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.actualAmountRequired' }) }]}
         extra={intl.formatMessage({ id: 'procurement.form.actualAmountHint' })}
       >
-        <InputNumber
-          style={{ width: '100%' }}
+        <DualCurrencyInput
+          currencyCode={currencyCode}
+          exchangeRate={exchangeRate}
           placeholder={intl.formatMessage({ id: 'procurement.form.actualAmountPlaceholder' })}
           precision={2}
           min={0}
-          size="large"
         />
       </Form.Item>
 

@@ -44,6 +44,7 @@ interface UseProductExcelProps {
   baseName: string;
   currencyCode: string;
   exchangeRate: number;
+  showInCNY?: boolean;
   onImportSuccess?: () => void;
 }
 
@@ -90,7 +91,7 @@ const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: nu
   return { value: null, error: `无效的金额格式: ${strValue}` };
 };
 
-export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, onImportSuccess }: UseProductExcelProps) => {
+export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, showInCNY = false, onImportSuccess }: UseProductExcelProps) => {
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -135,14 +136,24 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
       const dataList = result.success && result.data ? result.data : [];
 
       // 转换数据格式，金额带货币标记
+      // 如果勾选了以人民币显示，导出时转换为[CNY]金额
+      const exportCurrency = showInCNY ? 'CNY' : currencyCode;
+      const convertAmount = (amount: number | undefined) => {
+        if (amount === undefined || amount === null) return '';
+        if (showInCNY && exchangeRate > 0) {
+          return Number((amount / exchangeRate).toFixed(2));
+        }
+        return amount;
+      };
+      
       const exportData = dataList.map((item: Product) => ({
         code: item.code,
         name: item.name,
         categoryName: item.categoryName || item.category || '',
         manufacturer: item.manufacturer,
         alias: item.alias || '',
-        retailPrice: `[${currencyCode}]${item.retailPrice}`,
-        purchasePrice: item.purchasePrice ? `[${currencyCode}]${item.purchasePrice}` : '',
+        retailPrice: `[${exportCurrency}]${convertAmount(item.retailPrice)}`,
+        purchasePrice: item.purchasePrice ? `[${exportCurrency}]${convertAmount(item.purchasePrice)}` : '',
         packPerBox: item.packPerBox,
         piecePerPack: item.piecePerPack,
         status: item.isActive ? '启用' : '禁用',

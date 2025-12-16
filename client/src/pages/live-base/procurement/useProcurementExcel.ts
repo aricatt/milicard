@@ -11,10 +11,56 @@ import { exportToExcel, readExcelFile, downloadTemplate, validateImportData, for
 interface UseProcurementExcelProps {
   baseId: number;
   baseName: string;
+  currencyCode: string;
+  exchangeRate: number;
+  showInCNY?: boolean;
   onImportSuccess?: () => void;
 }
 
-export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UseProcurementExcelProps) => {
+// 解析带货币标记的金额，如 "[CNY]45123" 或 "[VND]1000000"
+const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: number): { value: number | null; error: string | null } => {
+  if (value === undefined || value === null || value === '') {
+    return { value: null, error: null };
+  }
+
+  const strValue = String(value).trim();
+  
+  // 检查是否有货币标记 [XXX]
+  const currencyMatch = strValue.match(/^\[([A-Z]{3})\](.+)$/);
+  
+  if (currencyMatch) {
+    const sourceCurrency = currencyMatch[1];
+    const numValue = parseFloat(currencyMatch[2]);
+    
+    if (isNaN(numValue)) {
+      return { value: null, error: `无效的数字格式: ${strValue}` };
+    }
+    
+    // 如果货币标记与基地货币相同，直接使用数值
+    if (sourceCurrency === targetCurrency) {
+      return { value: numValue, error: null };
+    }
+    
+    // 如果是人民币，转换为基地货币
+    if (sourceCurrency === 'CNY') {
+      const convertedValue = Number((numValue * exchangeRate).toFixed(2));
+      return { value: convertedValue, error: null };
+    }
+    
+    // 其他货币暂不支持
+    return { value: null, error: `不支持的货币标记: ${sourceCurrency}，只支持 [CNY] 或 [${targetCurrency}]` };
+  }
+  
+  // 没有货币标记，返回错误
+  const numValue = parseFloat(strValue);
+  if (!isNaN(numValue)) {
+    return { value: null, error: `缺少货币标记，请使用 [CNY]${strValue} 或 [${targetCurrency}]${strValue} 格式` };
+  }
+  
+  return { value: null, error: `无效的金额格式: ${strValue}` };
+};
+
+export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRate, showInCNY = false, onImportSuccess }: UseProcurementExcelProps) => {
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -66,7 +112,16 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       // 允许导出空表（可作为导入模板使用）
       const dataList = result.success && result.data ? result.data : [];
 
-      // 转换数据格式 - 动态计算字段
+      // 转换数据格式 - 动态计算字段，金额带货币标记
+      // 如果勾选了以人民币显示，导出时转换为[CNY]金额
+      const exportCurrency = showInCNY ? 'CNY' : currencyCode;
+      const convertAmount = (amount: number) => {
+        if (showInCNY && exchangeRate > 0) {
+          return Number((amount / exchangeRate).toFixed(2));
+        }
+        return amount;
+      };
+      
       const exportData = dataList.map((item: any) => {
         const retailPrice = item.retailPrice || 0;
         const unitPriceBox = item.unitPriceBox || 0;
@@ -96,7 +151,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
           purchaseName: `${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN').replace(/\//g, '-') : ''}${item.goodsName || ''}`,
           categoryName: item.categoryName || '',
           goodsName: item.goodsName || '',
-          retailPrice,
+          retailPrice: `[${exportCurrency}]${convertAmount(retailPrice)}`,
           discount: (Math.floor(discount * 100) / 100).toFixed(2),
           supplierName: item.supplierName,
           purchaseBoxQty,
@@ -108,15 +163,15 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
           diffBoxQty: purchaseBoxQty - (item.arrivedBoxQty || 0),
           diffPackQty: purchasePackQty - (item.arrivedPackQty || 0),
           diffPieceQty: purchasePieceQty - (item.arrivedPieceQty || 0),
-          unitPriceBox,
-          unitPricePack,
-          unitPricePiece,
-          amountBox,
-          amountPack,
-          amountPiece,
-          totalAmount,
-          actualAmount,
-          unpaidAmount,
+          unitPriceBox: `[${exportCurrency}]${convertAmount(unitPriceBox)}`,
+          unitPricePack: `[${exportCurrency}]${convertAmount(unitPricePack)}`,
+          unitPricePiece: `[${exportCurrency}]${convertAmount(unitPricePiece)}`,
+          amountBox: `[${exportCurrency}]${convertAmount(amountBox)}`,
+          amountPack: `[${exportCurrency}]${convertAmount(amountPack)}`,
+          amountPiece: `[${exportCurrency}]${convertAmount(amountPiece)}`,
+          totalAmount: `[${exportCurrency}]${convertAmount(totalAmount)}`,
+          actualAmount: `[${exportCurrency}]${convertAmount(actualAmount)}`,
+          unpaidAmount: `[${exportCurrency}]${convertAmount(unpaidAmount)}`,
           createdAt: formatDateTime(item.createdAt),
         };
       });
@@ -172,18 +227,47 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
       // 转换数据格式 - 只导入必要字段，跳过动态计算字段
       // 需要导入：采购日期、采购编号、品类、商品名称、供应商、采购箱/盒/包、拿货单价箱、实付金额
       // 跳过：ID、采购名称、零售价、折扣、到货数量、相差数量、拿货单价盒/包、应付金额、应付总金额、未支付金额、创建时间
-      const importData = jsonData.map((row: any) => ({
-        orderNo: String(row['采购编号'] || '').trim(),  // 用于判断更新还是新增
-        purchaseDate: excelDateToString(row['采购日期']),
-        categoryName: String(row['品类'] || '').trim(),
-        goodsName: String(row['商品名称'] || '').trim(),
-        supplierName: String(row['供应商'] || '').trim(),
-        purchaseBoxQty: parseInt(row['采购箱'] || '0') || 0,
-        purchasePackQty: parseInt(row['采购盒'] || '0') || 0,
-        purchasePieceQty: parseInt(row['采购包'] || '0') || 0,
-        unitPriceBox: parseFloat(row['拿货单价箱'] || '0') || 0,
-        actualAmount: parseFloat(row['实付金额'] || '0') || 0,
-      }));
+      const currencyErrors: string[] = [];
+      const importData = jsonData.map((row: any, index: number) => {
+        // 解析带货币标记的金额
+        const unitPriceBoxResult = parseCurrencyValue(row['拿货单价箱'], currencyCode, exchangeRate);
+        const actualAmountResult = parseCurrencyValue(row['实付金额'], currencyCode, exchangeRate);
+        
+        // 收集货币解析错误
+        if (unitPriceBoxResult.error) {
+          currencyErrors.push(`第${index + 2}行 拿货单价箱：${unitPriceBoxResult.error}`);
+        }
+        if (actualAmountResult.error) {
+          currencyErrors.push(`第${index + 2}行 实付金额：${actualAmountResult.error}`);
+        }
+        
+        return {
+          orderNo: String(row['采购编号'] || '').trim(),  // 用于判断更新还是新增
+          purchaseDate: excelDateToString(row['采购日期']),
+          categoryName: String(row['品类'] || '').trim(),
+          goodsName: String(row['商品名称'] || '').trim(),
+          supplierName: String(row['供应商'] || '').trim(),
+          purchaseBoxQty: parseInt(row['采购箱'] || '0') || 0,
+          purchasePackQty: parseInt(row['采购盒'] || '0') || 0,
+          purchasePieceQty: parseInt(row['采购包'] || '0') || 0,
+          unitPriceBox: unitPriceBoxResult.value ?? 0,
+          actualAmount: actualAmountResult.value ?? 0,
+        };
+      });
+
+      // 检查货币格式错误
+      if (currencyErrors.length > 0) {
+        message.destroy();
+        const errorList = currencyErrors.slice(0, 10).join('\n');
+        const moreErrors = currencyErrors.length > 10 ? `\n...还有 ${currencyErrors.length - 10} 个错误` : '';
+        Modal.error({
+          title: '金额格式错误',
+          content: `金额字段需要带货币标记，格式如 [CNY]45123 或 [${currencyCode}]1000000：\n\n${errorList}${moreErrors}`,
+          width: 600,
+        });
+        setImportLoading(false);
+        return;
+      }
 
       // 数据验证 - 只验证必要字段
       const errors = validateImportData(importData, [
@@ -320,6 +404,7 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
 
   // 下载导入模板
   const handleDownloadTemplate = () => {
+    // 模板数据带货币标记示例
     const templateData = [
       {
         purchaseDate: '2025-11-17',
@@ -330,8 +415,8 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
         purchaseBoxQty: 0,
         purchasePackQty: 17,
         purchasePieceQty: 0,
-        unitPriceBox: 9697.5,
-        actualAmount: 4995,
+        unitPriceBox: `[${currencyCode}]9697.5`,
+        actualAmount: `[${currencyCode}]4995`,
       },
       {
         purchaseDate: '2025-11-17',
@@ -342,12 +427,25 @@ export const useProcurementExcel = ({ baseId, baseName, onImportSuccess }: UsePr
         purchaseBoxQty: 1,
         purchasePackQty: 0,
         purchasePieceQty: 0,
-        unitPriceBox: 10023.21,
-        actualAmount: 10023.21,
+        unitPriceBox: '[CNY]2500',
+        actualAmount: '[CNY]2500',
       },
     ];
 
-    downloadTemplate(templateData, importTemplateColumns, '采购导入模板', '采购导入模板');
+    // 添加导入说明
+    const instructions = [
+      '【导入说明】',
+      '1. 采购日期：必填，格式如 2025-11-17',
+      '2. 采购编号：留空则自动生成',
+      '3. 品类、商品名称：必填，用于匹配全局商品',
+      '4. 供应商：必填',
+      '5. 采购箱/盒/包：数量，至少填一项',
+      '6. 【重要】金额字段必须带货币标记：',
+      `   - 当前基地货币：[${currencyCode}]金额，如 [${currencyCode}]9697.5`,
+      '   - 人民币：[CNY]金额，如 [CNY]2500，系统会自动按汇率转换',
+    ];
+
+    downloadTemplate(templateData, importTemplateColumns, '采购导入模板', '采购导入模板', instructions);
   };
 
   return {

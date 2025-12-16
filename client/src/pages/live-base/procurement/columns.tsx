@@ -20,8 +20,21 @@ export const getColumns = (
   handleEdit: (record: PurchaseOrder) => void,
   handleDelete: (record: PurchaseOrder) => void,
   handleLogistics?: (record: PurchaseOrder) => void,
-  intl?: IntlShape
-): ProColumns<PurchaseOrder>[] => [
+  intl?: IntlShape,
+  showInCNY?: boolean,
+  exchangeRate?: number
+): ProColumns<PurchaseOrder>[] => {
+  // 金额显示转换函数
+  const formatAmount = (value: number | undefined | null, showCNY: boolean = false): string => {
+    if (value === undefined || value === null) return '-';
+    if (showCNY && exchangeRate && exchangeRate > 0) {
+      const cnyValue = value / exchangeRate;
+      return `¥ ${floorTo2(cnyValue)}`;
+    }
+    return floorTo2(value);
+  };
+
+  return [
   {
     title: intl?.formatMessage({ id: 'table.column.id' }) || 'ID',
     dataIndex: 'id',
@@ -111,7 +124,7 @@ export const getColumns = (
     key: 'retailPrice',
     width: 100,
     hideInSearch: true,
-    render: (_, record) => record.retailPrice ? `${floorTo2(record.retailPrice)}` : '-',
+    render: (_, record) => formatAmount(record.retailPrice, showInCNY),
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.discount' }) || '折扣%',
@@ -220,7 +233,7 @@ export const getColumns = (
     key: 'unitPriceBox',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPriceBox ? `${floorTo2(record.unitPriceBox)}` : '-',
+    render: (_, record) => formatAmount(record.unitPriceBox, showInCNY),
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.unitPricePack' }) || '拿货单价/盒',
@@ -228,7 +241,7 @@ export const getColumns = (
     key: 'unitPricePack',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPricePack ? `${floorTo2(record.unitPricePack)}` : '-',
+    render: (_, record) => formatAmount(record.unitPricePack, showInCNY),
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.unitPricePiece' }) || '拿货单价/包',
@@ -236,7 +249,7 @@ export const getColumns = (
     key: 'unitPricePiece',
     width: 110,
     hideInSearch: true,
-    render: (_, record) => record.unitPricePiece ? `${floorTo2(record.unitPricePiece)}` : '-',
+    render: (_, record) => formatAmount(record.unitPricePiece, showInCNY),
   },
   {
     title: intl?.formatMessage({ id: 'procurement.column.amountBox' }) || '应付金额/箱',
@@ -245,7 +258,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchaseBoxQty || 0) * (record.unitPriceBox || 0);
-      return `${floorTo2(amount)}`;
+      return formatAmount(amount, showInCNY);
     },
   },
   {
@@ -255,7 +268,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchasePackQty || 0) * (record.unitPricePack || 0);
-      return `${floorTo2(amount)}`;
+      return formatAmount(amount, showInCNY);
     },
   },
   {
@@ -265,7 +278,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => {
       const amount = (record.purchasePieceQty || 0) * (record.unitPricePiece || 0);
-      return `${floorTo2(amount)}`;
+      return formatAmount(amount, showInCNY);
     },
   },
   {
@@ -277,7 +290,7 @@ export const getColumns = (
     hideInSetting: true,
     render: (_, record) => (
       <span style={{ color: '#1890ff', fontWeight: 'bold' }}>
-        {floorTo2(record.totalAmount)}
+        {formatAmount(record.totalAmount, showInCNY)}
       </span>
     ),
   },
@@ -289,7 +302,7 @@ export const getColumns = (
     hideInSearch: true,
     render: (_, record) => (
       <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
-        {floorTo2(record.actualAmount || 0)}
+        {formatAmount(record.actualAmount || 0, showInCNY)}
       </span>
     ),
   },
@@ -302,7 +315,7 @@ export const getColumns = (
       const unpaid = (record.totalAmount || 0) - (record.actualAmount || 0);
       return (
         <span style={{ color: unpaid > 0 ? '#f5222d' : '#52c41a', fontWeight: 'bold' }}>
-          {floorTo2(unpaid)}
+          {formatAmount(unpaid, showInCNY)}
         </span>
       );
     },
@@ -408,4 +421,4 @@ export const getColumns = (
       </Space>
     ),
   },
-];
+]};
