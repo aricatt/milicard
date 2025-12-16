@@ -245,7 +245,7 @@ const BaseGoodsSelectModal: React.FC<BaseGoodsSelectModalProps> = ({
       onCancel={onCancel}
       width={900}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       {/* 筛选区域 */}
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>

@@ -51,6 +51,7 @@ export default {
   'menu.global-info': 'Thông tin toàn cầu',
   'menu.global-info.categories': 'Danh mục sản phẩm',
   'menu.global-info.all-products': 'Tất cả sản phẩm',
+  'menu.global-info.currency-rates': 'Tỷ giá hối đoái',
   // 系统管理
   'menu.system': 'Quản lý hệ thống',
   'menu.system.users': 'Quản lý người dùng',

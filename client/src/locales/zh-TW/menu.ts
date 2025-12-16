@@ -51,6 +51,7 @@ export default {
   'menu.global-info': '全局信息',
   'menu.global-info.categories': '商品品類',
   'menu.global-info.all-products': '所有商品',
+  'menu.global-info.currency-rates': '貨幣匯率',
   // 系統管理
   'menu.system': '系統管理',
   'menu.system.users': '用戶管理',

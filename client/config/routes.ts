@@ -81,6 +81,14 @@ export default [
         component: './global-info/all-products',
         access: 'canAccessProducts',
       },
+      // 货币汇率
+      {
+        name: 'currency-rates',
+        icon: 'dollar',
+        path: '/global-info/currency-rates',
+        component: './global-info/currency-rates',
+        access: 'canAccessProducts',
+      },
     ],
   },
   // 直播基地管理系统 - 所有功能都在直播基地下

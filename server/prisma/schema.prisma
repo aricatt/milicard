@@ -1116,3 +1116,18 @@ enum PaymentStatus {
   PAID
 }
 
+/// 货币汇率表（存储相对人民币的固定汇率）
+model CurrencyRate {
+  id           Int      @id @default(autoincrement())
+  currencyCode String   @unique @map("currency_code") // 货币代码，如 CNY, VND, THB
+  currencyName String?  @map("currency_name") // 货币名称
+  fixedRate    Decimal  @map("fixed_rate") @db.Decimal(18, 8) // 系统固定汇率（相对人民币）
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([currencyCode])
+  @@index([isActive])
+  @@map("currency_rates")
+}
+

@@ -70,6 +70,7 @@ import payableRoutes from './routes/payableRoutes'
 import globalGoodsRoutes from './routes/globalGoodsRoutes'
 import goodsLocalSettingRoutes from './routes/goodsLocalSettingRoutes'
 import categoryRoutes from './routes/categoryRoutes'
+import currencyRateRoutes from './routes/currencyRateRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
@@ -102,6 +103,7 @@ app.use('/api/v1/bases', payableRoutes)
 app.use('/api/v1/global-goods', globalGoodsRoutes)
 app.use('/api/v1/bases/:baseId/goods-settings', goodsLocalSettingRoutes)
 app.use('/api/v1/categories', categoryRoutes)
+app.use('/api/v1/currency-rates', currencyRateRoutes)
 
 // 开发环境路由（仅在开发环境下启用）
 if (process.env.NODE_ENV === 'development') {

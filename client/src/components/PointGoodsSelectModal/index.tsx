@@ -265,7 +265,7 @@ const PointGoodsSelectModal: React.FC<PointGoodsSelectModalProps> = ({
       onCancel={onCancel}
       width={900}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
     >
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
         {/* 搜索和筛选 */}
