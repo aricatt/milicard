@@ -37,4 +37,12 @@ router.get(
   StockController.getLocationStock
 );
 
+// 获取指定商品在指定仓库的库存
+router.get(
+  '/:baseId/stock',
+  authenticateToken,
+  checkPermission('stock', 'read'),
+  StockController.getGoodsStock
+);
+
 export default router;

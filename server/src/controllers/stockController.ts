@@ -110,4 +110,42 @@ export class StockController {
       });
     }
   }
+
+  /**
+   * 获取指定商品在指定仓库的库存
+   */
+  static async getGoodsStock(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId, 10);
+      const { goodsId, locationId } = req.query;
+
+      if (!goodsId || !locationId) {
+        return res.status(400).json({
+          success: false,
+          message: '缺少必要参数: goodsId, locationId',
+        });
+      }
+
+      const stock = await StockService.getStock(
+        baseId,
+        goodsId as string,
+        parseInt(locationId as string, 10)
+      );
+
+      res.json({
+        success: true,
+        data: stock,
+      });
+    } catch (error) {
+      logger.error('获取商品库存失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId: req.params.baseId,
+        query: req.query,
+      });
+      res.status(500).json({
+        success: false,
+        message: '获取商品库存失败',
+      });
+    }
+  }
 }
