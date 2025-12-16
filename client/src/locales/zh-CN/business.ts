@@ -1293,4 +1293,7 @@ export default {
   'dualCurrency.exchangeRate': '汇率',
   'dualCurrency.exchangeRateLabel': '1¥ =',
   'dualCurrency.exchangeRateTip': '可修改汇率以适应进货时的实际汇率',
+
+  // 商品设置页
+  'products.showInCNY': '以人民币显示',
 };

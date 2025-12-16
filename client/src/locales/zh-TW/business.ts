@@ -1291,4 +1291,7 @@ export default {
   'dualCurrency.exchangeRate': '匯率',
   'dualCurrency.exchangeRateLabel': '1¥ =',
   'dualCurrency.exchangeRateTip': '可修改匯率以適應進貨時的實際匯率',
+
+  // 商品設定頁
+  'products.showInCNY': '以人民幣顯示',
 };

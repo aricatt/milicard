@@ -1293,4 +1293,7 @@ export default {
   'dualCurrency.exchangeRate': 'Tỷ giá',
   'dualCurrency.exchangeRateLabel': '1¥ =',
   'dualCurrency.exchangeRateTip': 'Bạn có thể sửa tỷ giá cho phù hợp với tỷ giá thực tế khi mua hàng',
+
+  // Product settings page
+  'products.showInCNY': 'Hiển thị bằng CNY',
 };

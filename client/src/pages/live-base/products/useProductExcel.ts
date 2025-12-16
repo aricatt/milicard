@@ -42,10 +42,55 @@ interface Product {
 interface UseProductExcelProps {
   baseId: number;
   baseName: string;
+  currencyCode: string;
+  exchangeRate: number;
   onImportSuccess?: () => void;
 }
 
-export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProductExcelProps) => {
+// 解析带货币标记的金额，如 "[CNY]45123" 或 "[VND]1000000"
+const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: number): { value: number | null; error: string | null } => {
+  if (value === undefined || value === null || value === '') {
+    return { value: null, error: null };
+  }
+
+  const strValue = String(value).trim();
+  
+  // 检查是否有货币标记 [XXX]
+  const currencyMatch = strValue.match(/^\[([A-Z]{3})\](.+)$/);
+  
+  if (currencyMatch) {
+    const sourceCurrency = currencyMatch[1];
+    const numValue = parseFloat(currencyMatch[2]);
+    
+    if (isNaN(numValue)) {
+      return { value: null, error: `无效的数字格式: ${strValue}` };
+    }
+    
+    // 如果货币标记与基地货币相同，直接使用数值
+    if (sourceCurrency === targetCurrency) {
+      return { value: numValue, error: null };
+    }
+    
+    // 如果是人民币，转换为基地货币
+    if (sourceCurrency === 'CNY') {
+      const convertedValue = Number((numValue * exchangeRate).toFixed(2));
+      return { value: convertedValue, error: null };
+    }
+    
+    // 其他货币暂不支持
+    return { value: null, error: `不支持的货币标记: ${sourceCurrency}，只支持 [CNY] 或 [${targetCurrency}]` };
+  }
+  
+  // 没有货币标记，返回错误
+  const numValue = parseFloat(strValue);
+  if (!isNaN(numValue)) {
+    return { value: null, error: `缺少货币标记，请使用 [CNY]${strValue} 或 [${targetCurrency}]${strValue} 格式` };
+  }
+  
+  return { value: null, error: `无效的金额格式: ${strValue}` };
+};
+
+export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, onImportSuccess }: UseProductExcelProps) => {
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -89,15 +134,15 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       const dataList = result.success && result.data ? result.data : [];
 
-      // 转换数据格式
+      // 转换数据格式，金额带货币标记
       const exportData = dataList.map((item: Product) => ({
         code: item.code,
         name: item.name,
         categoryName: item.categoryName || item.category || '',
         manufacturer: item.manufacturer,
         alias: item.alias || '',
-        retailPrice: item.retailPrice,
-        purchasePrice: item.purchasePrice || '',
+        retailPrice: `[${currencyCode}]${item.retailPrice}`,
+        purchasePrice: item.purchasePrice ? `[${currencyCode}]${item.purchasePrice}` : '',
         packPerBox: item.packPerBox,
         piecePerPack: item.piecePerPack,
         status: item.isActive ? '启用' : '禁用',
@@ -160,6 +205,7 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
       // 检查是否有不存在的全局商品
       const missingGoods: string[] = [];
+      const currencyErrors: string[] = [];
       const importData: any[] = [];
 
       jsonData.forEach((row: any, index: number) => {
@@ -180,13 +226,25 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
           const identifier = code || (categoryName && name ? `[${categoryName}]${name}` : name || '(空)');
           missingGoods.push(`第${index + 2}行：${identifier}`);
         } else {
+          // 解析带货币标记的金额
+          const retailPriceResult = parseCurrencyValue(row['零售价(一箱)'], currencyCode, exchangeRate);
+          const purchasePriceResult = parseCurrencyValue(row['采购价(一箱)'], currencyCode, exchangeRate);
+          
+          // 收集货币解析错误
+          if (retailPriceResult.error) {
+            currencyErrors.push(`第${index + 2}行 零售价：${retailPriceResult.error}`);
+          }
+          if (purchasePriceResult.error) {
+            currencyErrors.push(`第${index + 2}行 采购价：${purchasePriceResult.error}`);
+          }
+          
           importData.push({
             globalGoodsId: globalProduct.id,
             globalGoodsCode: globalProduct.code,
             globalGoodsName: globalProduct.name,
             alias: String(row['商品别名'] || '').trim() || undefined,
-            retailPrice: parseFloat(row['零售价(一箱)'] || '0'),
-            purchasePrice: parseFloat(row['采购价(一箱)'] || '0') || undefined,
+            retailPrice: retailPriceResult.value,
+            purchasePrice: purchasePriceResult.value,
             isNew: !existingGoodsIdSet.has(globalProduct.id),
           });
         }
@@ -199,6 +257,20 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
         Modal.error({
           title: '发现不存在的商品',
           content: `以下商品在全局商品库中不存在，请先到「全局信息 > 所有商品」页面添加后再导入：\n\n${missingList}${moreCount}`,
+          width: 600,
+        });
+        setImportLoading(false);
+        return;
+      }
+
+      // 检查货币格式错误
+      if (currencyErrors.length > 0) {
+        message.destroy();
+        const errorList = currencyErrors.slice(0, 10).join('\n');
+        const moreErrors = currencyErrors.length > 10 ? `\n...还有 ${currencyErrors.length - 10} 个错误` : '';
+        Modal.error({
+          title: '金额格式错误',
+          content: `金额字段需要带货币标记，格式如 [CNY]45123 或 [${currencyCode}]1000000：\n\n${errorList}${moreErrors}`,
           width: 600,
         });
         setImportLoading(false);
@@ -310,22 +382,23 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
 
   // 下载导入模板
   const handleDownloadTemplate = () => {
+    // 模板数据带货币标记示例
     const templateData = [
       {
         code: 'GOODS-J37SVPYQEXJ',
         categoryName: '卡牌',
         name: '琦趣创想航海王 和之国篇',
         alias: '航海王和之国',
-        retailPrice: 22356,
-        purchasePrice: 18000,
+        retailPrice: `[${currencyCode}]22356`,
+        purchasePrice: `[${currencyCode}]18000`,
       },
       {
         code: '',
         categoryName: '礼物',
         name: '名侦探柯南挂件-星绽版-第1弹',
         alias: '',
-        retailPrice: 19440,
-        purchasePrice: 15000,
+        retailPrice: '[CNY]5600',
+        purchasePrice: '[CNY]4500',
       },
     ];
 
@@ -338,6 +411,9 @@ export const useProductExcel = ({ baseId, baseName, onImportSuccess }: UseProduc
       '2. 必填字段：「品类」和「商品名称」至少需要填写（除非有商品编号）',
       '3. 商品必须先在「全局信息 > 所有商品」页面添加后才能导入',
       '4. 本导入只更新基地级设置（零售价、采购价、别名），不会修改全局商品信息',
+      '5. 【重要】金额字段必须带货币标记：',
+      `   - 当前基地货币：[${currencyCode}]金额，如 [${currencyCode}]22356`,
+      '   - 人民币：[CNY]金额，如 [CNY]5600，系统会自动按汇率转换',
     ];
 
     const result = downloadTemplate(

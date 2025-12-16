@@ -16,6 +16,7 @@ import {
   Select,
   Tooltip,
   Alert,
+  Checkbox,
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -166,9 +167,16 @@ const ProductSettingsPage: React.FC = () => {
   const [selectedGlobalProduct, setSelectedGlobalProduct] = useState<GlobalProduct | null>(null);
   const [existingGoodsIds, setExistingGoodsIds] = useState<string[]>([]);
   
+  // 以人民币显示金额
+  const [showInCNY, setShowInCNY] = useState(false);
+  
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
+  // 获取当前汇率
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
 
   // Excel导入导出Hook
   const {
@@ -182,17 +190,29 @@ const ProductSettingsPage: React.FC = () => {
   } = useProductExcel({
     baseId: currentBase?.id || 0,
     baseName: currentBase?.name || '',
+    currencyCode: currentCurrencyCode,
+    exchangeRate: currentExchangeRate,
     onImportSuccess: () => actionRef.current?.reload(),
   });
 
-  // 导入字段说明
+  // 导入字段说明（根据当前基地货币动态生成）
   const importFields: FieldDescription[] = [
     { field: '商品编号', required: false, description: '全局商品编号，优先按编号精确匹配', example: 'GOODS-J37SVPYQEXJ' },
     { field: '品类', required: false, description: '商品品类，与商品名称组合匹配（编号为空时使用）', example: '卡牌' },
     { field: '商品名称', required: false, description: '商品名称，与品类组合匹配（编号为空时使用）', example: '航海王和之国篇' },
     { field: '商品别名', required: false, description: '本基地使用的商品别名', example: '航海王' },
-    { field: '零售价(一箱)', required: true, description: '本基地的零售价格（单位：分）', example: '22356' },
-    { field: '采购价(一箱)', required: false, description: '本基地的采购价格（单位：分）', example: '18000' },
+    { 
+      field: '零售价(一箱)', 
+      required: true, 
+      description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, 
+      example: `[${currentCurrencyCode}]22356 或 [CNY]5600` 
+    },
+    { 
+      field: '采购价(一箱)', 
+      required: false, 
+      description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, 
+      example: `[${currentCurrencyCode}]18000 或 [CNY]4500` 
+    },
   ];
 
   /**
@@ -446,11 +466,22 @@ const ProductSettingsPage: React.FC = () => {
       width: 120,
       hideInSearch: true,
       align: 'right',
-      render: (price: any) => (
-        <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
-          {typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
-        </span>
-      ),
+      render: (price: any) => {
+        const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        if (showInCNY && currentExchangeRate > 0) {
+          const cnyPrice = numPrice / currentExchangeRate;
+          return (
+            <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
+              ¥ {cnyPrice.toFixed(2)}
+            </span>
+          );
+        }
+        return (
+          <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
+            {numPrice.toFixed(2)}
+          </span>
+        );
+      },
     },
     {
       title: intl.formatMessage({ id: 'products.column.packPrice' }),
@@ -459,11 +490,23 @@ const ProductSettingsPage: React.FC = () => {
       width: 100,
       hideInSearch: true,
       align: 'right',
-      render: (price: any) => price ? (
-        <span style={{ color: '#fa8c16' }}>
-          {typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
-        </span>
-      ) : '-',
+      render: (price: any) => {
+        if (!price) return '-';
+        const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        if (showInCNY && currentExchangeRate > 0) {
+          const cnyPrice = numPrice / currentExchangeRate;
+          return (
+            <span style={{ color: '#fa8c16' }}>
+              ¥ {cnyPrice.toFixed(2)}
+            </span>
+          );
+        }
+        return (
+          <span style={{ color: '#fa8c16' }}>
+            {numPrice.toFixed(2)}
+          </span>
+        );
+      },
     },
     {
       title: intl.formatMessage({ id: 'products.column.packPerBox' }),
@@ -629,6 +672,15 @@ const ProductSettingsPage: React.FC = () => {
         }}
         
         toolBarRender={() => [
+          currentCurrencyCode !== 'CNY' && (
+            <Checkbox
+              key="showInCNY"
+              checked={showInCNY}
+              onChange={(e) => setShowInCNY(e.target.checked)}
+            >
+              {intl.formatMessage({ id: 'products.showInCNY' })}
+            </Checkbox>
+          ),
           <Button
             key="template"
             icon={<DownloadOutlined />}
