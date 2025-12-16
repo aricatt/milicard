@@ -1286,4 +1286,11 @@ export default {
   'currencyRates.message.deleteSuccess': 'Xóa thành công',
   'currencyRates.message.operationFailed': 'Thao tác thất bại',
   'currencyRates.message.deleteFailed': 'Xóa thất bại',
+
+  // Dual currency input component
+  'dualCurrency.cnyInput': 'Số tiền Nhân dân tệ',
+  'dualCurrency.localInput': 'Số tiền nội tệ',
+  'dualCurrency.exchangeRate': 'Tỷ giá',
+  'dualCurrency.exchangeRateLabel': '1¥ =',
+  'dualCurrency.exchangeRateTip': 'Bạn có thể sửa tỷ giá cho phù hợp với tỷ giá thực tế khi mua hàng',
 };

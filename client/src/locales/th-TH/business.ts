@@ -1286,4 +1286,11 @@ export default {
   'currencyRates.message.deleteSuccess': 'ลบสำเร็จ',
   'currencyRates.message.operationFailed': 'การดำเนินการล้มเหลว',
   'currencyRates.message.deleteFailed': 'ลบไม่สำเร็จ',
+
+  // Dual currency input component
+  'dualCurrency.cnyInput': 'จำนวนเงินหยวน',
+  'dualCurrency.localInput': 'จำนวนเงินสกุลท้องถิ่น',
+  'dualCurrency.exchangeRate': 'อัตราแลกเปลี่ยน',
+  'dualCurrency.exchangeRateLabel': '1¥ =',
+  'dualCurrency.exchangeRateTip': 'คุณสามารถแก้ไขอัตราให้ตรงกับอัตราจริงขณะซื้อ',
 };

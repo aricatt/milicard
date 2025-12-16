@@ -1284,4 +1284,11 @@ export default {
   'currencyRates.message.deleteSuccess': '刪除成功',
   'currencyRates.message.operationFailed': '操作失敗',
   'currencyRates.message.deleteFailed': '刪除失敗',
+
+  // 雙貨幣輸入組件
+  'dualCurrency.cnyInput': '人民幣金額',
+  'dualCurrency.localInput': '當前貨幣金額',
+  'dualCurrency.exchangeRate': '匯率',
+  'dualCurrency.exchangeRateLabel': '1¥ =',
+  'dualCurrency.exchangeRateTip': '可修改匯率以適應進貨時的實際匯率',
 };

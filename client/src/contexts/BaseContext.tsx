@@ -58,6 +58,7 @@ interface BaseContextType {
   currencyRate: CurrencyRateInfo | null; // 当前基地的货币汇率
   setCurrentBase: (base: BaseInfo | null) => void;
   refreshBaseList: () => Promise<void>;
+  refreshCurrencyRate: () => Promise<void>; // 刷新当前基地的货币汇率
   clearBaseContext: () => void;
 }
 
@@ -187,6 +188,13 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     refreshBaseList();
   }, []);
 
+  // 刷新当前基地的货币汇率
+  const refreshCurrencyRate = async () => {
+    if (currentBase?.currency) {
+      await fetchCurrencyRate(currentBase.currency);
+    }
+  };
+
   const value: BaseContextType = {
     currentBase,
     baseList,
@@ -195,6 +203,7 @@ export const BaseProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     currencyRate,
     setCurrentBase,
     refreshBaseList,
+    refreshCurrencyRate,
     clearBaseContext,
   };
 

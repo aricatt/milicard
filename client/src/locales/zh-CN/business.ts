@@ -1286,4 +1286,11 @@ export default {
   'currencyRates.message.deleteSuccess': '删除成功',
   'currencyRates.message.operationFailed': '操作失败',
   'currencyRates.message.deleteFailed': '删除失败',
+
+  // 双货币输入组件
+  'dualCurrency.cnyInput': '人民币金额',
+  'dualCurrency.localInput': '当前货币金额',
+  'dualCurrency.exchangeRate': '汇率',
+  'dualCurrency.exchangeRateLabel': '1¥ =',
+  'dualCurrency.exchangeRateTip': '可修改汇率以适应进货时的实际汇率',
 };

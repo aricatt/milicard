@@ -1286,4 +1286,11 @@ export default {
   'currencyRates.message.deleteSuccess': 'Deleted successfully',
   'currencyRates.message.operationFailed': 'Operation failed',
   'currencyRates.message.deleteFailed': 'Failed to delete',
+
+  // Dual currency input component
+  'dualCurrency.cnyInput': 'CNY Amount',
+  'dualCurrency.localInput': 'Local Currency Amount',
+  'dualCurrency.exchangeRate': 'Exchange Rate',
+  'dualCurrency.exchangeRateLabel': '1¥ =',
+  'dualCurrency.exchangeRateTip': 'You can modify the rate to match the actual rate at purchase time',
 };

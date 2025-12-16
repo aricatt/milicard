@@ -22,6 +22,7 @@ import {
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
+import { useBase } from '@/contexts/BaseContext';
 
 interface CurrencyRate {
   id: number;
@@ -37,6 +38,7 @@ interface CurrencyRate {
 const CurrencyRatesPage: React.FC = () => {
   const intl = useIntl();
   const { message } = App.useApp();
+  const { refreshCurrencyRate } = useBase();
   const actionRef = useRef<ActionType>(null);
   const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(false);
@@ -119,6 +121,8 @@ const CurrencyRatesPage: React.FC = () => {
       form.resetFields();
       setEditingRate(null);
       actionRef.current?.reload();
+      // 刷新顶部栏的汇率显示
+      refreshCurrencyRate();
     } catch (error: any) {
       message.error(error?.response?.data?.message || intl.formatMessage({ id: 'currencyRates.message.operationFailed' }));
     } finally {

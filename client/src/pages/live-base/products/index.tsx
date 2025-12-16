@@ -30,6 +30,8 @@ import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl, getLocale } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
+import DualCurrencyInput from '@/components/DualCurrencyInput';
+import { getCurrencySymbol } from '@/utils/currency';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
 import type { FieldDescription } from '@/components/ImportModal';
@@ -130,10 +132,20 @@ interface ProductStats {
  * 管理基地级别的商品配置（价格、别名、状态等）
  */
 const ProductSettingsPage: React.FC = () => {
-  const { currentBase, initialized } = useBase();
+  const { currentBase, initialized, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType | null>(null);
+  
+  // 当前表单使用的汇率（可编辑）
+  const [formExchangeRate, setFormExchangeRate] = useState<number>(1);
+  
+  // 当基地汇率变化时，更新表单汇率
+  useEffect(() => {
+    if (currencyRate?.fixedRate) {
+      setFormExchangeRate(currencyRate.fixedRate);
+    }
+  }, [currencyRate?.fixedRate]);
   
   // 状态管理
   const [stats, setStats] = useState<ProductStats>({
@@ -746,72 +758,84 @@ const ProductSettingsPage: React.FC = () => {
             </Descriptions>
           )}
 
-          {/* 基地级配置字段 */}
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.retailPrice' })}
-                name="retailPrice"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.retailPriceRequired' }) },
-                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.retailPriceMin' }) }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
-                  min={0}
-                  precision={2}
-                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.packPrice' })}
-                name="packPrice"
-                rules={[
-                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.packPriceMin' }) }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
-                  min={0}
-                  precision={2}
-                  addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* 汇率设置（非人民币基地显示） */}
+          {currentBase?.currency && currentBase.currency !== 'CNY' && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={
+                <Space>
+                  <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+                  <InputNumber
+                    value={formExchangeRate}
+                    onChange={(val) => setFormExchangeRate(val || 1)}
+                    min={0.000001}
+                    precision={6}
+                    style={{ width: 150 }}
+                  />
+                  <span>{getCurrencySymbol(currentBase.currency)}</span>
+                  <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                  </Tooltip>
+                </Space>
+              }
+            />
+          )}
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.purchasePrice' })}
-                name="purchasePrice"
-                rules={[
-                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.purchasePriceMin' }) }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
-                  min={0}
-                  precision={2}
-                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.alias' })}
-                name="alias"
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* 基地级配置字段 */}
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.retailPrice' })}
+            name="retailPrice"
+            rules={[
+              { required: true, message: intl.formatMessage({ id: 'products.form.retailPriceRequired' }) },
+              { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.retailPriceMin' }) }
+            ]}
+          >
+            <DualCurrencyInput
+              currencyCode={currentBase?.currency || 'CNY'}
+              exchangeRate={formExchangeRate}
+              placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.packPrice' })}
+            name="packPrice"
+            rules={[
+              { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.packPriceMin' }) }
+            ]}
+          >
+            <DualCurrencyInput
+              currencyCode={currentBase?.currency || 'CNY'}
+              exchangeRate={formExchangeRate}
+              placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.purchasePrice' })}
+            name="purchasePrice"
+            rules={[
+              { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.purchasePriceMin' }) }
+            ]}
+          >
+            <DualCurrencyInput
+              currencyCode={currentBase?.currency || 'CNY'}
+              exchangeRate={formExchangeRate}
+              placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.alias' })}
+            name="alias"
+          >
+            <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
+          </Form.Item>
         </Form>
       </Modal>
 
@@ -852,72 +876,84 @@ const ProductSettingsPage: React.FC = () => {
             </Descriptions>
           )}
 
-          {/* 基地级配置字段 */}
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.retailPrice' })}
-                name="retailPrice"
-                rules={[
-                  { required: true, message: intl.formatMessage({ id: 'products.form.retailPriceRequired' }) },
-                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.retailPriceMin' }) }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
-                  min={0}
-                  precision={2}
-                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.packPrice' })}
-                name="packPrice"
-                rules={[
-                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.packPriceMin' }) }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
-                  min={0}
-                  precision={2}
-                  addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* 汇率设置（非人民币基地显示） */}
+          {currentBase?.currency && currentBase.currency !== 'CNY' && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={
+                <Space>
+                  <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+                  <InputNumber
+                    value={formExchangeRate}
+                    onChange={(val) => setFormExchangeRate(val || 1)}
+                    min={0.000001}
+                    precision={6}
+                    style={{ width: 150 }}
+                  />
+                  <span>{getCurrencySymbol(currentBase.currency)}</span>
+                  <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                  </Tooltip>
+                </Space>
+              }
+            />
+          )}
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.purchasePrice' })}
-                name="purchasePrice"
-                rules={[
-                  { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.purchasePriceMin' }) }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
-                  min={0}
-                  precision={2}
-                  addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                label={intl.formatMessage({ id: 'products.form.alias' })}
-                name="alias"
-              >
-                <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* 基地级配置字段 */}
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.retailPrice' })}
+            name="retailPrice"
+            rules={[
+              { required: true, message: intl.formatMessage({ id: 'products.form.retailPriceRequired' }) },
+              { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.retailPriceMin' }) }
+            ]}
+          >
+            <DualCurrencyInput
+              currencyCode={currentBase?.currency || 'CNY'}
+              exchangeRate={formExchangeRate}
+              placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.packPrice' })}
+            name="packPrice"
+            rules={[
+              { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.packPriceMin' }) }
+            ]}
+          >
+            <DualCurrencyInput
+              currencyCode={currentBase?.currency || 'CNY'}
+              exchangeRate={formExchangeRate}
+              placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.purchasePrice' })}
+            name="purchasePrice"
+            rules={[
+              { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.purchasePriceMin' }) }
+            ]}
+          >
+            <DualCurrencyInput
+              currencyCode={currentBase?.currency || 'CNY'}
+              exchangeRate={formExchangeRate}
+              placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={intl.formatMessage({ id: 'products.form.alias' })}
+            name="alias"
+          >
+            <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
+          </Form.Item>
 
           <Form.Item
             label={intl.formatMessage({ id: 'products.form.status' })}
