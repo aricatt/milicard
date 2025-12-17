@@ -14,7 +14,8 @@ import {
   Card,
   Popconfirm,
   App,
-  Collapse
+  Collapse,
+  Tabs
 } from 'antd';
 import { 
   ReloadOutlined, 
@@ -23,12 +24,14 @@ import {
   ClockCircleOutlined,
   PlusOutlined,
   DeleteOutlined,
-  DownOutlined
+  DownOutlined,
+  GlobalOutlined
 } from '@ant-design/icons';
-import { request } from '@umijs/max';
+import { request, useIntl } from '@umijs/max';
 import type { PurchaseOrder, LogisticsSummary, LogisticsRecordInfo } from './types';
 import { LOGISTICS_STATE_MAP } from './types';
 import dayjs from 'dayjs';
+import InternationalLogisticsTab from './InternationalLogisticsTab';
 
 const { Text, Title } = Typography;
 
@@ -67,6 +70,8 @@ const LogisticsModal: React.FC<LogisticsModalProps> = ({
   onRefreshSuccess
 }) => {
   const { message } = App.useApp();
+  const intl = useIntl();
+  const [activeTab, setActiveTab] = useState('domestic');
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState<LogisticsSummary | null>(null);
   const [newTrackingNumber, setNewTrackingNumber] = useState('');
@@ -282,28 +287,17 @@ const LogisticsModal: React.FC<LogisticsModalProps> = ({
     );
   };
 
-  return (
-    <Modal
-      title={
-        <Space>
-          <CarOutlined />
-          <span>物流管理</span>
-          {record?.orderNo && <Tag>{record.orderNo}</Tag>}
-        </Space>
-      }
-      open={visible}
-      onCancel={onClose}
-      footer={null}
-      width={700}
-    >
+  // 国内物流内容
+  const renderDomesticLogistics = () => (
+    <>
       {/* 添加物流单号 */}
       <div style={{ marginBottom: 16 }}>
-        <Text strong>添加物流单号：</Text>
+        <Text strong>{intl.formatMessage({ id: 'logistics.domestic.addTrackingNumber' })}：</Text>
         <Space style={{ marginTop: 8, width: '100%' }}>
           <Input
             value={newTrackingNumber}
             onChange={e => setNewTrackingNumber(e.target.value)}
-            placeholder="请输入物流单号"
+            placeholder={intl.formatMessage({ id: 'logistics.domestic.trackingNumberPlaceholder' })}
             style={{ width: 300 }}
             onPressEnter={handleAddTrackingNumber}
           />
@@ -314,7 +308,7 @@ const LogisticsModal: React.FC<LogisticsModalProps> = ({
             loading={addingLoading}
             disabled={!newTrackingNumber.trim()}
           >
-            添加
+            {intl.formatMessage({ id: 'button.add' })}
           </Button>
         </Space>
       </div>
@@ -336,15 +330,15 @@ const LogisticsModal: React.FC<LogisticsModalProps> = ({
         }}>
           <Space size="large">
             <span>
-              <Text type="secondary">总包裹：</Text>
+              <Text type="secondary">{intl.formatMessage({ id: 'logistics.domestic.totalPackages' })}：</Text>
               <Text strong>{summary.totalCount}</Text>
             </span>
             <span>
-              <Text type="secondary">已签收：</Text>
+              <Text type="secondary">{intl.formatMessage({ id: 'logistics.domestic.delivered' })}：</Text>
               <Text strong style={{ color: '#52c41a' }}>{summary.deliveredCount}</Text>
             </span>
             <span>
-              <Text type="secondary">在途中：</Text>
+              <Text type="secondary">{intl.formatMessage({ id: 'logistics.domestic.inTransit' })}：</Text>
               <Text strong style={{ color: '#1890ff' }}>{summary.inTransitCount}</Text>
             </span>
           </Space>
@@ -360,8 +354,61 @@ const LogisticsModal: React.FC<LogisticsModalProps> = ({
 
       {/* 无物流记录 */}
       {!loading && (!summary || summary.totalCount === 0) && (
-        <Empty description="暂无物流记录，请添加物流单号" />
+        <Empty description={intl.formatMessage({ id: 'logistics.domestic.empty' })} />
       )}
+    </>
+  );
+
+  const orderId = getOrderId();
+
+  return (
+    <Modal
+      title={
+        <Space>
+          <CarOutlined />
+          <span>{intl.formatMessage({ id: 'logistics.modal.title' })}</span>
+          {record?.orderNo && <Tag>{record.orderNo}</Tag>}
+        </Space>
+      }
+      open={visible}
+      onCancel={onClose}
+      footer={null}
+      width={750}
+    >
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: 'domestic',
+            label: (
+              <span>
+                <CarOutlined />
+                {intl.formatMessage({ id: 'logistics.tab.domestic' })}
+              </span>
+            ),
+            children: renderDomesticLogistics(),
+          },
+          {
+            key: 'international',
+            label: (
+              <span>
+                <GlobalOutlined />
+                {intl.formatMessage({ id: 'logistics.tab.international' })}
+              </span>
+            ),
+            children: orderId ? (
+              <InternationalLogisticsTab
+                purchaseOrderId={orderId}
+                baseId={baseId}
+                onDataChange={onRefreshSuccess}
+              />
+            ) : (
+              <Empty description={intl.formatMessage({ id: 'logistics.international.noOrder' })} />
+            ),
+          },
+        ]}
+      />
     </Modal>
   );
 };

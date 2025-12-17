@@ -346,9 +346,9 @@ export const getColumns = (
     hideInSearch: true,
   },
   {
-    title: '物流状态',
+    title: intl?.formatMessage({ id: 'procurement.column.domesticLogistics' }) || '国内物流',
     key: 'logisticsStatus',
-    width: 80,
+    width: 90,
     fixed: 'right',
     hideInSearch: true,
     render: (_, record) => {
@@ -392,6 +392,26 @@ export const getColumns = (
           </Tag>
         </Tooltip>
       );
+    },
+  },
+  {
+    title: intl?.formatMessage({ id: 'procurement.column.internationalLogistics' }) || '国际货运',
+    key: 'internationalLogisticsStatus',
+    width: 80,
+    fixed: 'right',
+    hideInSearch: true,
+    render: (_, record) => {
+      const count = record.internationalLogisticsCount || 0;
+      
+      if (count > 0) {
+        return (
+          <Tooltip title={`已录入${count}条记录`}>
+            <Tag color="success">已录入</Tag>
+          </Tooltip>
+        );
+      }
+      
+      return <Tag color="error">未录入</Tag>;
     },
   },
   {

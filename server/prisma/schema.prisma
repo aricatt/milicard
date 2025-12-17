@@ -282,7 +282,8 @@ model PurchaseOrder {
   arrivalRecords   ArrivalRecord[]
   payables         Payable[]
   items            PurchaseOrderItem[]
-  logistics        PurchaseOrderLogistics[]  // 物流记录（一对多）
+  logistics        PurchaseOrderLogistics[]  // 国内物流记录（一对多）
+  internationalLogistics InternationalLogistics[]  // 国际货运记录（一对多）
   base             Base                @relation(fields: [baseId], references: [id])
   creator          User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
   targetLocation   Location?           @relation("PurchaseOrderTarget", fields: [targetLocationId], references: [id])
@@ -297,7 +298,7 @@ model PurchaseOrder {
   @@map("purchase_orders")
 }
 
-// 采购订单物流记录（支持多个物流单号）
+// 采购订单物流记录（支持多个物流单号）- 国内物流
 model PurchaseOrderLogistics {
   id                  String        @id @default(uuid())
   purchaseOrderId     String        @map("purchase_order_id")
@@ -316,6 +317,27 @@ model PurchaseOrderLogistics {
   @@index([purchaseOrderId])
   @@index([trackingNumber])
   @@map("purchase_order_logistics")
+}
+
+// 国际货运记录
+model InternationalLogistics {
+  id              String        @id @default(uuid())
+  purchaseOrderId String        @map("purchase_order_id")
+  batchNo         String        @map("batch_no")           // 批次
+  boxNo           String        @map("box_no")             // 箱号
+  length          Decimal       @db.Decimal(10, 2)         // 长(cm)
+  width           Decimal       @db.Decimal(10, 2)         // 宽(cm)
+  height          Decimal       @db.Decimal(10, 2)         // 高(cm)
+  freightRate     Decimal       @map("freight_rate") @db.Decimal(10, 2)  // 运费系数(元/方)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@unique([batchNo, boxNo])  // 批次+箱号 组成唯一值
+  @@index([purchaseOrderId])
+  @@index([batchNo])
+  @@map("international_logistics")
 }
 
 model PurchaseOrderItem {

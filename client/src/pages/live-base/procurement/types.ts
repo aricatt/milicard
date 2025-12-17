@@ -51,6 +51,8 @@ export interface PurchaseOrder {
   status?: 'pending' | 'confirmed' | 'received' | 'cancelled';
   // 物流汇总信息（用于列表显示）
   logisticsSummary?: LogisticsSummary;
+  // 国际货运记录数量（用于列表显示）
+  internationalLogisticsCount?: number;
 }
 
 // 物流状态映射

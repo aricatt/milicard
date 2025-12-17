@@ -182,7 +182,22 @@ export class PurchaseBaseService {
       const orderIds = [...new Set(data.map(item => item.id))];
       const logisticsSummaryMap = await logisticsService.getLogisticsSummaryForList(orderIds);
 
-      // 将物流汇总信息添加到每条记录
+      // 获取国际货运记录数量
+      const internationalLogisticsCountMap = new Map<string, number>();
+      if (orderIds.length > 0) {
+        const intlLogisticsSql = `
+          SELECT purchase_order_id, COUNT(*) as count
+          FROM international_logistics
+          WHERE purchase_order_id IN (${orderIds.map(id => `'${id}'`).join(',')})
+          GROUP BY purchase_order_id
+        `;
+        const intlLogisticsResult = await prisma.$queryRawUnsafe(intlLogisticsSql) as any[];
+        intlLogisticsResult.forEach((row: any) => {
+          internationalLogisticsCountMap.set(row.purchase_order_id, Number(row.count));
+        });
+      }
+
+      // 将物流汇总信息和国际货运记录数量添加到每条记录
       const dataWithLogistics = data.map(item => ({
         ...item,
         logisticsSummary: logisticsSummaryMap.get(item.id) || {
@@ -190,7 +205,8 @@ export class PurchaseBaseService {
           deliveredCount: 0,
           inTransitCount: 0,
           records: []
-        }
+        },
+        internationalLogisticsCount: internationalLogisticsCountMap.get(item.id) || 0
       }));
 
       logger.info('获取基地采购订单列表成功', {
