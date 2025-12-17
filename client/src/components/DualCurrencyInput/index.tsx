@@ -21,6 +21,8 @@ interface DualCurrencyInputProps {
   cnyPaymentMode?: boolean;
   /** 人民币金额变化回调（用于人民币支付模式） */
   onCnyValueChange?: (cnyValue: number | null) => void;
+  /** 外部设置的人民币初始值（用于自动填充） */
+  initialCnyValue?: number;
 }
 
 /**
@@ -42,9 +44,10 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
   addonAfter,
   cnyPaymentMode = false,
   onCnyValueChange,
+  initialCnyValue,
 }) => {
   const intl = useIntl();
-  const [cnyValue, setCnyValue] = useState<number | null>(null);
+  const [cnyValue, setCnyValue] = useState<number | null>(initialCnyValue ?? null);
   const [localValue, setLocalValue] = useState<number | null>(null);
   const [activeInput, setActiveInput] = useState<'cny' | 'local' | null>(null);
 
@@ -65,6 +68,19 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
       }
     }
   }, [value, exchangeRate, precision, activeInput]);
+
+  // 当外部设置的人民币初始值变化时，更新输入框
+  useEffect(() => {
+    if (initialCnyValue !== undefined && initialCnyValue > 0) {
+      setCnyValue(initialCnyValue);
+      onCnyValueChange?.(initialCnyValue);
+      if (exchangeRate) {
+        const converted = Number((initialCnyValue * exchangeRate).toFixed(precision));
+        setLocalValue(converted);
+        onChange?.(converted);
+      }
+    }
+  }, [initialCnyValue]);
 
   // 人民币输入变化
   const handleCnyChange = useCallback((val: number | null) => {

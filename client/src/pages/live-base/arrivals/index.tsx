@@ -12,6 +12,10 @@ import {
   Descriptions,
   Checkbox,
   Input,
+  Row,
+  Col,
+  Alert,
+  Spin,
 } from 'antd';
 import DualCurrencyInput from '@/components/DualCurrencyInput';
 import { 
@@ -40,7 +44,7 @@ const ArrivalManagement: React.FC = () => {
   const { currentBase, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
 
   // Excel导入导出Hook
   const {
@@ -88,6 +92,14 @@ const ArrivalManagement: React.FC = () => {
   const [cnyPaymentMode, setCnyPaymentMode] = useState(false);
   const [cnyLogisticsFee, setCnyLogisticsFee] = useState<number | null>(null);
 
+  // 国际货运信息
+  const [internationalLogistics, setInternationalLogistics] = useState<any[]>([]);
+  const [intlLogisticsLoading, setIntlLogisticsLoading] = useState(false);
+  const [calculatedIntlFreight, setCalculatedIntlFreight] = useState<number>(0);
+  // 预先计算好的各级运费单价（使用 ref 避免闭包问题）
+  const freightRatesRef = useRef({ perBox: 0, perPack: 0, perPiece: 0 });
+  const [freightPerBox, setFreightPerBox] = useState<number>(0);
+
   // 获取当前汇率
   const currentExchangeRate = currencyRate?.fixedRate || 1;
   const currentCurrencyCode = currentBase?.currency || 'CNY';
@@ -134,6 +146,12 @@ const ArrivalManagement: React.FC = () => {
       });
       
       if (result.success && result.data) {
+        // 调试：打印 API 返回的数据（包括 packPerBox 字段）
+        console.log('采购单 API 返回数据:', result.data);
+        if (result.data.length > 0) {
+          console.log('第一条数据的 packPerBox:', result.data[0].packPerBox, 'piecePerPack:', result.data[0].piecePerPack);
+        }
+        
         // 保存采购订单完整信息（包括id和goodsId）
         // 过滤掉已完全到货的采购单（到货数量 >= 采购数量）
         const orderMap = new Map();
@@ -165,7 +183,8 @@ const ArrivalManagement: React.FC = () => {
             // 商品名称翻译
             const goodsName = getLocalizedGoodsName(item.goodsName, item.goodsNameI18n, locale);
             orderMap.set(item.orderNo, {
-              id: item.id,                    // 采购订单ID
+              id: item.purchaseOrderId,       // 采购订单ID（用于国际货运查询）
+              itemId: item.id,                // 采购订单明细项ID
               orderNo: item.orderNo,
               goodsId: item.goodsId,          // 商品ID
               purchaseDate: dateStr,
@@ -174,6 +193,9 @@ const ArrivalManagement: React.FC = () => {
               categoryCode: item.categoryCode,
               categoryName: item.categoryName,
               supplierName: item.supplierName,
+              // 商品拆分关系
+              packPerBox: item.packPerBox || 1,
+              piecePerPack: item.piecePerPack || 1,
               // 生成采购名称：采购日期 + [品类] + 商品名称
               purchaseName: `${dateStr}${categoryDisplay}${goodsName || ''}`,
             });
@@ -235,6 +257,130 @@ const ArrivalManagement: React.FC = () => {
   };
 
   /**
+   * 加载采购单的国际货运信息
+   */
+  const loadInternationalLogistics = async (purchaseOrderId: string) => {
+    if (!currentBase || !purchaseOrderId) {
+      setInternationalLogistics([]);
+      setFreightPerBox(0);
+      setCalculatedIntlFreight(0);
+      return;
+    }
+
+    setIntlLogisticsLoading(true);
+    try {
+      const result = await request(
+        `/api/v1/bases/${currentBase.id}/purchase-orders/${purchaseOrderId}/international-logistics`,
+        { method: 'GET' }
+      );
+
+      if (result.success && result.data && result.data.length > 0) {
+        setInternationalLogistics(result.data);
+        
+        // 获取当前选中采购单的商品拆分关系
+        const selectedOrder = purchaseOrders.find(o => o.id === purchaseOrderId);
+        const packPerBox = selectedOrder?.packPerBox || 1;
+        const piecePerPack = selectedOrder?.piecePerPack || 1;
+        
+        // 计算总运费
+        const totalFreight = result.data.reduce((sum: number, item: any) => sum + (item.freight || 0), 0);
+        const boxCount = result.data.length; // 每条记录代表一箱
+        
+        // 预先计算各级运费单价
+        const perBoxFreight = boxCount > 0 ? totalFreight / boxCount : 0;
+        const perPackFreight = perBoxFreight / packPerBox;
+        const perPieceFreight = perPackFreight / piecePerPack;
+        
+        // 存储到 ref 中（避免闭包问题）
+        freightRatesRef.current = {
+          perBox: Math.round(perBoxFreight * 100) / 100,
+          perPack: Math.round(perPackFreight * 10000) / 10000,
+          perPiece: Math.round(perPieceFreight * 10000) / 10000,
+        };
+        setFreightPerBox(freightRatesRef.current.perBox);
+        
+        console.log('国际货运运费单价:', freightRatesRef.current, { packPerBox, piecePerPack });
+        
+        // 自动勾选人民币支付
+        setCnyPaymentMode(true);
+      } else {
+        setInternationalLogistics([]);
+        freightRatesRef.current = { perBox: 0, perPack: 0, perPiece: 0 };
+        setFreightPerBox(0);
+        setCalculatedIntlFreight(0);
+        setCnyPaymentMode(false);
+      }
+    } catch (error) {
+      console.error('加载国际货运信息失败:', error);
+      setInternationalLogistics([]);
+      setFreightPerBox(0);
+    } finally {
+      setIntlLogisticsLoading(false);
+    }
+  };
+
+  /**
+   * 计算国际货运费用（根据到货数量）
+   * 直接使用 ref 中预先计算好的各级运费单价
+   */
+  const calculateIntlFreight = (boxQty: number, packQty: number, pieceQty: number) => {
+    const { perBox, perPack, perPiece } = freightRatesRef.current;
+    
+    if (perBox <= 0) {
+      setCalculatedIntlFreight(0);
+      return;
+    }
+    
+    // 总运费 = 箱数×单箱运费 + 盒数×单盒运费 + 包数×单包运费
+    const totalFreight = boxQty * perBox + packQty * perPack + pieceQty * perPiece;
+    console.log('运费计算:', { boxQty, packQty, pieceQty, perBox, perPack, perPiece, totalFreight });
+    setCalculatedIntlFreight(Math.round(totalFreight * 100) / 100);
+    
+    // 自动填充人民币物流费用
+    setCnyLogisticsFee(Math.round(totalFreight * 100) / 100);
+  };
+
+  /**
+   * 处理采购单选择变化
+   */
+  const handlePurchaseOrderChange = (orderNo: string) => {
+    const selectedOrder = purchaseOrders.find(o => o.orderNo === orderNo);
+    if (selectedOrder) {
+      loadInternationalLogistics(selectedOrder.id);
+    } else {
+      setInternationalLogistics([]);
+      freightRatesRef.current = { perBox: 0, perPack: 0, perPiece: 0 };
+      setFreightPerBox(0);
+      setCalculatedIntlFreight(0);
+    }
+    // 重置到货数量相关的计算
+    setCalculatedIntlFreight(0);
+    setCnyLogisticsFee(null);
+  };
+
+  /**
+   * 处理到货数量变化
+   * 使用 setTimeout 确保表单值已更新
+   */
+  const handleQuantityChange = () => {
+    setTimeout(() => {
+      const boxQty = createForm.getFieldValue('boxQuantity') || 0;
+      const packQty = createForm.getFieldValue('packQuantity') || 0;
+      const pieceQty = createForm.getFieldValue('pieceQuantity') || 0;
+      
+      console.log('handleQuantityChange:', { 
+        boxQty, packQty, pieceQty, 
+        freightRates: freightRatesRef.current,
+        hasIntlLogistics: internationalLogistics.length > 0 
+      });
+      
+      if (internationalLogistics.length > 0) {
+        calculateIntlFreight(boxQty, packQty, pieceQty);
+      }
+    }, 0);
+  };
+
+  /**
    * 初始化加载
    */
   useEffect(() => {
@@ -285,6 +431,13 @@ const ArrivalManagement: React.FC = () => {
         message.success('创建成功');
         setCreateModalVisible(false);
         createForm.resetFields();
+        // 重置国际货运相关状态
+        setInternationalLogistics([]);
+        freightRatesRef.current = { perBox: 0, perPack: 0, perPiece: 0 };
+        setFreightPerBox(0);
+        setCalculatedIntlFreight(0);
+        setCnyPaymentMode(false);
+        setCnyLogisticsFee(null);
         actionRef.current?.reload();
         loadStats();
       } else {
@@ -477,142 +630,223 @@ const ArrivalManagement: React.FC = () => {
         onCancel={() => {
           setCreateModalVisible(false);
           createForm.resetFields();
+          // 重置国际货运相关状态
+          setInternationalLogistics([]);
+          freightRatesRef.current = { perBox: 0, perPack: 0, perPiece: 0 };
+          setFreightPerBox(0);
+          setCalculatedIntlFreight(0);
+          setCnyPaymentMode(false);
+          setCnyLogisticsFee(null);
         }}
         confirmLoading={createLoading}
         width={600}
       >
-        <Form
-          form={createForm}
-          layout="vertical"
-          onFinish={handleCreate}
-          initialValues={{
-            arrivalDate: dayjs(),
-            boxQuantity: 0,
-            packQuantity: 0,
-            pieceQuantity: 0,
-          }}
-        >
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.arrivalDate' })}
-            name="arrivalDate"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.arrivalDateRequired' }) }]}
+        <Spin spinning={intlLogisticsLoading}>
+          <Form
+            form={createForm}
+            layout="vertical"
+            onFinish={handleCreate}
+            initialValues={{
+              arrivalDate: dayjs(),
+              boxQuantity: 0,
+              packQuantity: 0,
+              pieceQuantity: 0,
+            }}
           >
-            <DatePicker style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.arrivalDatePlaceholder' })} />
-          </Form.Item>
+            {/* 第一行：到货日期 + 采购单 */}
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.arrivalDate' })}
+                  name="arrivalDate"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.arrivalDateRequired' }) }]}
+                >
+                  <DatePicker style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.arrivalDatePlaceholder' })} />
+                </Form.Item>
+              </Col>
+              <Col span={16}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.purchaseOrder' })}
+                  name="purchaseOrderNo"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.purchaseOrderRequired' }) }]}
+                >
+                  <Select
+                    placeholder={intl.formatMessage({ id: 'arrivals.form.purchaseOrderPlaceholder' })}
+                    loading={purchaseOrdersLoading}
+                    showSearch
+                    optionFilterProp="label"
+                    onChange={handlePurchaseOrderChange}
+                    options={purchaseOrders.map((order) => ({
+                      value: order.orderNo,
+                      label: order.purchaseName || `${order.purchaseDate}${order.goodsName}`,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.purchaseOrder' })}
-            name="purchaseOrderNo"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.purchaseOrderRequired' }) }]}
-          >
-            <Select
-              placeholder={intl.formatMessage({ id: 'arrivals.form.purchaseOrderPlaceholder' })}
-              loading={purchaseOrdersLoading}
-              showSearch
-              optionFilterProp="label"
-              options={purchaseOrders.map((order) => ({
-                value: order.orderNo,
-                label: order.purchaseName || `${order.purchaseDate}${order.goodsName}`,
-              }))}
-            />
-          </Form.Item>
+            {/* 第二行：入库仓库 + 经手人 */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.location' })}
+                  name="locationId"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.locationRequired' }) }]}
+                >
+                  <Select
+                    placeholder={intl.formatMessage({ id: 'arrivals.form.locationPlaceholder' })}
+                    loading={locationsLoading}
+                    showSearch
+                    optionFilterProp="label"
+                    options={locations
+                      .filter((loc) => loc.type === 'MAIN_WAREHOUSE')
+                      .map((loc) => ({
+                        value: loc.id,
+                        label: loc.name,
+                      }))}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.handler' })}
+                  name="handlerId"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.handlerRequired' }) }]}
+                >
+                  <Select
+                    placeholder={intl.formatMessage({ id: 'arrivals.form.handlerPlaceholder' })}
+                    loading={handlersLoading}
+                    showSearch
+                    optionFilterProp="label"
+                    allowClear
+                    options={handlers.map((h) => ({
+                      value: h.id,
+                      label: h.role === 'WAREHOUSE_KEEPER' ? `👷 ${h.name}` : `🎤 ${h.name}`,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.location' })}
-            name="locationId"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.locationRequired' }) }]}
-            extra={intl.formatMessage({ id: 'arrivals.form.locationHint' })}
-          >
-            <Select
-              placeholder={intl.formatMessage({ id: 'arrivals.form.locationPlaceholder' })}
-              loading={locationsLoading}
-              showSearch
-              optionFilterProp="label"
-              options={locations
-                .filter((loc) => loc.type === 'MAIN_WAREHOUSE')
-                .map((loc) => ({
-                  value: loc.id,
-                  label: loc.name,
-                }))}
-            />
-          </Form.Item>
+            {/* 第三行：到货数量（箱/盒/包） */}
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.boxQuantity' })}
+                  name="boxQuantity"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.boxQuantityRequired' }) }]}
+                >
+                  <InputNumber 
+                    min={0} 
+                    style={{ width: '100%' }} 
+                    placeholder="0"
+                    onChange={handleQuantityChange}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.packQuantity' })}
+                  name="packQuantity"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.packQuantityRequired' }) }]}
+                >
+                  <InputNumber 
+                    min={0} 
+                    style={{ width: '100%' }} 
+                    placeholder="0"
+                    onChange={handleQuantityChange}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label={intl.formatMessage({ id: 'arrivals.form.pieceQuantity' })}
+                  name="pieceQuantity"
+                  rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.pieceQuantityRequired' }) }]}
+                >
+                  <InputNumber 
+                    min={0} 
+                    style={{ width: '100%' }} 
+                    placeholder="0"
+                    onChange={handleQuantityChange}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.handler' })}
-            name="handlerId"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.handlerRequired' }) }]}
-            extra={intl.formatMessage({ id: 'arrivals.form.handlerHint' })}
-          >
-            <Select
-              placeholder={intl.formatMessage({ id: 'arrivals.form.handlerPlaceholder' })}
-              loading={handlersLoading}
-              showSearch
-              optionFilterProp="label"
-              allowClear
-              options={handlers.map((h) => ({
-                value: h.id,
-                label: h.role === 'WAREHOUSE_KEEPER' ? `👷 ${h.name}` : `🎤 ${h.name}`,
-              }))}
-            />
-          </Form.Item>
+            {/* 国际货运费用提示 */}
+            {internationalLogistics.length > 0 && (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+                message={intl.formatMessage({ id: 'arrivals.form.intlFreightInfo' })}
+                description={
+                  <div>
+                    {/* 显示国际货运录入详情 */}
+                    <div style={{ marginBottom: 8, padding: '8px', backgroundColor: '#f5f5f5', borderRadius: 4 }}>
+                      <div style={{ fontWeight: 500, marginBottom: 4 }}>{intl.formatMessage({ id: 'arrivals.form.intlLogisticsDetail' })}:</div>
+                      {internationalLogistics.map((item, index) => (
+                        <div key={item.id} style={{ fontSize: 12, color: '#666' }}>
+                          {intl.formatMessage({ id: 'internationalLogistics.column.batchNo' })}: {item.batchNo} | 
+                          {intl.formatMessage({ id: 'internationalLogistics.column.boxNo' })}: {item.boxNo} | 
+                          {intl.formatMessage({ id: 'internationalLogistics.column.dimensions' })}: {item.length}×{item.width}×{item.height}cm | 
+                          {intl.formatMessage({ id: 'internationalLogistics.column.volume' })}: {item.volume?.toFixed(4)}m³ | 
+                          {intl.formatMessage({ id: 'internationalLogistics.column.freight' })}: ¥{item.freight?.toFixed(2)}
+                        </div>
+                      ))}
+                    </div>
+                    <div>{intl.formatMessage({ id: 'arrivals.form.intlFreightPerBox' })}: <strong>¥{freightPerBox.toFixed(2)}</strong></div>
+                    {calculatedIntlFreight > 0 && (
+                      <div>{intl.formatMessage({ id: 'arrivals.form.intlFreightTotal' })}: <strong style={{ color: '#52c41a' }}>¥{calculatedIntlFreight.toFixed(2)}</strong></div>
+                    )}
+                  </div>
+                }
+              />
+            )}
 
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.boxQuantity' })}
-            name="boxQuantity"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.boxQuantityRequired' }) }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.boxQuantityPlaceholder' })} />
-          </Form.Item>
+            {/* 人民币支付勾选框（物流费用） */}
+            {!isCNY && (
+              <Form.Item style={{ marginBottom: 8 }}>
+                <Checkbox
+                  checked={cnyPaymentMode}
+                  onChange={(e) => setCnyPaymentMode(e.target.checked)}
+                >
+                  {intl.formatMessage({ id: 'arrivals.form.cnyPayment' })}
+                  {internationalLogistics.length > 0 && (
+                    <span style={{ color: '#1890ff', marginLeft: 8 }}>
+                      ({intl.formatMessage({ id: 'arrivals.form.intlFreightAutoFill' })})
+                    </span>
+                  )}
+                </Checkbox>
+              </Form.Item>
+            )}
 
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.packQuantity' })}
-            name="packQuantity"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.packQuantityRequired' }) }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.packQuantityPlaceholder' })} />
-          </Form.Item>
-
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.pieceQuantity' })}
-            name="pieceQuantity"
-            rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.pieceQuantityRequired' }) }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.pieceQuantityPlaceholder' })} />
-          </Form.Item>
-
-          {/* 人民币支付勾选框（物流费用） */}
-          {!isCNY && (
-            <Form.Item>
-              <Checkbox
-                checked={cnyPaymentMode}
-                onChange={(e) => setCnyPaymentMode(e.target.checked)}
-              >
-                {intl.formatMessage({ id: 'arrivals.form.cnyPayment' })}
-              </Checkbox>
+            {/* 物流费用 - 双货币输入 */}
+            <Form.Item
+              label={internationalLogistics.length > 0 
+                ? intl.formatMessage({ id: 'arrivals.form.intlFreight' })
+                : intl.formatMessage({ id: 'arrivals.form.logisticsFee' })}
+              name="logisticsFee"
+            >
+              <DualCurrencyInput
+                currencyCode={currentCurrencyCode}
+                exchangeRate={currentExchangeRate}
+                placeholder={intl.formatMessage({ id: 'arrivals.form.logisticsFeePlaceholder' })}
+                precision={2}
+                min={0}
+                cnyPaymentMode={cnyPaymentMode}
+                onCnyValueChange={setCnyLogisticsFee}
+                initialCnyValue={cnyPaymentMode && calculatedIntlFreight > 0 ? calculatedIntlFreight : undefined}
+              />
             </Form.Item>
-          )}
 
-          {/* 物流费用 - 双货币输入 */}
-          <Form.Item
-            label={intl.formatMessage({ id: 'arrivals.form.logisticsFee' })}
-            name="logisticsFee"
-          >
-            <DualCurrencyInput
-              currencyCode={currentCurrencyCode}
-              exchangeRate={currentExchangeRate}
-              placeholder={intl.formatMessage({ id: 'arrivals.form.logisticsFeePlaceholder' })}
-              precision={2}
-              min={0}
-              cnyPaymentMode={cnyPaymentMode}
-              onCnyValueChange={setCnyLogisticsFee}
-            />
-          </Form.Item>
-
-          {/* 隐藏字段：人民币物流费用 */}
-          <Form.Item name="cnyLogisticsFee" hidden>
-            <InputNumber />
-          </Form.Item>
-        </Form>
+            {/* 隐藏字段：人民币物流费用 */}
+            <Form.Item name="cnyLogisticsFee" hidden>
+              <InputNumber />
+            </Form.Item>
+          </Form>
+        </Spin>
       </Modal>
 
       {/* 导入模态框 */}

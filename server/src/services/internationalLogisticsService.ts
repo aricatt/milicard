@@ -96,17 +96,12 @@ export class InternationalLogisticsService {
         throw new BaseError('采购单不存在', BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
-      // 检查批次+箱号是否重复
-      const existing = await prisma.internationalLogistics.findUnique({
-        where: {
-          batchNo_boxNo: {
-            batchNo: data.batchNo,
-            boxNo: data.boxNo
-          }
-        }
+      // 检查该采购单是否已有国际货运记录（每个采购单只能录入一条）
+      const existingForOrder = await prisma.internationalLogistics.findFirst({
+        where: { purchaseOrderId: data.purchaseOrderId }
       });
-      if (existing) {
-        throw new BaseError(`批次"${data.batchNo}"和箱号"${data.boxNo}"已存在`, BaseErrorType.VALIDATION_ERROR);
+      if (existingForOrder) {
+        throw new BaseError('该采购单已录入国际货运信息，每个采购单只能录入一条记录', BaseErrorType.VALIDATION_ERROR);
       }
 
       const record = await prisma.internationalLogistics.create({

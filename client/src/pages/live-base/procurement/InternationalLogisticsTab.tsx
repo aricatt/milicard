@@ -15,8 +15,9 @@ import {
   Row,
   Col,
   Statistic,
+  Alert,
 } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
 
 const { Text } = Typography;
@@ -218,9 +219,25 @@ const InternationalLogisticsTab: React.FC<InternationalLogisticsTabProps> = ({
   const totalVolume = records.reduce((sum, r) => sum + r.volume, 0);
   const totalFreight = records.reduce((sum, r) => sum + r.freight, 0);
 
+  // 是否已有记录（每个采购单只能录入一条）
+  const hasExistingRecord = records.length > 0;
+
   return (
     <div>
-      {/* 录入表单 */}
+      {/* 已录入提示 */}
+      {hasExistingRecord && (
+        <Alert
+          type="success"
+          icon={<CheckCircleOutlined />}
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={intl.formatMessage({ id: 'internationalLogistics.alert.alreadyRecorded' })}
+          description={intl.formatMessage({ id: 'internationalLogistics.alert.alreadyRecordedDesc' })}
+        />
+      )}
+
+      {/* 录入表单 - 已有记录时隐藏 */}
+      {!hasExistingRecord && (
       <Form
         form={form}
         layout="vertical"
@@ -355,6 +372,7 @@ const InternationalLogisticsTab: React.FC<InternationalLogisticsTabProps> = ({
           </Space>
         </Form.Item>
       </Form>
+      )}
 
       <Divider />
 

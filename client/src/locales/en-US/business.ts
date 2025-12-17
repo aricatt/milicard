@@ -1359,4 +1359,16 @@ export default {
   'internationalLogistics.message.createFailed': 'Failed to create',
   'internationalLogistics.message.deleteSuccess': 'Deleted successfully',
   'internationalLogistics.message.deleteFailed': 'Failed to delete',
+
+  // ==================== Arrival Form - International Freight ====================
+  'arrivals.form.intlFreight': 'International Freight',
+  'arrivals.form.intlFreightInfo': 'International logistics info found for this order',
+  'arrivals.form.intlFreightPerBox': 'Freight per box',
+  'arrivals.form.intlFreightTotal': 'Freight for this arrival',
+  'arrivals.form.intlFreightAutoFill': 'Auto-filled with international freight',
+  'arrivals.form.intlLogisticsDetail': 'International Logistics Details',
+
+  // ==================== International Logistics - Single Record Limit ====================
+  'internationalLogistics.alert.alreadyRecorded': 'International logistics recorded',
+  'internationalLogistics.alert.alreadyRecordedDesc': 'Only one international logistics record per purchase order. Delete existing record to modify.',
 };

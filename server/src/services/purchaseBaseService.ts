@@ -158,6 +158,9 @@ export class PurchaseBaseService {
           categoryCode: item.categoryCode || '',
           categoryName: item.categoryName || '',
           retailPrice: Number(item.retailPrice),
+          // 商品拆分关系（用于运费计算）
+          packPerBox,
+          piecePerPack,
           purchaseBoxQty,
           purchasePackQty,
           purchasePieceQty,

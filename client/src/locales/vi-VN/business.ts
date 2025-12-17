@@ -1359,4 +1359,16 @@ export default {
   'internationalLogistics.message.createFailed': 'Tạo thất bại',
   'internationalLogistics.message.deleteSuccess': 'Xóa thành công',
   'internationalLogistics.message.deleteFailed': 'Xóa thất bại',
+
+  // ==================== Biểu mẫu nhập hàng - Cước vận chuyển quốc tế ====================
+  'arrivals.form.intlFreight': 'Cước vận chuyển quốc tế',
+  'arrivals.form.intlFreightInfo': 'Đơn mua hàng này đã có thông tin vận chuyển quốc tế',
+  'arrivals.form.intlFreightPerBox': 'Cước mỗi thùng',
+  'arrivals.form.intlFreightTotal': 'Cước cho lần nhập này',
+  'arrivals.form.intlFreightAutoFill': 'Đã tự động điền cước vận chuyển quốc tế',
+  'arrivals.form.intlLogisticsDetail': 'Chi tiết vận chuyển quốc tế',
+
+  // ==================== Vận chuyển quốc tế - Giới hạn một bản ghi ====================
+  'internationalLogistics.alert.alreadyRecorded': 'Đã ghi nhận thông tin vận chuyển quốc tế',
+  'internationalLogistics.alert.alreadyRecordedDesc': 'Mỗi đơn mua hàng chỉ được ghi nhận một bản ghi vận chuyển quốc tế. Xóa bản ghi hiện tại để sửa đổi.',
 };

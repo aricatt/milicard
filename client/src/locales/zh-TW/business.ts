@@ -1357,4 +1357,16 @@ export default {
   'internationalLogistics.message.createFailed': '創建失敗',
   'internationalLogistics.message.deleteSuccess': '刪除成功',
   'internationalLogistics.message.deleteFailed': '刪除失敗',
+
+  // ==================== 到貨表單 - 國際貨運費用 ====================
+  'arrivals.form.intlFreight': '國際貨運費',
+  'arrivals.form.intlFreightInfo': '該採購單已錄入國際貨運信息',
+  'arrivals.form.intlFreightPerBox': '單箱運費',
+  'arrivals.form.intlFreightTotal': '本次到貨運費',
+  'arrivals.form.intlFreightAutoFill': '已自動填充國際貨運費',
+  'arrivals.form.intlLogisticsDetail': '國際貨運詳情',
+
+  // ==================== 國際貨運 - 單條記錄限制 ====================
+  'internationalLogistics.alert.alreadyRecorded': '已錄入國際貨運信息',
+  'internationalLogistics.alert.alreadyRecordedDesc': '每個採購單只能錄入一條國際貨運記錄。如需修改，請先刪除現有記錄。',
 };

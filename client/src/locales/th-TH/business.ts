@@ -1359,4 +1359,16 @@ export default {
   'internationalLogistics.message.createFailed': 'สร้างไม่สำเร็จ',
   'internationalLogistics.message.deleteSuccess': 'ลบสำเร็จ',
   'internationalLogistics.message.deleteFailed': 'ลบไม่สำเร็จ',
+
+  // ==================== แบบฟอร์มรับสินค้า - ค่าขนส่งระหว่างประเทศ ====================
+  'arrivals.form.intlFreight': 'ค่าขนส่งระหว่างประเทศ',
+  'arrivals.form.intlFreightInfo': 'คำสั่งซื้อนี้มีข้อมูลการขนส่งระหว่างประเทศ',
+  'arrivals.form.intlFreightPerBox': 'ค่าขนส่งต่อกล่อง',
+  'arrivals.form.intlFreightTotal': 'ค่าขนส่งสำหรับการรับครั้งนี้',
+  'arrivals.form.intlFreightAutoFill': 'กรอกค่าขนส่งระหว่างประเทศอัตโนมัติ',
+  'arrivals.form.intlLogisticsDetail': 'รายละเอียดการขนส่งระหว่างประเทศ',
+
+  // ==================== การขนส่งระหว่างประเทศ - จำกัดหนึ่งบันทึก ====================
+  'internationalLogistics.alert.alreadyRecorded': 'บันทึกข้อมูลการขนส่งระหว่างประเทศแล้ว',
+  'internationalLogistics.alert.alreadyRecordedDesc': 'แต่ละคำสั่งซื้อสามารถบันทึกได้เพียงหนึ่งรายการ ลบบันทึกที่มีอยู่เพื่อแก้ไข',
 };

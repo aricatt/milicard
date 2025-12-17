@@ -1359,4 +1359,16 @@ export default {
   'internationalLogistics.message.createFailed': '创建失败',
   'internationalLogistics.message.deleteSuccess': '删除成功',
   'internationalLogistics.message.deleteFailed': '删除失败',
+
+  // ==================== 到货表单 - 国际货运费用 ====================
+  'arrivals.form.intlFreight': '国际货运费',
+  'arrivals.form.intlFreightInfo': '该采购单已录入国际货运信息',
+  'arrivals.form.intlFreightPerBox': '单箱运费',
+  'arrivals.form.intlFreightTotal': '本次到货运费',
+  'arrivals.form.intlFreightAutoFill': '已自动填充国际货运费',
+  'arrivals.form.intlLogisticsDetail': '国际货运详情',
+
+  // ==================== 国际货运 - 单条记录限制 ====================
+  'internationalLogistics.alert.alreadyRecorded': '已录入国际货运信息',
+  'internationalLogistics.alert.alreadyRecordedDesc': '每个采购单只能录入一条国际货运记录。如需修改，请先删除现有记录。',
 };
