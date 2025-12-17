@@ -11,6 +11,8 @@ export interface CreateArrivalRequest {
   boxQuantity?: number;
   packQuantity?: number;
   pieceQuantity?: number;
+  logisticsFee?: number;      // 物流费用（基地货币）
+  cnyLogisticsFee?: number;   // 物流费用（人民币）
   notes?: string;
 }
 
@@ -23,6 +25,8 @@ export interface UpdateArrivalRequest {
   boxQuantity?: number;
   packQuantity?: number;
   pieceQuantity?: number;
+  logisticsFee?: number;
+  cnyLogisticsFee?: number;
   notes?: string;
 }
 
@@ -57,6 +61,8 @@ export interface ArrivalResponse {
   boxQuantity: number;
   packQuantity: number;
   pieceQuantity: number;
+  logisticsFee?: number;
+  cnyLogisticsFee?: number;
   notes?: string;
   createdBy?: string;
   createdAt: string;

@@ -45,4 +45,12 @@ router.get(
   StockController.getGoodsStock
 );
 
+// 重新计算基地所有商品的平均成本（修复历史数据）
+router.post(
+  '/:baseId/recalculate-costs',
+  authenticateToken,
+  checkPermission('stock', 'write'),
+  StockController.recalculateAllCosts
+);
+
 export default router;

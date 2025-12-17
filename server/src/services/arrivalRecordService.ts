@@ -91,7 +91,7 @@ export class ArrivalRecordService {
           where,
           skip,
           take: pageSize,
-          orderBy: { arrivalDate: 'desc' },
+          orderBy: { createdAt: 'desc' },
           include: {
             purchaseOrder: true,
             goods: {
@@ -128,6 +128,8 @@ export class ArrivalRecordService {
         boxQuantity: record.boxQuantity,
         packQuantity: record.packQuantity,
         pieceQuantity: record.pieceQuantity,
+        logisticsFee: Number(record.logisticsFee) || 0,
+        cnyLogisticsFee: Number(record.cnyLogisticsFee) || 0,
         notes: record.notes || undefined,
         createdBy: record.createdBy || undefined,
         createdAt: record.createdAt.toISOString(),
@@ -311,6 +313,8 @@ export class ArrivalRecordService {
           boxQuantity: data.boxQuantity || 0,
           packQuantity: data.packQuantity || 0,
           pieceQuantity: data.pieceQuantity || 0,
+          logisticsFee: data.logisticsFee || 0,
+          cnyLogisticsFee: data.cnyLogisticsFee || 0,
           notes: data.notes,
           createdBy: userId,
           updatedBy: userId
@@ -335,8 +339,18 @@ export class ArrivalRecordService {
       try {
         // 获取采购单价（每箱）
         const unitPricePerBox = Number(purchaseItem.unitPrice);
+        // 获取物流费用（基地货币）
+        const logisticsFee = data.logisticsFee || 0;
         
-        // 计算当前库存（到货前的库存，以箱为单位）
+        // 获取商品的拆分关系
+        const goods = await prisma.goods.findUnique({
+          where: { id: goodsId },
+          select: { packPerBox: true, piecePerPack: true }
+        });
+        const packPerBox = goods?.packPerBox || 1;
+        const piecePerPack = goods?.piecePerPack || 1;
+        
+        // 计算当前库存（到货前的库存，转换为箱等效数量）
         // 从所有到货记录中汇总（不包括本次）
         const existingStock = await prisma.arrivalRecord.aggregate({
           where: {
@@ -345,28 +359,43 @@ export class ArrivalRecordService {
             id: { not: record.id }  // 排除本次到货
           },
           _sum: {
-            boxQuantity: true
+            boxQuantity: true,
+            packQuantity: true,
+            pieceQuantity: true
           }
         });
         
-        const currentStockBoxes = existingStock._sum.boxQuantity || 0;
-        const arrivalBoxes = data.boxQuantity || 0;
+        // 将库存转换为箱等效数量
+        const existingBoxQty = existingStock._sum.boxQuantity || 0;
+        const existingPackQty = existingStock._sum.packQuantity || 0;
+        const existingPieceQty = existingStock._sum.pieceQuantity || 0;
+        const currentStockBoxEquivalent = existingBoxQty + existingPackQty / packPerBox + existingPieceQty / (packPerBox * piecePerPack);
         
-        // 更新平均成本
+        // 将本次到货转换为箱等效数量
+        const arrivalBoxQty = data.boxQuantity || 0;
+        const arrivalPackQty = data.packQuantity || 0;
+        const arrivalPieceQty = data.pieceQuantity || 0;
+        const arrivalBoxEquivalent = arrivalBoxQty + arrivalPackQty / packPerBox + arrivalPieceQty / (packPerBox * piecePerPack);
+        
+        // 更新平均成本（含物流费用）
         await GoodsCostService.updateAverageCost(
           goodsId,
           baseId,
           unitPricePerBox,
-          arrivalBoxes,
-          currentStockBoxes
+          arrivalBoxEquivalent,
+          currentStockBoxEquivalent,
+          logisticsFee
         );
         
         logger.info('商品平均成本更新成功', {
           goodsId,
           baseId,
           unitPricePerBox,
-          arrivalBoxes,
-          currentStockBoxes,
+          arrivalBoxEquivalent,
+          currentStockBoxEquivalent,
+          logisticsFee,
+          packPerBox,
+          piecePerPack,
           service: 'milicard-api'
         });
       } catch (costError) {
@@ -398,6 +427,8 @@ export class ArrivalRecordService {
         boxQuantity: record.boxQuantity,
         packQuantity: record.packQuantity,
         pieceQuantity: record.pieceQuantity,
+        logisticsFee: Number(record.logisticsFee) || 0,
+        cnyLogisticsFee: Number(record.cnyLogisticsFee) || 0,
         notes: record.notes || undefined,
         createdBy: record.createdBy || undefined,
         createdAt: record.createdAt.toISOString(),
@@ -437,6 +468,9 @@ export class ArrivalRecordService {
         throw new BaseError('到货记录不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
+      // 保存商品ID，用于后续重新计算成本
+      const goodsId = record.goodsId;
+
       // 删除记录
       await prisma.arrivalRecord.delete({
         where: {
@@ -447,9 +481,28 @@ export class ArrivalRecordService {
       logger.info('到货记录删除成功', {
         recordId,
         baseId,
+        goodsId,
         userId,
         service: 'milicard-api'
       });
+
+      // 重新计算该商品的平均成本
+      try {
+        await GoodsCostService.recalculateAverageCost(goodsId, baseId);
+        logger.info('删除到货记录后，商品平均成本已重新计算', {
+          goodsId,
+          baseId,
+          service: 'milicard-api'
+        });
+      } catch (costError) {
+        // 成本重新计算失败不影响删除操作
+        logger.error('删除到货记录后，重新计算商品平均成本失败', {
+          error: costError instanceof Error ? costError.message : String(costError),
+          goodsId,
+          baseId,
+          service: 'milicard-api'
+        });
+      }
 
     } catch (error) {
       logger.error('删除到货记录失败', {
@@ -525,6 +578,8 @@ export class ArrivalRecordService {
       boxQuantity?: number;
       packQuantity?: number;
       pieceQuantity?: number;
+      logisticsFee?: number;
+      cnyLogisticsFee?: number;
     },
     userId: string
   ): Promise<any> {
@@ -664,6 +719,8 @@ export class ArrivalRecordService {
           boxQuantity: newBoxQty,
           packQuantity: newPackQty,
           pieceQuantity: newPieceQty,
+          logisticsFee: data.logisticsFee || 0,
+          cnyLogisticsFee: data.cnyLogisticsFee || 0,
           createdBy: userId,
           updatedBy: userId
         },
@@ -687,8 +744,18 @@ export class ArrivalRecordService {
       // 更新商品平均成本
       try {
         const unitPricePerBox = Number(purchaseItem.unitPrice);
+        // 获取物流费用（基地货币）
+        const logisticsFee = data.logisticsFee || 0;
         
-        // 计算当前库存（到货前的库存，以箱为单位）
+        // 获取商品的拆分关系
+        const goodsInfo = await prisma.goods.findUnique({
+          where: { id: goodsId },
+          select: { packPerBox: true, piecePerPack: true }
+        });
+        const packPerBox = goodsInfo?.packPerBox || 1;
+        const piecePerPack = goodsInfo?.piecePerPack || 1;
+        
+        // 计算当前库存（到货前的库存，转换为箱等效数量）
         const existingStock = await prisma.arrivalRecord.aggregate({
           where: {
             goodsId: goodsId,
@@ -696,27 +763,39 @@ export class ArrivalRecordService {
             id: { not: record.id }
           },
           _sum: {
-            boxQuantity: true
+            boxQuantity: true,
+            packQuantity: true,
+            pieceQuantity: true
           }
         });
         
-        const currentStockBoxes = existingStock._sum.boxQuantity || 0;
-        const arrivalBoxes = newBoxQty;
+        // 将库存转换为箱等效数量
+        const existingBoxQty = existingStock._sum.boxQuantity || 0;
+        const existingPackQty = existingStock._sum.packQuantity || 0;
+        const existingPieceQty = existingStock._sum.pieceQuantity || 0;
+        const currentStockBoxEquivalent = existingBoxQty + existingPackQty / packPerBox + existingPieceQty / (packPerBox * piecePerPack);
+        
+        // 将本次到货转换为箱等效数量
+        const arrivalBoxEquivalent = newBoxQty + newPackQty / packPerBox + newPieceQty / (packPerBox * piecePerPack);
         
         await GoodsCostService.updateAverageCost(
           goodsId,
           baseId,
           unitPricePerBox,
-          arrivalBoxes,
-          currentStockBoxes
+          arrivalBoxEquivalent,
+          currentStockBoxEquivalent,
+          logisticsFee
         );
         
         logger.info('商品平均成本更新成功（导入）', {
           goodsId,
           baseId,
           unitPricePerBox,
-          arrivalBoxes,
-          currentStockBoxes,
+          arrivalBoxEquivalent,
+          currentStockBoxEquivalent,
+          logisticsFee,
+          packPerBox,
+          piecePerPack,
           service: 'milicard-api'
         });
       } catch (costError) {

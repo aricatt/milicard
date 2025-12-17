@@ -583,14 +583,37 @@ export class StockService {
         }
 
         // 获取平均成本
+        let avgCostPerBox = 0;
         const inventory = await prisma.inventory.findFirst({
           where: { goodsId: goods.id, baseId },
           select: { averageCost: true },
         });
 
+        if (inventory?.averageCost) {
+          avgCostPerBox = Number(inventory.averageCost);
+        } else {
+          // 如果没有inventory记录，尝试从最近的到货记录关联的采购单获取单价
+          const latestArrival = await prisma.arrivalRecord.findFirst({
+            where: { goodsId: goods.id, baseId },
+            orderBy: { createdAt: 'desc' },
+            include: {
+              purchaseOrder: {
+                include: { items: true }
+              }
+            }
+          });
+          if (latestArrival?.purchaseOrder?.items) {
+            const purchaseItem = latestArrival.purchaseOrder.items.find(
+              item => item.goodsId === goods.id
+            );
+            if (purchaseItem) {
+              avgCostPerBox = Number(purchaseItem.unitPrice) || 0;
+            }
+          }
+        }
+
         const packPerBox = goods.packPerBox || 1;
         const piecePerPack = goods.piecePerPack || 1;
-        const avgCostPerBox = Number(inventory?.averageCost || 0);
         const avgCostPerPack = avgCostPerBox / packPerBox;
         const avgCostPerPiece = avgCostPerPack / piecePerPack;
 

@@ -10,7 +10,10 @@ import {
   App,
   Popover,
   Descriptions,
+  Checkbox,
+  Input,
 } from 'antd';
+import DualCurrencyInput from '@/components/DualCurrencyInput';
 import { 
   PlusOutlined, 
   ExportOutlined, 
@@ -34,7 +37,7 @@ import type { ArrivalRecord, ArrivalStats, ArrivalFormValues } from './types';
  * 记录采购商品的到货情况，支持一张采购单分批多次到货
  */
 const ArrivalManagement: React.FC = () => {
-  const { currentBase } = useBase();
+  const { currentBase, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType>();
@@ -80,6 +83,15 @@ const ArrivalManagement: React.FC = () => {
   const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
   const [locationsLoading, setLocationsLoading] = useState(false);
   const [handlersLoading, setHandlersLoading] = useState(false);
+
+  // 人民币支付模式（物流费用）
+  const [cnyPaymentMode, setCnyPaymentMode] = useState(false);
+  const [cnyLogisticsFee, setCnyLogisticsFee] = useState<number | null>(null);
+
+  // 获取当前汇率
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
+  const isCNY = currentCurrencyCode === 'CNY';
 
   /**
    * 加载统计数据
@@ -258,6 +270,9 @@ const ArrivalManagement: React.FC = () => {
         boxQuantity: values.boxQuantity || 0,
         packQuantity: values.packQuantity || 0,
         pieceQuantity: values.pieceQuantity || 0,
+        logisticsFee: values.logisticsFee || 0,
+        // 如果是人民币支付模式，使用人民币物流费用
+        cnyLogisticsFee: cnyPaymentMode ? (cnyLogisticsFee || 0) : 0,
         notes: values.notes,
       };
 
@@ -563,6 +578,39 @@ const ArrivalManagement: React.FC = () => {
             rules={[{ required: true, message: intl.formatMessage({ id: 'arrivals.form.pieceQuantityRequired' }) }]}
           >
             <InputNumber min={0} style={{ width: '100%' }} placeholder={intl.formatMessage({ id: 'arrivals.form.pieceQuantityPlaceholder' })} />
+          </Form.Item>
+
+          {/* 人民币支付勾选框（物流费用） */}
+          {!isCNY && (
+            <Form.Item>
+              <Checkbox
+                checked={cnyPaymentMode}
+                onChange={(e) => setCnyPaymentMode(e.target.checked)}
+              >
+                {intl.formatMessage({ id: 'arrivals.form.cnyPayment' })}
+              </Checkbox>
+            </Form.Item>
+          )}
+
+          {/* 物流费用 - 双货币输入 */}
+          <Form.Item
+            label={intl.formatMessage({ id: 'arrivals.form.logisticsFee' })}
+            name="logisticsFee"
+          >
+            <DualCurrencyInput
+              currencyCode={currentCurrencyCode}
+              exchangeRate={currentExchangeRate}
+              placeholder={intl.formatMessage({ id: 'arrivals.form.logisticsFeePlaceholder' })}
+              precision={2}
+              min={0}
+              cnyPaymentMode={cnyPaymentMode}
+              onCnyValueChange={setCnyLogisticsFee}
+            />
+          </Form.Item>
+
+          {/* 隐藏字段：人民币物流费用 */}
+          <Form.Item name="cnyLogisticsFee" hidden>
+            <InputNumber />
           </Form.Item>
         </Form>
       </Modal>

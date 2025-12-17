@@ -157,6 +157,40 @@ export const getColumns = (
     ),
   },
   {
+    title: intl?.formatMessage({ id: 'arrivals.column.logisticsFee' }) || '物流费用',
+    dataIndex: 'logisticsFee',
+    key: 'logisticsFee',
+    width: 100,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => {
+      const fee = record.logisticsFee || 0;
+      if (fee <= 0) return '-';
+      return (
+        <span style={{ fontWeight: 600, color: '#1890ff' }}>
+          {fee.toFixed(2)}
+        </span>
+      );
+    },
+  },
+  {
+    title: intl?.formatMessage({ id: 'arrivals.column.cnyLogisticsFee' }) || '人民币物流费',
+    dataIndex: 'cnyLogisticsFee',
+    key: 'cnyLogisticsFee',
+    width: 120,
+    hideInSearch: true,
+    align: 'right',
+    render: (_, record) => {
+      const fee = record.cnyLogisticsFee || 0;
+      if (fee <= 0) return '-';
+      return (
+        <span style={{ fontWeight: 600, color: '#eb2f96' }}>
+          ¥ {fee.toFixed(2)}
+        </span>
+      );
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'table.column.createdAt' }) || '创建时间',
     dataIndex: 'createdAt',
     key: 'createdAt',

@@ -751,6 +751,8 @@ model ArrivalRecord {
   boxQuantity     Int           @default(0) @map("box_quantity")
   packQuantity    Int           @default(0) @map("pack_quantity")
   pieceQuantity   Int           @default(0) @map("piece_quantity")
+  logisticsFee    Decimal       @default(0) @map("logistics_fee") @db.Decimal(12, 2)
+  cnyLogisticsFee Decimal       @default(0) @map("cny_logistics_fee") @db.Decimal(12, 2)
   notes           String?
   createdBy       String?       @map("created_by")
   updatedBy       String?       @map("updated_by")

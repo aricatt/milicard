@@ -30,6 +30,8 @@ export interface ArrivalRecord {
   boxQuantity: number;           // 到货箱
   packQuantity: number;          // 到货盒
   pieceQuantity: number;         // 到货包
+  logisticsFee?: number;         // 物流费用（基地货币）
+  cnyLogisticsFee?: number;      // 物流费用（人民币）
   totalPieces: number;
   notes: string;
   createdBy: string;
@@ -61,5 +63,7 @@ export interface ArrivalFormValues {
   boxQuantity: number;           // 到货箱
   packQuantity: number;          // 到货盒
   pieceQuantity: number;         // 到货包
+  logisticsFee?: number;         // 物流费用（基地货币）
+  cnyLogisticsFee?: number;      // 物流费用（人民币）
   notes?: string;
 }

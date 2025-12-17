@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StockService } from '../services/stockService';
+import { GoodsCostService } from '../services/goodsCostService';
 import { logger } from '../utils/logger';
 
 export class StockController {
@@ -145,6 +146,32 @@ export class StockController {
       res.status(500).json({
         success: false,
         message: '获取商品库存失败',
+      });
+    }
+  }
+
+  /**
+   * 重新计算基地所有商品的平均成本（修复历史数据）
+   */
+  static async recalculateAllCosts(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId, 10);
+
+      const updatedCount = await GoodsCostService.recalculateAllAverageCosts(baseId);
+
+      res.json({
+        success: true,
+        message: `已重新计算 ${updatedCount} 个商品的平均成本`,
+        data: { updatedCount },
+      });
+    } catch (error) {
+      logger.error('重新计算平均成本失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId: req.params.baseId,
+      });
+      res.status(500).json({
+        success: false,
+        message: '重新计算平均成本失败',
       });
     }
   }
