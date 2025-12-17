@@ -219,6 +219,9 @@ const RealTimeStockPage: React.FC = () => {
       width: 120,
       search: false,
       align: 'right',
+      render: (_, record) => (
+        <span style={{ fontWeight: 500 }}>{formatAmount(record.totalValue)}</span>
+      ),
     },
     {
       title: intl.formatMessage({ id: 'table.column.status' }),

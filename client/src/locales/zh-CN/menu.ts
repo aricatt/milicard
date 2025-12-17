@@ -39,7 +39,7 @@ export default {
   'menu.offline-region.points': '点位管理',
   'menu.offline-region.point-orders': '点位订单',
   'menu.offline-region.suppliers': '供应商',
-  'menu.offline-region.products': '商品',
+  'menu.offline-region.products': '商品设置',
   'menu.offline-region.procurement': '采购',
   'menu.offline-region.arrivals': '到货',
   'menu.offline-region.inventory-consumption': '库存和消耗',

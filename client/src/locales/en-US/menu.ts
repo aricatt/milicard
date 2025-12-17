@@ -40,7 +40,7 @@ export default {
   'menu.offline-region.points': 'Point Management',
   'menu.offline-region.point-orders': 'Point Orders',
   'menu.offline-region.suppliers': 'Suppliers',
-  'menu.offline-region.products': 'Products',
+  'menu.offline-region.products': 'Product Settings',
   'menu.offline-region.procurement': 'Procurement',
   'menu.offline-region.arrivals': 'Arrivals',
   'menu.offline-region.inventory-consumption': 'Inventory & Consumption',
