@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
@@ -16,11 +16,15 @@ import {
   Col,
   Descriptions,
   Checkbox,
+  Alert,
+  Tooltip,
 } from 'antd';
-import { DollarOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { DollarOutlined, CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import GoodsNameText from '@/components/GoodsNameText';
+import DualCurrencyInput from '@/components/DualCurrencyInput';
+import { getCurrencySymbol } from '@/utils/currency';
 
 /**
  * 应付信息接口
@@ -36,6 +40,7 @@ interface PayableInfo {
   totalAmount: number;
   paidAmount: number;
   unpaidAmount: number;
+  cnyPaymentAmount?: number;  // 人民币支付金额
   paymentDate: string;
   purchaseOrderCode: string;
 }
@@ -64,6 +69,13 @@ const PayablesPage: React.FC = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [form] = Form.useForm();
   
+  // 人民币支付模式
+  const [cnyPaymentMode, setCnyPaymentMode] = useState(false);
+  // 人民币实际金额（用于人民币支付模式）
+  const [cnyActualAmount, setCnyActualAmount] = useState<number | null>(null);
+  // 表单使用的汇率（可编辑）
+  const [formExchangeRate, setFormExchangeRate] = useState<number>(1);
+  
   // 统计数据
   const [stats, setStats] = useState<PayableStats>({
     totalPayable: 0,
@@ -77,6 +89,14 @@ const PayablesPage: React.FC = () => {
   // 获取当前汇率和货币代码
   const currentExchangeRate = currencyRate?.fixedRate || 1;
   const currentCurrencyCode = currentBase?.currency || 'CNY';
+  const isCNY = currentCurrencyCode === 'CNY';
+  
+  // 当基地汇率变化时，更新表单汇率
+  useEffect(() => {
+    if (currencyRate?.fixedRate) {
+      setFormExchangeRate(currencyRate.fixedRate);
+    }
+  }, [currencyRate?.fixedRate]);
 
   // 金额格式化函数，支持以人民币显示
   const formatAmount = (amount: number | undefined | null) => {
@@ -134,6 +154,10 @@ const PayablesPage: React.FC = () => {
   const handleOpenPaymentModal = (record: PayableInfo) => {
     setCurrentPayable(record);
     form.resetFields();
+    // 如果采购单之前使用过人民币支付，默认勾选人民币支付
+    const hasCnyPayment = (record.cnyPaymentAmount || 0) > 0;
+    setCnyPaymentMode(hasCnyPayment);
+    setCnyActualAmount(null);
     setPaymentModalVisible(true);
   };
 
@@ -147,19 +171,29 @@ const PayablesPage: React.FC = () => {
       const values = await form.validateFields();
       setPaymentLoading(true);
 
+      // 构建请求数据
+      const requestData: any = {
+        paymentAmount: values.paymentAmount,
+      };
+
+      // 如果是人民币支付模式，添加人民币金额
+      if (cnyPaymentMode && cnyActualAmount && cnyActualAmount > 0) {
+        requestData.cnyPaymentAmount = cnyActualAmount;
+      }
+
       const response = await request(
         `/api/v1/bases/${currentBase.id}/payables/${currentPayable.id}/payment`,
         {
           method: 'POST',
-          data: {
-            paymentAmount: values.paymentAmount,
-          },
+          data: requestData,
         }
       );
 
       if (response.success) {
         message.success('付款成功');
         setPaymentModalVisible(false);
+        setCnyPaymentMode(false);
+        setCnyActualAmount(null);
         actionRef.current?.reload();
       } else {
         message.error(response.message || '付款失败');
@@ -376,14 +410,62 @@ const PayablesPage: React.FC = () => {
         title={intl.formatMessage({ id: 'payables.modal.addPayment' })}
         open={paymentModalVisible}
         onOk={handlePayment}
-        onCancel={() => setPaymentModalVisible(false)}
+        onCancel={() => {
+          setPaymentModalVisible(false);
+          setCnyPaymentMode(false);
+          setCnyActualAmount(null);
+        }}
         confirmLoading={paymentLoading}
-        width={500}
+        width={550}
         destroyOnClose
       >
         <Form form={form} layout="vertical">
           {currentPayable && (
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              {/* 汇率设置和人民币支付选项（非人民币基地显示） */}
+              {!isCNY && (
+                <Alert
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 8 }}
+                  message={
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                      <Space>
+                        <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+                        <InputNumber
+                          value={formExchangeRate}
+                          onChange={(val) => setFormExchangeRate(val || 1)}
+                          min={0.000001}
+                          precision={6}
+                          style={{ width: 150 }}
+                        />
+                        <span>{getCurrencySymbol(currentCurrencyCode)}</span>
+                        <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                          <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                        </Tooltip>
+                      </Space>
+                      <Checkbox
+                        checked={cnyPaymentMode}
+                        onChange={(e) => {
+                          setCnyPaymentMode(e.target.checked);
+                          if (!e.target.checked) {
+                            setCnyActualAmount(null);
+                          }
+                        }}
+                      >
+                        {intl.formatMessage({ id: 'procurement.form.cnyPaymentMode' })}
+                      </Checkbox>
+                      {/* 如果采购单之前使用过人民币支付，显示提醒 */}
+                      {(currentPayable.cnyPaymentAmount || 0) > 0 && (
+                        <div style={{ color: '#faad14', fontSize: 12 }}>
+                          {intl.formatMessage({ id: 'payables.form.cnyPaymentHistory' }, { amount: (currentPayable.cnyPaymentAmount || 0).toFixed(2) })}
+                        </div>
+                      )}
+                    </Space>
+                  }
+                />
+              )}
+
               <Descriptions column={1} bordered size="small">
                 <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.purchaseName' })}>
                   {currentPayable.purchaseName}
@@ -392,20 +474,48 @@ const PayablesPage: React.FC = () => {
                   {currentPayable.supplierName}
                 </Descriptions.Item>
                 <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.totalAmount' })}>
-                  <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
-                    ¥ {currentPayable.totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
-                  </span>
+                  <Space split={<span style={{ color: '#999' }}>|</span>}>
+                    <span style={{ color: '#eb2f96' }}>
+                      ¥ {(currentExchangeRate > 0 ? currentPayable.totalAmount / currentExchangeRate : 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </span>
+                    {!isCNY && (
+                      <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                        {getCurrencySymbol(currentCurrencyCode)} {currentPayable.totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </Space>
                 </Descriptions.Item>
                 <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.paidAmount' })}>
-                  <span style={{ color: '#52c41a' }}>
-                    ¥ {currentPayable.paidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
-                  </span>
+                  <Space split={<span style={{ color: '#999' }}>|</span>}>
+                    <span style={{ color: '#52c41a' }}>
+                      ¥ {(currentExchangeRate > 0 ? currentPayable.paidAmount / currentExchangeRate : 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </span>
+                    {!isCNY && (
+                      <span style={{ color: '#52c41a' }}>
+                        {getCurrencySymbol(currentCurrencyCode)} {currentPayable.paidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </Space>
                 </Descriptions.Item>
                 <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.unpaidAmount' })}>
-                  <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
-                    ¥ {currentPayable.unpaidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
-                  </span>
+                  <Space split={<span style={{ color: '#999' }}>|</span>}>
+                    <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
+                      ¥ {(currentExchangeRate > 0 ? currentPayable.unpaidAmount / currentExchangeRate : 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </span>
+                    {!isCNY && (
+                      <span style={{ fontWeight: 'bold', color: '#ff4d4f' }}>
+                        {getCurrencySymbol(currentCurrencyCode)} {currentPayable.unpaidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                      </span>
+                    )}
+                  </Space>
                 </Descriptions.Item>
+                {(currentPayable.cnyPaymentAmount || 0) > 0 && (
+                  <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.cnyPaymentAmount' })}>
+                    <span style={{ fontWeight: 'bold', color: '#eb2f96' }}>
+                      ¥ {(currentPayable.cnyPaymentAmount || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+                    </span>
+                  </Descriptions.Item>
+                )}
               </Descriptions>
 
               <Form.Item
@@ -420,15 +530,31 @@ const PayablesPage: React.FC = () => {
                     message: `付款金额不能超过未付金额 ${currentPayable.unpaidAmount.toFixed(2)}`,
                   },
                 ]}
+                extra={cnyPaymentMode 
+                  ? intl.formatMessage({ id: 'procurement.form.cnyPaymentHint' })
+                  : undefined
+                }
               >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder={`最多可付 ${currentPayable.unpaidAmount.toFixed(2)}`}
-                  precision={2}
-                  min={0.01}
-                  max={currentPayable.unpaidAmount}
-                  addonBefore="¥"
-                />
+                {isCNY ? (
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    placeholder={`最多可付 ${currentPayable.unpaidAmount.toFixed(2)}`}
+                    precision={2}
+                    min={0.01}
+                    max={currentPayable.unpaidAmount}
+                    addonBefore="¥"
+                  />
+                ) : (
+                  <DualCurrencyInput
+                    currencyCode={currentCurrencyCode}
+                    exchangeRate={formExchangeRate}
+                    placeholder={`最多可付 ${currentPayable.unpaidAmount.toFixed(2)}`}
+                    precision={2}
+                    min={0.01}
+                    cnyPaymentMode={cnyPaymentMode}
+                    onCnyValueChange={setCnyActualAmount}
+                  />
+                )}
               </Form.Item>
               
               <div style={{ textAlign: 'right' }}>

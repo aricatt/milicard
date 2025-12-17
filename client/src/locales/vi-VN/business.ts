@@ -145,6 +145,7 @@ export default {
   'procurement.column.totalAmount': 'Tổng phải trả',
   'procurement.column.actualAmount': 'Đã thanh toán',
   'procurement.column.unpaidAmount': 'Chưa thanh toán',
+  'procurement.column.cnyPaymentAmount': 'Thanh toán CNY',
   'procurement.column.purchaseName': 'Tên mua hàng',
   'procurement.column.retailPrice': 'Giá bán lẻ',
   'procurement.column.discount': 'Giảm giá%',
@@ -262,6 +263,8 @@ export default {
   'payables.modal.addPayment': 'Thêm thanh toán',
   'payables.form.paymentAmount': 'Số tiền thanh toán',
   'payables.form.amountRequired': 'Vui lòng nhập số tiền',
+  'payables.form.cnyPaymentHistory': 'Đơn hàng này đã thanh toán CNY ¥{amount}, khuyến nghị tiếp tục thanh toán bằng CNY',
+  'payables.column.cnyPaymentAmount': 'Số tiền thanh toán CNY',
 
   // ==================== Công nợ phải thu ====================
   'receivables.title': 'Công nợ phải thu',
@@ -902,6 +905,8 @@ export default {
   'procurement.form.actualAmountRequired': 'Vui lòng nhập số tiền thực tế',
   'procurement.form.actualAmountPlaceholder': 'Nhập số tiền thực tế',
   'procurement.form.actualAmountHint': 'Nếu chưa thanh toán đủ, vui lòng nhập số tiền đã thanh toán',
+  'procurement.form.cnyPaymentMode': 'Thanh toán bằng CNY',
+  'procurement.form.cnyPaymentHint': 'Khi chọn, số tiền CNY nhập vào sẽ được ghi lại',
   'procurement.form.notes': 'Ghi chú',
   'procurement.form.notesPlaceholder': 'Nhập ghi chú',
   'procurement.message.createSuccess': 'Tạo thành công',

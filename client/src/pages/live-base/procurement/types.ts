@@ -43,6 +43,7 @@ export interface PurchaseOrder {
   amountPiece?: number;         // 应付金额包
   totalAmount: number;          // 应付总金额
   actualAmount?: number;        // 实付金额
+  cnyPaymentAmount?: number;    // 人民币支付金额
   baseId: number;
   createdBy?: string;
   createdAt: string;

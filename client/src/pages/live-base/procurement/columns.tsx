@@ -321,6 +321,23 @@ export const getColumns = (
     },
   },
   {
+    title: intl?.formatMessage({ id: 'procurement.column.cnyPaymentAmount' }) || '人民币支付',
+    dataIndex: 'cnyPaymentAmount',
+    key: 'cnyPaymentAmount',
+    width: 120,
+    hideInSearch: true,
+    // 默认不显示，但可以在列设置中选择显示
+    render: (_, record) => {
+      const amount = record.cnyPaymentAmount || 0;
+      if (amount <= 0) return '-';
+      return (
+        <span style={{ color: '#eb2f96', fontWeight: 'bold' }}>
+          ¥ {floorTo2(amount)}
+        </span>
+      );
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'table.column.createdAt' }) || '创建时间',
     dataIndex: 'createdAt',
     key: 'createdAt',

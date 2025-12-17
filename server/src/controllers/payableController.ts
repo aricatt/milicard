@@ -130,7 +130,7 @@ export class PayableController {
         });
       }
 
-      const { paymentAmount } = req.body;
+      const { paymentAmount, cnyPaymentAmount } = req.body;
 
       if (!paymentAmount || paymentAmount <= 0) {
         return res.status(400).json({
@@ -143,7 +143,8 @@ export class PayableController {
         purchaseOrderId,
         parseFloat(paymentAmount),
         userId,
-        baseId
+        baseId,
+        cnyPaymentAmount ? parseFloat(cnyPaymentAmount) : undefined
       );
 
       logger.info('添加付款成功', {
@@ -151,6 +152,7 @@ export class PayableController {
         userId,
         purchaseOrderId,
         paymentAmount,
+        cnyPaymentAmount,
       });
 
       return res.json({

@@ -212,7 +212,7 @@ const ProcurementManagement: React.FC = () => {
   /**
    * 创建采购订单
    */
-  const handleCreate = async (values: ProcurementFormValues) => {
+  const handleCreate = async (values: ProcurementFormValues & { cnyPaymentAmount?: number }) => {
     if (!currentBase) {
       return;
     }
@@ -234,7 +234,7 @@ const ProcurementManagement: React.FC = () => {
       const totalAmount = amountBox + amountPack + amountPiece;
 
       // 构造后端API期望的数据格式
-      const requestData = {
+      const requestData: any = {
         supplierName: values.supplierName || '',
         // targetLocationId 不需要填写，到货时才分配具体位置
         purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
@@ -249,6 +249,11 @@ const ProcurementManagement: React.FC = () => {
           }
         ]
       };
+
+      // 如果有人民币支付金额，添加到请求数据中
+      if (values.cnyPaymentAmount !== undefined && values.cnyPaymentAmount > 0) {
+        requestData.cnyPaymentAmount = values.cnyPaymentAmount;
+      }
 
       const result = await request(`/api/v1/bases/${currentBase.id}/purchase-orders`, {
         method: 'POST',

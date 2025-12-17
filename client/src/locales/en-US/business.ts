@@ -145,6 +145,7 @@ export default {
   'procurement.column.totalAmount': 'Total Payable',
   'procurement.column.actualAmount': 'Paid Amount',
   'procurement.column.unpaidAmount': 'Unpaid Amount',
+  'procurement.column.cnyPaymentAmount': 'CNY Payment',
   'procurement.column.purchaseName': 'Purchase Name',
   'procurement.column.retailPrice': 'Retail Price',
   'procurement.column.discount': 'Discount%',
@@ -262,6 +263,8 @@ export default {
   'payables.modal.addPayment': 'Add Payment',
   'payables.form.paymentAmount': 'Payment Amount',
   'payables.form.amountRequired': 'Please enter payment amount',
+  'payables.form.cnyPaymentHistory': 'This order has CNY payment of ¥{amount}, recommend to continue with CNY payment',
+  'payables.column.cnyPaymentAmount': 'CNY Payment Amount',
 
   // ==================== Receivables ====================
   'receivables.title': 'Receivables',
@@ -902,6 +905,8 @@ export default {
   'procurement.form.actualAmountRequired': 'Please enter actual amount',
   'procurement.form.actualAmountPlaceholder': 'Enter actual amount',
   'procurement.form.actualAmountHint': 'Enter actual paid amount if not fully paid',
+  'procurement.form.cnyPaymentMode': 'CNY Payment',
+  'procurement.form.cnyPaymentHint': 'When checked, the CNY amount entered will be recorded',
   'procurement.form.notes': 'Notes',
   'procurement.form.notesPlaceholder': 'Enter notes',
   'procurement.message.createSuccess': 'Created successfully',

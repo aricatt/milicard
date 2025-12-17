@@ -17,6 +17,7 @@ export interface PayableInfo {
   totalAmount: number;         // 应付总金额
   paidAmount: number;          // 已付金额
   unpaidAmount: number;        // 未付金额
+  cnyPaymentAmount?: number;   // 人民币支付金额
   paymentDate: string;         // 付款日期（采购日期）
   purchaseOrderCode: string;   // 采购单编号
 }
@@ -148,6 +149,7 @@ export class PayableService {
         totalAmount,
         paidAmount,
         unpaidAmount,
+        cnyPaymentAmount: Number(order.cnyPaymentAmount) || 0,
         paymentDate: order.purchaseDate ? order.purchaseDate.toISOString().split('T')[0] : '',
         purchaseOrderCode: order.code,
       };
@@ -187,12 +189,18 @@ export class PayableService {
   /**
    * 更新付款金额
    * 将新增付款金额累加到采购单的实付金额上
+   * @param purchaseOrderId 采购单ID
+   * @param paymentAmount 付款金额（基地货币）
+   * @param userId 用户ID
+   * @param baseId 基地ID
+   * @param cnyPaymentAmount 人民币付款金额（可选，如果使用人民币支付）
    */
   static async addPayment(
     purchaseOrderId: string,
     paymentAmount: number,
     userId: string,
-    baseId: number
+    baseId: number,
+    cnyPaymentAmount?: number
   ) {
     // 查找采购单
     const order = await prisma.purchaseOrder.findFirst({
@@ -215,12 +223,21 @@ export class PayableService {
       throw new Error(`付款金额超过未付金额，当前未付金额为 ${(totalAmount - currentPaid).toFixed(2)}`);
     }
 
+    // 构建更新数据
+    const updateData: any = {
+      actualAmount: new Prisma.Decimal(newPaidAmount),
+    };
+
+    // 如果有人民币付款金额，累加到 cnyPaymentAmount
+    if (cnyPaymentAmount !== undefined && cnyPaymentAmount > 0) {
+      const currentCnyPaid = Number(order.cnyPaymentAmount) || 0;
+      updateData.cnyPaymentAmount = new Prisma.Decimal(currentCnyPaid + cnyPaymentAmount);
+    }
+
     // 更新采购单的实付金额
     const updatedOrder = await prisma.purchaseOrder.update({
       where: { id: purchaseOrderId },
-      data: {
-        actualAmount: new Prisma.Decimal(newPaidAmount),
-      },
+      data: updateData,
       include: {
         supplier: true,
         items: {
@@ -234,6 +251,7 @@ export class PayableService {
     logger.info('付款成功', {
       purchaseOrderId,
       paymentAmount,
+      cnyPaymentAmount,
       previousPaid: currentPaid,
       newPaidAmount,
       userId,
@@ -244,6 +262,7 @@ export class PayableService {
       totalAmount,
       paidAmount: newPaidAmount,
       unpaidAmount: totalAmount - newPaidAmount,
+      cnyPaymentAmount: Number(updatedOrder.cnyPaymentAmount) || 0,
     };
   }
 
@@ -291,6 +310,7 @@ export class PayableService {
       totalAmount,
       paidAmount,
       unpaidAmount,
+      cnyPaymentAmount: Number(order.cnyPaymentAmount) || 0,
       paymentDate: order.purchaseDate ? order.purchaseDate.toISOString().split('T')[0] : '',
       purchaseOrderCode: order.code,
     };

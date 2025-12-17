@@ -17,6 +17,10 @@ interface DualCurrencyInputProps {
   disabled?: boolean;
   style?: React.CSSProperties;
   addonAfter?: React.ReactNode;
+  /** 人民币支付模式：true时人民币输入框可编辑，基地货币不可编辑 */
+  cnyPaymentMode?: boolean;
+  /** 人民币金额变化回调（用于人民币支付模式） */
+  onCnyValueChange?: (cnyValue: number | null) => void;
 }
 
 /**
@@ -36,6 +40,8 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
   disabled = false,
   style,
   addonAfter,
+  cnyPaymentMode = false,
+  onCnyValueChange,
 }) => {
   const intl = useIntl();
   const [cnyValue, setCnyValue] = useState<number | null>(null);
@@ -64,6 +70,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
   const handleCnyChange = useCallback((val: number | null) => {
     setActiveInput('cny');
     setCnyValue(val);
+    onCnyValueChange?.(val);
     if (val !== null && exchangeRate) {
       const converted = Number((val * exchangeRate).toFixed(precision));
       setLocalValue(converted);
@@ -74,7 +81,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
     }
     // 延迟重置 activeInput
     setTimeout(() => setActiveInput(null), 100);
-  }, [exchangeRate, precision, onChange]);
+  }, [exchangeRate, precision, onChange, onCnyValueChange]);
 
   // 当前货币输入变化
   const handleLocalChange = useCallback((val: number | null) => {
@@ -108,6 +115,12 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
     );
   }
 
+  // 根据 cnyPaymentMode 决定哪个输入框可编辑
+  // 人民币支付模式：人民币可编辑，基地货币不可编辑
+  // 非人民币支付模式：基地货币可编辑，人民币不可编辑
+  const cnyDisabled = disabled || !cnyPaymentMode;
+  const localDisabled = disabled || cnyPaymentMode;
+
   return (
     <Space.Compact style={{ width: '100%', ...style }}>
       <Tooltip title={intl.formatMessage({ id: 'dualCurrency.cnyInput' })}>
@@ -117,7 +130,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
           min={min}
           precision={precision}
           placeholder="¥"
-          disabled={disabled}
+          disabled={cnyDisabled}
           style={{ width: '35%' }}
           addonBefore="¥"
         />
@@ -140,7 +153,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
           min={min}
           precision={precision}
           placeholder={currencySymbol}
-          disabled={disabled}
+          disabled={localDisabled}
           style={{ width: '55%' }}
           addonBefore={currencySymbol}
           addonAfter={addonAfter}

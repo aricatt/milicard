@@ -145,6 +145,7 @@ export default {
   'procurement.column.totalAmount': '应付总金额',
   'procurement.column.actualAmount': '实付金额',
   'procurement.column.unpaidAmount': '未付金额',
+  'procurement.column.cnyPaymentAmount': '人民币支付',
   'procurement.column.purchaseName': '采购名称',
   'procurement.column.retailPrice': '零售价',
   'procurement.column.discount': '折扣%',
@@ -262,6 +263,8 @@ export default {
   'payables.modal.addPayment': '添加付款',
   'payables.form.paymentAmount': '本次付款金额',
   'payables.form.amountRequired': '请输入付款金额',
+  'payables.form.cnyPaymentHistory': '该采购单之前已使用人民币支付 ¥{amount}，建议继续使用人民币支付',
+  'payables.column.cnyPaymentAmount': '人民币支付金额',
 
   // ==================== 应收管理 ====================
   'receivables.title': '应收管理',
@@ -902,6 +905,8 @@ export default {
   'procurement.form.actualAmountRequired': '请输入实际金额',
   'procurement.form.actualAmountPlaceholder': '输入实际金额',
   'procurement.form.actualAmountHint': '如未全额支付，请输入实际支付金额',
+  'procurement.form.cnyPaymentMode': '人民币支付',
+  'procurement.form.cnyPaymentHint': '勾选后，输入的人民币金额将被记录',
   'procurement.form.notes': '备注',
   'procurement.form.notesPlaceholder': '请输入备注信息',
   'procurement.message.createSuccess': '创建成功',

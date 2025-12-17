@@ -275,6 +275,7 @@ model PurchaseOrder {
   createdAt        DateTime            @default(now()) @map("created_at")
   updatedAt        DateTime            @updatedAt @map("updated_at")
   actualAmount     Decimal?            @map("actual_amount") @db.Decimal(12, 2)
+  cnyPaymentAmount Decimal?            @default(0) @map("cny_payment_amount") @db.Decimal(12, 2)
   targetLocationId Int?                @map("target_location_id")
   supplierId       String              @map("supplier_id")
   arrivalOrders    ArrivalOrder[]

@@ -145,6 +145,7 @@ export default {
   'procurement.column.totalAmount': '總金額',
   'procurement.column.actualAmount': '實付金額',
   'procurement.column.unpaidAmount': '未付金額',
+  'procurement.column.cnyPaymentAmount': '人民幣支付',
   'procurement.column.purchaseName': '採購名稱',
   'procurement.column.retailPrice': '零售價',
   'procurement.column.discount': '折扣%',
@@ -262,6 +263,8 @@ export default {
   'payables.modal.addPayment': '添加付款',
   'payables.form.paymentAmount': '本次付款金額',
   'payables.form.amountRequired': '請輸入付款金額',
+  'payables.form.cnyPaymentHistory': '該採購單之前已使用人民幣支付 ¥{amount}，建議繼續使用人民幣支付',
+  'payables.column.cnyPaymentAmount': '人民幣支付金額',
 
   // ==================== 應收管理 ====================
   'receivables.title': '應收管理',
@@ -903,6 +906,8 @@ export default {
   'procurement.form.actualAmountRequired': '請輸入實際金額',
   'procurement.form.actualAmountPlaceholder': '輸入實際金額',
   'procurement.form.actualAmountHint': '如未全額支付，請輸入實際支付金額',
+  'procurement.form.cnyPaymentMode': '人民幣支付',
+  'procurement.form.cnyPaymentHint': '勾選後，輸入的人民幣金額將被記錄',
   'procurement.form.notes': '備註',
   'procurement.form.notesPlaceholder': '請輸入備註信息',
   'procurement.message.createSuccess': '創建成功',

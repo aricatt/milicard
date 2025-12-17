@@ -28,6 +28,7 @@ export class PurchaseBaseService {
           po.base_id as "baseId",
           po.purchase_date as "purchaseDate",
           po.actual_amount as "actualAmount",
+          po.cny_payment_amount as "cnyPaymentAmount",
           po.created_by as "createdBy",
           po.created_at as "createdAt",
           g.id as "goodsId",
@@ -171,6 +172,7 @@ export class PurchaseBaseService {
           unitPricePiece,
           totalAmount: Number(item.totalAmount),
           actualAmount: Number(item.actualAmount) || 0,
+          cnyPaymentAmount: Number(item.cnyPaymentAmount) || 0,
           createdBy: item.createdBy,
           createdAt: item.createdAt?.toISOString?.() || item.createdAt,
         };
@@ -216,7 +218,7 @@ export class PurchaseBaseService {
    */
   static async createPurchaseOrder(baseId: number, orderData: any, userId: string) {
     try {
-      const { supplierName, targetLocationId, purchaseDate, notes, actualAmount = 0, items = [] } = orderData;
+      const { supplierName, targetLocationId, purchaseDate, notes, actualAmount = 0, cnyPaymentAmount = 0, items = [] } = orderData;
 
       // 通过供应商名称查找供应商（需要是该基地的供应商）
       const supplierSql = `
@@ -261,10 +263,10 @@ export class PurchaseBaseService {
       const createSql = `
         INSERT INTO purchase_orders (
           id, code, supplier_id, target_location_id, base_id, 
-          purchase_date, total_amount, actual_amount, notes, created_by, created_at, updated_at
+          purchase_date, total_amount, actual_amount, cny_payment_amount, notes, created_by, created_at, updated_at
         ) VALUES (
           gen_random_uuid(), '${orderNo}', '${supplierId}', ${targetLocationId ? `${targetLocationId}` : 'NULL'}, ${baseId},
-          '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
+          '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${cnyPaymentAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
         ) RETURNING *
       `;
 
@@ -348,6 +350,7 @@ export class PurchaseBaseService {
           baseId,
           purchaseDate,
           totalAmount,
+          cnyPaymentAmount,
           notes,
           itemCount: items.length
         }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Form, DatePicker, Select, InputNumber, Row, Col, Tag, Alert, Space, Tooltip } from 'antd';
+import React, { useState } from 'react';
+import { Form, DatePicker, Select, InputNumber, Row, Col, Tag, Alert, Space, Tooltip, Checkbox } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { useIntl, getLocale } from '@umijs/max';
 import dayjs from 'dayjs';
@@ -17,7 +17,7 @@ interface ProcurementFormProps {
   supplierOptions: SupplierOption[];
   goodsLoading: boolean;
   supplierLoading: boolean;
-  onFinish: (values: ProcurementFormValues) => void;
+  onFinish: (values: ProcurementFormValues & { cnyPaymentAmount?: number }) => void;
   currencyCode: string;
   exchangeRate: number;
   onExchangeRateChange: (rate: number) => void;
@@ -40,6 +40,11 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
 }) => {
   const intl = useIntl();
   const isCNY = currencyCode === 'CNY';
+  
+  // 人民币支付模式
+  const [cnyPaymentMode, setCnyPaymentMode] = useState(false);
+  // 人民币实际金额（用于人民币支付模式）
+  const [cnyActualAmount, setCnyActualAmount] = useState<number | null>(null);
   /**
    * 商品选择变化时，自动填充零售价和拆分关系
    */
@@ -109,7 +114,13 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
     <Form
       form={form}
       layout="vertical"
-      onFinish={onFinish}
+      onFinish={(values) => {
+        // 如果是人民币支付模式，将人民币金额传递出去
+        onFinish({
+          ...values,
+          cnyPaymentAmount: cnyPaymentMode ? cnyActualAmount || 0 : undefined,
+        });
+      }}
       initialValues={{
         purchaseDate: dayjs(),  // 默认当日
         purchaseBoxQty: 0,
@@ -118,26 +129,39 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         actualAmount: 0,
       }}
     >
-      {/* 汇率设置（非人民币基地显示） */}
+      {/* 汇率设置和人民币支付选项（非人民币基地显示） */}
       {!isCNY && (
         <Alert
           type="info"
           showIcon
           style={{ marginBottom: 16 }}
           message={
-            <Space>
-              <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
-              <InputNumber
-                value={exchangeRate}
-                onChange={(val) => onExchangeRateChange(val || 1)}
-                min={0.000001}
-                precision={6}
-                style={{ width: 150 }}
-              />
-              <span>{getCurrencySymbol(currencyCode)}</span>
-              <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
-                <InfoCircleOutlined style={{ color: '#1890ff' }} />
-              </Tooltip>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Space>
+                <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+                <InputNumber
+                  value={exchangeRate}
+                  onChange={(val) => onExchangeRateChange(val || 1)}
+                  min={0.000001}
+                  precision={6}
+                  style={{ width: 150 }}
+                />
+                <span>{getCurrencySymbol(currencyCode)}</span>
+                <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                  <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                </Tooltip>
+              </Space>
+              <Checkbox
+                checked={cnyPaymentMode}
+                onChange={(e) => {
+                  setCnyPaymentMode(e.target.checked);
+                  if (!e.target.checked) {
+                    setCnyActualAmount(null);
+                  }
+                }}
+              >
+                {intl.formatMessage({ id: 'procurement.form.cnyPaymentMode' })}
+              </Checkbox>
             </Space>
           }
         />
@@ -237,6 +261,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           precision={2}
           min={0.01}
           onChange={handleUnitPriceBoxChange}
+          cnyPaymentMode={cnyPaymentMode}
         />
       </Form.Item>
 
@@ -439,17 +464,31 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           const amountPack = (getFieldValue('unitPricePack') || 0) * (getFieldValue('purchasePackQty') || 0);
           const amountPiece = (getFieldValue('unitPricePiece') || 0) * (getFieldValue('purchasePieceQty') || 0);
           const total = amountBox + amountPack + amountPiece;
+          // 计算人民币金额（基地货币 / 汇率 = 人民币）
+          const cnyTotal = exchangeRate > 0 ? total / exchangeRate : 0;
           return (
             <div style={{ 
-              fontSize: 20, 
+              fontSize: 18, 
               fontWeight: 'bold', 
-              color: '#1890ff',
               padding: '10px',
               background: '#e6f7ff',
               borderRadius: 4,
-              textAlign: 'center'
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 24
             }}>
-              {total.toFixed(2)}
+              <span style={{ color: '#eb2f96' }}>
+                ¥ {cnyTotal.toFixed(2)}
+              </span>
+              {!isCNY && (
+                <>
+                  <span style={{ color: '#999', fontSize: 14 }}>|</span>
+                  <span style={{ color: '#1890ff' }}>
+                    {getCurrencySymbol(currencyCode)} {total.toFixed(2)}
+                  </span>
+                </>
+              )}
             </div>
           );
         }}
@@ -460,7 +499,10 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         label={intl.formatMessage({ id: 'procurement.form.actualAmount' })}
         name="actualAmount"
         rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.actualAmountRequired' }) }]}
-        extra={intl.formatMessage({ id: 'procurement.form.actualAmountHint' })}
+        extra={cnyPaymentMode 
+          ? intl.formatMessage({ id: 'procurement.form.cnyPaymentHint' })
+          : intl.formatMessage({ id: 'procurement.form.actualAmountHint' })
+        }
       >
         <DualCurrencyInput
           currencyCode={currencyCode}
@@ -468,7 +510,14 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           placeholder={intl.formatMessage({ id: 'procurement.form.actualAmountPlaceholder' })}
           precision={2}
           min={0}
+          cnyPaymentMode={cnyPaymentMode}
+          onCnyValueChange={setCnyActualAmount}
         />
+      </Form.Item>
+
+      {/* 隐藏字段：人民币支付金额 */}
+      <Form.Item name="cnyPaymentAmount" hidden>
+        <InputNumber />
       </Form.Item>
 
     </Form>

@@ -145,6 +145,7 @@ export default {
   'procurement.column.totalAmount': 'ยอดรวมที่ต้องชำระ',
   'procurement.column.actualAmount': 'จำนวนเงินที่ชำระแล้ว',
   'procurement.column.unpaidAmount': 'ยอดค้างชำระ',
+  'procurement.column.cnyPaymentAmount': 'ชำระเงินหยวน',
   'procurement.column.purchaseName': 'ชื่อการซื้อ',
   'procurement.column.retailPrice': 'ราคาขายปลีก',
   'procurement.column.discount': 'ส่วนลด%',
@@ -262,6 +263,8 @@ export default {
   'payables.modal.addPayment': 'เพิ่มการชำระ',
   'payables.form.paymentAmount': 'จำนวนเงิน',
   'payables.form.amountRequired': 'กรุณากรอกจำนวนเงิน',
+  'payables.form.cnyPaymentHistory': 'ออเดอร์นี้มีการชำระเงินหยวน ¥{amount} แนะนำให้ชำระเงินหยวนต่อไป',
+  'payables.column.cnyPaymentAmount': 'จำนวนเงินหยวน',
 
   // ==================== ลูกหนี้ ====================
   'receivables.title': 'ลูกหนี้',
@@ -902,6 +905,8 @@ export default {
   'procurement.form.actualAmountRequired': 'กรุณากรอกจำนวนเงินจริง',
   'procurement.form.actualAmountPlaceholder': 'กรอกจำนวนเงินจริง',
   'procurement.form.actualAmountHint': 'หากยังไม่ชำระเต็ม กรุณากรอกจำนวนเงินที่ชำระแล้ว',
+  'procurement.form.cnyPaymentMode': 'ชำระเงินหยวน',
+  'procurement.form.cnyPaymentHint': 'เมื่อเลือก จำนวนเงินหยวนที่กรอกจะถูกบันทึก',
   'procurement.form.notes': 'หมายเหตุ',
   'procurement.form.notesPlaceholder': 'กรอกหมายเหตุ',
   'procurement.message.createSuccess': 'สร้างสำเร็จ',
