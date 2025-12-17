@@ -10,6 +10,8 @@ import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameTex
 interface ColumnsConfig {
   onDelete: (record: ConsumptionRecord) => void;
   intl?: IntlShape;
+  showInCNY?: boolean;
+  exchangeRate?: number;
 }
 
 /**
@@ -48,7 +50,18 @@ const calcInventoryValue = (record: ConsumptionRecord) => {
   );
 };
 
-export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => [
+export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1 }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => {
+  // 金额格式化函数，支持以人民币显示
+  const formatAmount = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null) return '-';
+    if (showInCNY && exchangeRate > 0) {
+      const cnyAmount = amount / exchangeRate;
+      return `¥${cnyAmount.toFixed(2)}`;
+    }
+    return amount.toFixed(2);
+  };
+
+  return [
   {
     title: intl?.formatMessage({ id: 'consumption.column.date' }) || '日期',
     dataIndex: 'consumptionDate',
@@ -157,7 +170,7 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     width: 90,
     align: 'right',
     search: false,
-    render: (_, record) => `${(record.unitPricePerBox || 0).toFixed(2)}`,
+    render: (_, record) => formatAmount(record.unitPricePerBox || 0),
   },
   {
     title: '消耗/箱',
@@ -191,7 +204,7 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     search: false,
     render: (_, record) => {
       const amount = calcConsumptionAmount(record);
-      return <span style={{ color: '#f5222d', fontWeight: 500 }}>{amount.toFixed(2)}</span>;
+      return <span style={{ color: '#f5222d', fontWeight: 500 }}>{formatAmount(amount)}</span>;
     },
   },
   {
@@ -202,7 +215,7 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     search: false,
     render: (_, record) => {
       const value = calcInventoryValue(record);
-      return <span style={{ color: '#52c41a' }}>{value.toFixed(2)}</span>;
+      return <span style={{ color: '#52c41a' }}>{formatAmount(value)}</span>;
     },
   },
   {
@@ -226,3 +239,4 @@ export const getColumns = ({ onDelete, intl }: ColumnsConfig): ProColumns<Consum
     ),
   },
 ];
+};

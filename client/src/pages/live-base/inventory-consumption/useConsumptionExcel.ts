@@ -7,6 +7,9 @@ import dayjs from 'dayjs';
 interface UseConsumptionExcelProps {
   baseId: number;
   baseName: string;
+  currencyCode?: string;
+  exchangeRate?: number;
+  showInCNY?: boolean;
   onImportSuccess?: () => void;
 }
 
@@ -23,7 +26,7 @@ interface ImportRecord {
   notes?: string;
 }
 
-export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseConsumptionExcelProps) => {
+export const useConsumptionExcel = ({ baseId, baseName, currencyCode = 'CNY', exchangeRate = 1, showInCNY = false, onImportSuccess }: UseConsumptionExcelProps) => {
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -84,6 +87,15 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
       // 允许导出空表（可作为导入模板使用）
       const dataList = result.success && result.data ? result.data : [];
 
+      // 如果勾选了以人民币显示，导出时转换为[CNY]金额；否则直接导出数值
+      const formatAmount = (amount: number) => {
+        if (showInCNY && exchangeRate > 0) {
+          const cnyAmount = Number((amount / exchangeRate).toFixed(2));
+          return `[CNY]${cnyAmount}`;
+        }
+        return amount;
+      };
+      
       const exportData = dataList.map((record: any) => ({
         '消耗日期': dayjs(record.consumptionDate).format('YYYY-MM-DD'),
         '品类': record.categoryName || '',
@@ -99,9 +111,9 @@ export const useConsumptionExcel = ({ baseId, baseName, onImportSuccess }: UseCo
         '消耗/箱': record.boxQuantity || 0,
         '消耗/盒': record.packQuantity || 0,
         '消耗/包': record.pieceQuantity || 0,
-        '单价/箱': (record.unitPricePerBox || 0).toFixed(2),
-        '消耗金额': calcConsumptionAmount(record).toFixed(2),
-        '库存货值': calcInventoryValue(record).toFixed(2),
+        '单价/箱': formatAmount(record.unitPricePerBox || 0),
+        '消耗金额': formatAmount(calcConsumptionAmount(record)),
+        '库存货值': formatAmount(calcInventoryValue(record)),
         '备注': record.notes || '',
       }));
 

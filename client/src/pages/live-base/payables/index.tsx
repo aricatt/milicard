@@ -15,6 +15,7 @@ import {
   Row, 
   Col,
   Descriptions,
+  Checkbox,
 } from 'antd';
 import { DollarOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
@@ -53,7 +54,7 @@ interface PayableStats {
  * 基于采购单数据，管理应付款项
  */
 const PayablesPage: React.FC = () => {
-  const { currentBase } = useBase();
+  const { currentBase, currencyRate } = useBase();
   const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
   
@@ -69,6 +70,23 @@ const PayablesPage: React.FC = () => {
     totalPaid: 0,
     totalUnpaid: 0,
   });
+
+  // 以人民币显示金额
+  const [showInCNY, setShowInCNY] = useState(false);
+  
+  // 获取当前汇率和货币代码
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
+
+  // 金额格式化函数，支持以人民币显示
+  const formatAmount = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null) return '-';
+    if (showInCNY && currentExchangeRate > 0) {
+      const cnyAmount = amount / currentExchangeRate;
+      return `¥${cnyAmount.toFixed(2)}`;
+    }
+    return amount.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
+  };
 
   /**
    * 获取应付列表
@@ -197,7 +215,7 @@ const PayablesPage: React.FC = () => {
       align: 'right',
       render: (_, record) => (
         <span style={{ fontWeight: 'bold' }}>
-          {record.totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+          {formatAmount(record.totalAmount)}
         </span>
       ),
     },
@@ -210,7 +228,7 @@ const PayablesPage: React.FC = () => {
       align: 'right',
       render: (_, record) => (
         <span style={{ color: '#52c41a' }}>
-          {record.paidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+          {formatAmount(record.paidAmount)}
         </span>
       ),
     },
@@ -227,7 +245,7 @@ const PayablesPage: React.FC = () => {
         }
         return (
           <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>
-            {record.unpaidAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}
+            {formatAmount(record.unpaidAmount)}
           </span>
         );
       },
@@ -340,7 +358,17 @@ const PayablesPage: React.FC = () => {
           defaultCollapsed: false,
         }}
         dateFormatter="string"
-        toolBarRender={() => []}
+        toolBarRender={() => [
+          currentCurrencyCode !== 'CNY' && (
+            <Checkbox
+              key="showInCNY"
+              checked={showInCNY}
+              onChange={(e) => setShowInCNY(e.target.checked)}
+            >
+              {intl.formatMessage({ id: 'products.showInCNY' })}
+            </Checkbox>
+          ),
+        ]}
       />
 
       {/* 付款弹窗 */}

@@ -207,7 +207,7 @@ export default {
   'anchorProfit.column.extra': 'Thu nhập khác',
   'anchorProfit.column.consumption': 'Tiêu thụ',
   'anchorProfit.column.adSpend': 'Chi phí QC',
-  'anchorProfit.column.platformFee': 'Phí nền tảng %',
+  'anchorProfit.column.platformFee': 'Phí nền tảng',
   'anchorProfit.column.profit': 'Lợi nhuận',
   'anchorProfit.column.sales': 'Doanh số hôm nay',
   'anchorProfit.column.profitRate': 'Tỷ lệ lợi nhuận',

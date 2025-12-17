@@ -82,10 +82,10 @@ const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: nu
     return { value: null, error: `不支持的货币标记: ${sourceCurrency}，只支持 [CNY] 或 [${targetCurrency}]` };
   }
   
-  // 没有货币标记，返回错误
+  // 没有货币标记，视为基地货币直接录入
   const numValue = parseFloat(strValue);
   if (!isNaN(numValue)) {
-    return { value: null, error: `缺少货币标记，请使用 [CNY]${strValue} 或 [${targetCurrency}]${strValue} 格式` };
+    return { value: numValue, error: null };
   }
   
   return { value: null, error: `无效的金额格式: ${strValue}` };
@@ -135,13 +135,13 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
 
       const dataList = result.success && result.data ? result.data : [];
 
-      // 转换数据格式，金额带货币标记
-      // 如果勾选了以人民币显示，导出时转换为[CNY]金额
-      const exportCurrency = showInCNY ? 'CNY' : currencyCode;
-      const convertAmount = (amount: number | undefined) => {
+      // 转换数据格式
+      // 如果勾选了以人民币显示，导出时转换为[CNY]金额；否则直接导出数值
+      const formatAmount = (amount: number | undefined) => {
         if (amount === undefined || amount === null) return '';
         if (showInCNY && exchangeRate > 0) {
-          return Number((amount / exchangeRate).toFixed(2));
+          const cnyAmount = Number((amount / exchangeRate).toFixed(2));
+          return `[CNY]${cnyAmount}`;
         }
         return amount;
       };
@@ -152,8 +152,8 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
         categoryName: item.categoryName || item.category || '',
         manufacturer: item.manufacturer,
         alias: item.alias || '',
-        retailPrice: `[${exportCurrency}]${convertAmount(item.retailPrice)}`,
-        purchasePrice: item.purchasePrice ? `[${exportCurrency}]${convertAmount(item.purchasePrice)}` : '',
+        retailPrice: formatAmount(item.retailPrice),
+        purchasePrice: item.purchasePrice ? formatAmount(item.purchasePrice) : '',
         packPerBox: item.packPerBox,
         piecePerPack: item.piecePerPack,
         status: item.isActive ? '启用' : '禁用',

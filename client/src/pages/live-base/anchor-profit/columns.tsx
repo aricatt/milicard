@@ -7,8 +7,21 @@ import type { IntlShape } from 'react-intl';
 export const getColumns = (
   onEdit: (record: AnchorProfitRecord) => void,
   onDelete: (id: string) => void,
-  intl?: IntlShape
-): ProColumns<AnchorProfitRecord>[] => [
+  intl?: IntlShape,
+  showInCNY: boolean = false,
+  exchangeRate: number = 1
+): ProColumns<AnchorProfitRecord>[] => {
+  // 金额格式化函数，支持以人民币显示
+  const formatAmount = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null) return '-';
+    if (showInCNY && exchangeRate > 0) {
+      const cnyAmount = amount / exchangeRate;
+      return `¥${cnyAmount.toFixed(2)}`;
+    }
+    return amount.toFixed(2);
+  };
+
+  return [
   {
     title: intl?.formatMessage({ id: 'anchorProfit.column.date' }) || '日期',
     dataIndex: 'profitDate',
@@ -34,7 +47,7 @@ export const getColumns = (
     sorter: true,
     render: (_, record) => (
       <span style={{ color: '#1890ff', fontWeight: 500 }}>
-        {record.gmvAmount.toFixed(2)}
+        {formatAmount(record.gmvAmount)}
       </span>
     ),
   },
@@ -45,7 +58,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: record.refundAmount > 0 ? '#ff4d4f' : '#999' }}>
-        {record.refundAmount.toFixed(2)}
+        {formatAmount(record.refundAmount)}
       </span>
     ),
   },
@@ -56,7 +69,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: record.waterAmount > 0 ? '#52c41a' : '#999' }}>
-        {record.waterAmount.toFixed(2)}
+        {formatAmount(record.waterAmount)}
       </span>
     ),
   },
@@ -69,7 +82,7 @@ export const getColumns = (
     render: (_, record) => (
       <Tooltip title="GMV - 退款 + 走水">
         <span style={{ color: '#722ed1', fontWeight: 500 }}>
-          {record.salesAmount.toFixed(2)}
+          {formatAmount(record.salesAmount)}
         </span>
       </Tooltip>
     ),
@@ -81,7 +94,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: '#fa8c16' }}>
-        {record.consumptionAmount.toFixed(2)}
+        {formatAmount(record.consumptionAmount)}
       </span>
     ),
   },
@@ -92,7 +105,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: '#eb2f96' }}>
-        {record.adSpendAmount.toFixed(2)}
+        {formatAmount(record.adSpendAmount)}
       </span>
     ),
   },
@@ -103,7 +116,7 @@ export const getColumns = (
     width: 110,
     render: (_, record) => (
       <span style={{ color: '#faad14' }}>
-        {record.platformFeeAmount.toFixed(2)}
+        {formatAmount(record.platformFeeAmount)}
       </span>
     ),
   },
@@ -119,7 +132,7 @@ export const getColumns = (
           color: record.profitAmount >= 0 ? '#52c41a' : '#ff4d4f', 
           fontWeight: 'bold' 
         }}>
-          {record.profitAmount.toFixed(2)}
+          {formatAmount(record.profitAmount)}
         </span>
       </Tooltip>
     ),
@@ -185,3 +198,4 @@ export const getColumns = (
     ),
   },
 ];
+};

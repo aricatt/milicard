@@ -10,6 +10,7 @@ import {
   Select,
   Popover,
   Descriptions,
+  Checkbox,
 } from 'antd';
 import {
   DatabaseOutlined,
@@ -68,7 +69,7 @@ interface Warehouse {
  * 直播基地实时库存页面
  */
 const RealTimeStockPage: React.FC = () => {
-  const { currentBase, initialized } = useBase();
+  const { currentBase, initialized, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
@@ -81,6 +82,23 @@ const RealTimeStockPage: React.FC = () => {
   });
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState<number | undefined>(undefined);
+
+  // 以人民币显示金额
+  const [showInCNY, setShowInCNY] = useState(false);
+  
+  // 获取当前汇率和货币代码
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
+
+  // 金额格式化函数，支持以人民币显示
+  const formatAmount = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null) return '-';
+    if (showInCNY && currentExchangeRate > 0) {
+      const cnyAmount = amount / currentExchangeRate;
+      return `¥${cnyAmount.toFixed(2)}`;
+    }
+    return amount.toFixed(2);
+  };
 
   // 获取仓库列表
   const fetchWarehouses = async () => {
@@ -174,23 +192,26 @@ const RealTimeStockPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.avgPriceBox' }),
       dataIndex: 'avgPricePerBox',
-      width: 60,
+      width: 80,
       search: false,
       align: 'right',
+      render: (_, record) => formatAmount(record.avgPricePerBox),
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.avgPricePack' }),
       dataIndex: 'avgPricePerPack',
-      width: 60,
+      width: 80,
       search: false,
       align: 'right',
+      render: (_, record) => formatAmount(record.avgPricePerPack),
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.avgPricePiece' }),
       dataIndex: 'avgPricePerPiece',
-      width: 60,
+      width: 80,
       search: false,
       align: 'right',
+      render: (_, record) => formatAmount(record.avgPricePerPiece),
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.totalValue' }),
@@ -286,6 +307,15 @@ const RealTimeStockPage: React.FC = () => {
         }}
         toolbar={{
           actions: [
+            currentCurrencyCode !== 'CNY' && (
+              <Checkbox
+                key="showInCNY"
+                checked={showInCNY}
+                onChange={(e) => setShowInCNY(e.target.checked)}
+              >
+                {intl.formatMessage({ id: 'products.showInCNY' })}
+              </Checkbox>
+            ),
             <Select
               key="warehouse"
               placeholder={intl.formatMessage({ id: 'realTimeStock.filter.allWarehouses' })}

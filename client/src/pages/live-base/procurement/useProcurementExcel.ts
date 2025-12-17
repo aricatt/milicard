@@ -51,10 +51,10 @@ const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: nu
     return { value: null, error: `不支持的货币标记: ${sourceCurrency}，只支持 [CNY] 或 [${targetCurrency}]` };
   }
   
-  // 没有货币标记，返回错误
+  // 没有货币标记，视为基地货币直接录入
   const numValue = parseFloat(strValue);
   if (!isNaN(numValue)) {
-    return { value: null, error: `缺少货币标记，请使用 [CNY]${strValue} 或 [${targetCurrency}]${strValue} 格式` };
+    return { value: numValue, error: null };
   }
   
   return { value: null, error: `无效的金额格式: ${strValue}` };
@@ -112,12 +112,12 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
       // 允许导出空表（可作为导入模板使用）
       const dataList = result.success && result.data ? result.data : [];
 
-      // 转换数据格式 - 动态计算字段，金额带货币标记
-      // 如果勾选了以人民币显示，导出时转换为[CNY]金额
-      const exportCurrency = showInCNY ? 'CNY' : currencyCode;
-      const convertAmount = (amount: number) => {
+      // 转换数据格式 - 动态计算字段
+      // 如果勾选了以人民币显示，导出时转换为[CNY]金额；否则直接导出数值
+      const formatAmount = (amount: number) => {
         if (showInCNY && exchangeRate > 0) {
-          return Number((amount / exchangeRate).toFixed(2));
+          const cnyAmount = Number((amount / exchangeRate).toFixed(2));
+          return `[CNY]${cnyAmount}`;
         }
         return amount;
       };
@@ -151,7 +151,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
           purchaseName: `${item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString('zh-CN').replace(/\//g, '-') : ''}${item.goodsName || ''}`,
           categoryName: item.categoryName || '',
           goodsName: item.goodsName || '',
-          retailPrice: `[${exportCurrency}]${convertAmount(retailPrice)}`,
+          retailPrice: formatAmount(retailPrice),
           discount: (Math.floor(discount * 100) / 100).toFixed(2),
           supplierName: item.supplierName,
           purchaseBoxQty,
@@ -163,15 +163,15 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
           diffBoxQty: purchaseBoxQty - (item.arrivedBoxQty || 0),
           diffPackQty: purchasePackQty - (item.arrivedPackQty || 0),
           diffPieceQty: purchasePieceQty - (item.arrivedPieceQty || 0),
-          unitPriceBox: `[${exportCurrency}]${convertAmount(unitPriceBox)}`,
-          unitPricePack: `[${exportCurrency}]${convertAmount(unitPricePack)}`,
-          unitPricePiece: `[${exportCurrency}]${convertAmount(unitPricePiece)}`,
-          amountBox: `[${exportCurrency}]${convertAmount(amountBox)}`,
-          amountPack: `[${exportCurrency}]${convertAmount(amountPack)}`,
-          amountPiece: `[${exportCurrency}]${convertAmount(amountPiece)}`,
-          totalAmount: `[${exportCurrency}]${convertAmount(totalAmount)}`,
-          actualAmount: `[${exportCurrency}]${convertAmount(actualAmount)}`,
-          unpaidAmount: `[${exportCurrency}]${convertAmount(unpaidAmount)}`,
+          unitPriceBox: formatAmount(unitPriceBox),
+          unitPricePack: formatAmount(unitPricePack),
+          unitPricePiece: formatAmount(unitPricePiece),
+          amountBox: formatAmount(amountBox),
+          amountPack: formatAmount(amountPack),
+          amountPiece: formatAmount(amountPiece),
+          totalAmount: formatAmount(totalAmount),
+          actualAmount: formatAmount(actualAmount),
+          unpaidAmount: formatAmount(unpaidAmount),
           createdAt: formatDateTime(item.createdAt),
         };
       });

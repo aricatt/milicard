@@ -18,6 +18,7 @@ import {
   Space,
   Popover,
   Descriptions,
+  Checkbox,
 } from 'antd';
 import {
   PlusOutlined,
@@ -43,7 +44,7 @@ import type {
 const { TextArea } = Input;
 
 const AnchorProfitPage: React.FC = () => {
-  const { currentBase } = useBase();
+  const { currentBase, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType>();
@@ -93,6 +94,13 @@ const AnchorProfitPage: React.FC = () => {
   // 消耗记录选项
   const [consumptionOptions, setConsumptionOptions] = useState<ConsumptionOption[]>([]);
   const [consumptionOptionsLoading, setConsumptionOptionsLoading] = useState(false);
+
+  // 以人民币显示金额
+  const [showInCNY, setShowInCNY] = useState(false);
+  
+  // 获取当前汇率和货币代码
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
 
   // 计算字段
   const [calculatedValues, setCalculatedValues] = useState({
@@ -440,7 +448,7 @@ const AnchorProfitPage: React.FC = () => {
   };
 
   // 列定义
-  const columns = getColumns(handleEdit, handleDelete, intl);
+  const columns = getColumns(handleEdit, handleDelete, intl, showInCNY, currentExchangeRate);
 
   // 无基地时显示提示
   if (!currentBase) {
@@ -745,6 +753,15 @@ const AnchorProfitPage: React.FC = () => {
           </Space>
         }
         toolBarRender={() => [
+          currentCurrencyCode !== 'CNY' && (
+            <Checkbox
+              key="showInCNY"
+              checked={showInCNY}
+              onChange={(e) => setShowInCNY(e.target.checked)}
+            >
+              {intl.formatMessage({ id: 'products.showInCNY' })}
+            </Checkbox>
+          ),
           <Button
             key="template"
             icon={<DownloadOutlined />}

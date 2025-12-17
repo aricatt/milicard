@@ -16,6 +16,7 @@ import {
   Divider,
   Spin,
   Alert,
+  Checkbox,
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -48,29 +49,11 @@ const { TextArea } = Input;
  * 记录主播销售消耗情况
  */
 const ConsumptionManagement: React.FC = () => {
-  const { currentBase } = useBase();
+  const { currentBase, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType>();
   const [form] = Form.useForm();
-
-  // Excel导入导出Hook
-  const {
-    importModalVisible,
-    setImportModalVisible,
-    importLoading,
-    importProgress,
-    handleExport,
-    handleImport,
-    handleDownloadTemplate,
-  } = useConsumptionExcel({
-    baseId: currentBase?.id || 0,
-    baseName: currentBase?.name || '',
-    onImportSuccess: () => {
-      actionRef.current?.reload();
-      loadStats();
-    },
-  });
 
   // 状态管理
   const [stats, setStats] = useState<ConsumptionStats>({
@@ -107,6 +90,34 @@ const ConsumptionManagement: React.FC = () => {
   const [personnelOptions, setPersonnelOptions] = useState<PersonnelOption[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<GoodsOption[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
+  
+  // 以人民币显示金额
+  const [showInCNY, setShowInCNY] = useState(false);
+  
+  // 获取当前汇率和货币代码
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useConsumptionExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    currencyCode: currentCurrencyCode,
+    exchangeRate: currentExchangeRate,
+    showInCNY,
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+      loadStats();
+    },
+  });
 
   /**
    * 加载统计数据
@@ -391,7 +402,7 @@ const ConsumptionManagement: React.FC = () => {
     );
   }
 
-  const columns = getColumns({ onDelete: handleDelete, intl });
+  const columns = getColumns({ onDelete: handleDelete, intl, showInCNY, exchangeRate: currentExchangeRate });
 
   return (
     <PageContainer header={{ title: false }}>
@@ -469,6 +480,15 @@ const ConsumptionManagement: React.FC = () => {
           </Space>
         }
         toolBarRender={() => [
+          currentCurrencyCode !== 'CNY' && (
+            <Checkbox
+              key="showInCNY"
+              checked={showInCNY}
+              onChange={(e) => setShowInCNY(e.target.checked)}
+            >
+              {intl.formatMessage({ id: 'products.showInCNY' })}
+            </Checkbox>
+          ),
           <Button
             key="template"
             icon={<DownloadOutlined />}

@@ -207,7 +207,7 @@ export default {
   'anchorProfit.column.extra': '走水金额',
   'anchorProfit.column.consumption': '消耗金额',
   'anchorProfit.column.adSpend': '投流金额',
-  'anchorProfit.column.platformFee': '平台扣点比例%',
+  'anchorProfit.column.platformFee': '平台扣点',
   'anchorProfit.column.profit': '利润',
   'anchorProfit.column.sales': '当日销售',
   'anchorProfit.column.profitRate': '毛利率',

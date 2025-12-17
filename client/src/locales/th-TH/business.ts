@@ -207,7 +207,7 @@ export default {
   'anchorProfit.column.extra': 'รายได้เพิ่มเติม',
   'anchorProfit.column.consumption': 'การใช้',
   'anchorProfit.column.adSpend': 'ค่าโฆษณา',
-  'anchorProfit.column.platformFee': 'ค่าธรรมเนียมแพลตฟอร์ม %',
+  'anchorProfit.column.platformFee': 'ค่าธรรมเนียมแพลตฟอร์ม',
   'anchorProfit.column.profit': 'กำไร',
   'anchorProfit.column.sales': 'ยอดขายวันนี้',
   'anchorProfit.column.profitRate': 'อัตรากำไร',

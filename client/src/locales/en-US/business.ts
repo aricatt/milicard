@@ -207,7 +207,7 @@ export default {
   'anchorProfit.column.extra': 'Extra Income',
   'anchorProfit.column.consumption': 'Consumption',
   'anchorProfit.column.adSpend': 'Ad Spend',
-  'anchorProfit.column.platformFee': 'Platform Fee %',
+  'anchorProfit.column.platformFee': 'Platform Fee',
   'anchorProfit.column.profit': 'Profit',
   'anchorProfit.column.sales': 'Daily Sales',
   'anchorProfit.column.profitRate': 'Profit Rate',
