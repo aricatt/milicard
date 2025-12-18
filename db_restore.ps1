@@ -95,10 +95,16 @@ try {
 # 还原数据库
 Write-Host "Restoring database (this may take a while)..." -ForegroundColor Cyan
 try {
-    & pg_restore -h $DbHost -p $DbPort -U $DbUser -d $DbName -v $BackupFile 2>&1 | ForEach-Object {
-        if ($_ -match "error|ERROR") {
-            Write-Host $_ -ForegroundColor Yellow
-        }
+    # 检查文件格式：SQL文本格式用psql，二进制格式用pg_restore
+    $firstLine = Get-Content $BackupFile -TotalCount 1
+    if ($firstLine -match "^PGDMP") {
+        # 二进制格式，使用 pg_restore
+        Write-Host "Detected binary format, using pg_restore..." -ForegroundColor Gray
+        & pg_restore --host=$DbHost --port=$DbPort --username=$DbUser --dbname=$DbName --no-owner --no-acl $BackupFile 2>&1 | Out-Null
+    } else {
+        # SQL文本格式，使用 psql
+        Write-Host "Detected SQL text format, using psql..." -ForegroundColor Gray
+        & psql --host=$DbHost --port=$DbPort --username=$DbUser --dbname=$DbName --file=$BackupFile 2>&1 | Out-Null
     }
     Write-Host "[OK] Database restored" -ForegroundColor Green
 } catch {
