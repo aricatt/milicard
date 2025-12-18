@@ -240,6 +240,10 @@ export default {
   'personnel.column.location': '所屬直播間',
   'personnel.role.anchor': '主播',
   'personnel.role.warehouseKeeper': '倉管',
+  'personnel.role.operator': '運營',
+  'personnel.column.operatorName': '運營負責人',
+  'personnel.form.operator': '運營負責人',
+  'personnel.form.operatorPlaceholder': '請選擇運營負責人',
   'personnel.status.active': '在職',
   'personnel.status.inactive': '離職',
 
@@ -1376,4 +1380,5 @@ export default {
   'arrivals.form.pendingBoxQty': '待到貨箱數',
   'arrivals.form.pendingPackQty': '待到貨盒數',
   'arrivals.form.pendingPieceQty': '待到貨包數',
+  'arrivals.form.noIntlLogisticsWarning': '當前採購單未錄入國際貨運信息，如需自動計算物流費用，請先到採購頁錄入。',
 };

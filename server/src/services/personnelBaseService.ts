@@ -55,6 +55,20 @@ export class PersonnelBaseService {
         },
       });
 
+      // 获取所有运营人员ID，用于查询运营人员名称
+      const operatorIds = data
+        .map(item => item.operatorId)
+        .filter((id): id is string => id !== null);
+      
+      // 批量查询运营人员信息
+      const operators = operatorIds.length > 0 
+        ? await prisma.personnel.findMany({
+            where: { id: { in: operatorIds } },
+            select: { id: true, name: true },
+          })
+        : [];
+      const operatorMap = new Map(operators.map(op => [op.id, op.name]));
+
       // 转换数据格式
       const formattedData = data.map(item => ({
         id: item.id,
@@ -64,6 +78,8 @@ export class PersonnelBaseService {
         phone: item.phone,
         email: item.email,
         notes: item.notes,
+        operatorId: item.operatorId,
+        operatorName: item.operatorId ? operatorMap.get(item.operatorId) || null : null,
         baseId: item.baseId,
         baseName: item.base.name,
         isActive: item.isActive,
@@ -107,7 +123,8 @@ export class PersonnelBaseService {
       });
 
       if (existingByName) {
-        throw new Error(`该基地已存在同名的${personnelData.role === 'ANCHOR' ? '主播' : '仓管'}：${personnelData.name}`);
+        const roleNames: Record<string, string> = { ANCHOR: '主播', WAREHOUSE_KEEPER: '仓管', OPERATOR: '运营' };
+        throw new Error(`该基地已存在同名的${roleNames[personnelData.role] || '人员'}：${personnelData.name}`);
       }
 
       // 生成业务编号
@@ -121,6 +138,7 @@ export class PersonnelBaseService {
           phone: personnelData.phone,
           email: personnelData.email,
           notes: personnelData.notes,
+          operatorId: personnelData.operatorId || null,
           baseId: baseId,
           createdBy: createdBy || null,
           updatedBy: createdBy || null,
@@ -134,6 +152,16 @@ export class PersonnelBaseService {
           },
         },
       });
+
+      // 查询运营人员名称
+      let operatorName: string | null = null;
+      if (personnel.operatorId) {
+        const operator = await prisma.personnel.findUnique({
+          where: { id: personnel.operatorId },
+          select: { name: true },
+        });
+        operatorName = operator?.name || null;
+      }
 
       logger.info('创建人员成功', {
         service: 'milicard-api',
@@ -154,6 +182,8 @@ export class PersonnelBaseService {
           phone: personnel.phone,
           email: personnel.email,
           notes: personnel.notes,
+          operatorId: personnel.operatorId,
+          operatorName,
           baseId: personnel.baseId,
           baseName: personnel.base.name,
           isActive: personnel.isActive,
@@ -197,7 +227,8 @@ export class PersonnelBaseService {
         });
 
         if (existingByName) {
-          throw new Error(`该基地已存在同名的${targetRole === 'ANCHOR' ? '主播' : '仓管'}：${personnelData.name}`);
+          const roleNames: Record<string, string> = { ANCHOR: '主播', WAREHOUSE_KEEPER: '仓管', OPERATOR: '运营' };
+          throw new Error(`该基地已存在同名的${roleNames[targetRole] || '人员'}：${personnelData.name}`);
         }
       }
 
@@ -209,6 +240,7 @@ export class PersonnelBaseService {
           phone: personnelData.phone,
           email: personnelData.email,
           notes: personnelData.notes,
+          operatorId: personnelData.operatorId !== undefined ? (personnelData.operatorId || null) : undefined,
           updatedBy,
         },
         include: {
@@ -220,6 +252,16 @@ export class PersonnelBaseService {
           },
         },
       });
+
+      // 查询运营人员名称
+      let operatorName: string | null = null;
+      if (personnel.operatorId) {
+        const operator = await prisma.personnel.findUnique({
+          where: { id: personnel.operatorId },
+          select: { name: true },
+        });
+        operatorName = operator?.name || null;
+      }
 
       logger.info('更新人员成功', {
         service: 'milicard-api',
@@ -238,6 +280,8 @@ export class PersonnelBaseService {
           phone: personnel.phone,
           email: personnel.email,
           notes: personnel.notes,
+          operatorId: personnel.operatorId,
+          operatorName,
           baseId: personnel.baseId,
           baseName: personnel.base.name,
           isActive: personnel.isActive,

@@ -97,6 +97,34 @@ Write-Host "  Port:        $PORT"
 Write-Host "  Volume:      $VOLUME_NAME"
 Write-Host "=========================================="
 
+# 部署前备份数据库（如果容器正在运行）
+$runningContainer = docker ps -q -f "name=$CONTAINER_NAME" 2>$null
+if ($runningContainer) {
+    Write-Host "==========================================" -ForegroundColor Yellow
+    Write-Host "  创建部署前数据库备份" -ForegroundColor Yellow
+    Write-Host "==========================================" -ForegroundColor Yellow
+    
+    $BACKUP_DIR = "/var/lib/postgresql/backups"
+    $BACKUP_FILE = "backup_before_deploy_$(Get-Date -Format 'yyyyMMdd_HHmmss').sql"
+    
+    Write-Host "正在创建备份: $BACKUP_FILE" -ForegroundColor Yellow
+    try {
+        docker exec $CONTAINER_NAME bash -c "PGPASSWORD=`$DB_PASSWORD pg_dump -h localhost -U milicard milicard > $BACKUP_DIR/$BACKUP_FILE"
+        
+        # 下载备份到本地
+        $LOCAL_BACKUP_DIR = ".\backups"
+        if (-not (Test-Path $LOCAL_BACKUP_DIR)) {
+            New-Item -ItemType Directory -Path $LOCAL_BACKUP_DIR | Out-Null
+        }
+        docker cp "${CONTAINER_NAME}:${BACKUP_DIR}/${BACKUP_FILE}" "${LOCAL_BACKUP_DIR}\${BACKUP_FILE}"
+        Write-Host "备份已保存到本地: ${LOCAL_BACKUP_DIR}\${BACKUP_FILE}" -ForegroundColor Green
+        Get-Item "${LOCAL_BACKUP_DIR}\${BACKUP_FILE}" | Select-Object Name, Length, LastWriteTime
+    } catch {
+        Write-Host "警告: 备份失败，但继续部署" -ForegroundColor Red
+    }
+    Write-Host ""
+}
+
 # 构建镜像
 # BUILD_ENV: staging 显示模板参考菜单，production(prod) 隐藏
 $BUILD_ENV = if ($Env -eq "production") { "prod" } else { "staging" }

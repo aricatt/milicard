@@ -240,6 +240,10 @@ export default {
   'personnel.column.location': 'Vị trí',
   'personnel.role.anchor': 'Streamer',
   'personnel.role.warehouseKeeper': 'Quản lý kho',
+  'personnel.role.operator': 'Vận hành',
+  'personnel.column.operatorName': 'Người vận hành',
+  'personnel.form.operator': 'Người vận hành',
+  'personnel.form.operatorPlaceholder': 'Chọn người vận hành',
   'personnel.status.active': 'Đang làm việc',
   'personnel.status.inactive': 'Đã nghỉ việc',
 
@@ -1378,4 +1382,5 @@ export default {
   'arrivals.form.pendingBoxQty': 'Số thùng chờ nhập',
   'arrivals.form.pendingPackQty': 'Số hộp chờ nhập',
   'arrivals.form.pendingPieceQty': 'Số gói chờ nhập',
+  'arrivals.form.noIntlLogisticsWarning': 'Đơn mua hàng này chưa có thông tin vận chuyển quốc tế. Để tự động tính cước, vui lòng nhập thông tin tại trang mua hàng trước.',
 };

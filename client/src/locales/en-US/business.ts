@@ -240,6 +240,10 @@ export default {
   'personnel.column.location': 'Location',
   'personnel.role.anchor': 'Streamer',
   'personnel.role.warehouseKeeper': 'Warehouse Keeper',
+  'personnel.role.operator': 'Operator',
+  'personnel.column.operatorName': 'Operator',
+  'personnel.form.operator': 'Operator',
+  'personnel.form.operatorPlaceholder': 'Select operator',
   'personnel.status.active': 'Active',
   'personnel.status.inactive': 'Inactive',
 
@@ -1378,4 +1382,5 @@ export default {
   'arrivals.form.pendingBoxQty': 'Pending Boxes',
   'arrivals.form.pendingPackQty': 'Pending Packs',
   'arrivals.form.pendingPieceQty': 'Pending Pieces',
+  'arrivals.form.noIntlLogisticsWarning': 'No international logistics info for this order. To auto-calculate freight, please enter it on the procurement page first.',
 };

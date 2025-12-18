@@ -100,6 +100,32 @@ echo "  Port:        $PORT"
 echo "  Volume:      $VOLUME_NAME"
 echo "=========================================="
 
+# 部署前备份数据库（如果容器正在运行）
+if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+    echo -e "${YELLOW}=========================================="
+    echo "  创建部署前数据库备份"
+    echo "==========================================${NC}"
+    
+    BACKUP_DIR="/var/lib/postgresql/backups"
+    BACKUP_FILE="backup_before_deploy_$(date +%Y%m%d_%H%M%S).sql"
+    
+    echo -e "${YELLOW}正在创建备份: ${BACKUP_FILE}${NC}"
+    docker exec ${CONTAINER_NAME} bash -c "PGPASSWORD=\$DB_PASSWORD pg_dump -h localhost -U milicard milicard > ${BACKUP_DIR}/${BACKUP_FILE}" || {
+        echo -e "${RED}警告: 备份失败，但继续部署${NC}"
+    }
+    
+    # 下载备份到本地
+    LOCAL_BACKUP_DIR="./backups"
+    mkdir -p $LOCAL_BACKUP_DIR
+    docker cp ${CONTAINER_NAME}:${BACKUP_DIR}/${BACKUP_FILE} ${LOCAL_BACKUP_DIR}/${BACKUP_FILE} 2>/dev/null && {
+        echo -e "${GREEN}✅ 备份已保存到本地: ${LOCAL_BACKUP_DIR}/${BACKUP_FILE}${NC}"
+        ls -lh ${LOCAL_BACKUP_DIR}/${BACKUP_FILE}
+    } || {
+        echo -e "${YELLOW}警告: 无法下载备份到本地${NC}"
+    }
+    echo ""
+fi
+
 # 构建镜像
 echo -e "${GREEN}Building Docker image...${NC}"
 docker build -t ${IMAGE_NAME}:${ENV} .

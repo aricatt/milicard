@@ -16,6 +16,7 @@ export class CodeGenerator {
     // 人员管理
     ANCHOR: 'ANCHOR',           // 主播
     WAREHOUSE_KEEPER: 'KEEPER', // 仓管
+    OPERATOR: 'OPERATOR',       // 运营
     
     // 位置管理
     LIVE_ROOM: 'LIVE',          // 直播间
@@ -129,7 +130,7 @@ export class CodeGenerator {
   /**
    * 人员编号生成
    */
-  public static async generatePersonnelCode(role: 'ANCHOR' | 'WAREHOUSE_KEEPER'): Promise<string> {
+  public static async generatePersonnelCode(role: 'ANCHOR' | 'WAREHOUSE_KEEPER' | 'OPERATOR'): Promise<string> {
     return this.generateCode(role, 'personnel');
   }
 

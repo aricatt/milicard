@@ -740,6 +740,7 @@ model Personnel {
   phone                      String?
   email                      String?
   notes                      String?
+  operatorId                 String?            @map("operator_id")
   baseId                     Int                @map("base_id")
   isActive                   Boolean            @default(true) @map("is_active")
   createdBy                  String?            @map("created_by")
@@ -760,6 +761,7 @@ model Personnel {
   @@index([role])
   @@index([baseId])
   @@index([isActive])
+  @@index([operatorId])
   @@map("personnel")
 }
 
@@ -1118,6 +1120,7 @@ enum LocationType {
 enum PersonnelRole {
   ANCHOR
   WAREHOUSE_KEEPER
+  OPERATOR
 }
 
 enum TransferStatus {

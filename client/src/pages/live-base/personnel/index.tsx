@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 import { 
   Card, 
   Space, 
@@ -36,6 +36,7 @@ const { Option } = Select;
 enum PersonnelRole {
   ANCHOR = 'ANCHOR',
   WAREHOUSE_KEEPER = 'WAREHOUSE_KEEPER',
+  OPERATOR = 'OPERATOR',
 }
 
 // 人员数据类型定义
@@ -47,6 +48,8 @@ interface Personnel {
   phone?: string;
   email?: string;
   notes?: string;
+  operatorId?: string;
+  operatorName?: string;
   baseId: number;
   isActive: boolean;
   createdAt: string;
@@ -90,6 +93,9 @@ const PersonnelManagement: React.FC = () => {
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+  
+  // 运营人员列表（用于下拉选择）
+  const [operators, setOperators] = useState<Personnel[]>([]);
 
   /**
    * 获取人员数据
@@ -150,6 +156,29 @@ const PersonnelManagement: React.FC = () => {
   };
 
   /**
+   * 加载运营人员列表
+   */
+  const loadOperators = async () => {
+    if (!currentBase) return;
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
+        method: 'GET',
+        params: { role: 'OPERATOR', pageSize: 100 },
+      });
+      if (result.success && result.data) {
+        setOperators(result.data);
+      }
+    } catch (error) {
+      console.error('加载运营人员列表失败:', error);
+    }
+  };
+
+  // 加载运营人员列表
+  useEffect(() => {
+    loadOperators();
+  }, [currentBase]);
+
+  /**
    * 计算统计数据
    */
   const calculateStats = (data: Personnel[]) => {
@@ -183,6 +212,10 @@ const PersonnelManagement: React.FC = () => {
         setCreateModalVisible(false);
         createForm.resetFields();
         actionRef.current?.reload();
+        // 如果创建的是运营人员，刷新运营人员列表
+        if (values.role === 'OPERATOR') {
+          loadOperators();
+        }
       } else {
         message.error(result.message || '创建失败');
       }
@@ -270,6 +303,7 @@ const PersonnelManagement: React.FC = () => {
       phone: record.phone,
       email: record.email,
       notes: record.notes,
+      operatorId: record.operatorId,
     });
     setEditModalVisible(true);
   };
@@ -317,16 +351,30 @@ const PersonnelManagement: React.FC = () => {
       valueEnum: {
         ANCHOR: { text: intl.formatMessage({ id: 'personnel.role.anchor' }), status: 'Processing' },
         WAREHOUSE_KEEPER: { text: intl.formatMessage({ id: 'personnel.role.warehouseKeeper' }), status: 'Default' },
+        OPERATOR: { text: intl.formatMessage({ id: 'personnel.role.operator' }), status: 'Success' },
       },
-      render: (_, record) => (
-        <Tag 
-          color={record.role === PersonnelRole.ANCHOR ? 'purple' : 'orange'}
-          icon={record.role === PersonnelRole.ANCHOR ? <UserOutlined /> : <TeamOutlined />}
-        >
-          {record.role === PersonnelRole.ANCHOR ? intl.formatMessage({ id: 'personnel.role.anchor' }) : intl.formatMessage({ id: 'personnel.role.warehouseKeeper' })}
-        </Tag>
-      ),
+      render: (_, record) => {
+        const roleConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
+          ANCHOR: { color: 'purple', icon: <UserOutlined />, label: intl.formatMessage({ id: 'personnel.role.anchor' }) },
+          WAREHOUSE_KEEPER: { color: 'orange', icon: <TeamOutlined />, label: intl.formatMessage({ id: 'personnel.role.warehouseKeeper' }) },
+          OPERATOR: { color: 'green', icon: <TeamOutlined />, label: intl.formatMessage({ id: 'personnel.role.operator' }) },
+        };
+        const config = roleConfig[record.role] || roleConfig.ANCHOR;
+        return (
+          <Tag color={config.color} icon={config.icon}>
+            {config.label}
+          </Tag>
+        );
+      },
       hideInSearch: false,
+    },
+    {
+      title: intl.formatMessage({ id: 'personnel.column.operatorName' }),
+      dataIndex: 'operatorName',
+      key: 'operatorName',
+      width: 120,
+      hideInSearch: true,
+      render: (_, record) => record.operatorName || '-',
     },
     {
       title: intl.formatMessage({ id: 'personnel.column.phone' }),
@@ -645,12 +693,37 @@ const PersonnelManagement: React.FC = () => {
           >
             <Select placeholder={intl.formatMessage({ id: 'personnel.form.rolePlaceholder' })}>
               <Option value={PersonnelRole.ANCHOR}>
-                <UserOutlined /> {intl.formatMessage({ id: 'personnel.stats.anchors' })}
+                <UserOutlined /> {intl.formatMessage({ id: 'personnel.role.anchor' })}
               </Option>
               <Option value={PersonnelRole.WAREHOUSE_KEEPER}>
-                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.stats.warehouseKeepers' })}
+                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.role.warehouseKeeper' })}
+              </Option>
+              <Option value={PersonnelRole.OPERATOR}>
+                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.role.operator' })}
               </Option>
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.role !== currentValues.role}
+          >
+            {({ getFieldValue }) => 
+              getFieldValue('role') === PersonnelRole.ANCHOR ? (
+                <Form.Item
+                  label={intl.formatMessage({ id: 'personnel.form.operator' })}
+                  name="operatorId"
+                >
+                  <Select 
+                    placeholder={intl.formatMessage({ id: 'personnel.form.operatorPlaceholder' })}
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    options={operators.map(op => ({ value: op.id, label: op.name }))}
+                  />
+                </Form.Item>
+              ) : null
+            }
           </Form.Item>
 
           <Form.Item
@@ -720,12 +793,37 @@ const PersonnelManagement: React.FC = () => {
           >
             <Select placeholder={intl.formatMessage({ id: 'personnel.form.rolePlaceholder' })}>
               <Option value={PersonnelRole.ANCHOR}>
-                <UserOutlined /> {intl.formatMessage({ id: 'personnel.stats.anchors' })}
+                <UserOutlined /> {intl.formatMessage({ id: 'personnel.role.anchor' })}
               </Option>
               <Option value={PersonnelRole.WAREHOUSE_KEEPER}>
-                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.stats.warehouseKeepers' })}
+                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.role.warehouseKeeper' })}
+              </Option>
+              <Option value={PersonnelRole.OPERATOR}>
+                <TeamOutlined /> {intl.formatMessage({ id: 'personnel.role.operator' })}
               </Option>
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.role !== currentValues.role}
+          >
+            {({ getFieldValue }) => 
+              getFieldValue('role') === PersonnelRole.ANCHOR ? (
+                <Form.Item
+                  label={intl.formatMessage({ id: 'personnel.form.operator' })}
+                  name="operatorId"
+                >
+                  <Select 
+                    placeholder={intl.formatMessage({ id: 'personnel.form.operatorPlaceholder' })}
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    options={operators.map(op => ({ value: op.id, label: op.name }))}
+                  />
+                </Form.Item>
+              ) : null
+            }
           </Form.Item>
 
           <Form.Item

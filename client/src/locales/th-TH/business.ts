@@ -240,6 +240,10 @@ export default {
   'personnel.column.location': 'ตำแหน่ง',
   'personnel.role.anchor': 'สตรีมเมอร์',
   'personnel.role.warehouseKeeper': 'ผู้ดูแลคลังสินค้า',
+  'personnel.role.operator': 'ผู้ดำเนินการ',
+  'personnel.column.operatorName': 'ผู้ดำเนินการ',
+  'personnel.form.operator': 'ผู้ดำเนินการ',
+  'personnel.form.operatorPlaceholder': 'เลือกผู้ดำเนินการ',
   'personnel.status.active': 'ทำงานอยู่',
   'personnel.status.inactive': 'ลาออกแล้ว',
 
@@ -1378,4 +1382,5 @@ export default {
   'arrivals.form.pendingBoxQty': 'จำนวนกล่องรอรับ',
   'arrivals.form.pendingPackQty': 'จำนวนแพ็ครอรับ',
   'arrivals.form.pendingPieceQty': 'จำนวนชิ้นรอรับ',
+  'arrivals.form.noIntlLogisticsWarning': 'คำสั่งซื้อนี้ยังไม่มีข้อมูลการขนส่งระหว่างประเทศ หากต้องการคำนวณค่าขนส่งอัตโนมัติ กรุณากรอกข้อมูลที่หน้าจัดซื้อก่อน',
 };

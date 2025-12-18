@@ -102,6 +102,9 @@ const ArrivalManagement: React.FC = () => {
   
   // 当前选中采购单的待到货数量
   const [pendingQuantity, setPendingQuantity] = useState({ box: 0, pack: 0, piece: 0 });
+  
+  // 是否已选择采购单（用于显示国际货运提醒）
+  const [hasPurchaseOrderSelected, setHasPurchaseOrderSelected] = useState(false);
 
   // 获取当前汇率
   const currentExchangeRate = currencyRate?.fixedRate || 1;
@@ -349,6 +352,7 @@ const ArrivalManagement: React.FC = () => {
   const handlePurchaseOrderChange = (orderNo: string) => {
     const selectedOrder = purchaseOrders.find(o => o.orderNo === orderNo);
     if (selectedOrder) {
+      setHasPurchaseOrderSelected(true);
       loadInternationalLogistics(selectedOrder.id);
       // 更新待到货数量
       setPendingQuantity({
@@ -357,6 +361,7 @@ const ArrivalManagement: React.FC = () => {
         piece: selectedOrder.pendingPieceQty || 0,
       });
     } else {
+      setHasPurchaseOrderSelected(false);
       setInternationalLogistics([]);
       freightRatesRef.current = { perBox: 0, perPack: 0, perPiece: 0 };
       setFreightPerBox(0);
@@ -443,6 +448,7 @@ const ArrivalManagement: React.FC = () => {
         setCnyPaymentMode(false);
         setCnyLogisticsFee(null);
         setPendingQuantity({ box: 0, pack: 0, piece: 0 });
+        setHasPurchaseOrderSelected(false);
         actionRef.current?.reload();
         loadStats();
       } else {
@@ -643,6 +649,7 @@ const ArrivalManagement: React.FC = () => {
           setCnyPaymentMode(false);
           setCnyLogisticsFee(null);
           setPendingQuantity({ box: 0, pack: 0, piece: 0 });
+          setHasPurchaseOrderSelected(false);
         }}
         confirmLoading={createLoading}
         width={600}
@@ -733,6 +740,16 @@ const ArrivalManagement: React.FC = () => {
                 </Form.Item>
               </Col>
             </Row>
+
+            {/* 未录入国际货运信息提醒 */}
+            {hasPurchaseOrderSelected && !intlLogisticsLoading && internationalLogistics.length === 0 && (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+                message={intl.formatMessage({ id: 'arrivals.form.noIntlLogisticsWarning' })}
+              />
+            )}
 
             {/* 待到货数量提示 */}
             {(pendingQuantity.box > 0 || pendingQuantity.pack > 0 || pendingQuantity.piece > 0) && (

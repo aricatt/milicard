@@ -240,6 +240,10 @@ export default {
   'personnel.column.location': '所属直播间',
   'personnel.role.anchor': '主播',
   'personnel.role.warehouseKeeper': '仓管',
+  'personnel.role.operator': '运营',
+  'personnel.column.operatorName': '运营负责人',
+  'personnel.form.operator': '运营负责人',
+  'personnel.form.operatorPlaceholder': '请选择运营负责人',
   'personnel.status.active': '在职',
   'personnel.status.inactive': '离职',
 
@@ -1378,4 +1382,5 @@ export default {
   'arrivals.form.pendingBoxQty': '待到货箱数',
   'arrivals.form.pendingPackQty': '待到货盒数',
   'arrivals.form.pendingPieceQty': '待到货包数',
+  'arrivals.form.noIntlLogisticsWarning': '当前采购单未录入国际货运信息，如需自动计算物流费用，请先到采购页录入。',
 };
