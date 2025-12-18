@@ -84,6 +84,7 @@ export default {
   'products.column.category': '品类',
   'products.column.manufacturer': '厂家名称',
   'products.column.retailPrice': '零售价(一箱)',
+  'products.column.retailPricePerPiece': '零售价(一包)',
   'products.column.packPrice': '平拆价',
   'products.column.purchasePrice': '采购价',
   'products.column.boxQuantity': '箱数量',
@@ -1371,4 +1372,10 @@ export default {
   // ==================== 国际货运 - 单条记录限制 ====================
   'internationalLogistics.alert.alreadyRecorded': '已录入国际货运信息',
   'internationalLogistics.alert.alreadyRecordedDesc': '每个采购单只能录入一条国际货运记录。如需修改，请先删除现有记录。',
+
+  // ==================== 到货表单 - 待到货数量 ====================
+  'arrivals.form.pendingQuantity': '待到货数量',
+  'arrivals.form.pendingBoxQty': '待到货箱数',
+  'arrivals.form.pendingPackQty': '待到货盒数',
+  'arrivals.form.pendingPieceQty': '待到货包数',
 };

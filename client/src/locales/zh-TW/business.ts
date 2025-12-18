@@ -84,6 +84,7 @@ export default {
   'products.column.category': '品類',
   'products.column.manufacturer': '廠家名稱',
   'products.column.retailPrice': '零售價(一箱)',
+  'products.column.retailPricePerPiece': '零售價(一包)',
   'products.column.packPrice': '平拆價',
   'products.column.purchasePrice': '採購價',
   'products.column.boxQuantity': '箱數量',
@@ -1369,4 +1370,10 @@ export default {
   // ==================== 國際貨運 - 單條記錄限制 ====================
   'internationalLogistics.alert.alreadyRecorded': '已錄入國際貨運信息',
   'internationalLogistics.alert.alreadyRecordedDesc': '每個採購單只能錄入一條國際貨運記錄。如需修改，請先刪除現有記錄。',
+
+  // ==================== 到貨表單 - 待到貨數量 ====================
+  'arrivals.form.pendingQuantity': '待到貨數量',
+  'arrivals.form.pendingBoxQty': '待到貨箱數',
+  'arrivals.form.pendingPackQty': '待到貨盒數',
+  'arrivals.form.pendingPieceQty': '待到貨包數',
 };

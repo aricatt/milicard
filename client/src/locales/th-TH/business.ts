@@ -84,6 +84,7 @@ export default {
   'products.column.category': 'หมวดหมู่',
   'products.column.manufacturer': 'ผู้ผลิต',
   'products.column.retailPrice': 'ราคาขายปลีก (กล่อง)',
+  'products.column.retailPricePerPiece': 'ราคาขายปลีก (ชิ้น)',
   'products.column.packPrice': 'ราคาแพ็ค',
   'products.column.purchasePrice': 'ราคาซื้อ',
   'products.column.boxQuantity': 'จำนวนกล่อง',
@@ -1371,4 +1372,10 @@ export default {
   // ==================== การขนส่งระหว่างประเทศ - จำกัดหนึ่งบันทึก ====================
   'internationalLogistics.alert.alreadyRecorded': 'บันทึกข้อมูลการขนส่งระหว่างประเทศแล้ว',
   'internationalLogistics.alert.alreadyRecordedDesc': 'แต่ละคำสั่งซื้อสามารถบันทึกได้เพียงหนึ่งรายการ ลบบันทึกที่มีอยู่เพื่อแก้ไข',
+
+  // ==================== แบบฟอร์มรับสินค้า - จำนวนรอรับ ====================
+  'arrivals.form.pendingQuantity': 'จำนวนรอรับ',
+  'arrivals.form.pendingBoxQty': 'จำนวนกล่องรอรับ',
+  'arrivals.form.pendingPackQty': 'จำนวนแพ็ครอรับ',
+  'arrivals.form.pendingPieceQty': 'จำนวนชิ้นรอรับ',
 };

@@ -471,6 +471,27 @@ const ProductSettingsPage: React.FC = () => {
         const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
         if (showInCNY && currentExchangeRate > 0) {
           const cnyPrice = numPrice / currentExchangeRate;
+          return <span>¥ {cnyPrice.toFixed(2)}</span>;
+        }
+        return <span>{numPrice.toFixed(2)}</span>;
+      },
+    },
+    {
+      title: intl.formatMessage({ id: 'products.column.retailPricePerPiece' }),
+      dataIndex: 'retailPrice',
+      key: 'retailPricePerPiece',
+      width: 120,
+      hideInSearch: true,
+      align: 'right',
+      render: (price: any, record: ProductSetting) => {
+        const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        // 计算单包价格 = 箱价 / (每箱盒数 × 每盒包数)
+        const packPerBox = record.goods?.packPerBox || 1;
+        const piecePerPack = record.goods?.piecePerPack || 1;
+        const piecePrice = numPrice / (packPerBox * piecePerPack);
+        
+        if (showInCNY && currentExchangeRate > 0) {
+          const cnyPrice = piecePrice / currentExchangeRate;
           return (
             <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
               ¥ {cnyPrice.toFixed(2)}
@@ -479,7 +500,7 @@ const ProductSettingsPage: React.FC = () => {
         }
         return (
           <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
-            {numPrice.toFixed(2)}
+            {piecePrice.toFixed(2)}
           </span>
         );
       },

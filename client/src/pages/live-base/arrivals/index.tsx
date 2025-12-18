@@ -99,6 +99,9 @@ const ArrivalManagement: React.FC = () => {
   // 预先计算好的各级运费单价（使用 ref 避免闭包问题）
   const freightRatesRef = useRef({ perBox: 0, perPack: 0, perPiece: 0 });
   const [freightPerBox, setFreightPerBox] = useState<number>(0);
+  
+  // 当前选中采购单的待到货数量
+  const [pendingQuantity, setPendingQuantity] = useState({ box: 0, pack: 0, piece: 0 });
 
   // 获取当前汇率
   const currentExchangeRate = currencyRate?.fixedRate || 1;
@@ -146,12 +149,6 @@ const ArrivalManagement: React.FC = () => {
       });
       
       if (result.success && result.data) {
-        // 调试：打印 API 返回的数据（包括 packPerBox 字段）
-        console.log('采购单 API 返回数据:', result.data);
-        if (result.data.length > 0) {
-          console.log('第一条数据的 packPerBox:', result.data[0].packPerBox, 'piecePerPack:', result.data[0].piecePerPack);
-        }
-        
         // 保存采购订单完整信息（包括id和goodsId）
         // 过滤掉已完全到货的采购单（到货数量 >= 采购数量）
         const orderMap = new Map();
@@ -182,6 +179,11 @@ const ArrivalManagement: React.FC = () => {
               : '';
             // 商品名称翻译
             const goodsName = getLocalizedGoodsName(item.goodsName, item.goodsNameI18n, locale);
+            // 计算待到货数量 = 采购数量 - 已到货数量
+            const pendingBoxQty = purchaseBox - arrivedBox;
+            const pendingPackQty = purchasePack - arrivedPack;
+            const pendingPieceQty = purchasePiece - arrivedPiece;
+            
             orderMap.set(item.orderNo, {
               id: item.purchaseOrderId,       // 采购订单ID（用于国际货运查询）
               itemId: item.id,                // 采购订单明细项ID
@@ -196,6 +198,10 @@ const ArrivalManagement: React.FC = () => {
               // 商品拆分关系
               packPerBox: item.packPerBox || 1,
               piecePerPack: item.piecePerPack || 1,
+              // 待到货数量
+              pendingBoxQty: Math.max(0, pendingBoxQty),
+              pendingPackQty: Math.max(0, pendingPackQty),
+              pendingPieceQty: Math.max(0, pendingPieceQty),
               // 生成采购名称：采购日期 + [品类] + 商品名称
               purchaseName: `${dateStr}${categoryDisplay}${goodsName || ''}`,
             });
@@ -299,8 +305,6 @@ const ArrivalManagement: React.FC = () => {
         };
         setFreightPerBox(freightRatesRef.current.perBox);
         
-        console.log('国际货运运费单价:', freightRatesRef.current, { packPerBox, piecePerPack });
-        
         // 自动勾选人民币支付
         setCnyPaymentMode(true);
       } else {
@@ -333,7 +337,6 @@ const ArrivalManagement: React.FC = () => {
     
     // 总运费 = 箱数×单箱运费 + 盒数×单盒运费 + 包数×单包运费
     const totalFreight = boxQty * perBox + packQty * perPack + pieceQty * perPiece;
-    console.log('运费计算:', { boxQty, packQty, pieceQty, perBox, perPack, perPiece, totalFreight });
     setCalculatedIntlFreight(Math.round(totalFreight * 100) / 100);
     
     // 自动填充人民币物流费用
@@ -347,11 +350,18 @@ const ArrivalManagement: React.FC = () => {
     const selectedOrder = purchaseOrders.find(o => o.orderNo === orderNo);
     if (selectedOrder) {
       loadInternationalLogistics(selectedOrder.id);
+      // 更新待到货数量
+      setPendingQuantity({
+        box: selectedOrder.pendingBoxQty || 0,
+        pack: selectedOrder.pendingPackQty || 0,
+        piece: selectedOrder.pendingPieceQty || 0,
+      });
     } else {
       setInternationalLogistics([]);
       freightRatesRef.current = { perBox: 0, perPack: 0, perPiece: 0 };
       setFreightPerBox(0);
       setCalculatedIntlFreight(0);
+      setPendingQuantity({ box: 0, pack: 0, piece: 0 });
     }
     // 重置到货数量相关的计算
     setCalculatedIntlFreight(0);
@@ -367,12 +377,6 @@ const ArrivalManagement: React.FC = () => {
       const boxQty = createForm.getFieldValue('boxQuantity') || 0;
       const packQty = createForm.getFieldValue('packQuantity') || 0;
       const pieceQty = createForm.getFieldValue('pieceQuantity') || 0;
-      
-      console.log('handleQuantityChange:', { 
-        boxQty, packQty, pieceQty, 
-        freightRates: freightRatesRef.current,
-        hasIntlLogistics: internationalLogistics.length > 0 
-      });
       
       if (internationalLogistics.length > 0) {
         calculateIntlFreight(boxQty, packQty, pieceQty);
@@ -438,6 +442,7 @@ const ArrivalManagement: React.FC = () => {
         setCalculatedIntlFreight(0);
         setCnyPaymentMode(false);
         setCnyLogisticsFee(null);
+        setPendingQuantity({ box: 0, pack: 0, piece: 0 });
         actionRef.current?.reload();
         loadStats();
       } else {
@@ -637,6 +642,7 @@ const ArrivalManagement: React.FC = () => {
           setCalculatedIntlFreight(0);
           setCnyPaymentMode(false);
           setCnyLogisticsFee(null);
+          setPendingQuantity({ box: 0, pack: 0, piece: 0 });
         }}
         confirmLoading={createLoading}
         width={600}
@@ -727,6 +733,35 @@ const ArrivalManagement: React.FC = () => {
                 </Form.Item>
               </Col>
             </Row>
+
+            {/* 待到货数量提示 */}
+            {(pendingQuantity.box > 0 || pendingQuantity.pack > 0 || pendingQuantity.piece > 0) && (
+              <Alert
+                type="warning"
+                showIcon
+                style={{ marginBottom: 16 }}
+                message={intl.formatMessage({ id: 'arrivals.form.pendingQuantity' })}
+                description={
+                  <span>
+                    {pendingQuantity.box > 0 && (
+                      <span style={{ marginRight: 16 }}>
+                        {intl.formatMessage({ id: 'arrivals.form.pendingBoxQty' })}: <strong>{pendingQuantity.box}</strong>
+                      </span>
+                    )}
+                    {pendingQuantity.pack > 0 && (
+                      <span style={{ marginRight: 16 }}>
+                        {intl.formatMessage({ id: 'arrivals.form.pendingPackQty' })}: <strong>{pendingQuantity.pack}</strong>
+                      </span>
+                    )}
+                    {pendingQuantity.piece > 0 && (
+                      <span>
+                        {intl.formatMessage({ id: 'arrivals.form.pendingPieceQty' })}: <strong>{pendingQuantity.piece}</strong>
+                      </span>
+                    )}
+                  </span>
+                }
+              />
+            )}
 
             {/* 第三行：到货数量（箱/盒/包） */}
             <Row gutter={16}>

@@ -84,6 +84,7 @@ export default {
   'products.column.category': 'Category',
   'products.column.manufacturer': 'Manufacturer',
   'products.column.retailPrice': 'Retail Price (Box)',
+  'products.column.retailPricePerPiece': 'Retail Price (Piece)',
   'products.column.packPrice': 'Pack Price',
   'products.column.purchasePrice': 'Purchase Price',
   'products.column.boxQuantity': 'Box Qty',
@@ -1371,4 +1372,10 @@ export default {
   // ==================== International Logistics - Single Record Limit ====================
   'internationalLogistics.alert.alreadyRecorded': 'International logistics recorded',
   'internationalLogistics.alert.alreadyRecordedDesc': 'Only one international logistics record per purchase order. Delete existing record to modify.',
+
+  // ==================== Arrival Form - Pending Quantity ====================
+  'arrivals.form.pendingQuantity': 'Pending Quantity',
+  'arrivals.form.pendingBoxQty': 'Pending Boxes',
+  'arrivals.form.pendingPackQty': 'Pending Packs',
+  'arrivals.form.pendingPieceQty': 'Pending Pieces',
 };

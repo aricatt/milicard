@@ -84,6 +84,7 @@ export default {
   'products.column.category': 'Danh mục',
   'products.column.manufacturer': 'Nhà sản xuất',
   'products.column.retailPrice': 'Giá bán lẻ (Thùng)',
+  'products.column.retailPricePerPiece': 'Giá bán lẻ (Gói)',
   'products.column.packPrice': 'Giá hộp',
   'products.column.purchasePrice': 'Giá mua',
   'products.column.boxQuantity': 'SL thùng',
@@ -1371,4 +1372,10 @@ export default {
   // ==================== Vận chuyển quốc tế - Giới hạn một bản ghi ====================
   'internationalLogistics.alert.alreadyRecorded': 'Đã ghi nhận thông tin vận chuyển quốc tế',
   'internationalLogistics.alert.alreadyRecordedDesc': 'Mỗi đơn mua hàng chỉ được ghi nhận một bản ghi vận chuyển quốc tế. Xóa bản ghi hiện tại để sửa đổi.',
+
+  // ==================== Biểu mẫu nhập hàng - Số lượng chờ nhập ====================
+  'arrivals.form.pendingQuantity': 'Số lượng chờ nhập',
+  'arrivals.form.pendingBoxQty': 'Số thùng chờ nhập',
+  'arrivals.form.pendingPackQty': 'Số hộp chờ nhập',
+  'arrivals.form.pendingPieceQty': 'Số gói chờ nhập',
 };
