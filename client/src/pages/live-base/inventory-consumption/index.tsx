@@ -402,7 +402,12 @@ const ConsumptionManagement: React.FC = () => {
     );
   }
 
-  const columns = getColumns({ onDelete: handleDelete, intl, showInCNY, exchangeRate: currentExchangeRate });
+  // 构建主播选项用于查询下拉
+  const anchorOptions = personnelOptions
+    .filter(p => p.role === 'ANCHOR')
+    .map(p => ({ value: p.id, label: p.name }));
+
+  const columns = getColumns({ onDelete: handleDelete, intl, showInCNY, exchangeRate: currentExchangeRate, anchorOptions });
 
   return (
     <PageContainer header={{ title: false }}>
@@ -422,6 +427,7 @@ const ConsumptionManagement: React.FC = () => {
                 current: params.current,
                 pageSize: params.pageSize,
                 goodsName: params.goodsName,
+                handlerId: params.handlerId,
                 startDate: params.consumptionDate?.[0],
                 endDate: params.consumptionDate?.[1],
               },

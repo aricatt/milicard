@@ -7,11 +7,17 @@ import type { ConsumptionRecord } from './types';
 import type { IntlShape } from 'react-intl';
 import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
+interface AnchorOption {
+  value: string;
+  label: string;
+}
+
 interface ColumnsConfig {
   onDelete: (record: ConsumptionRecord) => void;
   intl?: IntlShape;
   showInCNY?: boolean;
   exchangeRate?: number;
+  anchorOptions?: AnchorOption[];
 }
 
 /**
@@ -50,7 +56,7 @@ const calcInventoryValue = (record: ConsumptionRecord) => {
   );
 };
 
-export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1 }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => {
+export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1, anchorOptions = [] }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => {
   // 金额格式化函数，支持以人民币显示
   const formatAmount = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return '-';
@@ -62,6 +68,7 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
   };
 
   return [
+  // 1. 日期
   {
     title: intl?.formatMessage({ id: 'consumption.column.date' }) || '日期',
     dataIndex: 'consumptionDate',
@@ -70,18 +77,34 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
     valueType: 'date',
     render: (_, record) => dayjs(record.consumptionDate).format('YYYY-MM-DD'),
   },
+  // 2. 主播（支持查询）
   {
-    title: intl?.formatMessage({ id: 'consumption.column.category' }) || '品类',
-    dataIndex: 'categoryName',
-    key: 'categoryName',
+    title: intl?.formatMessage({ id: 'consumption.column.anchor' }) || '主播',
+    dataIndex: 'handlerId',
+    key: 'handlerId',
     width: 80,
-    search: false,
-    render: (_, record) => {
-      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
-      if (!displayName) return '-';
-      return <Tag color="purple">{displayName}</Tag>;
+    valueType: 'select',
+    fieldProps: {
+      showSearch: true,
+      optionFilterProp: 'label',
+      options: anchorOptions,
     },
+    render: (_, record) => record.handlerName || '-',
   },
+  // 3. 直播间
+  {
+    title: intl?.formatMessage({ id: 'consumption.column.location' }) || '直播间',
+    dataIndex: 'locationName',
+    key: 'locationName',
+    width: 100,
+    search: false,
+    render: (_, record) => (
+      <Tag color="green" icon={<ShoppingOutlined />}>
+        {record.locationName}
+      </Tag>
+    ),
+  },
+  // 4. 商品
   {
     title: intl?.formatMessage({ id: 'consumption.column.product' }) || '商品',
     dataIndex: 'goodsName',
@@ -96,106 +119,20 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
       </Tooltip>
     ),
   },
+  // 5. 品类
   {
-    title: intl?.formatMessage({ id: 'consumption.column.location' }) || '直播间',
-    dataIndex: 'locationName',
-    key: 'locationName',
-    width: 100,
-    search: false,
-    render: (_, record) => (
-      <Tag color="green" icon={<ShoppingOutlined />}>
-        {record.locationName}
-      </Tag>
-    ),
-  },
-  {
-    title: intl?.formatMessage({ id: 'consumption.column.anchor' }) || '主播',
-    dataIndex: 'handlerName',
-    key: 'handlerName',
+    title: intl?.formatMessage({ id: 'consumption.column.category' }) || '品类',
+    dataIndex: 'categoryName',
+    key: 'categoryName',
     width: 80,
     search: false,
+    render: (_, record) => {
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      if (!displayName) return '-';
+      return <Tag color="purple">{displayName}</Tag>;
+    },
   },
-  {
-    title: '期初/箱',
-    dataIndex: 'openingBoxQty',
-    key: 'openingBoxQty',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '期初/盒',
-    dataIndex: 'openingPackQty',
-    key: 'openingPackQty',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '期初/包',
-    dataIndex: 'openingPieceQty',
-    key: 'openingPieceQty',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '期末/箱',
-    dataIndex: 'closingBoxQty',
-    key: 'closingBoxQty',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '期末/盒',
-    dataIndex: 'closingPackQty',
-    key: 'closingPackQty',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '期末/包',
-    dataIndex: 'closingPieceQty',
-    key: 'closingPieceQty',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '单价/箱',
-    dataIndex: 'unitPricePerBox',
-    key: 'unitPricePerBox',
-    width: 90,
-    align: 'right',
-    search: false,
-    render: (_, record) => formatAmount(record.unitPricePerBox || 0),
-  },
-  {
-    title: '消耗/箱',
-    dataIndex: 'boxQuantity',
-    key: 'boxQuantity',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '消耗/盒',
-    dataIndex: 'packQuantity',
-    key: 'packQuantity',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
-  {
-    title: '消耗/包',
-    dataIndex: 'pieceQuantity',
-    key: 'pieceQuantity',
-    width: 70,
-    align: 'right',
-    search: false,
-  },
+  // 6. 消耗金额
   {
     title: '消耗金额',
     key: 'consumptionAmount',
@@ -207,6 +144,100 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
       return <span style={{ color: '#f5222d', fontWeight: 500 }}>{formatAmount(amount)}</span>;
     },
   },
+  // 7. 期初/包
+  {
+    title: '期初/包',
+    dataIndex: 'openingPieceQty',
+    key: 'openingPieceQty',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 8. 期初/盒
+  {
+    title: '期初/盒',
+    dataIndex: 'openingPackQty',
+    key: 'openingPackQty',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 9. 期初/箱
+  {
+    title: '期初/箱',
+    dataIndex: 'openingBoxQty',
+    key: 'openingBoxQty',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 10. 期末/包
+  {
+    title: '期末/包',
+    dataIndex: 'closingPieceQty',
+    key: 'closingPieceQty',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 11. 期末/盒
+  {
+    title: '期末/盒',
+    dataIndex: 'closingPackQty',
+    key: 'closingPackQty',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 12. 期末/箱
+  {
+    title: '期末/箱',
+    dataIndex: 'closingBoxQty',
+    key: 'closingBoxQty',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 13. 单价/包（从单价/箱计算）
+  {
+    title: '单价/包',
+    key: 'unitPricePerPiece',
+    width: 90,
+    align: 'right',
+    search: false,
+    render: (_, record) => {
+      const { piecePrice } = calcUnitPrice(record);
+      return formatAmount(piecePrice);
+    },
+  },
+  // 14. 消耗/包
+  {
+    title: '消耗/包',
+    dataIndex: 'pieceQuantity',
+    key: 'pieceQuantity',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 15. 消耗/盒
+  {
+    title: '消耗/盒',
+    dataIndex: 'packQuantity',
+    key: 'packQuantity',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 16. 消耗/箱
+  {
+    title: '消耗/箱',
+    dataIndex: 'boxQuantity',
+    key: 'boxQuantity',
+    width: 70,
+    align: 'right',
+    search: false,
+  },
+  // 17. 库存货值
   {
     title: '库存货值',
     key: 'inventoryValue',

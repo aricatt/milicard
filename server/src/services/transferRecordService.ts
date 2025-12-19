@@ -1,6 +1,7 @@
 import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
 import { BaseError, BaseErrorType } from '../types/base';
+import { StockService } from './stockService';
 import type {
   CreateTransferRequest,
   UpdateTransferRequest,
@@ -299,6 +300,36 @@ export class TransferRecordService {
 
       if (!destinationHandler) {
         throw new BaseError('调入主播不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 检查调出位置的库存是否充足
+      const boxQuantity = data.boxQuantity || 0;
+      const packQuantity = data.packQuantity || 0;
+      const pieceQuantity = data.pieceQuantity || 0;
+
+      // 验证至少有一个数量大于0
+      if (boxQuantity <= 0 && packQuantity <= 0 && pieceQuantity <= 0) {
+        throw new BaseError('调货数量必须大于0', BaseErrorType.VALIDATION_ERROR);
+      }
+
+      const stockCheck = await StockService.checkStockSufficient(
+        baseId,
+        data.goodsId,
+        data.sourceLocationId,
+        boxQuantity,
+        packQuantity,
+        pieceQuantity
+      );
+
+      if (!stockCheck.sufficient) {
+        const available = stockCheck.available;
+        const required = stockCheck.required;
+        throw new BaseError(
+          `库存不足！调出位置"${sourceLocation.name}"的商品"${goods.name}"库存不足。` +
+          `需要: ${required.box}箱${required.pack}盒${required.piece}包 (共${required.totalPacks}盒), ` +
+          `可用: ${available.currentBox}箱${available.currentPack}盒${available.currentPiece}包 (共${available.totalPacks}盒)`,
+          BaseErrorType.VALIDATION_ERROR
+        );
       }
 
       // 创建调货记录
@@ -760,6 +791,36 @@ export class TransferRecordService {
         throw new BaseError(`调入主播不存在: ${data.destinationHandlerName}`, BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
+      // 检查调出位置的库存是否充足
+      const boxQuantity = data.boxQuantity || 0;
+      const packQuantity = data.packQuantity || 0;
+      const pieceQuantity = data.pieceQuantity || 0;
+
+      // 验证至少有一个数量大于0
+      if (boxQuantity <= 0 && packQuantity <= 0 && pieceQuantity <= 0) {
+        throw new BaseError('调货数量必须大于0', BaseErrorType.VALIDATION_ERROR);
+      }
+
+      const stockCheck = await StockService.checkStockSufficient(
+        baseId,
+        goods.id,
+        sourceLocation.id,
+        boxQuantity,
+        packQuantity,
+        pieceQuantity
+      );
+
+      if (!stockCheck.sufficient) {
+        const available = stockCheck.available;
+        const required = stockCheck.required;
+        throw new BaseError(
+          `库存不足！调出位置"${sourceLocation.name}"的商品"${goods.name}"库存不足。` +
+          `需要: ${required.box}箱${required.pack}盒${required.piece}包 (共${required.totalPacks}盒), ` +
+          `可用: ${available.currentBox}箱${available.currentPack}盒${available.currentPiece}包 (共${available.totalPacks}盒)`,
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
+
       // 创建调货记录
       const record = await prisma.transferRecord.create({
         data: {
@@ -770,9 +831,9 @@ export class TransferRecordService {
           destinationLocationId: destinationLocation.id,
           destinationHandlerId: destinationHandler.id,
           baseId: baseId,
-          boxQuantity: data.boxQuantity || 0,
-          packQuantity: data.packQuantity || 0,
-          pieceQuantity: data.pieceQuantity || 0,
+          boxQuantity: boxQuantity,
+          packQuantity: packQuantity,
+          pieceQuantity: pieceQuantity,
           notes: data.notes,
           createdBy: userId,
           updatedBy: userId
