@@ -2,6 +2,7 @@ import { prisma } from '../utils/database';
 import { logger } from '../utils/logger';
 import { BaseError, BaseErrorType } from '../types/base';
 import { GoodsCostService } from './goodsCostService';
+import { StockService } from './stockService';
 import type {
   CreateArrivalRequest,
   UpdateArrivalRequest,
@@ -461,6 +462,20 @@ export class ArrivalRecordService {
         where: {
           id: recordId,
           baseId: baseId
+        },
+        include: {
+          goods: {
+            select: {
+              code: true,
+              packPerBox: true,
+              piecePerPack: true
+            }
+          },
+          location: {
+            select: {
+              name: true
+            }
+          }
         }
       });
 
@@ -470,6 +485,37 @@ export class ArrivalRecordService {
 
       // 保存商品ID，用于后续重新计算成本
       const goodsId = record.goodsId;
+      const locationId = record.locationId;
+      const goodsCode = record.goods?.code || '未知商品';
+      const locationName = record.location?.name || '未知位置';
+      const packPerBox = record.goods?.packPerBox || 1;
+      const piecePerPack = record.goods?.piecePerPack || 1;
+
+      // 获取当前库存
+      const currentStock = await StockService.getStock(baseId, goodsId, locationId);
+
+      // 计算要删除的到货记录的数量（转换为总包数）
+      const deleteBoxQty = record.boxQuantity;
+      const deletePackQty = record.packQuantity;
+      const deletePieceQty = record.pieceQuantity;
+      const deleteTotalPacks = deleteBoxQty * packPerBox + deletePackQty + Math.floor(deletePieceQty / piecePerPack);
+
+      // 检查删除后库存是否会变成负数
+      // 当前库存的总包数
+      const currentTotalPacks = currentStock.totalPacks;
+
+      // 删除后的库存
+      const afterDeleteTotalPacks = currentTotalPacks - deleteTotalPacks;
+
+      if (afterDeleteTotalPacks < 0) {
+        throw new BaseError(
+          `无法删除该到货记录！删除后"${locationName}"的商品[${goodsCode}]库存将变为负数。\n` +
+          `当前库存: ${currentStock.currentBox}箱${currentStock.currentPack}盒${currentStock.currentPiece}包 (共${currentTotalPacks}盒)\n` +
+          `要删除的到货: ${deleteBoxQty}箱${deletePackQty}盒${deletePieceQty}包 (共${deleteTotalPacks}盒)\n` +
+          `该库存已被使用（调货、消耗等），无法单独删除此到货记录！`,
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
 
       // 删除记录
       await prisma.arrivalRecord.delete({

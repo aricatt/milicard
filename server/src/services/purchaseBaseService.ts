@@ -618,6 +618,18 @@ export class PurchaseBaseService {
         realOrderId = (itemCheckResult as any[])[0].id;
       }
 
+      // 检查是否有到货记录
+      const arrivalCheckSql = `
+        SELECT COUNT(*) as count FROM arrival_records 
+        WHERE purchase_order_id = '${realOrderId}'
+      `;
+      const arrivalCheckResult = await prisma.$queryRawUnsafe(arrivalCheckSql) as any[];
+      const arrivalCount = parseInt(arrivalCheckResult[0]?.count || '0', 10);
+
+      if (arrivalCount > 0) {
+        throw new Error('该采购单已有到货记录，数据已影响到库存，无法单独删除！');
+      }
+
       // 删除订单（由于设置了 onDelete: Cascade，订单明细会自动删除）
       const deleteSql = `
         DELETE FROM purchase_orders 
