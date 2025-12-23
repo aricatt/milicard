@@ -39,8 +39,10 @@ if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ]; then
     echo "Warning: Could not parse DATABASE_URL for connection test"
     echo "Proceeding without connection test..."
 else
+    echo "Testing connection to $DB_HOST:$DB_PORT..."
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        if nc -z "$DB_HOST" "$DB_PORT" 2>/dev/null; then
+        # 使用 timeout + bash /dev/tcp 检测端口
+        if timeout 3 bash -c "echo > /dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
             echo "✅ RDS database is reachable at $DB_HOST:$DB_PORT"
             break
         fi
