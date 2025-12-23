@@ -180,13 +180,31 @@ BACKUP_FILE="backup_rds_before_deploy_$(date +%Y%m%d_%H%M%S).sql"
 
 if command -v pg_dump &> /dev/null; then
     echo -e "${YELLOW}正在创建RDS备份: ${BACKUP_FILE}${NC}"
-    PGPASSWORD="$RDS_PASSWORD" pg_dump -h "$RDS_HOST" -p "$RDS_PORT" -U "$RDS_USER" "$RDS_DATABASE" > "${LOCAL_BACKUP_DIR}/${BACKUP_FILE}" 2>/dev/null && {
+    # 使用临时文件捕获错误信息
+    ERROR_LOG=$(mktemp)
+    if PGPASSWORD="$RDS_PASSWORD" pg_dump -h "$RDS_HOST" -p "$RDS_PORT" -U "$RDS_USER" "$RDS_DATABASE" > "${LOCAL_BACKUP_DIR}/${BACKUP_FILE}" 2>"$ERROR_LOG"; then
         echo -e "${GREEN}✅ 备份已保存到本地: ${LOCAL_BACKUP_DIR}/${BACKUP_FILE}${NC}"
         ls -lh ${LOCAL_BACKUP_DIR}/${BACKUP_FILE}
-    } || {
-        echo -e "${YELLOW}警告: RDS备份失败，继续部署${NC}"
-        echo "建议在阿里云RDS控制台手动创建备份"
-    }
+        rm -f "$ERROR_LOG"
+    else
+        echo -e "${RED}❌ RDS备份失败${NC}"
+        echo -e "${YELLOW}错误信息:${NC}"
+        cat "$ERROR_LOG"
+        rm -f "$ERROR_LOG"
+        echo ""
+        echo -e "${YELLOW}可能的原因:${NC}"
+        echo "  1. pg_dump 版本与 RDS PostgreSQL 版本不兼容"
+        echo "  2. 用户权限不足（需要 SELECT 权限）"
+        echo "  3. 网络连接问题"
+        echo "  4. RDS 安全组未允许此服务器IP"
+        echo ""
+        echo -e "${YELLOW}建议在阿里云RDS控制台手动创建备份${NC}"
+        read -p "继续部署? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
 else
     echo -e "${YELLOW}pg_dump not installed, skipping local backup${NC}"
     echo "建议在阿里云RDS控制台手动创建备份"
