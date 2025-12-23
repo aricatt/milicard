@@ -399,46 +399,54 @@ const UsersPage: React.FC = () => {
           ? Math.min(...record.roles.map(r => r.level ?? 999))
           : 999;
         
-        // 判断是否可以操作该用户
-        // 只能操作层级比自己低的用户（targetUserLevel > currentUserLevel）
-        // Level 0 (SUPER_ADMIN) 可以操作 Level 1+ 的用户
-        // Level 1 (ADMIN) 可以操作 Level 2+ 的用户
-        const canOperate = targetUserLevel > currentUserLevel;
-        
-        // 不能操作自己
+        // 判断是否是自己
         const isSelf = record.id === currentLoginUser?.id;
         
-        // 最终判断：可以操作且不是自己
-        const showActions = canOperate && !isSelf;
+        // 判断是否可以操作该用户（高级可以操作低级）
+        // 只能操作层级比自己低的用户（targetUserLevel > currentUserLevel）
+        const canOperateOthers = targetUserLevel > currentUserLevel;
         
-        if (!showActions) {
+        // 可以编辑：自己 或 层级比自己低的用户
+        const canEdit = isSelf || canOperateOthers;
+        
+        // 可以重置密码：自己 或 层级比自己低的用户
+        const canResetPassword = isSelf || canOperateOthers;
+        
+        // 可以删除：只能删除层级比自己低的用户（不能删除自己，不能删除admin）
+        const canDelete = canOperateOthers && !isSelf && record.username !== 'admin';
+        
+        if (!canEdit && !canResetPassword && !canDelete) {
           return <span style={{ color: '#999' }}>-</span>;
         }
         
         return [
-          <Tooltip key="edit" title="编辑">
-            <Button
-              type="link"
-              size="small"
-              icon={<EditOutlined />}
-              onClick={() => {
-                setCurrentUser(record);
-                setEditModalVisible(true);
-              }}
-            />
-          </Tooltip>,
-          <Tooltip key="resetPassword" title="重置密码">
-            <Button
-              type="link"
-              size="small"
-              icon={<KeyOutlined />}
-              onClick={() => {
-                setCurrentUser(record);
-                setResetPasswordModalVisible(true);
-              }}
-            />
-          </Tooltip>,
-          record.username !== 'admin' && (
+          canEdit && (
+            <Tooltip key="edit" title={isSelf ? "编辑个人信息" : "编辑"}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setCurrentUser(record);
+                  setEditModalVisible(true);
+                }}
+              />
+            </Tooltip>
+          ),
+          canResetPassword && (
+            <Tooltip key="resetPassword" title={isSelf ? "修改密码" : "重置密码"}>
+              <Button
+                type="link"
+                size="small"
+                icon={<KeyOutlined />}
+                onClick={() => {
+                  setCurrentUser(record);
+                  setResetPasswordModalVisible(true);
+                }}
+              />
+            </Tooltip>
+          ),
+          canDelete && (
             <Popconfirm
               key="delete"
               title="确定要删除该用户吗？"
@@ -612,7 +620,7 @@ const UsersPage: React.FC = () => {
 
       {/* 编辑用户弹窗 */}
       <ModalForm
-        title="编辑用户"
+        title={currentUser?.id === currentLoginUser?.id ? "编辑个人信息" : "编辑用户"}
         open={editModalVisible}
         onOpenChange={(visible) => {
           setEditModalVisible(visible);
@@ -651,33 +659,42 @@ const UsersPage: React.FC = () => {
           placeholder="请输入邮箱"
           rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]}
         />
-        <ProFormSelect
-          name="roleIds"
-          label="角色"
-          mode="multiple"
-          placeholder="请选择角色"
-          options={roles.map((role) => ({
-            label: getRoleOptionLabel(role),
-            value: role.id,
-          }))}
-        />
-        <ProFormSelect
-          name="baseIds"
-          label="关联基地"
-          mode="multiple"
-          placeholder="请选择关联基地"
-          options={availableBases.map((base) => ({
-            label: `${base.name} (${base.code})`,
-            value: base.id,
-          }))}
-          extra="用户只能访问关联的基地数据"
-        />
-        <ProFormSwitch name="isActive" label="启用状态" />
+        {/* 只有编辑他人时才显示角色和基地字段 */}
+        {currentUser?.id !== currentLoginUser?.id && (
+          <>
+            <ProFormSelect
+              name="roleIds"
+              label="角色"
+              mode="multiple"
+              placeholder="请选择角色"
+              options={roles.map((role) => ({
+                label: getRoleOptionLabel(role),
+                value: role.id,
+              }))}
+            />
+            <ProFormSelect
+              name="baseIds"
+              label="关联基地"
+              mode="multiple"
+              placeholder="请选择关联基地"
+              options={availableBases.map((base) => ({
+                label: `${base.name} (${base.code})`,
+                value: base.id,
+              }))}
+              extra="用户只能访问关联的基地数据"
+            />
+            <ProFormSwitch name="isActive" label="启用状态" />
+          </>
+        )}
       </ModalForm>
 
       {/* 重置密码弹窗 */}
       <ModalForm
-        title={`重置密码 - ${currentUser?.name || ''}`}
+        title={
+          currentUser?.id === currentLoginUser?.id
+            ? "修改密码"
+            : `重置密码 - ${currentUser?.name || ''}`
+        }
         open={resetPasswordModalVisible}
         onOpenChange={(visible) => {
           setResetPasswordModalVisible(visible);
