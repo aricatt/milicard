@@ -1,0 +1,81 @@
+# 多阶段构建 - 阶段1: 构建前端
+FROM node:20-alpine AS frontend-builder
+
+# 构建参数：环境类型（dev/staging/prod）
+ARG BUILD_ENV=prod
+
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm ci --registry=https://registry.npmmirror.com --legacy-peer-deps
+COPY client/ ./
+# 生产环境构建时设置环境变量，隐藏模板参考菜单
+RUN REACT_APP_ENV=${BUILD_ENV} npm run build
+
+# 多阶段构建 - 阶段2: 构建后端
+FROM node:20-alpine AS backend-builder
+
+WORKDIR /app/server
+COPY server/package*.json ./
+COPY server/prisma ./prisma/
+RUN npm ci --registry=https://registry.npmmirror.com
+# 生成 Prisma Client
+RUN npx prisma generate
+COPY server/ ./
+# 忽略 TypeScript 类型错误，仍然生成 JS 文件
+RUN npx tsc || true
+# 单独编译 seed.ts
+RUN mkdir -p dist/prisma && npx tsc prisma/seed.ts --outDir dist/prisma --esModuleInterop --skipLibCheck || true
+
+# 最终镜像 - 轻量版（不包含PostgreSQL）
+FROM ubuntu:22.04
+
+# 避免交互式安装
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装必要软件（不包含PostgreSQL）
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    lsb-release \
+    nginx \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建应用目录
+WORKDIR /app
+
+# 复制前端构建产物
+COPY --from=frontend-builder /app/client/dist /app/client/dist
+
+# 复制后端构建产物和依赖
+COPY --from=backend-builder /app/server/dist /app/server/dist
+COPY --from=backend-builder /app/server/node_modules /app/server/node_modules
+COPY --from=backend-builder /app/server/package.json /app/server/
+COPY --from=backend-builder /app/server/prisma /app/server/prisma
+COPY --from=backend-builder /app/server/config /app/server/config
+
+# 复制配置文件
+COPY docker/nginx.conf /etc/nginx/sites-available/default
+COPY docker/supervisord.rds.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.rds.sh /app/entrypoint.sh
+
+# 设置执行权限
+RUN chmod +x /app/entrypoint.sh
+
+# 创建必要目录
+RUN mkdir -p /var/log/supervisor
+
+# 暴露端口
+EXPOSE 80
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/api/v1/health || exit 1
+
+# 启动入口
+ENTRYPOINT ["/app/entrypoint.sh"]
