@@ -186,25 +186,51 @@ if command -v aliyun &> /dev/null; then
         echo -e "${YELLOW}正在创建 RDS 物理快照备份...${NC}"
         echo "实例 ID: $RDS_INSTANCE_ID"
         
-        # 创建物理快照备份
-        BACKUP_RESULT=$(aliyun rds CreateBackup \
-            --DBInstanceId "$RDS_INSTANCE_ID" \
-            --BackupMethod Physical \
-            2>&1)
+        # 创建物理快照备份（添加超时控制）
+        echo -e "${CYAN}正在调用阿里云 API...${NC}"
         
-        if [ $? -eq 0 ]; then
+        # 使用 timeout 命令防止卡死，最多等待 30 秒
+        if command -v timeout &> /dev/null; then
+            BACKUP_RESULT=$(timeout 30 aliyun rds CreateBackup \
+                --DBInstanceId "$RDS_INSTANCE_ID" \
+                --BackupMethod Physical \
+                2>&1)
+            EXIT_CODE=$?
+        else
+            # 如果没有 timeout 命令，直接执行
+            BACKUP_RESULT=$(aliyun rds CreateBackup \
+                --DBInstanceId "$RDS_INSTANCE_ID" \
+                --BackupMethod Physical \
+                2>&1)
+            EXIT_CODE=$?
+        fi
+        
+        if [ $EXIT_CODE -eq 0 ]; then
             echo -e "${GREEN}✅ RDS 快照备份已创建${NC}"
             echo "$BACKUP_RESULT"
             echo ""
             echo -e "${CYAN}提示：可以在阿里云 RDS 控制台查看备份进度${NC}"
+        elif [ $EXIT_CODE -eq 124 ]; then
+            echo -e "${YELLOW}⚠️  RDS 快照创建超时（30秒）${NC}"
+            echo ""
+            echo -e "${CYAN}说明：${NC}"
+            echo "  阿里云 API 响应超时，但备份任务可能已在后台创建"
+            echo "  请在阿里云 RDS 控制台确认备份状态"
+            echo ""
+            read -p "继续部署? (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
         else
             echo -e "${YELLOW}⚠️  RDS 快照创建失败${NC}"
             echo "$BACKUP_RESULT"
             echo ""
             echo -e "${YELLOW}可能的原因:${NC}"
             echo "  1. 阿里云 CLI 未正确配置（需要 AccessKey）"
-            echo "  2. RDS_INSTANCE_ID 不正确"
+            echo "  2. RDS_INSTANCE_ID 不正确（应该是 pgm-xxx 格式）"
             echo "  3. 账号权限不足"
+            echo "  4. 区域配置不匹配"
             echo ""
             echo -e "${CYAN}临时方案：${NC}"
             echo "  1. 在阿里云 RDS 控制台手动创建备份"
