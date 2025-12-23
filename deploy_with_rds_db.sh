@@ -70,6 +70,11 @@ if [ ! -f "$ENV_FILE" ]; then
 # ============================================
 # 阿里云RDS数据库配置（必填）
 # ============================================
+# RDS实例ID（用于创建快照备份，可选）
+# 在阿里云RDS控制台 -> 实例列表 -> 基本信息中获取
+# 格式：rm-xxxxxxxxxxxxxx
+RDS_INSTANCE_ID=
+
 # RDS实例内网地址（在阿里云RDS控制台获取）
 RDS_HOST=rm-xxxxxx.pg.rds.aliyuncs.com
 
@@ -169,36 +174,55 @@ else
     echo -e "${YELLOW}psql not installed, skipping connection test${NC}"
 fi
 
-# 部署前备份数据库（连接RDS进行备份）
+# 部署前备份数据库（使用阿里云 RDS 快照）
 echo -e "${YELLOW}=========================================="
-echo "  创建部署前数据库备份 (RDS)"
+echo "  创建部署前数据库备份 (RDS 快照)"
 echo "==========================================${NC}"
 
-LOCAL_BACKUP_DIR="./backups"
-mkdir -p $LOCAL_BACKUP_DIR
-BACKUP_FILE="backup_rds_before_deploy_$(date +%Y%m%d_%H%M%S).sql"
-
-if command -v pg_dump &> /dev/null; then
-    echo -e "${YELLOW}正在创建RDS备份: ${BACKUP_FILE}${NC}"
-    # 使用临时文件捕获错误信息
-    ERROR_LOG=$(mktemp)
-    if PGPASSWORD="$RDS_PASSWORD" pg_dump -h "$RDS_HOST" -p "$RDS_PORT" -U "$RDS_USER" "$RDS_DATABASE" > "${LOCAL_BACKUP_DIR}/${BACKUP_FILE}" 2>"$ERROR_LOG"; then
-        echo -e "${GREEN}✅ 备份已保存到本地: ${LOCAL_BACKUP_DIR}/${BACKUP_FILE}${NC}"
-        ls -lh ${LOCAL_BACKUP_DIR}/${BACKUP_FILE}
-        rm -f "$ERROR_LOG"
+# 检查是否安装了阿里云 CLI
+if command -v aliyun &> /dev/null; then
+    # 从环境变量或配置文件读取 RDS 实例 ID
+    if [ -n "$RDS_INSTANCE_ID" ]; then
+        echo -e "${YELLOW}正在创建 RDS 物理快照备份...${NC}"
+        echo "实例 ID: $RDS_INSTANCE_ID"
+        
+        # 创建物理快照备份
+        BACKUP_RESULT=$(aliyun rds CreateBackup \
+            --DBInstanceId "$RDS_INSTANCE_ID" \
+            --BackupMethod Physical \
+            2>&1)
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✅ RDS 快照备份已创建${NC}"
+            echo "$BACKUP_RESULT"
+            echo ""
+            echo -e "${CYAN}提示：可以在阿里云 RDS 控制台查看备份进度${NC}"
+        else
+            echo -e "${YELLOW}⚠️  RDS 快照创建失败${NC}"
+            echo "$BACKUP_RESULT"
+            echo ""
+            echo -e "${YELLOW}可能的原因:${NC}"
+            echo "  1. 阿里云 CLI 未正确配置（需要 AccessKey）"
+            echo "  2. RDS_INSTANCE_ID 不正确"
+            echo "  3. 账号权限不足"
+            echo ""
+            echo -e "${CYAN}临时方案：${NC}"
+            echo "  1. 在阿里云 RDS 控制台手动创建备份"
+            echo "  2. RDS 有自动备份功能，可以依赖自动备份"
+            read -p "继续部署? (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        fi
     else
-        echo -e "${RED}❌ RDS备份失败${NC}"
-        echo -e "${YELLOW}错误信息:${NC}"
-        cat "$ERROR_LOG"
-        rm -f "$ERROR_LOG"
+        echo -e "${YELLOW}未配置 RDS_INSTANCE_ID，跳过快照备份${NC}"
         echo ""
-        echo -e "${YELLOW}可能的原因:${NC}"
-        echo "  1. pg_dump 版本与 RDS PostgreSQL 版本不兼容"
-        echo "  2. 用户权限不足（需要 SELECT 权限）"
-        echo "  3. 网络连接问题"
-        echo "  4. RDS 安全组未允许此服务器IP"
+        echo -e "${CYAN}建议：${NC}"
+        echo "  1. 在 $ENV_FILE 中添加 RDS_INSTANCE_ID 配置"
+        echo "  2. 或在阿里云 RDS 控制台手动创建备份"
+        echo "  3. RDS 有自动备份功能，也可以依赖自动备份"
         echo ""
-        echo -e "${YELLOW}建议在阿里云RDS控制台手动创建备份${NC}"
         read -p "继续部署? (y/N) " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -206,8 +230,23 @@ if command -v pg_dump &> /dev/null; then
         fi
     fi
 else
-    echo -e "${YELLOW}pg_dump not installed, skipping local backup${NC}"
-    echo "建议在阿里云RDS控制台手动创建备份"
+    echo -e "${YELLOW}阿里云 CLI 未安装，跳过快照备份${NC}"
+    echo ""
+    echo -e "${CYAN}安装阿里云 CLI:${NC}"
+    echo "  wget https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz"
+    echo "  tar xzvf aliyun-cli-linux-latest-amd64.tgz"
+    echo "  sudo mv aliyun /usr/local/bin/"
+    echo "  aliyun configure"
+    echo ""
+    echo -e "${CYAN}或者：${NC}"
+    echo "  1. 在阿里云 RDS 控制台手动创建备份"
+    echo "  2. RDS 有自动备份功能，可以依赖自动备份"
+    echo ""
+    read -p "继续部署? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
 fi
 echo ""
 
