@@ -166,14 +166,16 @@ export const validateImportData = (
     rules.forEach((rule) => {
       const value = item[rule.field];
 
-      // 必填验证
-      if (rule.required && (!value || String(value).trim() === '')) {
-        errors.push(`第${rowNum}行：${rule.message}`);
-        return;
+      // 必填验证（注意：0 是合法值，不应被视为空）
+      if (rule.required) {
+        if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+          errors.push(`第${rowNum}行：${rule.message}`);
+          return;
+        }
       }
 
-      // 类型验证
-      if (value && rule.type === 'number') {
+      // 类型验证（注意：需要验证 0 值）
+      if ((value !== null && value !== undefined && value !== '') && rule.type === 'number') {
         const num = parseFloat(value);
         if (isNaN(num)) {
           errors.push(`第${rowNum}行：${rule.message}`);

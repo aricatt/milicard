@@ -183,6 +183,9 @@ export const errorConfig: RequestConfig = {
           // 优先使用后端返回的错误消息
           const backendMessage = error.response?.data?.message || error.data?.message;
           if (backendMessage) {
+            // 将后端消息附加到错误对象上，方便业务代码使用
+            error.message = backendMessage;
+            error.data = error.response.data;
             message.error(backendMessage);
           } else {
             message.error(`Response status:${error.response.status}`);

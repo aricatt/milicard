@@ -269,9 +269,10 @@ const ProcurementManagement: React.FC = () => {
       } else {
         message.error(result.message || '创建失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('创建采购订单失败:', error);
-      message.error('创建采购订单失败');
+      const errorMessage = error?.data?.message || error?.message || '创建采购订单失败';
+      message.error(errorMessage);
     } finally {
       setCreateLoading(false);
     }
@@ -318,9 +319,10 @@ const ProcurementManagement: React.FC = () => {
       } else {
         message.error(result.message || '更新失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('更新采购订单失败:', error);
-      message.error('更新采购订单失败');
+      const errorMessage = error?.data?.message || error?.message || '更新采购订单失败';
+      message.error(errorMessage);
     } finally {
       setEditLoading(false);
     }
@@ -349,9 +351,10 @@ const ProcurementManagement: React.FC = () => {
       } else {
         message.error(result.message || '删除失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('删除采购订单失败:', error);
-      message.error('删除采购订单失败');
+      const errorMessage = error?.data?.message || error?.message || '删除采购订单失败';
+      message.error(errorMessage);
     }
   };
 

@@ -322,6 +322,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
           const result = await request(`/api/v1/bases/${baseId}/purchase-orders/import`, {
             method: 'POST',
             data: requestData,
+            skipErrorHandler: true, // 跳过全局错误处理，使用自定义错误提示
           });
 
           if (result.success) {
@@ -351,12 +352,31 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
         } catch (error: any) {
           // 遇到错误立即停止
           message.destroy();
+          
+          // 提取后端返回的错误信息
+          // 尝试多种可能的错误消息位置
+          let errorMessage = '网络错误';
+          
+          if (error?.response?.data?.message) {
+            // axios 标准格式
+            errorMessage = error.response.data.message;
+          } else if (error?.data?.message) {
+            // umi request 格式
+            errorMessage = error.data.message;
+          } else if (error?.message && !error.message.includes('status code')) {
+            // 标准 Error 对象（排除 axios 默认的 "Request failed with status code XXX"）
+            errorMessage = error.message;
+          } else if (error?.response?.data) {
+            // 尝试直接使用 data 作为消息
+            errorMessage = typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data);
+          }
+          
           const errorContent = [
             `成功导入：${successCount} 条`,
             `跳过：${skipCount} 条`,
             `失败位置：第 ${excelRowNum} 行（Excel中）`,
             `商品名称：${item.goodsName}`,
-            `失败原因：${error.message || '网络错误'}`,
+            `失败原因：${errorMessage}`,
           ].join('\n');
           Modal.error({
             title: '导入失败',
@@ -380,9 +400,10 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
       setImportModalVisible(false);
       setImportProgress(0);
       onImportSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('导入失败:', error);
-      message.error(error instanceof Error ? error.message : '导入失败，请重试');
+      const errorMessage = error?.data?.message || error?.message || '导入失败，请重试';
+      message.error(errorMessage);
     } finally {
       setImportLoading(false);
     }
@@ -408,7 +429,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
     const templateData = [
       {
         purchaseDate: '2025-11-17',
-        orderNo: '（留空则自动生成）',
+        orderNo: '',
         categoryName: '卡牌',
         goodsName: '名侦探柯南挂件-星绽版-第1弹',
         supplierName: '咸鱼',
