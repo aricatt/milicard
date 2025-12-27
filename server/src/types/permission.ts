@@ -34,7 +34,9 @@ export enum ResourceModule {
   // 基础数据
   CUSTOMER = 'customer',
   SUPPLIER = 'supplier',
-  GOODS = 'goods',                         // 全局商品 + 品类管理
+  GOODS = 'goods',                         // 全局商品
+  CATEGORY = 'category',                   // 商品品类
+  CURRENCY_RATE = 'currency_rate',         // 货币汇率
   GOODS_LOCAL_SETTING = 'goods_local_setting', // 基地商品设置（依赖 GOODS:read）
   
   // 库存管理

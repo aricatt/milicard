@@ -131,7 +131,8 @@ const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; descripti
 const MODULE_LABELS: Record<string, string> = {
   purchase_order: '采购管理',
   supplier: '供应商',
-  goods: '全局商品+品类',
+  goods: '全局商品',
+  category: '商品品类',
   goods_local_setting: '基地商品设置',
   arrival_order: '到货管理',
   location: '地点',
@@ -142,6 +143,7 @@ const MODULE_LABELS: Record<string, string> = {
   anchor_profit: '主播利润',
   receivable: '应收管理',
   customer: '客户',
+  currency_rate: '货币汇率',
 };
 
 const RolesPage: React.FC = () => {

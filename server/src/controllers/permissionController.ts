@@ -15,7 +15,8 @@ const MODULE_NAMES: Record<string, string> = {
   personnel: '人员管理',
   customer: '客户管理',
   supplier: '供应商管理',
-  goods: '全局商品+品类',
+  goods: '全局商品',
+  category: '商品品类',
   goods_local_setting: '基地商品设置',
   inventory: '库存管理',
   purchase_order: '采购管理',
@@ -28,6 +29,7 @@ const MODULE_NAMES: Record<string, string> = {
   point: '点位管理',
   point_order: '点位订单',
   translation: '翻译管理',
+  currency_rate: '货币汇率',
 }
 
 // 权限操作的中文名称映射
