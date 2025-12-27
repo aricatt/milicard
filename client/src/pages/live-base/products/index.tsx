@@ -496,6 +496,11 @@ const ProductSettingsPage: React.FC = () => {
         const piecePerPack = record.goods?.piecePerPack || 1;
         const piecePrice = numPrice / (packPerBox * piecePerPack);
         
+        // 处理 NaN 情况
+        if (!isFinite(piecePrice)) {
+          return <span style={{ color: '#f5222d', fontWeight: 'bold' }}>0.00</span>;
+        }
+        
         if (showInCNY && currentExchangeRate > 0) {
           const cnyPrice = piecePrice / currentExchangeRate;
           return (
@@ -673,6 +678,7 @@ const ProductSettingsPage: React.FC = () => {
             alias: { show: false },
             packPrice: { show: false },
             updatedAt: { show: false },
+            retailPricePerPiece: { show: true },
           },
         }}
         
