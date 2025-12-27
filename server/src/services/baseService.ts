@@ -69,20 +69,32 @@ export class BaseService {
         // Level 0-1 (SUPER_ADMIN, ADMIN) 可以看到所有基地
         // Level 2+ 只能看到关联的基地
         if (userLevel > 1) {
-          // 获取用户关联的基地ID列表
-          const userBases = await prisma.userBase.findMany({
-            where: { userId, isActive: true },
-            select: { baseId: true },
+          // 检查用户是否有全局基地访问权限
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { hasGlobalBaseAccess: true },
           });
           
-          const allowedBaseIds = userBases.map(ub => ub.baseId);
-          
-          if (allowedBaseIds.length === 0) {
-            // 用户没有关联任何基地
-            return { data: [], total: 0 };
+          // 如果有全局基地访问权限，可以访问所有基地
+          if (user?.hasGlobalBaseAccess) {
+            logger.info('用户拥有全局基地访问权限', { userId });
+            // 不添加基地过滤条件，返回所有基地
+          } else {
+            // 获取用户关联的基地ID列表
+            const userBases = await prisma.userBase.findMany({
+              where: { userId, isActive: true },
+              select: { baseId: true },
+            });
+            
+            const allowedBaseIds = userBases.map(ub => ub.baseId);
+            
+            if (allowedBaseIds.length === 0) {
+              // 用户没有关联任何基地
+              return { data: [], total: 0 };
+            }
+            
+            where.id = { in: allowedBaseIds };
           }
-          
-          where.id = { in: allowedBaseIds };
         }
       }
 

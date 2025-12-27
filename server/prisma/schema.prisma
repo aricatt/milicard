@@ -18,6 +18,7 @@ model User {
   isActive               Boolean             @default(true) @map("is_active")
   lastLoginAt            DateTime?           @map("last_login_at")
   defaultBaseId          Int?                @map("default_base_id")
+  hasGlobalBaseAccess    Boolean             @default(false) @map("has_global_base_access")
   createdAt              DateTime            @default(now()) @map("created_at")
   updatedAt              DateTime            @updatedAt @map("updated_at")
   anchorProfits          AnchorProfit[]      @relation("AnchorProfitCreator")
@@ -55,6 +56,7 @@ model User {
   @@index([email])
   @@index([isActive])
   @@index([defaultBaseId])
+  @@index([hasGlobalBaseAccess])
   @@map("users")
 }
 

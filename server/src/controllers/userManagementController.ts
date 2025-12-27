@@ -87,7 +87,7 @@ export class UserManagementController {
    */
   static async createUser(req: Request, res: Response) {
     try {
-      const { username, password, name, email, phone, roleIds, baseIds } = req.body;
+      const { username, password, name, email, phone, roleIds, baseIds, hasGlobalBaseAccess } = req.body;
       const currentUserId = req.user?.id;
 
       // 参数验证
@@ -107,6 +107,7 @@ export class UserManagementController {
         phone,
         roleIds,
         baseIds,
+        hasGlobalBaseAccess,
       });
 
       res.status(201).json({
@@ -136,7 +137,7 @@ export class UserManagementController {
   static async updateUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { name, email, phone, isActive, password, roleIds, baseIds } = req.body;
+      const { name, email, phone, isActive, password, roleIds, baseIds, hasGlobalBaseAccess } = req.body;
       const currentUserId = req.user?.id;
 
       const user = await UserService.updateUser(id, {
@@ -147,6 +148,7 @@ export class UserManagementController {
         password,
         roleIds,
         baseIds,
+        hasGlobalBaseAccess,
         currentUserId, // 传递当前用户ID用于权限验证
       });
 

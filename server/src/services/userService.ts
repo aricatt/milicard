@@ -172,6 +172,7 @@ export class UserService {
       email: user.email,
       phone: user.phone,
       isActive: user.isActive,
+      hasGlobalBaseAccess: user.hasGlobalBaseAccess,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -230,6 +231,7 @@ export class UserService {
       email: user.email,
       phone: user.phone,
       isActive: user.isActive,
+      hasGlobalBaseAccess: user.hasGlobalBaseAccess,
       lastLoginAt: user.lastLoginAt,
       defaultBaseId: user.defaultBaseId,
       createdAt: user.createdAt,
@@ -298,9 +300,10 @@ export class UserService {
     phone?: string;
     roleIds?: string[];
     baseIds?: number[];
+    hasGlobalBaseAccess?: boolean;
     currentUserId?: string; // 当前操作用户ID，用于权限验证
   }) {
-    const { username, password, name, email, phone, roleIds = [], baseIds = [], currentUserId } = data;
+    const { username, password, name, email, phone, roleIds = [], baseIds = [], hasGlobalBaseAccess = false, currentUserId } = data;
 
     // 验证角色和基地分配权限
     if (currentUserId) {
@@ -339,11 +342,17 @@ export class UserService {
         email,
         phone,
         isActive: true,
+        hasGlobalBaseAccess,
       },
     });
 
     // 分配角色
     if (roleIds.length > 0) {
+      // 获取角色信息用于同步到 Casbin
+      const roles = await prisma.role.findMany({
+        where: { id: { in: roleIds } },
+      });
+
       await prisma.userRole.createMany({
         data: roleIds.map((roleId) => ({
           userId: user.id,
@@ -352,10 +361,26 @@ export class UserService {
           isActive: true,
         })),
       });
+
+      // 同步到 Casbin
+      for (const role of roles) {
+        if (hasGlobalBaseAccess) {
+          // 全局基地访问：分配全局角色
+          await casbinService.addRoleForUser(user.id, role.name, '*');
+        } else if (baseIds.length > 0) {
+          // 为每个基地分配角色
+          for (const baseId of baseIds) {
+            await casbinService.addRoleForUser(user.id, role.name, baseId);
+          }
+        } else {
+          // 如果没有基地且未开启全局访问，分配全局角色（向后兼容）
+          await casbinService.addRoleForUser(user.id, role.name, '*');
+        }
+      }
     }
 
-    // 分配基地
-    if (baseIds.length > 0) {
+    // 分配基地（如果开启了全局访问，不需要分配具体基地）
+    if (!hasGlobalBaseAccess && baseIds.length > 0) {
       await prisma.userBase.createMany({
         data: baseIds.map((baseId) => ({
           userId: user.id,
@@ -383,10 +408,11 @@ export class UserService {
       password?: string;
       roleIds?: string[];
       baseIds?: number[];
+      hasGlobalBaseAccess?: boolean;
       currentUserId?: string; // 当前操作用户ID，用于权限验证
     }
   ) {
-    const { name, email, phone, isActive, password, roleIds, baseIds, currentUserId } = data;
+    const { name, email, phone, isActive, password, roleIds, baseIds, hasGlobalBaseAccess, currentUserId } = data;
 
     // 判断是否是用户编辑自己
     const isSelfEdit = currentUserId === id;
@@ -405,6 +431,7 @@ export class UserService {
     const finalRoleIds = isSelfEdit ? undefined : roleIds;
     const finalBaseIds = isSelfEdit ? undefined : baseIds;
     const finalIsActive = isSelfEdit ? undefined : isActive;
+    const finalHasGlobalBaseAccess = isSelfEdit ? undefined : hasGlobalBaseAccess;
 
     // 检查用户是否存在
     const existingUser = await prisma.user.findUnique({
@@ -431,6 +458,7 @@ export class UserService {
     if (email !== undefined) updateData.email = email;
     if (phone !== undefined) updateData.phone = phone;
     if (finalIsActive !== undefined) updateData.isActive = finalIsActive;
+    if (finalHasGlobalBaseAccess !== undefined) updateData.hasGlobalBaseAccess = finalHasGlobalBaseAccess;
     if (password) {
       updateData.passwordHash = await bcrypt.hash(password, 10);
     }
@@ -444,11 +472,17 @@ export class UserService {
     // 更新角色（用户编辑自己时不更新角色）
     if (finalRoleIds !== undefined) {
       // 获取用户关联的基地（用于 Casbin 域）
-      const userBases = await prisma.userBase.findMany({
-        where: { userId: id, isActive: true },
-        select: { baseId: true },
-      });
-      const baseIds = userBases.map(ub => ub.baseId);
+      // 如果开启了全局基地访问，使用 '*'；否则使用实际关联的基地
+      let baseIds: (number | string)[] = [];
+      if (finalHasGlobalBaseAccess) {
+        baseIds = ['*'];
+      } else {
+        const userBases = await prisma.userBase.findMany({
+          where: { userId: id, isActive: true },
+          select: { baseId: true },
+        });
+        baseIds = userBases.map(ub => ub.baseId);
+      }
 
       // 获取现有角色
       const existingRoles = await prisma.userRole.findMany({
@@ -489,12 +523,25 @@ export class UserService {
 
         // 同步到 Casbin
         for (const role of newRoles) {
-          // 为每个基地分配角色
-          for (const baseId of baseIds) {
-            await casbinService.addRoleForUser(id, role.name, baseId);
+          // 先同步角色的权限策略到 Casbin
+          const permissions = Array.isArray(role.permissions) 
+            ? (role.permissions as string[]).filter(p => typeof p === 'string')
+            : [];
+          if (permissions.length > 0) {
+            await casbinService.syncRolePermissions(role.id, role.name, permissions);
           }
-          // 如果没有基地，分配全局角色
-          if (baseIds.length === 0) {
+          
+          // 然后分配角色给用户
+          if (finalHasGlobalBaseAccess) {
+            // 全局基地访问：分配全局角色
+            await casbinService.addRoleForUser(id, role.name, '*');
+          } else if (baseIds.length > 0) {
+            // 为每个基地分配角色
+            for (const baseId of baseIds) {
+              await casbinService.addRoleForUser(id, role.name, baseId);
+            }
+          } else {
+            // 如果没有基地且未开启全局访问，分配全局角色（向后兼容）
             await casbinService.addRoleForUser(id, role.name, '*');
           }
         }
@@ -510,8 +557,9 @@ export class UserService {
         where: { userId: id },
       });
 
-      // 添加新基地关联
-      if (finalBaseIds.length > 0) {
+      // 如果开启了全局基地访问，不需要添加具体基地关联
+      // 否则添加新基地关联
+      if (!finalHasGlobalBaseAccess && finalBaseIds.length > 0) {
         await prisma.userBase.createMany({
           data: finalBaseIds.map(baseId => ({
             userId: id,

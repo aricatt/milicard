@@ -8,6 +8,7 @@ import {
   ProFormText,
   ProFormSelect,
   ProFormSwitch,
+  ProFormDependency,
 } from '@ant-design/pro-components';
 import {
   App,
@@ -40,6 +41,7 @@ interface UserItem {
   email?: string;
   phone?: string;
   isActive: boolean;
+  hasGlobalBaseAccess?: boolean; // 全局基地访问权限
   lastLoginAt?: string;
   createdAt: string;
   roles: { id: string; name: string; description?: string; level?: number }[];
@@ -340,19 +342,30 @@ const UsersPage: React.FC = () => {
       dataIndex: 'bases',
       width: 200,
       search: false,
-      render: (_, record) => (
-        <Space size={[0, 4]} wrap>
-          {record.bases.slice(0, 2).map((base) => (
-            <Tag key={base.id}>{base.name}</Tag>
-          ))}
-          {record.bases.length > 2 && (
-            <Tooltip title={record.bases.map((b) => b.name).join(', ')}>
-              <Tag>+{record.bases.length - 2}</Tag>
-            </Tooltip>
-          )}
-          {record.bases.length === 0 && <Tag>无关联</Tag>}
-        </Space>
-      ),
+      render: (_, record) => {
+        // 如果有全局基地访问权限，显示特殊标签
+        if (record.hasGlobalBaseAccess) {
+          return (
+            <Tag color="gold" icon={<CheckCircleOutlined />}>
+              全局访问
+            </Tag>
+          );
+        }
+        // 否则显示关联的基地列表
+        return (
+          <Space size={[0, 4]} wrap>
+            {record.bases.slice(0, 2).map((base) => (
+              <Tag key={base.id}>{base.name}</Tag>
+            ))}
+            {record.bases.length > 2 && (
+              <Tooltip title={record.bases.map((b) => b.name).join(', ')}>
+                <Tag>+{record.bases.length - 2}</Tag>
+              </Tooltip>
+            )}
+            {record.bases.length === 0 && <Tag>无关联</Tag>}
+          </Space>
+        );
+      },
     },
     {
       title: '状态',
@@ -604,18 +617,35 @@ const UsersPage: React.FC = () => {
             value: role.id,
           }))}
         />
-        <ProFormSelect
-          name="baseIds"
-          label="关联基地"
-          mode="multiple"
-          placeholder="请选择关联基地"
-          initialValue={[]}
-          options={availableBases.map((base) => ({
-            label: `${base.name} (${base.code})`,
-            value: base.id,
-          }))}
-          extra="用户只能访问关联的基地数据"
-        />
+        {/* 全局基地访问权限开关 - 只有 level <= 1 的用户才能设置 */}
+        {currentUserLevel <= 1 && (
+          <ProFormSwitch
+            name="hasGlobalBaseAccess"
+            label="全局基地访问"
+            tooltip="开启后，用户可以访问所有基地，无需单独关联基地"
+            fieldProps={{
+              checkedChildren: "已开启",
+              unCheckedChildren: "已关闭",
+            }}
+          />
+        )}
+        <ProFormDependency name={['hasGlobalBaseAccess']}>
+          {({ hasGlobalBaseAccess }) => (
+            <ProFormSelect
+              name="baseIds"
+              label="关联基地"
+              mode="multiple"
+              placeholder={hasGlobalBaseAccess ? "全局访问已开启，无需选择" : "请选择关联基地"}
+              disabled={hasGlobalBaseAccess}
+              initialValue={[]}
+              options={availableBases.map((base) => ({
+                label: `${base.name} (${base.code})`,
+                value: base.id,
+              }))}
+              extra={hasGlobalBaseAccess ? "全局访问已开启，用户可访问所有基地" : "用户只能访问关联的基地数据"}
+            />
+          )}
+        </ProFormDependency>
       </ModalForm>
 
       {/* 编辑用户弹窗 */}
@@ -636,6 +666,7 @@ const UsersPage: React.FC = () => {
                 phone: currentUser.phone,
                 email: currentUser.email,
                 isActive: currentUser.isActive,
+                hasGlobalBaseAccess: currentUser.hasGlobalBaseAccess || false,
                 roleIds: currentUser.roles.map((r) => r.id),
                 baseIds: currentUser.bases.map((b) => b.id),
               }
@@ -672,17 +703,34 @@ const UsersPage: React.FC = () => {
                 value: role.id,
               }))}
             />
-            <ProFormSelect
-              name="baseIds"
-              label="关联基地"
-              mode="multiple"
-              placeholder="请选择关联基地"
-              options={availableBases.map((base) => ({
-                label: `${base.name} (${base.code})`,
-                value: base.id,
-              }))}
-              extra="用户只能访问关联的基地数据"
-            />
+            {/* 全局基地访问权限开关 - 只有 level <= 1 的用户才能设置 */}
+            {currentUserLevel <= 1 && (
+              <ProFormSwitch
+                name="hasGlobalBaseAccess"
+                label="全局基地访问"
+                tooltip="开启后，用户可以访问所有基地，无需单独关联基地"
+                fieldProps={{
+                  checkedChildren: "已开启",
+                  unCheckedChildren: "已关闭",
+                }}
+              />
+            )}
+            <ProFormDependency name={['hasGlobalBaseAccess']}>
+              {({ hasGlobalBaseAccess }) => (
+                <ProFormSelect
+                  name="baseIds"
+                  label="关联基地"
+                  mode="multiple"
+                  placeholder={hasGlobalBaseAccess ? "全局访问已开启，无需选择" : "请选择关联基地"}
+                  disabled={hasGlobalBaseAccess}
+                  options={availableBases.map((base) => ({
+                    label: `${base.name} (${base.code})`,
+                    value: base.id,
+                  }))}
+                  extra={hasGlobalBaseAccess ? "全局访问已开启，用户可访问所有基地" : "用户只能访问关联的基地数据"}
+                />
+              )}
+            </ProFormDependency>
             <ProFormSwitch name="isActive" label="启用状态" />
           </>
         )}
