@@ -170,6 +170,12 @@ const ProductSettingsPage: React.FC = () => {
   // 以人民币显示金额
   const [showInCNY, setShowInCNY] = useState(false);
   
+  // 人民币输入模式（创建表单）
+  const [createCnyPaymentMode, setCreateCnyPaymentMode] = useState(false);
+  
+  // 人民币输入模式（编辑表单）
+  const [editCnyPaymentMode, setEditCnyPaymentMode] = useState(false);
+  
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
@@ -839,19 +845,27 @@ const ProductSettingsPage: React.FC = () => {
               showIcon
               style={{ marginBottom: 16 }}
               message={
-                <Space>
-                  <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
-                  <InputNumber
-                    value={formExchangeRate}
-                    onChange={(val) => setFormExchangeRate(val || 1)}
-                    min={0.000001}
-                    precision={6}
-                    style={{ width: 150 }}
-                  />
-                  <span>{getCurrencySymbol(currentBase.currency)}</span>
-                  <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
-                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
-                  </Tooltip>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Space>
+                    <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+                    <InputNumber
+                      value={formExchangeRate}
+                      onChange={(val) => setFormExchangeRate(val || 1)}
+                      min={0.000001}
+                      precision={6}
+                      style={{ width: 150 }}
+                    />
+                    <span>{getCurrencySymbol(currentBase.currency)}</span>
+                    <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                      <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                    </Tooltip>
+                  </Space>
+                  <Checkbox
+                    checked={createCnyPaymentMode}
+                    onChange={(e) => setCreateCnyPaymentMode(e.target.checked)}
+                  >
+                    {intl.formatMessage({ id: 'dualCurrency.cnyPaymentMode' })}
+                  </Checkbox>
                 </Space>
               }
             />
@@ -871,6 +885,7 @@ const ProductSettingsPage: React.FC = () => {
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
               addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+              cnyPaymentMode={createCnyPaymentMode}
             />
           </Form.Item>
 
@@ -886,6 +901,7 @@ const ProductSettingsPage: React.FC = () => {
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
               addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
+              cnyPaymentMode={createCnyPaymentMode}
             />
           </Form.Item>
 
@@ -901,6 +917,7 @@ const ProductSettingsPage: React.FC = () => {
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
               addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+              cnyPaymentMode={createCnyPaymentMode}
             />
           </Form.Item>
 
@@ -925,7 +942,7 @@ const ProductSettingsPage: React.FC = () => {
         }}
         confirmLoading={editLoading}
         width={600}
-        destroyOnHidden
+        destroyOnClose={false}
       >
         <Form
           form={editForm}
@@ -957,19 +974,27 @@ const ProductSettingsPage: React.FC = () => {
               showIcon
               style={{ marginBottom: 16 }}
               message={
-                <Space>
-                  <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
-                  <InputNumber
-                    value={formExchangeRate}
-                    onChange={(val) => setFormExchangeRate(val || 1)}
-                    min={0.000001}
-                    precision={6}
-                    style={{ width: 150 }}
-                  />
-                  <span>{getCurrencySymbol(currentBase.currency)}</span>
-                  <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
-                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
-                  </Tooltip>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Space>
+                    <span>{intl.formatMessage({ id: 'dualCurrency.exchangeRateLabel' })}</span>
+                    <InputNumber
+                      value={formExchangeRate}
+                      onChange={(val) => setFormExchangeRate(val || 1)}
+                      min={0.000001}
+                      precision={6}
+                      style={{ width: 150 }}
+                    />
+                    <span>{getCurrencySymbol(currentBase.currency)}</span>
+                    <Tooltip title={intl.formatMessage({ id: 'dualCurrency.exchangeRateTip' })}>
+                      <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                    </Tooltip>
+                  </Space>
+                  <Checkbox
+                    checked={editCnyPaymentMode}
+                    onChange={(e) => setEditCnyPaymentMode(e.target.checked)}
+                  >
+                    {intl.formatMessage({ id: 'dualCurrency.cnyPaymentMode' })}
+                  </Checkbox>
                 </Space>
               }
             />
@@ -989,6 +1014,7 @@ const ProductSettingsPage: React.FC = () => {
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.retailPricePlaceholder' })}
               addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+              cnyPaymentMode={editCnyPaymentMode}
             />
           </Form.Item>
 
@@ -1004,6 +1030,7 @@ const ProductSettingsPage: React.FC = () => {
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
               addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
+              cnyPaymentMode={editCnyPaymentMode}
             />
           </Form.Item>
 
@@ -1019,6 +1046,7 @@ const ProductSettingsPage: React.FC = () => {
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
               addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+              cnyPaymentMode={editCnyPaymentMode}
             />
           </Form.Item>
 

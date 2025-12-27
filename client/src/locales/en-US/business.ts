@@ -1308,6 +1308,7 @@ export default {
   'dualCurrency.exchangeRate': 'Exchange Rate',
   'dualCurrency.exchangeRateLabel': '1¥ =',
   'dualCurrency.exchangeRateTip': 'You can modify the rate to match the actual rate at purchase time',
+  'dualCurrency.cnyPaymentMode': 'Input in CNY',
 
   // Product settings page
   'products.showInCNY': 'Show in CNY',

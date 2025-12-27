@@ -1308,6 +1308,7 @@ export default {
   'dualCurrency.exchangeRate': 'อัตราแลกเปลี่ยน',
   'dualCurrency.exchangeRateLabel': '1¥ =',
   'dualCurrency.exchangeRateTip': 'คุณสามารถแก้ไขอัตราให้ตรงกับอัตราจริงขณะซื้อ',
+  'dualCurrency.cnyPaymentMode': 'ป้อนเป็นหยวน',
 
   // Product settings page
   'products.showInCNY': 'แสดงเป็นหยวน',
