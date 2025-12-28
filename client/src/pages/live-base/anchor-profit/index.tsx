@@ -47,7 +47,7 @@ const AnchorProfitPage: React.FC = () => {
   const { currentBase, currencyRate } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [form] = Form.useForm();
 
   // Excel导入导出Hook
@@ -125,7 +125,18 @@ const AnchorProfitPage: React.FC = () => {
       });
 
       if (result.success && result.data) {
-        setStats(result.data);
+        setStats({
+          totalRecords: result.data.totalRecords || 0,
+          totalGmv: result.data.totalGmv || 0,
+          totalRefund: result.data.totalRefund || 0,
+          totalSales: result.data.totalSales || 0,
+          totalConsumption: result.data.totalConsumption || 0,
+          totalAdSpend: result.data.totalAdSpend || 0,
+          totalPlatformFee: result.data.totalPlatformFee || 0,
+          totalProfit: result.data.totalProfit || 0,
+          avgProfitRate: result.data.avgProfitRate || 0,
+          todayRecords: result.data.todayRecords || 0,
+        });
       }
     } catch (error) {
       console.error('加载统计数据失败:', error);

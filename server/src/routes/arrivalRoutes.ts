@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ArrivalController } from '../controllers/arrivalController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -14,10 +14,10 @@ router.use(authenticateToken);
  */
 
 // 获取到货统计（放在 :recordId 路由之前避免冲突）
-router.get('/:baseId/arrivals/stats', checkPermission('arrival_order', 'read'), ArrivalController.getArrivalStats);
+router.get('/:baseId/arrivals/stats', checkPermission('arrival_order', 'read'), injectDataPermission('arrivalRecord'), filterResponseFields(), ArrivalController.getArrivalStats);
 
 // 获取基地到货记录列表
-router.get('/:baseId/arrivals', checkPermission('arrival_order', 'read'), ArrivalController.getArrivalRecords);
+router.get('/:baseId/arrivals', checkPermission('arrival_order', 'read'), injectDataPermission('arrivalRecord'), filterResponseFields(), ArrivalController.getArrivalRecords);
 
 // 创建到货记录
 router.post('/:baseId/arrivals', checkPermission('arrival_order', 'create'), ArrivalController.createArrivalRecord);

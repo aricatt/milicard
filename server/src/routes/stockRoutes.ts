@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { StockController } from '../controllers/stockController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -9,7 +9,9 @@ const router = Router();
 router.get(
   '/:baseId/real-time-stock/stats',
   authenticateToken,
-  checkPermission('stock', 'read'),
+  checkPermission('inventory', 'read'),
+  injectDataPermission('inventory'),
+  filterResponseFields(),
   StockController.getStockStats
 );
 
@@ -17,7 +19,9 @@ router.get(
 router.get(
   '/:baseId/real-time-stock',
   authenticateToken,
-  checkPermission('stock', 'read'),
+  checkPermission('inventory', 'read'),
+  injectDataPermission('inventory'),
+  filterResponseFields(),
   StockController.getRealTimeStock
 );
 
@@ -25,7 +29,7 @@ router.get(
 router.get(
   '/:baseId/warehouses',
   authenticateToken,
-  checkPermission('stock', 'read'),
+  checkPermission('inventory', 'read'),
   StockController.getWarehouses
 );
 
@@ -33,7 +37,7 @@ router.get(
 router.get(
   '/:baseId/warehouses/:locationId/stock',
   authenticateToken,
-  checkPermission('stock', 'read'),
+  checkPermission('inventory', 'read'),
   StockController.getLocationStock
 );
 
@@ -41,7 +45,7 @@ router.get(
 router.get(
   '/:baseId/stock',
   authenticateToken,
-  checkPermission('stock', 'read'),
+  checkPermission('inventory', 'read'),
   StockController.getGoodsStock
 );
 
@@ -49,7 +53,7 @@ router.get(
 router.post(
   '/:baseId/recalculate-costs',
   authenticateToken,
-  checkPermission('stock', 'write'),
+  checkPermission('inventory', 'update'),
   StockController.recalculateAllCosts
 );
 

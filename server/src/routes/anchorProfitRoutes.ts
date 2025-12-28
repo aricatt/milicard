@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AnchorProfitController } from '../controllers/anchorProfitController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -9,7 +9,7 @@ const router = Router();
 router.use(authenticateToken);
 
 // 获取统计数据（放在前面避免路由冲突）
-router.get('/:baseId/anchor-profits/stats', checkPermission('anchor_profit', 'read'), AnchorProfitController.getStats);
+router.get('/:baseId/anchor-profits/stats', checkPermission('anchor_profit', 'read'), injectDataPermission('anchorProfit'), filterResponseFields(), AnchorProfitController.getStats);
 
 // 获取未关联利润的消耗记录
 router.get('/:baseId/anchor-profits/unlinked-consumptions', checkPermission('anchor_profit', 'read'), AnchorProfitController.getUnlinkedConsumptions);
@@ -18,7 +18,7 @@ router.get('/:baseId/anchor-profits/unlinked-consumptions', checkPermission('anc
 router.get('/:baseId/anchor-profits/consumption-amount', checkPermission('anchor_profit', 'read'), AnchorProfitController.getConsumptionAmount);
 
 // 获取主播利润列表
-router.get('/:baseId/anchor-profits', checkPermission('anchor_profit', 'read'), AnchorProfitController.getAnchorProfits);
+router.get('/:baseId/anchor-profits', checkPermission('anchor_profit', 'read'), injectDataPermission('anchorProfit'), filterResponseFields(), AnchorProfitController.getAnchorProfits);
 
 // 创建主播利润记录
 router.post('/:baseId/anchor-profits', checkPermission('anchor_profit', 'create'), AnchorProfitController.createAnchorProfit);

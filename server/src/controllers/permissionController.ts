@@ -18,7 +18,7 @@ const MODULE_NAMES: Record<string, string> = {
   goods: '全局商品',
   category: '商品品类',
   goods_local_setting: '基地商品设置',
-  inventory: '库存管理',
+  inventory: '实时库存',
   purchase_order: '采购管理',
   arrival_order: '到货管理',
   stock_transfer: '调货管理',

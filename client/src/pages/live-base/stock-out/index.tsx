@@ -242,8 +242,12 @@ const StockOutPage: React.FC = () => {
     if (!currentBase) return;
     try {
       const result = await request(`/api/v1/bases/${currentBase.id}/stock-outs/stats`);
-      if (result.success) {
-        setStats(result.data);
+      if (result.success && result.data) {
+        setStats({
+          total: result.data.total || 0,
+          byType: result.data.byType || [],
+          byLocation: result.data.byLocation || [],
+        });
       }
     } catch (error) {
       console.error('获取统计数据失败:', error);

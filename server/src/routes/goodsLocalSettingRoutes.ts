@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { GoodsLocalSettingController } from '../controllers/goodsLocalSettingController'
 import { authenticateToken } from '../middleware/authMiddleware'
+import { injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware'
 
 const router = Router({ mergeParams: true })
 
@@ -8,9 +9,9 @@ const router = Router({ mergeParams: true })
 router.use(authenticateToken)
 
 // 基地商品设置路由
-router.get('/', GoodsLocalSettingController.list)
-router.get('/available', GoodsLocalSettingController.getAvailableGoods)
-router.get('/:id', GoodsLocalSettingController.getById)
+router.get('/', injectDataPermission('goodsLocalSetting'), filterResponseFields(), GoodsLocalSettingController.list)
+router.get('/available', injectDataPermission('goodsLocalSetting'), filterResponseFields(), GoodsLocalSettingController.getAvailableGoods)
+router.get('/:id', injectDataPermission('goodsLocalSetting'), filterResponseFields(), GoodsLocalSettingController.getById)
 router.post('/', GoodsLocalSettingController.create)
 router.put('/:id', GoodsLocalSettingController.update)
 router.delete('/:id', GoodsLocalSettingController.delete)

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PayableController } from '../controllers/payableController';
 import { authenticateToken } from '../middleware/authMiddleware';
+import { injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -65,7 +66,7 @@ router.use(authenticateToken);
  *       200:
  *         description: 获取成功
  */
-router.get('/:baseId/payables', PayableController.getPayableList);
+router.get('/:baseId/payables', injectDataPermission('payable'), filterResponseFields(), PayableController.getPayableList);
 
 /**
  * @swagger
@@ -92,7 +93,7 @@ router.get('/:baseId/payables', PayableController.getPayableList);
  *       200:
  *         description: 获取成功
  */
-router.get('/:baseId/payables/:id', PayableController.getPayableDetail);
+router.get('/:baseId/payables/:id', injectDataPermission('payable'), filterResponseFields(), PayableController.getPayableDetail);
 
 /**
  * @swagger

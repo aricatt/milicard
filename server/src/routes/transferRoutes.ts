@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { TransferController } from '../controllers/transferController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -14,13 +14,13 @@ router.use(authenticateToken);
  */
 
 // 获取调货统计（放在前面避免路由冲突）
-router.get('/:baseId/transfers/stats', checkPermission('stock_transfer', 'read'), TransferController.getTransferStats);
+router.get('/:baseId/transfers/stats', checkPermission('stock_transfer', 'read'), injectDataPermission('transferRecord'), filterResponseFields(), TransferController.getTransferStats);
 
 // 导入调货记录
 router.post('/:baseId/transfers/import', checkPermission('stock_transfer', 'create'), TransferController.importTransferRecord);
 
 // 获取基地调货记录列表
-router.get('/:baseId/transfers', checkPermission('stock_transfer', 'read'), TransferController.getTransferRecords);
+router.get('/:baseId/transfers', checkPermission('stock_transfer', 'read'), injectDataPermission('transferRecord'), filterResponseFields(), TransferController.getTransferRecords);
 
 // 创建调货记录
 router.post('/:baseId/transfers', checkPermission('stock_transfer', 'create'), TransferController.createTransferRecord);

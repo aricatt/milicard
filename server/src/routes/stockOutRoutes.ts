@@ -4,7 +4,7 @@
 import { Router } from 'express';
 import { StockOutController } from '../controllers/stockOutController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -12,6 +12,8 @@ const router = Router();
 router.get('/:baseId/stock-outs/stats',
   authenticateToken,
   checkPermission('stock_out', 'read'),
+  injectDataPermission('stockOut'),
+  filterResponseFields(),
   StockOutController.getStats
 );
 
@@ -19,6 +21,8 @@ router.get('/:baseId/stock-outs/stats',
 router.get('/:baseId/stock-outs',
   authenticateToken,
   checkPermission('stock_out', 'read'),
+  injectDataPermission('stockOut'),
+  filterResponseFields(),
   StockOutController.getList
 );
 
@@ -26,6 +30,8 @@ router.get('/:baseId/stock-outs',
 router.get('/:baseId/stock-outs/:id',
   authenticateToken,
   checkPermission('stock_out', 'read'),
+  injectDataPermission('stockOut'),
+  filterResponseFields(),
   StockOutController.getById
 );
 
