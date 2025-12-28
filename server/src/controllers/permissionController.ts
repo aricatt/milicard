@@ -28,6 +28,8 @@ const MODULE_NAMES: Record<string, string> = {
   receivable: '应收管理',
   point: '点位管理',
   point_order: '点位订单',
+  point_inventory: '点位库存',
+  location_profit: '点位利润',
   translation: '翻译管理',
   currency_rate: '货币汇率',
 }

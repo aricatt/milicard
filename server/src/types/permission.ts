@@ -54,6 +54,8 @@ export enum ResourceModule {
   // 点位订单系统（新增）
   POINT = 'point',              // 点位管理
   POINT_ORDER = 'point_order',  // 点位订单
+  POINT_INVENTORY = 'point_inventory', // 点位库存
+  LOCATION_PROFIT = 'location_profit', // 点位利润
   
   // 其他
   TRANSLATION = 'translation'

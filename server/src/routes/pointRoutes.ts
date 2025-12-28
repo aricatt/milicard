@@ -47,7 +47,7 @@ router.delete('/:baseId/points/:pointId',
 // 点位库存和订单
 router.get('/:baseId/points/:pointId/inventory', 
   authenticateToken, 
-  checkPermission('pointInventory', 'read'),
+  checkPermission('point_inventory', 'read'),
   injectDataPermission('pointInventory'),
   filterResponseFields(),
   PointController.getInventory
@@ -55,7 +55,7 @@ router.get('/:baseId/points/:pointId/inventory',
 
 router.get('/:baseId/points/:pointId/orders', 
   authenticateToken, 
-  checkPermission('pointOrder', 'read'),
+  checkPermission('point_order', 'read'),
   injectDataPermission('pointOrder'),
   filterResponseFields(),
   PointController.getOrders
