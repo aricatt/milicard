@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { PurchaseBaseController } from '../controllers/purchaseBaseController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -14,13 +14,13 @@ const router = Router();
  * 获取基地采购统计
  * GET /api/v1/bases/{baseId}/purchase-orders/stats
  */
-router.get('/:baseId/purchase-orders/stats', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getBasePurchaseStats);
+router.get('/:baseId/purchase-orders/stats', authenticateToken, checkPermission('purchase_order', 'read'), injectDataPermission('purchaseOrder'), filterResponseFields(), PurchaseBaseController.getBasePurchaseStats);
 
 /**
  * 获取基地的采购订单列表
  * GET /api/v1/bases/{baseId}/purchase-orders
  */
-router.get('/:baseId/purchase-orders', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getBasePurchaseOrderList);
+router.get('/:baseId/purchase-orders', authenticateToken, checkPermission('purchase_order', 'read'), injectDataPermission('purchaseOrder'), filterResponseFields(), PurchaseBaseController.getBasePurchaseOrderList);
 
 /**
  * 创建采购订单
@@ -68,7 +68,7 @@ router.delete('/:baseId/suppliers/:supplierId', authenticateToken, checkPermissi
  * 获取采购订单物流信息（所有物流记录）
  * GET /api/v1/bases/{baseId}/purchase-orders/:orderId/logistics
  */
-router.get('/:baseId/purchase-orders/:orderId/logistics', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getPurchaseOrderLogistics);
+router.get('/:baseId/purchase-orders/:orderId/logistics', authenticateToken, checkPermission('purchase_order', 'read'), injectDataPermission('purchaseOrder'), filterResponseFields(), PurchaseBaseController.getPurchaseOrderLogistics);
 
 /**
  * 添加物流单号
