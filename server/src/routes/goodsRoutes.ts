@@ -4,7 +4,8 @@ import { authenticateToken } from '../middleware/authMiddleware'
 import { 
   requirePermission, 
   requireAllPermissions,
-  applyDataPermission 
+  applyDataPermission,
+  filterResponseFields
 } from '../middleware/permissionMiddleware'
 import { ResourceModule, PermissionAction } from '../types/permission'
 import { validateRequest, createGoodsSchema, updateGoodsSchema, goodsQuerySchema } from '../validators/goodsValidators'
@@ -23,6 +24,7 @@ router.get('/',
     action: PermissionAction.READ
   }),
   applyDataPermission(ResourceModule.GOODS, PermissionAction.READ),
+  filterResponseFields(),
   validateRequest(goodsQuerySchema, 'query'),
   GoodsController.getGoodsList
 )
@@ -38,6 +40,8 @@ router.get('/search',
     resource: ResourceModule.GOODS,
     action: PermissionAction.READ
   }),
+  applyDataPermission(ResourceModule.GOODS, PermissionAction.READ),
+  filterResponseFields(),
   GoodsController.searchGoods
 )
 
@@ -53,6 +57,8 @@ router.get('/:id',
     action: PermissionAction.READ,
     allowOwner: true
   }),
+  applyDataPermission(ResourceModule.GOODS, PermissionAction.READ),
+  filterResponseFields(),
   GoodsController.getGoodsById
 )
 

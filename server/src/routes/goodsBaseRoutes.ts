@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { GoodsController } from '../controllers/goodsController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -14,19 +14,19 @@ const router = Router();
  * 获取基地商品统计
  * GET /api/v1/bases/:baseId/goods/stats
  */
-router.get('/:baseId/goods/stats', authenticateToken, checkPermission('goods', 'read'), GoodsController.getGoodsStats);
+router.get('/:baseId/goods/stats', authenticateToken, checkPermission('goods', 'read'), injectDataPermission('goods'), filterResponseFields(), GoodsController.getGoodsStats);
 
 /**
  * 获取基地商品列表
  * GET /api/v1/bases/:baseId/goods
  */
-router.get('/:baseId/goods', authenticateToken, checkPermission('goods', 'read'), GoodsController.getBaseGoods);
+router.get('/:baseId/goods', authenticateToken, checkPermission('goods', 'read'), injectDataPermission('goods'), filterResponseFields(), GoodsController.getBaseGoods);
 
 /**
  * 获取商品详情
  * GET /api/v1/bases/:baseId/goods/:goodsId
  */
-router.get('/:baseId/goods/:goodsId', authenticateToken, checkPermission('goods', 'read'), GoodsController.getGoodsById);
+router.get('/:baseId/goods/:goodsId', authenticateToken, checkPermission('goods', 'read'), injectDataPermission('goods'), filterResponseFields(), GoodsController.getGoodsById);
 
 /**
  * 创建基地商品

@@ -184,6 +184,14 @@ export const injectDataPermission = (resource: string) => {
         resource
       )
 
+      // 调试日志
+      logger.debug('injectDataPermission - 字段权限', {
+        resource,
+        roles,
+        readable: fieldPermissions.readable,
+        writable: fieldPermissions.writable
+      })
+
       // 注入到请求对象
       req.permissionContext = {
         userId,
@@ -653,12 +661,34 @@ export const filterResponseFields = () => {
         return originalJson(body)
       }
 
+      // 调试日志
+      logger.debug('字段权限过滤', {
+        readable: fieldPermissions.readable,
+        url: req.url,
+        method: req.method
+      })
+
       // 过滤响应数据
-      if (body && body.success && body.data) {
-        if (Array.isArray(body.data)) {
+      if (body) {
+        // 处理标准响应格式：{ success: true, data: ... }
+        if (body.success && body.data) {
+          if (Array.isArray(body.data)) {
+            body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
+          } else if (typeof body.data === 'object') {
+            body.data = filterObject(body.data, fieldPermissions.readable)
+          }
+        }
+        // 处理分页响应格式：{ data: [...], pagination: {...} }
+        else if (body.data && Array.isArray(body.data) && body.pagination) {
           body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
-        } else if (typeof body.data === 'object') {
-          body.data = filterObject(body.data, fieldPermissions.readable)
+        }
+        // 处理直接数组响应：[...]
+        else if (Array.isArray(body)) {
+          return originalJson(body.map((item: any) => filterObject(item, fieldPermissions.readable)))
+        }
+        // 处理直接对象响应：{...}
+        else if (typeof body === 'object' && !body.success && !body.data) {
+          return originalJson(filterObject(body, fieldPermissions.readable))
         }
       }
 

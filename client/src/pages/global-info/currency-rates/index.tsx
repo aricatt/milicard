@@ -66,31 +66,21 @@ const CurrencyRatesPage: React.FC = () => {
 
   const fetchCurrencyRates = async (params: any) => {
     try {
-      const response = await request('/api/v1/currency-rates/with-live-rates', {
+      // 使用管理接口（支持字段权限过滤），而不是全局组件接口
+      const response = await request('/api/v1/currency-rates/', {
         method: 'GET',
+        params: {
+          page: params.current || 1,
+          pageSize: params.pageSize || 20,
+          search: params.currencyCode || params.currencyName,
+          isActive: params.isActive,
+        },
       });
       
-      // 前端过滤
-      let data = response.data || [];
-      if (params.currencyCode) {
-        data = data.filter((item: CurrencyRate) => 
-          item.currencyCode.toLowerCase().includes(params.currencyCode.toLowerCase())
-        );
-      }
-      if (params.currencyName) {
-        data = data.filter((item: CurrencyRate) => 
-          item.currencyName?.toLowerCase().includes(params.currencyName.toLowerCase())
-        );
-      }
-      if (params.isActive !== undefined && params.isActive !== '') {
-        const isActive = params.isActive === 'true';
-        data = data.filter((item: CurrencyRate) => item.isActive === isActive);
-      }
-      
       return {
-        data,
-        success: true,
-        total: data.length,
+        data: response.data || [],
+        success: response.success,
+        total: response.pagination?.total || 0,
       };
     } catch (error) {
       message.error(intl.formatMessage({ id: 'currencyRates.message.fetchFailed' }));
