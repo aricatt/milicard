@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { LocationBaseController } from '../controllers/locationBaseController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -12,19 +12,19 @@ router.use(authenticateToken);
  * 获取基地位置统计（放在前面避免路由冲突）
  * GET /api/v1/bases/{baseId}/locations/stats
  */
-router.get('/:baseId/locations/stats', checkPermission('location', 'read'), LocationBaseController.getBaseLocationStats);
+router.get('/:baseId/locations/stats', checkPermission('location', 'read'), injectDataPermission('location'), filterResponseFields(), LocationBaseController.getBaseLocationStats);
 
 /**
  * 获取基地的位置列表
  * GET /api/v1/bases/{baseId}/locations
  */
-router.get('/:baseId/locations', checkPermission('location', 'read'), LocationBaseController.getBaseLocationList);
+router.get('/:baseId/locations', checkPermission('location', 'read'), injectDataPermission('location'), filterResponseFields(), LocationBaseController.getBaseLocationList);
 
 /**
  * 获取位置详情
  * GET /api/v1/bases/{baseId}/locations/{locationId}
  */
-router.get('/:baseId/locations/:locationId', checkPermission('location', 'read'), LocationBaseController.getLocationById);
+router.get('/:baseId/locations/:locationId', checkPermission('location', 'read'), injectDataPermission('location'), filterResponseFields(), LocationBaseController.getLocationById);
 
 /**
  * 创建位置

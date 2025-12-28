@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { BaseController } from '../controllers/baseController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkSystemPermission } from '../middleware/permissionMiddleware';
+import { checkSystemPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -48,7 +48,7 @@ router.use(authenticateToken);
  *         description: 权限不足
  */
 // 基地列表对所有登录用户开放（用于基地选择）
-router.get('/', BaseController.getBaseList);
+router.get('/', injectDataPermission('base'), filterResponseFields(), BaseController.getBaseList);
 
 /**
  * @swagger
@@ -72,7 +72,7 @@ router.get('/', BaseController.getBaseList);
  *         description: 基地不存在
  */
 // 基地详情对所有登录用户开放
-router.get('/:id', BaseController.getBaseById);
+router.get('/:id', injectDataPermission('base'), filterResponseFields(), BaseController.getBaseById);
 
 /**
  * @swagger

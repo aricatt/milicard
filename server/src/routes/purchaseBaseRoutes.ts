@@ -44,7 +44,7 @@ router.post('/:baseId/purchase-orders/import', authenticateToken, checkPermissio
  * 获取基地供应商列表
  * GET /api/v1/bases/{baseId}/suppliers
  */
-router.get('/:baseId/suppliers', authenticateToken, checkPermission('supplier', 'read'), PurchaseBaseController.getBaseSuppliers);
+router.get('/:baseId/suppliers', authenticateToken, checkPermission('supplier', 'read'), injectDataPermission('supplier'), filterResponseFields(), PurchaseBaseController.getBaseSuppliers);
 
 /**
  * 创建基地供应商
