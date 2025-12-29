@@ -47,7 +47,7 @@ export class CurrencyRateService {
       where.isActive = isActive;
     }
 
-    const [data, total] = await Promise.all([
+    const [data, total, liveRates] = await Promise.all([
       prisma.currencyRate.findMany({
         where,
         skip,
@@ -55,10 +55,18 @@ export class CurrencyRateService {
         orderBy: { currencyCode: 'asc' },
       }),
       prisma.currencyRate.count({ where }),
+      this.getLiveRates(),
     ]);
 
+    // 合并实时汇率数据
+    const dataWithLiveRates = data.map(rate => ({
+      ...rate,
+      fixedRate: Number(rate.fixedRate),
+      liveRate: liveRates[rate.currencyCode] || null,
+    }));
+
     return {
-      data,
+      data: dataWithLiveRates,
       pagination: {
         current: page,
         pageSize,
@@ -71,9 +79,22 @@ export class CurrencyRateService {
    * 获取单个货币汇率
    */
   static async getById(id: number) {
-    return prisma.currencyRate.findUnique({
-      where: { id },
-    });
+    const [rate, liveRates] = await Promise.all([
+      prisma.currencyRate.findUnique({
+        where: { id },
+      }),
+      this.getLiveRates(),
+    ]);
+
+    if (!rate) {
+      return null;
+    }
+
+    return {
+      ...rate,
+      fixedRate: Number(rate.fixedRate),
+      liveRate: liveRates[rate.currencyCode] || null,
+    };
   }
 
   /**
