@@ -22,13 +22,18 @@ import {
   TeamOutlined,
   ExclamationCircleOutlined,
   InfoCircleOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  ExportOutlined,
+  ImportOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import styles from './index.less';
+import { usePersonnelExcel } from './usePersonnelExcel';
+import ImportModal from '@/components/ImportModal';
 
 const { Option } = Select;
 
@@ -96,6 +101,21 @@ const PersonnelManagement: React.FC = () => {
   
   // 运营人员列表（用于下拉选择）
   const [operators, setOperators] = useState<Personnel[]>([]);
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = usePersonnelExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => actionRef.current?.reload(),
+  });
 
   /**
    * 获取人员数据
@@ -622,6 +642,27 @@ const PersonnelManagement: React.FC = () => {
         // 工具栏按钮
         toolBarRender={() => [
           <Button
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            {intl.formatMessage({ id: 'button.import' })}
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            {intl.formatMessage({ id: 'button.export' })}
+          </Button>,
+          <Button
             key="create"
             type="primary"
             icon={<PlusOutlined />}
@@ -856,6 +897,27 @@ const PersonnelManagement: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 导入Excel模态框 */}
+      <ImportModal
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        loading={importLoading}
+        progress={importProgress}
+        title="导入人员"
+        width={700}
+        fields={[
+          { field: '人员编号', required: false, description: '留空则系统自动生成', example: '' },
+          { field: '姓名', required: true, description: '人员姓名（基地内唯一）', example: '张三' },
+          { field: '角色', required: true, description: '主播/仓管/运营', example: '主播' },
+          { field: '对应运营', required: false, description: '主播对应的运营人员姓名', example: '李四' },
+          { field: '联系电话', required: false, description: '联系电话', example: '13800138000' },
+          { field: '邮箱', required: false, description: '电子邮箱', example: 'test@example.com' },
+          { field: '状态', required: false, description: '启用/禁用，默认启用', example: '启用' },
+          { field: '备注', required: false, description: '备注信息', example: '' },
+        ]}
+      />
     </PageContainer>
   );
 };
