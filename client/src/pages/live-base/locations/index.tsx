@@ -24,12 +24,17 @@ import {
   DesktopOutlined,
   ExclamationCircleOutlined,
   InfoCircleOutlined,
-  WarningOutlined
+  WarningOutlined,
+  ImportOutlined,
+  ExportOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { useBase } from '@/contexts/BaseContext';
 import { useIntl } from '@umijs/max';
+import ImportModal from '@/components/ImportModal';
+import { useLocationExcel } from './useLocationExcel';
 import styles from './index.less';
 
 const { TextArea } = Input;
@@ -102,6 +107,19 @@ const LocationManagement: React.FC = () => {
   // 表单实例
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
+
+  // Excel 导入导出
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useLocationExcel(currentBase?.id, () => {
+    actionRef.current?.reload();
+  });
 
   /**
    * 获取位置数据
@@ -670,6 +688,27 @@ const LocationManagement: React.FC = () => {
         // 工具栏按钮
         toolBarRender={() => [
           <Button
+            key="download"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            下载模板
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            导入
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            导出
+          </Button>,
+          <Button
             key="create"
             type="primary"
             icon={<PlusOutlined />}
@@ -879,6 +918,26 @@ const LocationManagement: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* 导入 Excel 模态框 */}
+      <ImportModal
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        loading={importLoading}
+        progress={importProgress}
+        title="导入直播间/仓库"
+        width={700}
+        fields={[
+          { field: '地点编号', required: false, description: '留空则系统自动生成', example: '' },
+          { field: '地点名称', required: true, description: '地点名称（基地内唯一）', example: '总仓库' },
+          { field: '地点类型', required: true, description: '总仓库/仓库/直播间', example: '总仓库' },
+          { field: '联系人', required: false, description: '联系人姓名', example: '张三' },
+          { field: '联系电话', required: false, description: '联系电话', example: '13800138000' },
+          { field: '地址', required: false, description: '地点地址', example: '越南胡志明市第一郡' },
+          { field: '备注', required: false, description: '备注信息', example: '' },
+        ]}
+      />
     </PageContainer>
   );
 };
