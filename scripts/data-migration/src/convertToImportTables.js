@@ -52,7 +52,7 @@ async function convertToImportTables() {
 
     // 1. 提取商品品类
     console.log('\n[步骤 2/11] 提取商品品类...');
-    const categories = extractCategories(skuRecords);
+    const categories = extractCategories(skuRecords, purchaseRecords);
     saveCSV('01_商品品类导入表.csv', categories);
     console.log(`  ✓ 提取 ${categories.length} 个品类`);
 
@@ -64,7 +64,7 @@ async function convertToImportTables() {
 
     // 3. 提取全局商品
     console.log('\n[步骤 4/11] 提取全局商品...');
-    const globalGoods = extractGlobalGoods(skuRecords);
+    const globalGoods = extractGlobalGoods(skuRecords, purchaseRecords);
     saveCSV('03_全局商品导入表.csv', globalGoods);
     console.log(`  ✓ 提取 ${globalGoods.length} 个商品`);
 
@@ -82,19 +82,19 @@ async function convertToImportTables() {
 
     // 6. 生成基地级商品设置（暂时为空，需要手动设置价格）
     console.log('\n[步骤 7/11] 生成基地级商品设置模板...');
-    const goodsSettings = generateGoodsSettingsTemplate(skuRecords);
+    const goodsSettings = generateGoodsSettingsTemplate(skuRecords, purchaseRecords);
     saveCSV('06_基地级商品设置导入表.csv', goodsSettings);
     console.log(`  ✓ 生成 ${goodsSettings.length} 条商品设置模板（需手动填写价格）`);
 
     // 7. 转换采购订单
     console.log('\n[步骤 8/11] 转换采购订单...');
-    const purchases = convertPurchaseOrders(purchaseRecords);
+    const { orders: purchases, orderCodeMap } = convertPurchaseOrders(purchaseRecords);
     saveCSV('07_采购订单导入表.csv', purchases);
     console.log(`  ✓ 转换 ${purchases.length} 条采购订单`);
 
     // 8. 转换到货记录
     console.log('\n[步骤 9/11] 转换到货记录...');
-    const arrivals = convertArrivalRecords(arrivalRecords);
+    const arrivals = convertArrivalRecords(arrivalRecords, purchaseRecords, orderCodeMap);
     saveCSV('08_到货记录导入表.csv', arrivals);
     console.log(`  ✓ 转换 ${arrivals.length} 条到货记录`);
 
@@ -141,18 +141,41 @@ async function convertToImportTables() {
 
 /**
  * 提取商品品类
- * 从品类字段中提取，分离中英文名称
+ * 从SKU记录和采购记录中提取
  */
-function extractCategories(skuRecords) {
+function extractCategories(skuRecords, purchaseRecords) {
   const categoryMap = new Map();
 
+  // 1. 从SKU记录中提取
   skuRecords.forEach(record => {
     const values = Object.values(record);
     const categoryRaw = values[3] || ''; // 品类字段
     
     if (!categoryRaw) return;
 
-    // 分离中英文：格式如 "Card/卡牌" 或 "Thẻ hộp/卡砖"
+    // 分离中英文
+    const parts = categoryRaw.split('/');
+    const englishName = parts[0]?.trim() || '';
+    const chineseName = parts[1]?.trim() || parts[0]?.trim() || '';
+
+    if (chineseName && !categoryMap.has(chineseName)) {
+      categoryMap.set(chineseName, {
+        '品类编码': '',
+        '品类名称': chineseName,
+        '描述': englishName || '',
+        '排序': '',
+      });
+    }
+  });
+
+  // 2. 从采购记录中提取（补充SKU中没有的品类）
+  purchaseRecords.forEach(record => {
+    const values = Object.values(record);
+    const categoryRaw = values[2]?.trim() || ''; // 采购品类
+    
+    if (!categoryRaw) return;
+
+    // 分离中英文
     const parts = categoryRaw.split('/');
     const englishName = parts[0]?.trim() || '';
     const chineseName = parts[1]?.trim() || parts[0]?.trim() || '';
@@ -220,10 +243,12 @@ function extractSuppliers(purchaseRecords, skuRecords) {
 
 /**
  * 提取全局商品
+ * 从SKU记录和采购记录中提取
  */
-function extractGlobalGoods(skuRecords) {
-  const goods = [];
+function extractGlobalGoods(skuRecords, purchaseRecords) {
+  const goodsMap = new Map();
 
+  // 1. 从SKU记录中提取
   skuRecords.forEach(record => {
     const values = Object.values(record);
     
@@ -236,21 +261,77 @@ function extractGlobalGoods(skuRecords) {
     const categoryName = categoryParts[1]?.trim() || categoryParts[0]?.trim() || '';
 
     const nameVi = values[0]?.trim() || '';
-    goods.push({
-      '商品编码': '', // 留空，老数据编码格式与系统不一致，系统会自动生成
-      '品类': categoryName,
-      '商品名称': values[1]?.trim() || '', // 中文名称
-      '英文名称': '',
-      '泰语名称': '',
-      '越南语名称': nameVi,
-      '厂家名称': values[4]?.trim() || '',
-      '多少盒1箱': values[5]?.trim() || '1',
-      '多少包1盒': values[6]?.trim() || '1',
-      '描述': '',
-    });
+    const nameCn = values[1]?.trim() || '';
+    
+    // 如果中文名称为空，使用越南语名称作为商品名称
+    const goodsName = nameCn || nameVi;
+    
+    // 跳过没有任何名称的记录
+    if (!goodsName) return;
+    
+    // 使用品类+商品名称作为唯一键
+    const key = `${categoryName}|${goodsName}`;
+    if (!goodsMap.has(key)) {
+      goodsMap.set(key, {
+        '商品编码': '', // 留空，老数据编码格式与系统不一致，系统会自动生成
+        '品类': categoryName,
+        '商品名称': goodsName,
+        '英文名称': '',
+        '泰语名称': '',
+        '越南语名称': nameVi,
+        '厂家名称': values[4]?.trim() || '',
+        '多少盒1箱': values[5]?.trim() || '1',
+        '多少包1盒': values[6]?.trim() || '1',
+        '描述': '',
+      });
+    }
   });
 
-  return goods;
+  // 2. 从采购记录中提取（补充SKU中没有的商品）
+  purchaseRecords.forEach(record => {
+    const values = Object.values(record);
+    
+    // 提取商品信息
+    const categoryRaw = values[2]?.trim() || ''; // 采购品类
+    const manufacturer = values[3]?.trim() || ''; // 厂商
+    const productName = values[4]?.trim() || ''; // 产品名称
+    const packsPerBox = values[7]?.trim() || '1'; // 产品盒数（一箱多少盒）
+    
+    // 分离品类中英文
+    const categoryParts = categoryRaw.split('/');
+    const categoryName = categoryParts[1]?.trim() || categoryParts[0]?.trim() || '';
+    
+    // 商品名称优先使用产品名称，其次是厂商名
+    const goodsName = productName || manufacturer || '';
+    
+    // 跳过没有商品名称的记录
+    if (!goodsName) return;
+    
+    // 使用品类+商品名称作为唯一键
+    const key = `${categoryName}|${goodsName}`;
+    
+    // 确保盒规至少为1
+    let finalPacksPerBox = parseInt(packsPerBox) || 1;
+    if (finalPacksPerBox < 1) finalPacksPerBox = 1;
+    
+    // 如果该商品不在SKU中，添加到商品列表
+    if (!goodsMap.has(key)) {
+      goodsMap.set(key, {
+        '商品编码': '',
+        '品类': categoryName,
+        '商品名称': goodsName,
+        '英文名称': '',
+        '泰语名称': '',
+        '越南语名称': '',
+        '厂家名称': manufacturer,
+        '多少盒1箱': finalPacksPerBox.toString(),
+        '多少包1盒': '1',
+        '描述': '从采购记录补充',
+      });
+    }
+  });
+
+  return Array.from(goodsMap.values());
 }
 
 /**
@@ -390,10 +471,12 @@ function extractPersonnel(personnelRecords, stockoutRecords, transferRecords, in
 
 /**
  * 生成基地级商品设置模板
+ * 从SKU记录和采购记录中提取
  */
-function generateGoodsSettingsTemplate(skuRecords) {
-  const settings = [];
+function generateGoodsSettingsTemplate(skuRecords, purchaseRecords) {
+  const settingsMap = new Map();
 
+  // 1. 从SKU记录中提取
   skuRecords.forEach(record => {
     const values = Object.values(record);
     const skuCode = values[2]?.trim();
@@ -404,27 +487,88 @@ function generateGoodsSettingsTemplate(skuRecords) {
     const categoryParts = categoryRaw.split('/');
     const categoryName = categoryParts[1]?.trim() || categoryParts[0]?.trim() || '';
 
-    settings.push({
-      '商品编号': '', // 留空，老数据编码格式与系统不一致，通过品类+商品名称匹配
-      '品类': categoryName,
-      '商品名称': values[1]?.trim() || '',
-      '商品别名': '',
-      '零售价': '', // 需要手动填写，格式：[VND]22356
-      '采购价': '', // 需要手动填写
-    });
+    const nameVi = values[0]?.trim() || '';
+    const nameCn = values[1]?.trim() || '';
+    
+    // 如果中文名称为空，使用越南语名称作为商品名称
+    const goodsName = nameCn || nameVi;
+    
+    // 跳过没有任何名称的记录
+    if (!goodsName) return;
+
+    // 使用品类+商品名称作为唯一键
+    const key = `${categoryName}|${goodsName}`;
+    if (!settingsMap.has(key)) {
+      settingsMap.set(key, {
+        '商品编号': '', // 留空，老数据编码格式与系统不一致，通过品类+商品名称匹配
+        '品类': categoryName,
+        '商品名称': goodsName,
+        '商品别名': '',
+        '零售价(一箱)': '', // 需要手动填写，格式：[VND]22356
+        '采购价(一箱)': '', // 需要手动填写
+      });
+    }
   });
 
-  return settings;
+  // 2. 从采购记录中提取（补充SKU中没有的商品）
+  purchaseRecords.forEach(record => {
+    const values = Object.values(record);
+    
+    // 提取商品信息
+    const categoryRaw = values[2]?.trim() || ''; // 采购品类
+    const manufacturer = values[3]?.trim() || ''; // 厂商
+    const productName = values[4]?.trim() || ''; // 产品名称
+    
+    // 分离品类中英文
+    const categoryParts = categoryRaw.split('/');
+    const categoryName = categoryParts[1]?.trim() || categoryParts[0]?.trim() || '';
+    
+    // 商品名称优先使用产品名称，其次是厂商名
+    const goodsName = productName || manufacturer || '';
+    
+    // 跳过没有商品名称的记录
+    if (!goodsName) return;
+    
+    // 使用品类+商品名称作为唯一键
+    const key = `${categoryName}|${goodsName}`;
+    
+    // 如果该商品不在SKU中，添加到设置列表
+    if (!settingsMap.has(key)) {
+      settingsMap.set(key, {
+        '商品编号': '',
+        '品类': categoryName,
+        '商品名称': goodsName,
+        '商品别名': '',
+        '零售价(一箱)': '', // 需要手动填写，格式：[VND]22356
+        '采购价(一箱)': '', // 需要手动填写
+      });
+    }
+  });
+
+  return Array.from(settingsMap.values());
+}
+
+/**
+ * 生成采购订单编号：PUSH-XXXXXXXXXXX
+ */
+function generatePurchaseOrderCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = 'PUSH-';
+  for (let i = 0; i < 11; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
 }
 
 /**
  * 转换采购订单
- * 实际数据字段顺序（与标题不符）：
+ * 实际数据字段顺序：
  * 0:采购单号, 1:供应商, 2:采购品类, 3:厂商, 4:产品名称, 5:产品规格, 
- * 6:产品重量(kg), 7:数量1, 8:数量2, 9:单价, 10:总金额, 11:下单时间, 12:发货时间
+ * 6:产品重量(kg), 7:产品盒数(一箱多少盒), 8:采购数量(多少箱), 9:单价, 10:总金额, 11:下单时间, 12:发货时间
  */
 function convertPurchaseOrders(purchaseRecords) {
   const orders = [];
+  const orderCodeMap = new Map(); // 映射原始订单号到新订单号
 
   purchaseRecords.forEach(record => {
     const values = Object.values(record);
@@ -432,15 +576,15 @@ function convertPurchaseOrders(purchaseRecords) {
     if (!values[0] && !values[1]) return;
 
     // 根据实际数据列提取
-    const orderNo = values[0]?.trim() || ''; // 采购单号
+    const oldOrderNo = values[0]?.trim() || ''; // 原始采购单号
     const supplierName = values[1]?.trim() || ''; // 供应商
     const categoryRaw = values[2]?.trim() || ''; // 采购品类
     const manufacturer = values[3]?.trim() || ''; // 厂商
     const productName = values[4]?.trim() || ''; // 产品名称
     const productSpec = values[5]?.trim() || ''; // 产品规格
     const productWeight = values[6]?.trim() || '0'; // 产品重量
-    const qty1 = values[7]?.trim() || '0'; // 数量1
-    const qty2 = values[8]?.trim() || '0'; // 数量2
+    const packsPerBox = values[7]?.trim() || '0'; // 产品盒数（一箱多少盒）
+    const boxQuantity = values[8]?.trim() || '0'; // 采购数量（多少箱）
     const unitPrice = values[9]?.trim() || '0'; // 单价
     const totalAmount = values[10]?.trim() || '0'; // 总金额
     const orderDate = values[11]?.trim() || ''; // 下单时间
@@ -452,54 +596,94 @@ function convertPurchaseOrders(purchaseRecords) {
 
     // 商品名称优先使用产品名称，其次是厂商名
     const goodsName = productName || manufacturer || '';
+    
+    // 跳过商品名称为空的记录
+    if (!goodsName) return;
 
-    // 使用qty1作为采购数量（通常是盒数）
-    const purchaseQty = qty1 || '0';
+    // 生成新的采购订单编号（如果该原始订单号还没有映射）
+    if (!orderCodeMap.has(oldOrderNo)) {
+      orderCodeMap.set(oldOrderNo, generatePurchaseOrderCode());
+    }
+    const newOrderNo = orderCodeMap.get(oldOrderNo);
+
+    // 采购数量直接转换为采购箱数
+    const purchaseBoxes = parseFloat(boxQuantity) || 0;
+
+    // 提取单价和总金额，添加[CNY]标记（原始数据为人民币）
+    const unitPriceValue = unitPrice ? parseFloat(unitPrice) : 0;
+    const totalAmountValue = totalAmount ? parseFloat(totalAmount) : 0;
+    const unitPriceWithCurrency = unitPriceValue > 0 ? `[CNY]${unitPriceValue}` : '';
+    const totalAmountWithCurrency = totalAmountValue > 0 ? `[CNY]${totalAmountValue}` : unitPriceWithCurrency;
 
     orders.push({
       '采购日期': orderDate,
-      '采购编号': orderNo, // 保留原采购单号
+      '采购编号': newOrderNo, // 使用新的系统标准编号
       '品类': categoryName,
       '商品名称': goodsName,
       '供应商': supplierName,
-      '采购箱': '0', // 原始数据没有箱数，默认0
-      '采购盒': purchaseQty, // 使用qty1
-      '采购包': '0', // 原始数据没有包数，默认0
-      '拿货单价箱': '', // 需要手动填写，格式：[VND]金额 或 [CNY]金额
-      '实付金额': '', // 需要手动填写，格式：[VND]金额 或 [CNY]金额
+      '采购箱': purchaseBoxes > 0 ? purchaseBoxes.toString() : '0', // 采购数量直接转换为采购箱
+      '采购盒': '0', // 采购盒为0
+      '采购包': '0', // 采购包为0
+      '拿货单价箱': unitPriceWithCurrency, // 原始数据为人民币，添加[CNY]标记
+      '实付金额': totalAmountWithCurrency, // 原始数据为人民币，添加[CNY]标记，默认与单价相同
     });
   });
 
-  return orders;
+  return { orders, orderCodeMap };
 }
 
 /**
  * 转换到货记录
+ * 直接从采购订单生成，确保一一对应
  */
-function convertArrivalRecords(arrivalRecords) {
+function convertArrivalRecords(arrivalRecords, purchaseRecords, orderCodeMap) {
   const arrivals = [];
-
-  arrivalRecords.forEach(record => {
+  
+  // 直接从采购记录生成到货记录，确保一一对应
+  purchaseRecords.forEach(record => {
     const values = Object.values(record);
     
-    if (!values[0] || values[0].includes('SKU CODE')) return;
+    if (!values[0] && !values[1]) return;
 
-    const categoryRaw = values[3] || '';
+    const oldOrderNo = values[0]?.trim() || '';
+    const categoryRaw = values[2]?.trim() || '';
+    const manufacturer = values[3]?.trim() || '';
+    const productName = values[4]?.trim() || '';
+    const boxQuantity = values[8]?.trim() || '0'; // 采购数量（多少箱）
+    const orderDate = values[11]?.trim() || '';
+    const shipDate = values[12]?.trim() || '';
+    
+    // 分离品类中英文
     const categoryParts = categoryRaw.split('/');
     const categoryName = categoryParts[1]?.trim() || categoryParts[0]?.trim() || '';
+    
+    // 商品名称优先使用产品名称，其次是厂商名
+    const goodsName = productName || manufacturer || '';
+    
+    // 跳过商品名称为空的记录
+    if (!goodsName) return;
+    
+    // 获取新的采购订单编号
+    const newOrderNo = orderCodeMap.get(oldOrderNo) || '';
+    
+    // 到货日期使用发货日期，如果没有则使用下单日期
+    const arrivalDate = shipDate || orderDate;
+    
+    // 到货数量与采购数量一致
+    const arrivalBoxes = parseFloat(boxQuantity) || 0;
 
     arrivals.push({
-      '到货日期': values[10]?.trim() || '',
-      '采购编号': '', // 需要关联采购订单，留空
-      '采购名称': '', // 需要关联采购订单，留空
-      '商品编号': values[0]?.trim() || '',
+      '到货日期': arrivalDate,
+      '采购编号': newOrderNo,
+      '采购名称': '',
+      '商品编号': '', // 采购记录中没有SKU编号，留空
       '品类': categoryName,
-      '商品': values[1]?.trim() || '',
-      '直播间': values[8]?.trim() || '总仓库',
-      '主播': values[9]?.trim() || '',
-      '到货箱': values[5]?.trim() || '0',
-      '到货盒': '0', // 原始数据没有盒数
-      '到货包': '0', // 原始数据没有包数
+      '商品': goodsName,
+      '直播间': '总仓库', // 默认总仓库
+      '主播': '', // 采购记录中没有主播信息
+      '到货箱': arrivalBoxes > 0 ? arrivalBoxes.toString() : '0', // 到货数量与采购数量一致
+      '到货盒': '0',
+      '到货包': '0',
     });
   });
 
