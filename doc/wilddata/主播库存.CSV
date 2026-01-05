@@ -1,0 +1,588 @@
+﻿"日期
+Ngày","主播
+Host","运营
+Vận hành","英文/越文名 
+Tên tiếng Việt","拿货盒数
+SL lấy (hộp)","拿货包数
+SL lấy (pack)","销售数量
+SL tiêu thụ ","回库包数
+SL hoàn (pack)","直播间调货
+Điều hàng","主播未回包数合计
+SL còn lại của host",SKU,"中文名 
+Tên tiếng Trung"
+,Thùy 阿锤,Xuân Nhi 春妮,Wamder Roaming Sakura,36,491,379,89,0,23,10010,玩的入迷-魔卡少女樱第一弹—樱之绮遇
+,Thùy 阿锤,Xuân Nhi 春妮,Quàng Thượng,15,150,60,22,-68,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Thùy 阿锤,Xuân Nhi 春妮,Sakura Card Fun,31,525,525,0,0,0,10020,集卡社小樱
+,Thùy 阿锤,Xuân Nhi 春妮,Sacred Sailor Moon,19,247,185,0,0,62,10018,圣月美少女战士星尘协奏曲长卡
+,Thùy 阿锤,Xuân Nhi 春妮,Sailor Shining,24,192,192,0,0,0,10022,【耀光·美少女战士】长卡卡砖
+,Thùy 阿锤,Xuân Nhi 春妮,SK MĐTS phiếu tem,24,240,240,0,0,0,10031,胜卡文创x魔道祖师云深不忘邮票评级卡砖
+,Thùy 阿锤,Xuân Nhi 春妮,Mộng ảnh Hắc Quản Gia,31,404,188,71,0,145,10030,梦影动漫黑执事-典藏版收藏卡牌
+,Thùy 阿锤,Xuân Nhi 春妮,Madhouse Sakura phiếu tem,50,50,10,40,0,0,10037,磁吸邮票《咪咕咪咕&魔卡少女樱》
+,Thùy 阿锤,Xuân Nhi 春妮,Mộng cảnh Sailor Moon,28,410,332,78,0,0,10017,梦境-美少女战士第一弹
+,Thùy 阿锤,Xuân Nhi 春妮,KK card Shinkai Makoto vol 1,5,70,29,41,0,0,10035,KK CARD × 新海诚系列第一弹
+,Thùy 阿锤,Xuân Nhi 春妮,Sakura House,44,648,553,117,61,39,10029,樱花屋魔卡少女樱
+,Thùy 阿锤,Xuân Nhi 春妮,Kuka Maltese,46,295,239,56,0,0,10040,酷卡文化-线条小狗3弹
+,Thùy 阿锤,Xuân Nhi 春妮,XR Sailor Moon,35,455,208,0,0,247,10043,光恋XR-披荆斩棘-美少女战士
+,Thùy 阿锤,Xuân Nhi 春妮,Quân sơn TQTP,150,150,150,0,0,0,10025,君屹文化耽美古风收藏新纪元《言辞忆梦》撕撕乐
+,Thùy 阿锤,Xuân Nhi 春妮,X work Sailor Moon,10,100,36,0,0,64,10008,XWork美少女战士-璀璨之梦
+,Thùy 阿锤,Xuân Nhi 春妮,Mộng ảnh Hắc Quản Gia,31,404,185,71,0,148,10030,梦影动漫黑执事-典藏版收藏卡牌
+,Thùy 阿锤,Xuân Nhi 春妮,Hoàng tử bé và Alice,24,288,288,0,0,0,10050,小王子与爱丽丝
+,Thùy 阿锤,Xuân Nhi 春妮,Nanka Sakura,23,299,45,251,0,3,10051,南卡《魔卡少女樱》
+,Thùy 阿锤,Xuân Nhi 春妮,Hoa rơi chỉ vì quân,42,583,505,66,0,12,10053,悦灵文创 《落花只为君》第三弹
+,Thùy 阿锤,Xuân Nhi 春妮,Moon Card Sailor Moon,20,260,132,0,-40,88,10002,MoonCard月卡《美少女战士》第三弹
+,Thùy 阿锤,Xuân Nhi 春妮,Kabao Sanrio Hello Kitty Mộng cảnh tuần lễ,31,529,499,30,0,0,10058,三丽鸥家族hello kitty梦境巡礼
+,Thùy 阿锤,Xuân Nhi 春妮,Kabao Sanrio Gia tộc mùa đông ấm áp,13,130,170,0,40,0,10057,三丽鸥家族暖冬
+,Thùy 阿锤,Xuân Nhi 春妮, Card Fun Thiên quan tứ phúc bản hoạt hình,32,358,318,40,0,0,10056,集卡社天官赐福动画周年纪念版
+,Thùy 阿锤,Xuân Nhi 春妮,Butterbear vol 2,6,96,139,0,96,53,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Thùy 阿锤,Xuân Nhi 春妮,Floating Dream Đồng cảnh kỳ mộng,62,806,917,0,111,0,10063,浮梦集 「童境绮梦」艺术家联名收藏卡牌
+,Thùy 阿锤,Xuân Nhi 春妮,Tử Vi Sakura thẻ xé,182,546,63,0,0,483,10092,紫薇文创×魔卡少女樱·撕撕乐
+,Thùy 阿锤,Xuân Nhi 春妮,Đèn Gibli DIY,6,6,1,0,-3,2,10046,夜灯
+,Thùy 阿锤,Xuân Nhi 春妮,Kaquduo chuyện cổ tích - Thiên dạ hội quyển,36,432,432,0,0,0,10079,卡趣多《童话-千夜绘卷》艺术典藏卡牌
+,Thùy 阿锤,Xuân Nhi 春妮,Card Fun Thiên quan tứ phúc Hoa đăng chiếu dạ,20,320,245,0,0,75,10083,天官赐福花灯照夜
+,Thùy 阿锤,Xuân Nhi 春妮,Vancard Sanrio,24,240,100,80,40,100,10009,万画云游三丽鸥家族百变cos收藏卡
+,Thùy 阿锤,Xuân Nhi 春妮,Card Fun Lilo&Stitch Dân chơi bách biến,48,480,448,0,0,32,10091,星际宝贝百变顽家收藏卡
+,Thùy 阿锤,Xuân Nhi 春妮,WUPO Tranh nghệ thuật hội họa vol 1,20,120,120,0,0,0,10095,WUPO艺术家手绘系列色纸第一弹
+,Thùy 阿锤,Xuân Nhi 春妮,Card Fun Zootopia ver Thần thám Cáo Thỏ,48,960,270,0,-480,210,10103,疯狂动物城白金收藏卡狐兔神探
+,Thùy 阿锤,Xuân Nhi 春妮,Kamiya Rorojump Bách Biến vol 1,36,432,384,0,-48,0,10101,卡迷家xROROJUMP肉肉酱正版授权第一弹《肉肉酱-百变系列-典藏卡》
+,Thùy 阿锤,Xuân Nhi 春妮,Card Fun Cây Nấm Nhỏ ver Mạt thế thâm uyên,21,210,120,0,30,120,10080,《小蘑菇》流荧版收藏卡-末世深渊
+,Thùy 阿锤,Xuân Nhi 春妮,OP Phi Phàm,0,0,21,0,21,0,10039,非凡航海王第五弹
+,Bội Anh 倍英,Xuân Nhi 春妮,DUO Kyn,5,65,0,92,27,0,10003,DUO米全新出品鬼灭之刃-柱合会议篇第二弹
+,Bội Anh 倍英,Xuân Nhi 春妮,Trendy Toyka Genshin,20,289,289,0,0,0,10028,潮玩咔原神 尘世收藏卡
+,Bội Anh 倍英,Xuân Nhi 春妮,Pokemon,5,5,1,3,-1,0,10001,《东株社》宝可梦水晶砖
+,Bội Anh 倍英,Xuân Nhi 春妮,Source University Genshin thẻ CD,55,62,61,1,0,0,10044,源宇宙原神.空月の歌·周边CD票根邮票组合套装
+,Bội Anh 倍英,Xuân Nhi 春妮,Bearie Genshin Impact,100,100,100,0,0,0,10041,小熊工坊「原神」A6色纸
+,Bội Anh 倍英,Xuân Nhi 春妮,Tinh quang Genshin,54,64,54,10,0,0,10023,风信文创尘世相逢之约星光来信原神邮票第一弹
+,Bội Anh 倍英,Xuân Nhi 春妮,Kuka Maltese,10,110,11,30,0,69,10040,酷卡文化-线条小狗3弹
+,Bội Anh 倍英,Xuân Nhi 春妮,Madhouse Sakura phiếu tem,90,90,67,5,0,18,10037,磁吸邮票《咪咕咪咕&魔卡少女樱》
+,Bội Anh 倍英,Xuân Nhi 春妮,Conan lập thể,69,69,66,0,0,3,10045,名侦探柯南谜层交错
+,Bội Anh 倍英,Xuân Nhi 春妮,Jujutsu vol 1,40,55,55,0,0,0,10004,初见花海咒术回战第一弹
+,Bội Anh 倍英,Xuân Nhi 春妮,KK card Shinkai Makoto vol 1,0,41,3,0,0,38,10035,KK CARD × 新海诚系列第一弹
+,Bội Anh 倍英,Xuân Nhi 春妮,Xưởng Teyvat Genshin Impact A6,164,164,148,16,0,0,10047,提瓦特工坊·原神水晶色纸
+,Bội Anh 倍英,Xuân Nhi 春妮,Sakura House,6,72,6,66,0,0,10029,樱花屋魔卡少女樱
+,Bội Anh 倍英,Xuân Nhi 春妮,Mộng cảnh Sailor Moon,1,27,27,0,0,0,10017,梦境-美少女战士第一弹
+,Bội Anh 倍英,Xuân Nhi 春妮,OP Phi Phàm,24,480,400,0,-40,40,10039,非凡航海王第五弹
+,Bội Anh 倍英,Xuân Nhi 春妮,Conan đám cưới A5 vol 1,30,30,30,0,0,0,10024,漫影工作室-柯南-A5 大卡第一弹
+,Bội Anh 倍英,Xuân Nhi 春妮,Attack on Titan,5,150,40,0,0,110,10012,卡文化进击的巨人
+,Bội Anh 倍英,Xuân Nhi 春妮,Scroll Painting Thanh gươm diệt quỷ ,12,93,93,0,0,0,10055,绘卷文创 - 梦境入画【鬼灭之刃系列收藏卡砖】
+,Bội Anh 倍英,Xuân Nhi 春妮,Quàng Thượng,11,110,34,0,-76,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Bội Anh 倍英,Xuân Nhi 春妮,Kabao Sanrio Gia tộc mùa đông ấm áp,5,50,25,10,-15,0,10057,三丽鸥家族暖冬
+,Bội Anh 倍英,Xuân Nhi 春妮,X work Sailor Moon,21,210,169,0,70,111,10008,XWork美少女战士-璀璨之梦
+,Bội Anh 倍英,Xuân Nhi 春妮,Genshin Impact ver Đáp án của vận mệnh,10,120,120,0,0,0,10065,【行星文创·上上签·命运答案】X全新原神系列上上签
+,Bội Anh 倍英,Xuân Nhi 春妮,Honkai Star Rail A6 Tinh Trình Khởi Động,90,90,72,0,0,18,10067,拓宇文创—崩铁·启航星程 A6 亚克力色纸
+,Bội Anh 倍英,Xuân Nhi 春妮,  Source Universe Honkai Star Rail A6,30,180,80,0,-100,0,10064,源宇宙崩铁色纸
+,Bội Anh 倍英,Xuân Nhi 春妮,Butterbear vol 2,5,80,61,0,48,67,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Bội Anh 倍英,Xuân Nhi 春妮,Genshin Impact World game,100,100,149,0,49,0,10077,多多文创原神第二弹卡砖—神眸再现
+,Bội Anh 倍英,Xuân Nhi 春妮,Genshin A6 Tiwayimeng (Viết tắt Tiwa),30,179,68,0,0,111,10082,吾羽文创-全亚克力正方形原神色纸
+,Bội Anh 倍英,Xuân Nhi 春妮,Conan ver mã Morse phiếu tem,80,80,42,0,0,38,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Bội Anh 倍英,Xuân Nhi 春妮,Free Fire Mini Spark Follow pack,1,20,5,0,0,15,10111,0
+,Bội Anh 倍英,Xuân Nhi 春妮,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,32,416,381,0,65,100,10102,麒麟文创航海王第一弹-仙道天下
+,Bội Anh 倍英,Xuân Nhi 春妮,YiHua Wuthering Waves thẻ xé,30,30,3,0,0,27,10069,【艺画文创】鸣潮撕撕乐
+,Bội Anh 倍英,Xuân Nhi 春妮,Mumu Card Thanh gươm diệt quỷ,5,25,9,0,-16,0,10105,木木卡舍·鬼灭之刃无限城篇
+,Bội Anh 倍英,Xuân Nhi 春妮,Kayou Conan vol 2 (bánh quy),0,0,31,0,72,41,10066,卡游柯南揭秘包第2弹
+,Bội Anh 倍英,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Bội Anh 倍英,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Bội Anh 倍英,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,MH Gibli,30,360,324,0,0,36,10015,梦绘文创-宫崎骏第二弹
+,Thành Đạt 成达,Xuân Nhi 春妮,Gibli Hoa,42,546,380,146,0,20,10011,灿卡文创宫崎骏第二弹《花涧物语》
+,Thành Đạt 成达,Xuân Nhi 春妮,Mây và Hạ,34,596,469,26,0,101,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Thành Đạt 成达,Xuân Nhi 春妮,Kawaii Gibli,39,603,437,166,0,0,10007,kawaii宫崎骏梦幻之国
+,Thành Đạt 成达,Xuân Nhi 春妮,Pokemon,0,3,3,0,0,0,10001,《东株社》宝可梦水晶砖
+,Thành Đạt 成达,Xuân Nhi 春妮,Hải Minh LnD,100,100,40,20,-10,30,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Thành Đạt 成达,Xuân Nhi 春妮,KK card Shinkai Makoto vol 1,26,370,254,0,0,116,10035,KK CARD × 新海诚系列第一弹
+,Thành Đạt 成达,Xuân Nhi 春妮,Tinh Mộng Gibli thẻ xé,90,270,247,1,0,22,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Thành Đạt 成达,Xuân Nhi 春妮,Hải Minh LnD,100,100,48,20,-10,22,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Thành Đạt 成达,Xuân Nhi 春妮,Melting point,52,156,156,0,0,0,10049,野火文创《月下悸动》 韩漫耽美撕撕乐
+,Thành Đạt 成达,Xuân Nhi 春妮,LnD thẻ xé Ngàn lần động tâm,41,41,15,0,0,26,10033,慕光文创「一千次心动」系列撕撕乐
+,Thành Đạt 成达,Xuân Nhi 春妮,Yanka LnD,5,30,11,0,0,19,10036,《研卡文创》第三弹收藏色纸
+,Thành Đạt 成达,Xuân Nhi 春妮,Gibli Wind,94,94,89,0,0,5,10005,椿柚文创宫崎骏 被风吹散的秘密邮票第一弹
+,Thành Đạt 成达,Xuân Nhi 春妮, Manga Forest Ghibli vol 3,21,273,176,0,-13,84,10060,漫の森《宫崎骏第三弹·奇幻之旅》
+,Thành Đạt 成达,Xuân Nhi 春妮,Vancard Sanrio,2,20,3,0,0,17,10009,万画云游三丽鸥家族百变cos收藏卡
+,Thành Đạt 成达,Xuân Nhi 春妮,Kayou Conan vol 2 (bánh quy),5,180,43,0,-137,0,10066,卡游柯南揭秘包第2弹
+,Thành Đạt 成达,Xuân Nhi 春妮,OP Phi Phàm,0,125,40,0,-85,0,10039,非凡航海王第五弹
+,Thành Đạt 成达,Xuân Nhi 春妮,Mô hình chim đồ chơi trang trí xe,0,0,1,0,5,4,10072,伴飞小鸟
+,Thành Đạt 成达,Xuân Nhi 春妮,Yimeng Ghibli chữa lành cả đời,36,468,311,0,0,157,10090,依梦×宫崎骏の治愈一生
+,Thành Đạt 成达,Xuân Nhi 春妮,Wanka Thanh gươm diệt quỷ ver Nhật luân,5,50,,0,-50,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Thành Đạt 成达,Xuân Nhi 春妮,Vancard Sanrio,2,20,,0,0,20,10009,万画云游三丽鸥家族百变cos收藏卡
+,Thành Đạt 成达,Xuân Nhi 春妮,Pokemon,0,3,,0,0,3,10001,《东株社》宝可梦水晶砖
+,Thành Đạt 成达,Xuân Nhi 春妮,Tinh tú hội họa Shinkai Makoto,15,195,92,0,0,103,10093,星绘社新海诚系列卡牌
+,Thành Đạt 成达,Xuân Nhi 春妮,Free Fire Mini Spark Follow pack,1,20,3,0,0,17,10111,0
+,Thành Đạt 成达,Xuân Nhi 春妮,Vân Ảnh Ghibli Cuộn Tranh Thời Gian,25,325,251,0,0,74,10106,云映文化时光绘卷·宫崎骏珍藏卡牌
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Thành Đạt 成达,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Uyên Mai 媛梅,Xuân Nhi 春妮,OP Phi Phàm,15,300,220,0,-80,0,10039,非凡航海王第五弹
+,Uyên Mai 媛梅,Xuân Nhi 春妮,Wanka Thanh gươm diệt quỷ ver Nhật luân,1,10,15,0,5,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Uyên Mai 媛梅,Xuân Nhi 春妮,Kayou Mobile Legend,0,0,,0,20,20,10062,Mobile Legends: Bang Bang-Collectible Cards-Hand of Destiny-001A-SEA
+,Uyên Mai 媛梅,Xuân Nhi 春妮, Manga Forest Ghibli vol 3,0,0,,0,13,13,10060,漫の森《宫崎骏第三弹·奇幻之旅》
+,Uyên Mai 媛梅,Xuân Nhi 春妮,Aikaho Thanh gươm diệt quỷ,0,0,13,0,13,0,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Uyên Mai 媛梅,Xuân Nhi 春妮,Tinh tú hội họa Shinkai Makoto,2,26,3,0,0,23,10093,星绘社新海诚系列卡牌
+,Uyên Mai 媛梅,Xuân Nhi 春妮,Card Fun Zootopia ver Thần thám Cáo Thỏ,1,20,18,0,78,80,10103,疯狂动物城白金收藏卡狐兔神探
+,Uyên Mai 媛梅,Xuân Nhi 春妮,Kayou Conan vol 2 (bánh quy),0,0,5,0,5,0,10066,卡游柯南揭秘包第2弹
+,Uyên Mai 媛梅,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Uyên Mai 媛梅,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Uyên Mai 媛梅,Xuân Nhi 春妮,,0,0,,0,0,0,#N/A,#N/A
+,Trường Giang 长江,Dũng 阿勇,XR Sailor Moon,2,26,1,0,0,25,10043,光恋XR-披荆斩棘-美少女战士
+,Trường Giang 长江,Dũng 阿勇,Sacred Sailor Moon,2,26,,0,0,26,10018,圣月美少女战士星尘协奏曲长卡
+,Trường Giang 长江,Dũng 阿勇,OP Phi Phàm,4,80,,0,-80,0,10039,非凡航海王第五弹
+,Trường Giang 长江,Dũng 阿勇,Tinh Mộng Gibli thẻ xé,10,30,,30,0,0,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Trường Giang 长江,Dũng 阿勇,Nanka Sakura,1,15,4,11,0,0,10051,南卡《魔卡少女樱》
+,Mimi,Trà My 茶梅,Shingu Conan phiếu tem,27,162,141,21,0,0,10021,新谷动漫名侦探柯南·仲夏夜之恋邮票集
+,Mimi,Trà My 茶梅,Conan đám cưới A5 vol 1,21,21,7,14,0,0,10024,漫影工作室-柯南-A5 大卡第一弹
+,Mimi,Trà My 茶梅,Conan lập thể,16,16,9,0,0,7,10045,名侦探柯南谜层交错
+,Mimi,Trà My 茶梅,Kawaii Gibli,10,165,95,39,-31,0,10007,kawaii宫崎骏梦幻之国
+,Mimi,Trà My 茶梅,OP Phi Phàm,118,2431,1771,340,-320,0,10039,非凡航海王第五弹
+,Mimi,Trà My 茶梅,DUO Kyn,23,334,198,117,0,19,10003,DUO米全新出品鬼灭之刃-柱合会议篇第二弹
+,Mimi,Trà My 茶梅,Source University Genshin thẻ CD,1,1,1,0,0,0,10044,源宇宙原神.空月の歌·周边CD票根邮票组合套装
+,Mimi,Trà My 茶梅,Jujutsu vol 1,0,59,44,15,0,0,10004,初见花海咒术回战第一弹
+,Mimi,Trà My 茶梅,Tinh quang Genshin,10,10,0,0,0,10,10023,风信文创尘世相逢之约星光来信原神邮票第一弹
+,Mimi,Trà My 茶梅,Trendy Toyka Genshin,2,26,26,0,0,0,10028,潮玩咔原神 尘世收藏卡
+,Mimi,Trà My 茶梅,Kayou Conan Vol 5,36,803,341,462,0,0,10052,柯南洞悉包第五弹
+,Mimi,Trà My 茶梅,Kuka Maltese,22,307,207,100,0,0,10040,酷卡文化-线条小狗3弹
+,Mimi,Trà My 茶梅,Đèn Gibli DIY,4,4,1,0,0,3,10046,夜灯
+,Mimi,Trà My 茶梅,Gibli Hoa,1,83,83,0,0,0,10011,灿卡文创宫崎骏第二弹《花涧物语》
+,Mimi,Trà My 茶梅,Pokemon,15,15,3,0,-12,0,10001,《东株社》宝可梦水晶砖
+,Mimi,Trà My 茶梅,Mây và Hạ,3,39,9,30,0,0,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Mimi,Trà My 茶梅,KK card Shinkai Makoto vol 1,5,72,17,4,-31,20,10035,KK CARD × 新海诚系列第一弹
+,Mimi,Trà My 茶梅,Nanka Sakura,7,85,61,24,0,0,10051,南卡《魔卡少女樱》
+,Mimi,Trà My 茶梅,Moon Card Sailor Moon,3,39,10,0,0,29,10002,MoonCard月卡《美少女战士》第三弹
+,Mimi,Trà My 茶梅,Quàng Thượng,5,50,12,0,-38,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Mimi,Trà My 茶梅,Scroll Painting Thanh gươm diệt quỷ ,5,25,2,23,0,0,10055,绘卷文创 - 梦境入画【鬼灭之刃系列收藏卡砖】
+,Mimi,Trà My 茶梅,Butterbear vol 2,3,48,5,0,0,43,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Mimi,Trà My 茶梅,Kayou Conan vol 2 (bánh quy),5,180,74,0,-106,0,10066,卡游柯南揭秘包第2弹
+,Mimi,Trà My 茶梅,Tinh Mộng Gibli thẻ xé,10,30,5,0,-2,23,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Mimi,Trà My 茶梅,Kayou Jujutsu Kaisen,4,72,26,0,0,46,10071,咒术回战-术士收藏卡-高专篇
+,Mimi,Trà My 茶梅,Conan ver mã Morse phiếu tem,0,20,9,0,0,11,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Mimi,Trà My 茶梅,Wanka Thanh gươm diệt quỷ ver Nhật luân,7,70,18,0,-52,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Mimi,Trà My 茶梅,Sao Hỏa Maltese,26,364,408,0,44,0,10089,星火线条小狗
+,Mimi,Trà My 茶梅,Aikaho Thanh gươm diệt quỷ,0,0,43,0,43,0,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Mimi,Trà My 茶梅,Conan ver Party nguy hiểm,0,100,93,0,-7,0,10086,【潮迷文创】名侦探柯南-危险排队-周边创意艺术色纸
+,Mimi,Trà My 茶梅,Naruto thẻ xé,0,20,0,0,0,20,10085,火影忍者·手绘复刻撕撕乐
+,Mimi,Trà My 茶梅,Hi card Conan vol 4,20,300,241,0,-59,0,10107,Hi卡柯南第四弹《一切都会大白于天下》
+,Mimi,Trà My 茶梅,Yi Card One Piece vol 2,9,117,56,0,5,66,10100,《意卡文创海贼王》第二弹
+,Mimi,Trà My 茶梅,Attack on Titan,5,150,80,0,0,70,10012,卡文化进击的巨人
+,Mimi,Trà My 茶梅,Mumu Card Thanh gươm diệt quỷ,0,0,6,0,6,0,10105,木木卡舍·鬼灭之刃无限城篇
+,Mimi,Trà My 茶梅,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,,0,50,50,10103,疯狂动物城白金收藏卡狐兔神探
+,Mimi,Trà My 茶梅,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,0,0,13,0,26,13,10102,麒麟文创航海王第一弹-仙道天下
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Mimi,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Bảo Ngọc 宝玉,Trà My 茶梅,Nanka Sakura,8,140,114,26,0,0,10051,南卡《魔卡少女樱》
+,Bảo Ngọc 宝玉,Trà My 茶梅,OP Phi Phàm,30,600,278,0,-322,0,10039,非凡航海王第五弹
+,Bảo Ngọc 宝玉,Trà My 茶梅,XR Sailor Moon,2,26,7,19,0,0,10043,光恋XR-披荆斩棘-美少女战士
+,Bảo Ngọc 宝玉,Trà My 茶梅,Sacred Sailor Moon,2,26,,0,-26,0,10018,圣月美少女战士星尘协奏曲长卡
+,Bảo Ngọc 宝玉,Trà My 茶梅,Tinh Mộng Gibli thẻ xé,10,30,,0,0,30,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Bảo Ngọc 宝玉,Trà My 茶梅,Kabao Sanrio Gia tộc mùa đông ấm áp,3,30,2,0,-28,0,10057,三丽鸥家族暖冬
+,Thanh Vy 清薇,Trà My 茶梅,LnD Gió hạ từng hôn mi em,0,10,8,0,0,2,10038,浮光工作室❤第三弹【夏风吻过你的睫毛】
+,Thanh Vy 清薇,Trà My 茶梅,Sacred Sailor Moon,2,26,51,0,91,66,10018,圣月美少女战士星尘协奏曲长卡
+,Thanh Vy 清薇,Trà My 茶梅,XR Sailor Moon,12,175,130,0,0,45,10043,光恋XR-披荆斩棘-美少女战士
+,Thanh Vy 清薇,Trà My 茶梅,Huixin MĐTS,0,10,6,4,0,0,10032,绘心阁《魔道祖师—殊途同归》色纸卡牌
+,Thanh Vy 清薇,Trà My 茶梅,Nanka Sakura,1,12,,11,0,1,10051,南卡《魔卡少女樱》
+,Thanh Vy 清薇,Trà My 茶梅,Yanka LnD,5,30,,0,0,30,10036,《研卡文创》第三弹收藏色纸
+,Thanh Vy 清薇,Trà My 茶梅,Tinh Mộng Gibli thẻ xé,10,59,11,0,0,48,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Thanh Vy 清薇,Trà My 茶梅,Quân sơn TQTP,0,91,91,0,0,0,10025,君屹文化耽美古风收藏新纪元《言辞忆梦》撕撕乐
+,Thanh Vy 清薇,Trà My 茶梅,LnD thẻ xé Ngàn lần động tâm,0,10,1,0,-9,0,10033,慕光文创「一千次心动」系列撕撕乐
+,Thanh Vy 清薇,Trà My 茶梅,Moon Card Sailor Moon,4,52,82,0,40,10,10002,MoonCard月卡《美少女战士》第三弹
+,Thanh Vy 清薇,Trà My 茶梅, Card Fun Thiên quan tứ phúc bản hoạt hình,5,50,3,47,0,0,10056,集卡社天官赐福动画周年纪念版
+,Thanh Vy 清薇,Trà My 茶梅,X work Sailor Moon,25,250,201,0,-30,19,10008,XWork美少女战士-璀璨之梦
+,Thanh Vy 清薇,Trà My 茶梅,Madhouse Sakura phiếu tem,0,2,2,0,0,0,10037,磁吸邮票《咪咕咪咕&魔卡少女樱》
+,Thanh Vy 清薇,Trà My 茶梅,Narasha Sailor Moon thẻ xé,0,20,19,0,20,21,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Thanh Vy 清薇,Trà My 茶梅,Quàng Thượng,5,50,16,0,-34,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Thanh Vy 清薇,Trà My 茶梅,Madhouse Sakura phiếu tem,0,2,,0,0,2,10037,磁吸邮票《咪咕咪咕&魔卡少女樱》
+,Thanh Vy 清薇,Trà My 茶梅,Wanka Thanh gươm diệt quỷ ver Nhật luân,5,50,4,0,-46,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Thanh Vy 清薇,Trà My 茶梅,Kyoto Sailor Moon vol 4,15,195,116,0,0,79,10081,京都社 美少女战士 · 第4弹
+,Thanh Vy 清薇,Trà My 茶梅,Light bản tổng hợp BL thẻ xé,0,0,4,0,4,0,10074,火萤文创【帷幕将倾】俊男唯美撕撕乐
+,Thanh Vy 清薇,Trà My 茶梅,Sao Hỏa Maltese,0,0,72,0,72,0,10089,星火线条小狗
+,Thanh Vy 清薇,Trà My 茶梅,Yi Card One Piece vol 2,10,130,109,0,1,22,10100,《意卡文创海贼王》第二弹
+,Thanh Vy 清薇,Trà My 茶梅,Card Fun Zootopia ver Thần thám Cáo Thỏ,6,120,14,0,-60,46,10103,疯狂动物城白金收藏卡狐兔神探
+,Thanh Vy 清薇,Trà My 茶梅,Sailor Moon Tinh Túy,22,308,115,0,0,193,10096,至臻文创美少女战士
+,Thanh Vy 清薇,Trà My 茶梅,Thanh Nghiễn Sailor Moon vol 1,5,65,13,0,0,52,10099,青彦美少女战士 · 第 1 弹
+,Thanh Vy 清薇,Trà My 茶梅,Kawaii Gibli,0,0,,0,9,9,10007,kawaii宫崎骏梦幻之国
+,Thanh Vy 清薇,Trà My 茶梅,,,,,,,,,
+,Thanh Vy 清薇,Trà My 茶梅,Vancard Sanrio,0,0,1,0,10,9,10009,万画云游三丽鸥家族百变cos收藏卡
+,Thanh Vy 清薇,Trà My 茶梅,Kayou Conan vol 2 (bánh quy),0,0,49,0,49,0,10066,卡游柯南揭秘包第2弹
+,Thanh Vy 清薇,Trà My 茶梅,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,5,65,39,0,0,26,10102,麒麟文创航海王第一弹-仙道天下
+,Thanh Vy 清薇,Trà My 茶梅,World Cup 2026,5,180,,0,-72,108,10087,世界杯足球2026
+,Thanh Vy 清薇,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Thanh Vy 清薇,Trà My 茶梅,Kamiya Rorojump Bách Biến vol 1,0,0,12,0,48,36,10101,卡迷家xROROJUMP肉肉酱正版授权第一弹《肉肉酱-百变系列-典藏卡》
+,Thanh Vy 清薇,Trà My 茶梅,OP Phi Phàm,13,260,506,0,246,0,10039,非凡航海王第五弹
+,Kim Ngân 金银,Trà My 茶梅,Sakura House,2,24,15,12,12,9,10029,樱花屋魔卡少女樱
+,Kim Ngân 金银,Trà My 茶梅,Madhouse Sakura phiếu tem,0,5,0,2,-3,0,10037,磁吸邮票《咪咕咪咕&魔卡少女樱》
+,Kim Ngân 金银,Trà My 茶梅,Mộng cảnh Sailor Moon,1,13,13,0,0,0,10017,梦境-美少女战士第一弹
+,Kim Ngân 金银,Trà My 茶梅,Nanka Sakura,11,232,132,100,0,0,10051,南卡《魔卡少女樱》
+,Kim Ngân 金银,Trà My 茶梅,Kayou Conan Vol 5,0,30,3,27,0,0,10052,柯南洞悉包第五弹
+,Kim Ngân 金银,Trà My 茶梅,OP Phi Phàm,139,2834,2907,0,73,0,10039,非凡航海王第五弹
+,Kim Ngân 金银,Trà My 茶梅,Quàng Thượng,5,50,20,0,-30,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Kim Ngân 金银,Trà My 茶梅,Kabao Sanrio Hello Kitty Mộng cảnh tuần lễ,5,90,16,74,0,0,10058,三丽鸥家族hello kitty梦境巡礼
+,Kim Ngân 金银,Trà My 茶梅,Narasha Sailor Moon thẻ xé,0,3,3,0,0,0,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Kim Ngân 金银,Trà My 茶梅,X work Sailor Moon,5,50,16,0,0,34,10008,XWork美少女战士-璀璨之梦
+,Kim Ngân 金银,Trà My 茶梅,Vancard Sanrio,3,30,,0,-30,0,10009,万画云游三丽鸥家族百变cos收藏卡
+,Kim Ngân 金银,Trà My 茶梅,Tinh Mộng Gibli thẻ xé,10,30,2,0,2,30,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Kim Ngân 金银,Trà My 茶梅,Wanka Thanh gươm diệt quỷ ver Nhật luân,2,20,8,0,-12,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Kim Ngân 金银,Trà My 茶梅,Floating Dream Đồng cảnh kỳ mộng,5,65,4,0,-61,0,10063,浮梦集 「童境绮梦」艺术家联名收藏卡牌
+,Kim Ngân 金银,Trà My 茶梅,Kayou Conan vol 2 (bánh quy),5,180,142,0,21,59,10066,卡游柯南揭秘包第2弹
+,Kim Ngân 金银,Trà My 茶梅,Kabao Sanrio Gia tộc mùa đông ấm áp,0,0,1,0,1,0,10057,三丽鸥家族暖冬
+,Kim Ngân 金银,Trà My 茶梅,KK card Shinkai Makoto vol 1,0,0,3,0,17,14,10035,KK CARD × 新海诚系列第一弹
+,Kim Ngân 金银,Trà My 茶梅,Sao Hỏa Maltese,0,0,23,0,23,0,10089,星火线条小狗
+,Kim Ngân 金银,Trà My 茶梅,Kyoto Sailor Moon vol 4,5,65,6,0,0,59,10081,京都社 美少女战士 · 第4弹
+,Kim Ngân 金银,Trà My 茶梅,Pokemon,0,0,1,0,1,0,10001,《东株社》宝可梦水晶砖
+,Kim Ngân 金银,Trà My 茶梅,Aikaho Thanh gươm diệt quỷ,0,0,32,0,32,0,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Kim Ngân 金银,Trà My 茶梅,Attack on Titan,5,150,90,0,0,60,10012,卡文化进击的巨人
+,Kim Ngân 金银,Trà My 茶梅,Kayou Jujutsu Kaisen,0,0,63,0,92,29,10071,咒术回战-术士收藏卡-高专篇
+,Kim Ngân 金银,Trà My 茶梅,Yi Card One Piece vol 2,0,0,13,0,13,0,10100,《意卡文创海贼王》第二弹
+,Kim Ngân 金银,Trà My 茶梅,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,5,65,40,0,0,25,10102,麒麟文创航海王第一弹-仙道天下
+,Kim Ngân 金银,Trà My 茶梅,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,20,0,20,0,10103,疯狂动物城白金收藏卡狐兔神探
+,Kim Ngân 金银,Trà My 茶梅,World Cup 2026,0,0,0,0,72,72,10087,世界杯足球2026
+,Kim Ngân 金银,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Kim Ngân 金银,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Kim Ngân 金银,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Kim Ngân 金银,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Kim Ngân 金银,Trà My 茶梅,,0,0,,0,0,0,#N/A,#N/A
+,Kiều Ngân 桥银,Trà My 茶梅,Kayou Jujutsu Kaisen,3,54,6,0,-48,0,10071,咒术回战-术士收藏卡-高专篇
+,Kiều Ngân 桥银,Trà My 茶梅,Aikaho Thanh gươm diệt quỷ,5,50,33,0,-16,1,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Kiều Ngân 桥银,Trà My 茶梅,Quàng Thượng,0,0,10,0,10,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Kiều Ngân 桥银,Trà My 茶梅,Naruto thẻ xé,0,20,40,0,40,20,10085,火影忍者·手绘复刻撕撕乐
+,Kiều Ngân 桥银,Trà My 茶梅,LnD thẻ xé Ngàn lần động tâm,0,0,0,0,9,9,10033,慕光文创「一千次心动」系列撕撕乐
+,Kiều Ngân 桥银,Trà My 茶梅,Light bản tổng hợp BL thẻ xé,0,0,1,0,1,0,10074,火萤文创【帷幕将倾】俊男唯美撕撕乐
+,Kiều Ngân 桥银,Trà My 茶梅,Kayou Conan vol 2 (bánh quy),0,0,7,0,7,0,10066,卡游柯南揭秘包第2弹
+,Kiều Ngân 桥银,Trà My 茶梅,OP Phi Phàm,0,0,9,0,9,0,10039,非凡航海王第五弹
+,Thu Trang 秋妆,Trà My 茶梅,Huixin MĐTS,10,10,,10,0,0,10032,绘心阁《魔道祖师—殊途同归》色纸卡牌
+,Thu Trang 秋妆,Trà My 茶梅,Hải Minh LnD,20,20,,20,0,0,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Thu Trang 秋妆,Trà My 茶梅,OP Phi Phàm,1,20,20,0,0,0,10039,非凡航海王第五弹
+,Thu Trang 秋妆,Trà My 茶梅,Nanka Sakura,5,60,,60,0,0,10051,南卡《魔卡少女樱》
+,Nhật Linh 日琳,Trà My 茶梅,Narasha Sailor Moon thẻ xé,0,10,0,0,0,10,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Hà 小河,Trà My 茶梅,Tinh Mộng Gibli thẻ xé,20,60,0,0,0,60,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Hà 小河,Trà My 茶梅,Mây và Hạ,10,130,65,0,0,65,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Hà 小河,Trà My 茶梅,DUO Kyn,20,287,86,174,-27,0,10003,DUO米全新出品鬼灭之刃-柱合会议篇第二弹
+,Hà 小河,Trà My 茶梅,Mộng cảnh Sailor Moon,5,65,6,68,0,-9,10017,梦境-美少女战士第一弹
+,Hà 小河,Trà My 茶梅,Sakura Card Fun,5,80,51,29,0,0,10020,集卡社小樱
+,Hà 小河,Trà My 茶梅,Kawaii Gibli,5,72,8,64,0,0,10007,kawaii宫崎骏梦幻之国
+,Hà 小河,Trà My 茶梅,OP Phi Phàm,24,544,133,300,-111,0,10039,非凡航海王第五弹
+,Hà 小河,Trà My 茶梅,Narasha Sailor Moon thẻ xé,0,0,0,0,0,0,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Như 小如,Tum 阿庄,Pokemon,5,5,3,0,-2,0,10001,《东株社》宝可梦水晶砖
+,Như 小如,Tum 阿庄,Jujutsu vol 1,20,20,8,12,0,0,10004,初见花海咒术回战第一弹
+,Như 小如,Tum 阿庄,Mây và Hạ,20,260,68,192,0,0,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Như 小如,Tum 阿庄,Trendy Toyka Genshin,11,143,88,55,0,0,10028,潮玩咔原神 尘世收藏卡
+,Như 小如,Tum 阿庄,Kny Hoàng Card,18,216,216,0,0,0,10013,皇卡 × 鬼灭《血月之契》篇决战无限城收藏卡
+,Như 小如,Tum 阿庄,Attack on Titan,5,150,22,0,-30,98,10012,卡文化进击的巨人
+,Như 小如,Tum 阿庄,DUO Kyn,25,407,309,98,0,0,10003,DUO米全新出品鬼灭之刃-柱合会议篇第二弹
+,Như 小如,Tum 阿庄,KK card Shinkai Makoto vol 1,20,280,49,144,-17,70,10035,KK CARD × 新海诚系列第一弹
+,Như 小如,Tum 阿庄,Source University Genshin thẻ CD,43,43,36,7,0,0,10044,源宇宙原神.空月の歌·周边CD票根邮票组合套装
+,Như 小如,Tum 阿庄,OP Phi Phàm,103,2060,2369,64,373,0,10039,非凡航海王第五弹
+,Như 小如,Tum 阿庄,Kawaii Gibli,5,65,13,50,-2,0,10007,kawaii宫崎骏梦幻之国
+,Như 小如,Tum 阿庄,Tinh quang Genshin,20,20,6,14,0,0,10023,风信文创尘世相逢之约星光来信原神邮票第一弹
+,Như 小如,Tum 阿庄,Xưởng Teyvat Genshin Impact A6,102,102,32,70,0,0,10047,提瓦特工坊·原神水晶色纸
+,Như 小如,Tum 阿庄,Đèn Gibli DIY,5,5,1,2,0,2,10046,夜灯
+,Như 小如,Tum 阿庄,Hải Minh LnD,20,20,1,19,0,0,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Như 小如,Tum 阿庄,Kuka Maltese,15,165,76,89,0,0,10040,酷卡文化-线条小狗3弹
+,Như 小如,Tum 阿庄,Butterbear vol 2,5,80,16,0,-16,48,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Như 小如,Tum 阿庄,Thanh gươm Vị Miên chi Dạ,90,90,89,1,0,0,10059,鬼灭之刃·炽阳文创《未眠之夜 》限定双闪色纸
+,Như 小如,Tum 阿庄,Scroll Painting Thanh gươm diệt quỷ ,8,40,25,15,0,0,10055,绘卷文创 - 梦境入画【鬼灭之刃系列收藏卡砖】
+,Như 小如,Tum 阿庄,Quàng Thượng,5,50,20,0,-30,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Như 小如,Tum 阿庄,Mèo chiêu tài,1,1,1,0,0,0,10054,太阳能招财猫
+,Như 小如,Tum 阿庄,Genshin Impact ver Đáp án của vận mệnh,10,120,120,0,0,0,10065,【行星文创·上上签·命运答案】X全新原神系列上上签
+,Như 小如,Tum 阿庄,Kayou Mobile Legend,10,200,,0,0,200,10062,Mobile Legends: Bang Bang-Collectible Cards-Hand of Destiny-001A-SEA
+,Như 小如,Tum 阿庄,  Source Universe Honkai Star Rail A6,5,30,50,0,20,0,10064,源宇宙崩铁色纸
+,Như 小如,Tum 阿庄,Aikaho Thanh gươm diệt quỷ,15,150,49,0,-101,0,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Như 小如,Tum 阿庄,Kayou Jujutsu Kaisen,5,90,1,0,0,89,10071,咒术回战-术士收藏卡-高专篇
+,Như 小如,Tum 阿庄,Genshin Impact World game,30,30,9,0,-14,7,10077,多多文创原神第二弹卡砖—神眸再现
+,Như 小如,Tum 阿庄,Genshin A6 Tiwayimeng (Viết tắt Tiwa),30,180,154,0,-2,24,10082,吾羽文创-全亚克力正方形原神色纸
+,Như 小如,Tum 阿庄,Wanka Thanh gươm diệt quỷ ver Nhật luân,0,0,2,0,2,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Như 小如,Tum 阿庄,World Cup 2026,5,180,10,0,0,170,10087,世界杯足球2026
+,Như 小如,Tum 阿庄,Sao Hỏa Maltese,0,0,28,0,28,0,10089,星火线条小狗
+,Như 小如,Tum 阿庄,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,10,130,41,0,-52,37,10102,麒麟文创航海王第一弹-仙道天下
+,Như 小如,Tum 阿庄,Conan ver mã Morse phiếu tem,10,10,3,0,0,7,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Như 小如,Tum 阿庄,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,20,0,100,80,10103,疯狂动物城白金收藏卡狐兔神探
+,Như 小如,Tum 阿庄,Mumu Card Thanh gươm diệt quỷ,1,5,6,0,1,0,10105,木木卡舍·鬼灭之刃无限城篇
+,Như 小如,Tum 阿庄,Conan ver Party nguy hiểm,12,12,9,0,16,19,10086,【潮迷文创】名侦探柯南-危险排队-周边创意艺术色纸
+,Như 小如,Tum 阿庄,Tinh tú hội họa Shinkai Makoto,5,65,,0,0,65,10093,星绘社新海诚系列卡牌
+,Như 小如,Tum 阿庄,Sailor Moon Tinh Túy,5,70,,0,0,70,10096,至臻文创美少女战士
+,Như 小如,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Như 小如,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Như 小如,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Như 小如,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,OP Phi Phàm,58,1160,1310,0,262,112,10039,非凡航海王第五弹
+,Lệ Quyên 丽娟,Tum 阿庄,Huixin MĐTS,10,10,,10,0,0,10032,绘心阁《魔道祖师—殊途同归》色纸卡牌
+,Lệ Quyên 丽娟,Tum 阿庄,Nanka Sakura,5,60,,60,0,0,10051,南卡《魔卡少女樱》
+,Lệ Quyên 丽娟,Tum 阿庄,Narasha Sailor Moon thẻ xé,10,10,,0,0,10,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Lệ Quyên 丽娟,Tum 阿庄,Sacred Sailor Moon,5,65,,0,-39,26,10018,圣月美少女战士星尘协奏曲长卡
+,Lệ Quyên 丽娟,Tum 阿庄,Hải Minh LnD,20,20,,0,0,20,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Lệ Quyên 丽娟,Tum 阿庄,Đèn Gibli DIY,3,3,1,0,0,2,10046,夜灯
+,Lệ Quyên 丽娟,Tum 阿庄,Butterbear vol 2,5,80,,0,0,80,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Lệ Quyên 丽娟,Tum 阿庄,Thanh gươm Vị Miên chi Dạ,1,1,1,0,0,0,10059,鬼灭之刃·炽阳文创《未眠之夜 》限定双闪色纸
+,Lệ Quyên 丽娟,Tum 阿庄,Kabao Sanrio Hello Kitty Mộng cảnh tuần lễ,6,90,,90,0,0,10058,三丽鸥家族hello kitty梦境巡礼
+,Lệ Quyên 丽娟,Tum 阿庄,  Source Universe Honkai Star Rail A6,20,120,194,0,74,0,10064,源宇宙崩铁色纸
+,Lệ Quyên 丽娟,Tum 阿庄,Kayou Conan vol 2 (bánh quy),10,360,84,0,-276,0,10066,卡游柯南揭秘包第2弹
+,Lệ Quyên 丽娟,Tum 阿庄,Genshin Impact World game,60,60,30,0,-30,0,10077,多多文创原神第二弹卡砖—神眸再现
+,Lệ Quyên 丽娟,Tum 阿庄,Pokemon,0,0,21,0,21,0,10001,《东株社》宝可梦水晶砖
+,Lệ Quyên 丽娟,Tum 阿庄,Wanka Thanh gươm diệt quỷ ver Nhật luân,0,0,1,0,1,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Lệ Quyên 丽娟,Tum 阿庄,Attack on Titan,5,150,10,0,0,140,10012,卡文化进击的巨人
+,Lệ Quyên 丽娟,Tum 阿庄,Naruto thẻ xé,30,30,1,0,0,29,10085,火影忍者·手绘复刻撕撕乐
+,Lệ Quyên 丽娟,Tum 阿庄,KK card Shinkai Makoto vol 1,0,0,14,0,17,3,10035,KK CARD × 新海诚系列第一弹
+,Lệ Quyên 丽娟,Tum 阿庄,Genshin A6 Tiwayimeng (Viết tắt Tiwa),0,0,2,0,2,0,10082,吾羽文创-全亚克力正方形原神色纸
+,Lệ Quyên 丽娟,Tum 阿庄,Hi card Conan vol 4,6,90,15,0,-75,0,10107,Hi卡柯南第四弹《一切都会大白于天下》
+,Lệ Quyên 丽娟,Tum 阿庄,YiHua Wuthering Waves thẻ xé,90,90,29,0,0,61,10069,【艺画文创】鸣潮撕撕乐
+,Lệ Quyên 丽娟,Tum 阿庄,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,5,65,13,0,-39,13,10102,麒麟文创航海王第一弹-仙道天下
+,Lệ Quyên 丽娟,Tum 阿庄,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,2,0,100,98,10103,疯狂动物城白金收藏卡狐兔神探
+,Lệ Quyên 丽娟,Tum 阿庄,KK card Shinkai Makoto vol 1,0,0,17,0,17,0,10035,KK CARD × 新海诚系列第一弹
+,Lệ Quyên 丽娟,Tum 阿庄,Conan ver Party nguy hiểm,10,10,4,0,8,14,10086,【潮迷文创】名侦探柯南-危险排队-周边创意艺术色纸
+,Lệ Quyên 丽娟,Tum 阿庄,Mumu Card Thanh gươm diệt quỷ,0,0,41,0,41,0,10105,木木卡舍·鬼灭之刃无限城篇
+,Lệ Quyên 丽娟,Tum 阿庄,Yi Card One Piece vol 2,5,65,26,0,0,39,10100,《意卡文创海贼王》第二弹
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Lệ Quyên 丽娟,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Ngọc Nhi 玉儿,Tum 阿庄,Shingu Conan phiếu tem,0,12,1,0,0,11,10021,新谷动漫名侦探柯南·仲夏夜之恋邮票集
+,Mỹ Nhàn 美嫻,Tum 阿庄,Kabao Sanrio Gia tộc mùa đông ấm áp,0,0,2,0,2,0,10057,三丽鸥家族暖冬
+,Mỹ Nhàn 美嫻,Tum 阿庄,Kayou Jujutsu Kaisen,9,162,67,0,-41,54,10071,咒术回战-术士收藏卡-高专篇
+,Mỹ Nhàn 美嫻,Tum 阿庄,Floating Dream Đồng cảnh kỳ mộng,5,65,15,0,-50,0,10063,浮梦集 「童境绮梦」艺术家联名收藏卡牌
+,Mỹ Nhàn 美嫻,Tum 阿庄,Conan ver mã Morse phiếu tem,10,10,,0,-5,5,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Mỹ Nhàn 美嫻,Tum 阿庄,Aikaho Thanh gươm diệt quỷ,11,110,45,0,-65,0,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Mỹ Nhàn 美嫻,Tum 阿庄,Pokemon,5,5,1,0,-4,0,10001,《东株社》宝可梦水晶砖
+,Mỹ Nhàn 美嫻,Tum 阿庄,X work Sailor Moon,5,50,17,0,-24,9,10008,XWork美少女战士-璀璨之梦
+,Mỹ Nhàn 美嫻,Tum 阿庄,Sao Hỏa Maltese,15,210,185,0,-25,0,10089,星火线条小狗
+,Mỹ Nhàn 美嫻,Tum 阿庄,Kayou Conan vol 2 (bánh quy),3,108,439,0,331,0,10066,卡游柯南揭秘包第2弹
+,Mỹ Nhàn 美嫻,Tum 阿庄,KK card Shinkai Makoto vol 1,5,70,19,0,0,51,10035,KK CARD × 新海诚系列第一弹
+,Mỹ Nhàn 美嫻,Tum 阿庄,Quàng Thượng,0,0,164,0,207,43,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Mỹ Nhàn 美嫻,Tum 阿庄,Mobile Legend vol 1 Assemble Treasure pack,5,50,,0,0,50,10108,0
+,Mỹ Nhàn 美嫻,Tum 阿庄,Mobile Legend vol 1 Assemble Legend pack,18,180,10,0,0,170,10109,0
+,Mỹ Nhàn 美嫻,Tum 阿庄,Hi card Conan vol 4,10,150,53,0,-97,0,10107,Hi卡柯南第四弹《一切都会大白于天下》
+,Mỹ Nhàn 美嫻,Tum 阿庄,Card Fun Zootopia ver Thần thám Cáo Thỏ,15,300,155,0,-125,20,10103,疯狂动物城白金收藏卡狐兔神探
+,Kiều Phượng 桥凤,Tum 阿庄,OP Phi Phàm,0,0,33,0,33,0,10039,非凡航海王第五弹
+,Thúy Vy 翠薇,Tum 阿庄,Sao Hỏa Maltese,5,70,28,0,-42,0,10089,星火线条小狗
+,Thúy Vy 翠薇,Tum 阿庄,Conan ver mã Morse phiếu tem,10,10,1,0,0,9,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Thúy Vy 翠薇,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Vi 小薇,Hoàng Oanh黄莹,Shingu Conan phiếu tem,6,31,3,22,0,6,10021,新谷动漫名侦探柯南·仲夏夜之恋邮票集
+,Vi 小薇,Hoàng Oanh黄莹,Kny Hoàng Card,5,188,72,116,0,0,10013,皇卡 × 鬼灭《血月之契》篇决战无限城收藏卡
+,Vi 小薇,Hoàng Oanh黄莹,Pokemon,5,5,3,0,-2,0,10001,《东株社》宝可梦水晶砖
+,Vi 小薇,Hoàng Oanh黄莹,Mộng cảnh Sailor Moon,5,143,32,44,0,67,10017,梦境-美少女战士第一弹
+,Vi 小薇,Hoàng Oanh黄莹,Kawaii Gibli,6,78,17,69,8,0,10007,kawaii宫崎骏梦幻之国
+,Vi 小薇,Hoàng Oanh黄莹,Mây và Hạ,7,91,46,0,0,45,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Vi 小薇,Hoàng Oanh黄莹,DUO Kyn,19,456,339,140,0,-23,10003,DUO米全新出品鬼灭之刃-柱合会议篇第二弹
+,Vi 小薇,Hoàng Oanh黄莹,OP Phi Phàm,10,200,109,35,-60,-4,10039,非凡航海王第五弹
+,Vi 小薇,Hoàng Oanh黄莹,Jujutsu vol 1,24,76,58,18,0,0,10004,初见花海咒术回战第一弹
+,Vi 小薇,Hoàng Oanh黄莹,Kayou Conan Vol 5,18,404,301,103,0,0,10052,柯南洞悉包第五弹
+,Vi 小薇,Hoàng Oanh黄莹,Narasha Sailor Moon thẻ xé,0,189,87,42,-20,40,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Vi 小薇,Hoàng Oanh黄莹,KK card Shinkai Makoto vol 1,10,140,85,0,0,55,10035,KK CARD × 新海诚系列第一弹
+,Vi 小薇,Hoàng Oanh黄莹,Gibli Hoa,0,21,9,12,0,0,10011,灿卡文创宫崎骏第二弹《花涧物语》
+,Vi 小薇,Hoàng Oanh黄莹,Nanka Sakura,11,245,245,0,0,0,10051,南卡《魔卡少女樱》
+,Vi 小薇,Hoàng Oanh黄莹,Kuka Maltese,5,71,16,55,0,0,10040,酷卡文化-线条小狗3弹
+,Vi 小薇,Hoàng Oanh黄莹,Butterbear vol 2,4,64,6,0,0,58,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Vi 小薇,Hoàng Oanh黄莹,Scroll Painting Thanh gươm diệt quỷ ,17,88,60,28,0,0,10055,绘卷文创 - 梦境入画【鬼灭之刃系列收藏卡砖】
+,Vi 小薇,Hoàng Oanh黄莹,Quàng Thượng,12,120,100,0,8,28,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Vi 小薇,Hoàng Oanh黄莹,Kayou Jujutsu Kaisen,10,180,35,0,0,145,10071,咒术回战-术士收藏卡-高专篇
+,Vi 小薇,Hoàng Oanh黄莹,Kayou Conan vol 2 (bánh quy),10,360,175,0,0,185,10066,卡游柯南揭秘包第2弹
+,Vi 小薇,Hoàng Oanh黄莹,Conan ver mã Morse phiếu tem,20,20,3,0,0,17,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Vi 小薇,Hoàng Oanh黄莹,Wanka Thanh gươm diệt quỷ ver Nhật luân,0,0,139,0,139,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Vi 小薇,Hoàng Oanh黄莹,Aikaho Thanh gươm diệt quỷ,5,50,144,0,94,0,10076,【Aikaho】鬼灭之刃第四弹 集结 【DS-04 Muster】
+,Vi 小薇,Hoàng Oanh黄莹,Conan ver Party nguy hiểm,20,20,2,0,0,18,10086,【潮迷文创】名侦探柯南-危险排队-周边创意艺术色纸
+,Vi 小薇,Hoàng Oanh黄莹,Yi Card One Piece vol 2,5,65,3,0,0,62,10100,《意卡文创海贼王》第二弹
+,Vi 小薇,Hoàng Oanh黄莹,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,5,65,13,0,0,52,10102,麒麟文创航海王第一弹-仙道天下
+,Vi 小薇,Hoàng Oanh黄莹,Card Fun Zootopia ver Thần thám Cáo Thỏ,5,100,91,0,40,49,10103,疯狂动物城白金收藏卡狐兔神探
+,Vi 小薇,Hoàng Oanh黄莹,Mumu Card Thanh gươm diệt quỷ,10,50,17,0,-33,0,10105,木木卡舍·鬼灭之刃无限城篇
+,Vi 小薇,Hoàng Oanh黄莹,Kayou Mobile Legend,5,100,5,0,0,95,10062,Mobile Legends: Bang Bang-Collectible Cards-Hand of Destiny-001A-SEA
+,Vi 小薇,Hoàng Oanh黄莹,Tinh tú hội họa Shinkai Makoto,9,117,,0,0,117,10093,星绘社新海诚系列卡牌
+,Vi 小薇,Hoàng Oanh黄莹,,0,0,,0,0,0,#N/A,#N/A
+,Thanh 阿青,Hoàng Oanh黄莹,Goods Power TQTP,150,150,150,0,0,0,10019,谷子力量 x 竹烟波月亚克力透卡
+,Thanh 阿青,Hoàng Oanh黄莹,Quân sơn TQTP,468,468,269,199,0,0,10025,君屹文化耽美古风收藏新纪元《言辞忆梦》撕撕乐
+,Thanh 阿青,Hoàng Oanh黄莹,Huixin MĐTS,80,354,354,0,0,0,10032,绘心阁《魔道祖师—殊途同归》色纸卡牌
+,Thanh 阿青,Hoàng Oanh黄莹,Gibli Hoa,37,509,399,138,0,-28,10011,灿卡文创宫崎骏第二弹《花涧物语》
+,Thanh 阿青,Hoàng Oanh黄莹,Lan Đình A6 tổng hợp,160,240,240,0,0,0,10034,兰亭文创x墨家三宝典藏色纸砚池春深系列
+,Thanh 阿青,Hoàng Oanh黄莹,Wamder Roaming Sakura,5,89,66,23,0,0,10010,玩的入迷-魔卡少女樱第一弹—樱之绮遇
+,Thanh 阿青,Hoàng Oanh黄莹,Kawaii Gibli,11,146,78,65,0,3,10007,kawaii宫崎骏梦幻之国
+,Thanh 阿青,Hoàng Oanh黄莹,OP Phi Phàm,10,220,49,171,0,0,10039,非凡航海王第五弹
+,Thanh 阿青,Hoàng Oanh黄莹,Melting point,52,156,156,0,0,0,10049,野火文创《月下悸动》 韩漫耽美撕撕乐
+,Thanh 阿青,Hoàng Oanh黄莹,Hoa rơi chỉ vì quân,30,426,347,79,0,0,10053,悦灵文创 《落花只为君》第三弹
+,Thanh 阿青,Hoàng Oanh黄莹,LnD Gió hạ từng hôn mi em,40,99,63,0,-16,20,10038,浮光工作室❤第三弹【夏风吻过你的睫毛】
+,Thanh 阿青,Hoàng Oanh黄莹,Mộng ảnh Hắc Quản Gia,10,131,99,32,0,0,10030,梦影动漫黑执事-典藏版收藏卡牌
+,Thanh 阿青,Hoàng Oanh黄莹,Nanka Sakura,7,84,35,48,0,1,10051,南卡《魔卡少女樱》
+,Thanh 阿青,Hoàng Oanh黄莹,Kuka Maltese,10,187,125,62,0,0,10040,酷卡文化-线条小狗3弹
+,Thanh 阿青,Hoàng Oanh黄莹,Quàng Thượng,10,100,67,10,-23,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Thanh 阿青,Hoàng Oanh黄莹,Butterbear vol 2,5,80,3,0,0,77,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Thanh 阿青,Hoàng Oanh黄莹,LnD thẻ xé Ngàn lần động tâm,0,50,43,0,0,7,10033,慕光文创「一千次心动」系列撕撕乐
+,Thanh 阿青,Hoàng Oanh黄莹,Bản tổng hợp cổ phong Đam ư mỹ sắc vol 3,37,407,396,11,0,0,10061,灵漫社《耽于美涩》古风系列收藏卡牌第三弹
+,Thanh 阿青,Hoàng Oanh黄莹, Card Fun Thiên quan tứ phúc bản hoạt hình,19,190,159,31,0,0,10056,集卡社天官赐福动画周年纪念版
+,Thanh 阿青,Hoàng Oanh黄莹,Vancard Sanrio,5,50,,20,-20,10,10009,万画云游三丽鸥家族百变cos收藏卡
+,Thanh 阿青,Hoàng Oanh黄莹,Kabao Sanrio Hello Kitty Mộng cảnh tuần lễ,2,30,2,28,0,0,10058,三丽鸥家族hello kitty梦境巡礼
+,Thanh 阿青,Hoàng Oanh黄莹,Hải Minh LnD,0,20,20,0,0,0,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Thanh 阿青,Hoàng Oanh黄莹,Nhất Nặc Chung Sinh Tổng hợp 3 bộ của Mặc Hương,0,90,90,0,0,0,10070,【喵谷】&【一诺终生】墨香三部曲系列色纸【魔道】【天官】【渣反】第二弹
+,Thanh 阿青,Hoàng Oanh黄莹,Trúc Ảnh Dao Tiên thẻ xé đam mỹ,0,200,185,0,50,65,10068,《竹影摇笺》耽美撕撕乐系列
+,Thanh 阿青,Hoàng Oanh黄莹,Card Fun Cây Nấm Nhỏ ver Mạt thế thâm uyên,15,150,61,0,-30,59,10080,《小蘑菇》流荧版收藏卡-末世深渊
+,Thanh 阿青,Hoàng Oanh黄莹,Light bản tổng hợp BL thẻ xé,80,80,65,0,-5,10,10074,火萤文创【帷幕将倾】俊男唯美撕撕乐
+,Thanh 阿青,Hoàng Oanh黄莹,Nam thần đam mỹ A6 Điệp hải mộng hoa,20,100,100,0,0,0,10094,山海文创《蝶海梦花》耽美男神A6纯亚克力色纸
+,Thanh 阿青,Hoàng Oanh黄莹,Card Fun Zootopia ver Thần thám Cáo Thỏ,15,300,231,0,-3,66,10103,疯狂动物城白金收藏卡狐兔神探
+,Thanh 阿青,Hoàng Oanh黄莹,Tử Vi Sakura thẻ xé,20,60,3,0,0,57,10092,紫薇文创×魔卡少女樱·撕撕乐
+,Thanh 阿青,Hoàng Oanh黄莹,Sakura House,0,0,3,0,16,13,10029,樱花屋魔卡少女樱
+,Thanh 阿青,Hoàng Oanh黄莹,Series Đam Mỹ - Bộ Tarot Nhân Duyên Tam Giới,10,120,28,0,0,92,10098,【念君集·双心占卜·耽美系列】三界情缘塔罗牌
+,Thanh 阿青,Hoàng Oanh黄莹,,0,0,,0,0,0,#N/A,#N/A
+,Thanh 阿青,Hoàng Oanh黄莹,,0,0,,0,0,0,#N/A,#N/A
+,Thanh 阿青,Hoàng Oanh黄莹,,0,0,,0,0,0,#N/A,#N/A
+,Thanh 阿青,Hoàng Oanh黄莹,,0,0,,0,0,0,#N/A,#N/A
+,Thanh Hằng 青姮,Hoàng Oanh黄莹,Butterbear vol 2,5,80,,0,-80,0,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Thanh Hằng 青姮,Hoàng Oanh黄莹,Kayou Conan vol 2 (bánh quy),5,180,,0,-180,0,10066,卡游柯南揭秘包第2弹
+,Thanh Hằng 青姮,Hoàng Oanh黄莹,Moon Card Sailor Moon,5,65,,0,-65,0,10002,MoonCard月卡《美少女战士》第三弹
+,Thanh Hằng 青姮,Hoàng Oanh黄莹,Quàng Thượng,3,30,,0,-30,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Thanh Hằng 青姮,Hoàng Oanh黄莹,OP Phi Phàm,0,0,,0,0,0,10039,非凡航海王第五弹
+,Thanh Hằng 青姮,Hoàng Oanh黄莹,Đèn Gibli DIY,5,5,1,0,-4,0,10046,夜灯
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Butterbear vol 2,0,0,,0,16,16,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Kayou Conan vol 2 (bánh quy),0,0,25,0,25,0,10066,卡游柯南揭秘包第2弹
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Moon Card Sailor Moon,0,0,,0,65,65,10002,MoonCard月卡《美少女战士》第三弹
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Quàng Thượng,0,0,,0,0,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,OP Phi Phàm,5,100,409,0,309,0,10039,非凡航海王第五弹
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Đèn Gibli DIY,0,0,,0,4,4,10046,夜灯
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,1,0,20,19,10103,疯狂动物城白金收藏卡狐兔神探
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Conan ver Party nguy hiểm,20,20,2,0,0,18,10086,【潮迷文创】名侦探柯南-危险排队-周边创意艺术色纸
+,Hồng Nhung 红蓉,Hoàng Oanh黄莹,Sakura House,0,0,,0,0,0,10029,樱花屋魔卡少女樱
+,Phương Thảo 芳草,Hoàng Oanh黄莹,Butterbear vol 2,5,80,,0,-80,0,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Phương Thảo 芳草,Hoàng Oanh黄莹,LnD Gió hạ từng hôn mi em,0,0,7,0,16,9,10038,浮光工作室❤第三弹【夏风吻过你的睫毛】
+,Phương Thảo 芳草,Hoàng Oanh黄莹,Sakura House,5,60,,0,-60,0,10029,樱花屋魔卡少女樱
+,Phương Thảo 芳草,Hoàng Oanh黄莹,Trúc Ảnh Dao Tiên thẻ xé đam mỹ,100,100,,0,-50,50,10068,《竹影摇笺》耽美撕撕乐系列
+,Phương Thảo 芳草,Hoàng Oanh黄莹,Hải Minh LnD,0,0,2,0,10,8,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Phương Thảo 芳草,Hoàng Oanh黄莹,Quàng Thượng,0,0,,0,0,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Zenex,Hoàng 范范,Tinh Mộng Gibli thẻ xé,30,90,15,75,0,0,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Zenex,Hoàng 范范,Mây và Hạ,11,143,77,66,0,0,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Zenex,Hoàng 范范,OP Phi Phàm,144,2880,48,2832,0,0,10039,非凡航海王第五弹
+,Zenex,Hoàng 范范,Gibli Wind,20,20,6,14,0,0,10005,椿柚文创宫崎骏 被风吹散的秘密邮票第一弹
+,Zenex,Hoàng 范范,Tinh quang Genshin,20,20,3,17,0,0,10023,风信文创尘世相逢之约星光来信原神邮票第一弹
+,Zenex,Hoàng 范范,Kuka Maltese,5,55,22,33,0,0,10040,酷卡文化-线条小狗3弹
+,Thu Giang秋江,Kiều Anh侨英,Kny Hoàng Card,0,44,8,36,0,0,10013,皇卡 × 鬼灭《血月之契》篇决战无限城收藏卡
+,Thu Giang秋江,Kiều Anh侨英,DUO Kyn,10,166,8,158,0,0,10003,DUO米全新出品鬼灭之刃-柱合会议篇第二弹
+,Thu Giang秋江,Kiều Anh侨英,Hải Minh LnD,20,60,11,20,0,29,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Hoàng Anh黄英,Kiều Anh侨英,MH Gibli,5,60,13,0,0,47,10015,梦绘文创-宫崎骏第二弹
+,Hoàng Anh黄英,Kiều Anh侨英,Mộng cảnh Sailor Moon,5,65,,0,0,65,10017,梦境-美少女战士第一弹
+,Hoàng Anh黄英,Kiều Anh侨英,OP Phi Phàm,10,200,56,124,-20,0,10039,非凡航海王第五弹
+,Khoa 科,Tum 阿庄,Jujutsu vol 1,30,30,8,22,0,0,10004,初见花海咒术回战第一弹
+,Khoa 科,Tum 阿庄,OP Phi Phàm,5,100,,100,0,0,10039,非凡航海王第五弹
+,Khoa 科,Tum 阿庄,Tinh Mộng Gibli thẻ xé,20,60,,60,0,0,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Trường Vũ 长宇,Tum 阿庄,Jujutsu vol 1,20,20,0,20,0,0,10004,初见花海咒术回战第一弹
+,Trường Vũ 长宇,Tum 阿庄,Kawaii Gibli,20,260,184,76,0,0,10007,kawaii宫崎骏梦幻之国
+,Trường Vũ 长宇,Tum 阿庄,Tinh Mộng Gibli thẻ xé,20,60,1,58,0,1,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Trường Vũ 长宇,Tum 阿庄,Hải Minh LnD,20,20,2,18,0,0,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Trường Vũ 长宇,Tum 阿庄,Mây và Hạ,0,64,2,62,0,0,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Trường Vũ 长宇,Tum 阿庄,Gibli Hoa,5,85,30,55,0,0,10011,灿卡文创宫崎骏第二弹《花涧物语》
+,Minh Thư 明书,Tum 阿庄,Pokemon,5,5,,5,0,0,10001,《东株社》宝可梦水晶砖
+,Phước 小福,Tuyền 绚,OP Phi Phàm,100,2000,2076,94,170,0,10039,非凡航海王第五弹
+,Phước 小福,Tuyền 绚,Kawaii Gibli,7,139,39,85,-8,7,10007,kawaii宫崎骏梦幻之国
+,Phước 小福,Tuyền 绚,Gibli Hoa,1,60,40,20,0,0,10011,灿卡文创宫崎骏第二弹《花涧物语》
+,Phước 小福,Tuyền 绚,Mây và Hạ,6,140,53,87,0,0,10006,云映文化「云之境の夏」第二弹·宫崎骏珍藏卡牌
+,Phước 小福,Tuyền 绚,Hải Minh LnD,19,37,5,20,0,12,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Phước 小福,Tuyền 绚,Vân Ảnh Ghibli Cuộn Tranh Thời Gian,15,195,74,0,0,121,10106,云映文化时光绘卷·宫崎骏珍藏卡牌
+,Phước 小福,Tuyền 绚,Pokemon,0,2,1,0,-1,0,10001,《东株社》宝可梦水晶砖
+,Phước 小福,Tuyền 绚,Quân sơn TQTP,0,90,18,0,0,72,10025,君屹文化耽美古风收藏新纪元《言辞忆梦》撕撕乐
+,Phước 小福,Tuyền 绚,Moon Card Sailor Moon,5,65,3,13,-49,0,10002,MoonCard月卡《美少女战士》第三弹
+,Phước 小福,Tuyền 绚,Attack on Titan,5,150,60,0,0,90,10012,卡文化进击的巨人
+,Phước 小福,Tuyền 绚,Kayou Mobile Legend,5,100,5,0,0,95,10062,Mobile Legends: Bang Bang-Collectible Cards-Hand of Destiny-001A-SEA
+,Phước 小福,Tuyền 绚,  Source Universe Honkai Star Rail A6,5,30,31,0,1,0,10064,源宇宙崩铁色纸
+,Phước 小福,Tuyền 绚,Naruto thẻ xé,0,100,2,0,-40,58,10085,火影忍者·手绘复刻撕撕乐
+,Phước 小福,Tuyền 绚,Kayou Jujutsu Kaisen,5,90,27,0,-3,60,10071,咒术回战-术士收藏卡-高专篇
+,Phước 小福,Tuyền 绚,Kayou Conan vol 2 (bánh quy),5,180,258,0,81,3,10066,卡游柯南揭秘包第2弹
+,Phước 小福,Tuyền 绚,Wanka Thanh gươm diệt quỷ ver Nhật luân,0,0,13,0,13,0,10075,《万卡卡文创》鬼灭之刃日轮破晓第一弹
+,Phước 小福,Tuyền 绚,Sao Hỏa Maltese,0,0,194,0,194,0,10089,星火线条小狗
+,Phước 小福,Tuyền 绚,World Cup 2026,5,180,0,0,-10,170,10087,世界杯足球2026
+,Phước 小福,Tuyền 绚, Manga Forest Ghibli vol 3,5,65,22,0,-10,33,10060,漫の森《宫崎骏第三弹·奇幻之旅》
+,Phước 小福,Tuyền 绚,Conan ver mã Morse phiếu tem,0,0,1,0,3,2,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Phước 小福,Tuyền 绚,Yi Card One Piece vol 2,15,195,103,0,-19,73,10100,《意卡文创海贼王》第二弹
+,Phước 小福,Tuyền 绚,Kỳ Lân One Piece ver Tiên đạo thiên hạ vol 1,5,65,26,0,0,39,10102,麒麟文创航海王第一弹-仙道天下
+,Phước 小福,Tuyền 绚,Kayou Conan vol 3 (bản 2 tệ),5,150,3,0,0,147,10088,名侦探柯南-名推理收藏卡-觅影包-第3弹
+,Phước 小福,Tuyền 绚,Hi card Conan vol 4,0,0,126,0,231,105,10107,Hi卡柯南第四弹《一切都会大白于天下》
+,Phước 小福,Tuyền 绚,Quàng Thượng,0,0,88,0,101,13,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Phước 小福,Tuyền 绚,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,90,0,105,15,10103,疯狂动物城白金收藏卡狐兔神探
+,Phước 小福,Tuyền 绚,Conan ver Party nguy hiểm,0,18,1,0,-17,0,10086,【潮迷文创】名侦探柯南-危险排队-周边创意艺术色纸
+,Phước 小福,Tuyền 绚,Mumu Card Thanh gươm diệt quỷ,0,0,1,0,1,0,10105,木木卡舍·鬼灭之刃无限城篇
+,Phước 小福,Tuyền 绚,Quàng Thượng,0,0,88,0,101,13,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Phước 小福,Tuyền 绚,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,25,0,105,80,10103,疯狂动物城白金收藏卡狐兔神探
+,Minh Thư 明书,Tuyền 绚,Moon Card Sailor Moon,0,0,0,0,49,49,10002,MoonCard月卡《美少女战士》第三弹
+,Minh Thư 明书,Tuyền 绚,OP Phi Phàm,12,240,434,0,194,0,10039,非凡航海王第五弹
+,Minh Thư 明书,Tuyền 绚,Sakura House,0,0,8,0,31,23,10029,樱花屋魔卡少女樱
+,Minh Thư 明书,Tuyền 绚,Sacred Sailor Moon,3,39,0,0,-26,13,10018,圣月美少女战士星尘协奏曲长卡
+,Minh Thư 明书,Tuyền 绚,Sao Hỏa Maltese,26,364,70,0,-294,0,10089,星火线条小狗
+,Minh Thư 明书,Tuyền 绚,Kayou Conan vol 2 (bánh quy),0,0,86,0,108,22,10066,卡游柯南揭秘包第2弹
+,Minh Thư 明书,Tuyền 绚,Conan ver mã Morse phiếu tem,0,0,2,0,2,0,10078,摩斯社×名侦探柯南-摩斯密码系列评级邮票
+,Minh Thư 明书,Tuyền 绚,X work Sailor Moon,0,0,2,0,20,18,10008,XWork美少女战士-璀璨之梦
+,Minh Thư 明书,Tuyền 绚,Quàng Thượng,0,0,6,0,8,2,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Minh Thư 明书,Tuyền 绚,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,66,0,131,65,10103,疯狂动物城白金收藏卡狐兔神探
+,Minh Thư 明书,Tuyền 绚,,0,0,,0,0,0,#N/A,#N/A
+,Kỳ Duyên 琪媛,Huệ 氏惠,OP Phi Phàm,3,60,20,40,0,0,10039,非凡航海王第五弹
+,Kỳ Duyên 琪媛,Huệ 氏惠,Sacred Sailor Moon,5,65,,65,0,0,10018,圣月美少女战士星尘协奏曲长卡
+,Kỳ Duyên 琪媛,Huệ 氏惠,Hải Minh LnD,20,20,,20,0,0,10026,星恋文创·恋与深空《晦明交错之间》亚克力相框卡
+,Kỳ Duyên 琪媛,Huệ 氏惠,Nanka Sakura,5,60,,60,0,0,10051,南卡《魔卡少女樱》
+,Kỳ Duyên 琪媛,Huệ 氏惠,Huixin MĐTS,10,10,,10,0,0,10032,绘心阁《魔道祖师—殊途同归》色纸卡牌
+,Test Live,Huệ 氏惠,Nanka Sakura,16,192,85,107,0,0,10051,南卡《魔卡少女樱》
+,Test Live,Huệ 氏惠,Narasha Sailor Moon thẻ xé,30,30,,30,0,0,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Test Live,Huệ 氏惠,Tinh Mộng Gibli thẻ xé,30,90,,90,0,0,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Test Live,Huệ 氏惠,OP Phi Phàm,15,300,13,300,-65,-78,10039,非凡航海王第五弹
+,Test Live,Huệ 氏惠,XR Sailor Moon,6,78,,78,0,0,10043,光恋XR-披荆斩棘-美少女战士
+,Test Live,Huệ 氏惠,Sacred Sailor Moon,6,78,,78,0,0,10018,圣月美少女战士星尘协奏曲长卡
+,Test Live,Huệ 氏惠,Huixin MĐTS,40,40,,40,0,0,10032,绘心阁《魔道祖师—殊途同归》色纸卡牌
+,Test Live,Tum 阿庄,X work Sailor Moon,5,50,14,0,-36,0,10008,XWork美少女战士-璀璨之梦
+,Test Live,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Test Live,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Test Live,Tum 阿庄,,0,0,,0,0,0,#N/A,#N/A
+,Test Live,Huệ 氏惠,Kayou Conan Vol 5,0,28,3,25,0,0,10052,柯南洞悉包第五弹
+,Thái Châu 泰珠,Hoàng 范范,KK card Shinkai Makoto vol 1,1,14,,0,-14,0,10035,KK CARD × 新海诚系列第一弹
+,Thái Châu 泰珠,Hoàng 范范,Nanka Sakura,0,48,25,23,0,0,10051,南卡《魔卡少女樱》
+,Thái Châu 泰珠,Hoàng 范范,Sacred Sailor Moon,2,26,,0,-26,0,10018,圣月美少女战士星尘协奏曲长卡
+,Thái Châu 泰珠,Hoàng 范范,Narasha Sailor Moon thẻ xé,10,10,7,3,0,0,10048,奈良社《极昼漫游》美少女战士撕撕乐+异形小卡
+,Thái Châu 泰珠,Hoàng 范范,OP Phi Phàm,3,60,73,0,13,0,10039,非凡航海王第五弹
+,Thái Châu 泰珠,Hoàng 范范,X work Sailor Moon,1,10,,0,-10,0,10008,XWork美少女战士-璀璨之梦
+,Thái Châu 泰珠,Hoàng 范范,XR Sailor Moon,6,78,49,0,-29,0,10043,光恋XR-披荆斩棘-美少女战士
+,Thái Châu 泰珠,Hoàng 范范,Đèn Gibli DIY,3,3,,0,-3,0,10046,夜灯
+,Thái Châu 泰珠,Hoàng 范范,Quàng Thượng,2,20,9,3,-8,0,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Thái Châu 泰珠,Hoàng 范范,Sakura House,1,12,,0,-12,0,10029,樱花屋魔卡少女樱
+,Thái Châu 泰珠,Hoàng 范范,Kabao Sanrio Hello Kitty Mộng cảnh tuần lễ,0,11,4,7,0,0,10058,三丽鸥家族hello kitty梦境巡礼
+,Cẩm Giang 锦江,Hoàng 范范,OP Phi Phàm,5,911,60,80,-608,163,10039,非凡航海王第五弹
+,Cẩm Giang 锦江,Hoàng 范范,Tinh quang Genshin,0,7,,0,-7,0,10023,风信文创尘世相逢之约星光来信原神邮票第一弹
+,Cẩm Giang 锦江,Hoàng 范范,Attack on Titan,5,150,,0,-90,60,10012,卡文化进击的巨人
+,Cẩm Giang 锦江,Hoàng 范范,Tinh Mộng Gibli thẻ xé,0,75,,0,-60,15,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Cẩm Giang 锦江,Hoàng 范范,Kabao Sanrio Hello Kitty Mộng cảnh tuần lễ,3,45,19,26,0,0,10058,三丽鸥家族hello kitty梦境巡礼
+,Cẩm Giang 锦江,Hoàng 范范,Butterbear vol 2,5,80,49,0,-31,0,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Hà chi 哈芝,Tú Phượng 苏凤,KK card Shinkai Makoto vol 1,0,0,,0,0,0,10035,KK CARD × 新海诚系列第一弹
+,Hà chi 哈芝,Tú Phượng 苏凤,Sacred Sailor Moon,0,0,,0,26,26,10018,圣月美少女战士星尘协奏曲长卡
+,Hà chi 哈芝,Tú Phượng 苏凤,OP Phi Phàm,8,160,93,0,-46,21,10039,非凡航海王第五弹
+,Hà chi 哈芝,Tú Phượng 苏凤,X work Sailor Moon,0,0,,0,10,10,10008,XWork美少女战士-璀璨之梦
+,Hà chi 哈芝,Tú Phượng 苏凤,XR Sailor Moon,0,0,,0,29,29,10043,光恋XR-披荆斩棘-美少女战士
+,Hà chi 哈芝,Tú Phượng 苏凤,Đèn Gibli DIY,0,0,,0,3,3,10046,夜灯
+,Hà chi 哈芝,Tú Phượng 苏凤,Quàng Thượng,0,0,,0,3,3,10016,思梨普文创《hey!国王陛下》集换式艺术家典藏卡
+,Hà chi 哈芝,Tú Phượng 苏凤,Sakura House,0,0,,0,0,0,10029,樱花屋魔卡少女樱
+,Hà chi 哈芝,Tú Phượng 苏凤,Kawaii Gibli,0,0,,0,33,33,10007,kawaii宫崎骏梦幻之国
+,Hà chi 哈芝,Tú Phượng 苏凤,Tinh Mộng Gibli thẻ xé,5,15,,0,0,15,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Hà chi 哈芝,Tú Phượng 苏凤,Naruto thẻ xé,0,60,,0,0,60,10085,火影忍者·手绘复刻撕撕乐
+,Hà chi 哈芝,Tú Phượng 苏凤, Manga Forest Ghibli vol 3,3,39,,0,0,39,10060,漫の森《宫崎骏第三弹·奇幻之旅》
+,Hà chi 哈芝,Tú Phượng 苏凤,Sao Hỏa Maltese,0,0,,0,0,0,10089,星火线条小狗
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,OP Phi Phàm,0,0,114,0,114,0,10039,非凡航海王第五弹
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Tinh quang Genshin,0,0,,0,7,7,10023,风信文创尘世相逢之约星光来信原神邮票第一弹
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Attack on Titan,3,90,100,0,90,80,10012,卡文化进击的巨人
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Tinh Mộng Gibli thẻ xé,0,0,16,0,60,44,10014,星梦文创-Studio Ghibli宫崎骏撕撕乐系列
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Butterbear vol 2,0,0,3,0,31,28,10042,黄油小熊系列收藏卡第二弹 小熊的观察日记
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Kawaii Gibli,0,9,,0,-9,0,10007,kawaii宫崎骏梦幻之国
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Genshin Impact World game,0,10,5,0,-5,0,10077,多多文创原神第二弹卡砖—神眸再现
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,Card Fun Zootopia ver Thần thám Cáo Thỏ,0,0,24,0,24,0,10103,疯狂动物城白金收藏卡狐兔神探
+,Thúy Phụng 翠凤,Tú Phượng 苏凤,KK card Shinkai Makoto vol 1,0,0,4,0,14,10,10035,KK CARD × 新海诚系列第一弹
