@@ -36,6 +36,8 @@
     "**/*.test.ts",
     "**/__tests__/**",
     "src/__tests__/**",
+    "src/scripts/**/*",
+    "**/*.simple.ts",
     "prisma/**/*"
   ]
 }

@@ -34,3 +34,5 @@ coverage/
 tmp/
 temp/
 backups/
+
+scripts/data-migration/output
