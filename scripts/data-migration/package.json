@@ -1,0 +1,24 @@
+{
+  "name": "data-migration",
+  "version": "1.0.0",
+  "description": "数据转换工具 - 将旧系统CSV数据转换为新ERP系统可导入的格式",
+  "main": "index.js",
+  "scripts": {
+    "inspect": "node src/inspectData.js",
+    "convert": "node src/convertWithEncoding.js",
+    "convert:import": "node src/convertToImportTables.js",
+    "convert:excel": "node src/convertToExcel.js",
+    "csv:to:excel": "node src/csvToExcel.js",
+    "validate": "node src/validate.js"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.0",
+    "csv-stringify": "^6.4.0",
+    "xlsx": "^0.18.5",
+    "chalk": "^4.1.2",
+    "iconv-lite": "^0.6.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
