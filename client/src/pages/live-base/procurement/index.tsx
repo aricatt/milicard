@@ -281,7 +281,7 @@ const ProcurementManagement: React.FC = () => {
   /**
    * 更新采购订单
    */
-  const handleUpdate = async (values: ProcurementFormValues) => {
+  const handleUpdate = async (values: ProcurementFormValues & { cnyPaymentAmount?: number }) => {
     if (!currentBase || !editingOrder) {
       return;
     }
@@ -294,18 +294,26 @@ const ProcurementManagement: React.FC = () => {
       const amountPiece = (values.unitPricePiece || 0) * (values.purchasePieceQty || 0);
       const totalAmount = amountBox + amountPack + amountPiece;
 
+      // 构造请求数据
+      const requestData: any = {
+        ...values,
+        purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
+        amountBox,
+        amountPack,
+        amountPiece,
+        totalAmount,
+      };
+
+      // 如果有人民币支付金额，添加到请求数据中
+      if (values.cnyPaymentAmount !== undefined && values.cnyPaymentAmount > 0) {
+        requestData.cnyPaymentAmount = values.cnyPaymentAmount;
+      }
+
       const result = await request(
         `/api/v1/bases/${currentBase.id}/purchase-orders/${editingOrder.id}`,
         {
           method: 'PUT',
-          data: {
-            ...values,
-            purchaseDate: values.purchaseDate?.format('YYYY-MM-DD'),
-            amountBox,
-            amountPack,
-            amountPiece,
-            totalAmount,
-          },
+          data: requestData,
         }
       );
 
@@ -579,6 +587,7 @@ const ProcurementManagement: React.FC = () => {
           currencyCode={currentCurrencyCode}
           exchangeRate={formExchangeRate}
           onExchangeRateChange={setFormExchangeRate}
+          initialCnyPaymentAmount={editingOrder?.cnyPaymentAmount}
         />
       </Modal>
 

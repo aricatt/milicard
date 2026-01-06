@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, DatePicker, Select, InputNumber, Row, Col, Tag, Alert, Space, Tooltip, Checkbox } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { useIntl, getLocale } from '@umijs/max';
@@ -21,6 +21,7 @@ interface ProcurementFormProps {
   currencyCode: string;
   exchangeRate: number;
   onExchangeRateChange: (rate: number) => void;
+  initialCnyPaymentAmount?: number;  // 初始人民币支付金额（用于编辑）
 }
 
 /**
@@ -37,6 +38,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
   currencyCode,
   exchangeRate,
   onExchangeRateChange,
+  initialCnyPaymentAmount,
 }) => {
   const intl = useIntl();
   const isCNY = currencyCode === 'CNY';
@@ -45,6 +47,17 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
   const [cnyPaymentMode, setCnyPaymentMode] = useState(false);
   // 人民币实际金额（用于人民币支付模式）
   const [cnyActualAmount, setCnyActualAmount] = useState<number | null>(null);
+
+  // 编辑时，根据初始值设置人民币支付模式
+  useEffect(() => {
+    if (initialCnyPaymentAmount !== undefined && initialCnyPaymentAmount > 0) {
+      setCnyPaymentMode(true);
+      setCnyActualAmount(initialCnyPaymentAmount);
+    } else {
+      setCnyPaymentMode(false);
+      setCnyActualAmount(null);
+    }
+  }, [initialCnyPaymentAmount]);
   /**
    * 商品选择变化时，自动填充零售价和拆分关系
    */

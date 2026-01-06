@@ -23,6 +23,7 @@ export class PurchaseBaseService {
           poi.id,
           po.id as "purchaseOrderId",
           po.code as "orderNo",
+          s.code as "supplierCode",
           s.name as "supplierName",
           po.supplier_id as "supplierId",
           po.base_id as "baseId",
@@ -43,7 +44,7 @@ export class PurchaseBaseService {
           poi.box_quantity as "purchaseBoxQty",
           poi.pack_quantity as "purchasePackQty",
           poi.piece_quantity as "purchasePieceQty",
-          poi.unit_price as "unitPrice",
+          poi.unit_price as "unitPriceBox",
           poi.total_pieces as "totalPieces",
           poi.total_price as "totalAmount",
           COALESCE(arr.arrived_box, 0) as "arrivedBoxQty",
@@ -122,11 +123,10 @@ export class PurchaseBaseService {
       const data = (purchaseItems as any[]).map(item => {
         const packPerBox = Number(item.packPerBox) || 1;
         const piecePerPack = Number(item.piecePerPack) || 1;
-        const unitPrice = Number(item.unitPrice) || 0;
+        const unitPriceBox = Number(item.unitPriceBox) || 0;
         
-        // 计算各级单价（假设unitPrice是箱单价）
-        const unitPriceBox = unitPrice;
-        const unitPricePack = unitPrice / packPerBox;
+        // 计算各级单价（假设unitPriceBox是箱单价）
+        const unitPricePack = unitPriceBox / packPerBox;
         const unitPricePiece = unitPricePack / piecePerPack;
 
         // 采购数量
@@ -148,6 +148,7 @@ export class PurchaseBaseService {
           id: item.purchaseOrderId,       // 返回采购订单ID
           purchaseOrderId: item.purchaseOrderId, // 同时保留purchaseOrderId字段
           orderNo: item.orderNo,
+          supplierCode: item.supplierCode,
           supplierName: item.supplierName,
           baseId: item.baseId,
           purchaseDate: item.purchaseDate,
@@ -833,6 +834,9 @@ export class PurchaseBaseService {
         where: {
           id: orderId,
           baseId
+        },
+        include: {
+          items: true
         }
       });
 
@@ -840,20 +844,65 @@ export class PurchaseBaseService {
         throw new Error('采购订单不存在或不属于该基地');
       }
 
-      // 构建更新数据（物流信息现在在单独的表中管理）
-      const updateData: any = {};
-      
-      if (data.actualAmount !== undefined) {
-        updateData.actualAmount = data.actualAmount;
-      }
-      
-      if (data.notes !== undefined) {
-        updateData.notes = data.notes;
-      }
+      // 使用事务更新订单和明细
+      const result = await prisma.$transaction(async (tx) => {
+        // 构建主订单更新数据
+        const updateData: any = {};
+        
+        if (data.actualAmount !== undefined) {
+          updateData.actualAmount = data.actualAmount;
+        }
+        
+        if (data.cnyPaymentAmount !== undefined) {
+          updateData.cnyPaymentAmount = data.cnyPaymentAmount;
+        }
+        
+        if (data.notes !== undefined) {
+          updateData.notes = data.notes;
+        }
 
-      const updatedOrder = await prisma.purchaseOrder.update({
-        where: { id: orderId },
-        data: updateData
+        // 更新主订单
+        const updatedOrder = await tx.purchaseOrder.update({
+          where: { id: orderId },
+          data: updateData
+        });
+
+        // 如果传入了单价或数量相关字段，更新订单明细
+        if (order.items.length > 0) {
+          const firstItem = order.items[0];
+          const itemUpdateData: any = {};
+          
+          // 更新数量字段
+          if (data.purchaseBoxQty !== undefined) {
+            itemUpdateData.boxQuantity = data.purchaseBoxQty;
+          }
+          if (data.purchasePackQty !== undefined) {
+            itemUpdateData.packQuantity = data.purchasePackQty;
+          }
+          if (data.purchasePieceQty !== undefined) {
+            itemUpdateData.pieceQuantity = data.purchasePieceQty;
+          }
+          
+          // 更新单价
+          if (data.unitPriceBox !== undefined) {
+            itemUpdateData.unitPrice = data.unitPriceBox;
+          }
+          
+          // 更新总价
+          if (data.totalAmount !== undefined) {
+            itemUpdateData.totalPrice = data.totalAmount;
+          }
+          
+          // 如果有字段需要更新，执行更新
+          if (Object.keys(itemUpdateData).length > 0) {
+            await tx.purchaseOrderItem.update({
+              where: { id: firstItem.id },
+              data: itemUpdateData
+            });
+          }
+        }
+
+        return updatedOrder;
       });
 
       logger.info('更新采购订单成功', {
@@ -865,7 +914,7 @@ export class PurchaseBaseService {
 
       return {
         success: true,
-        data: updatedOrder
+        data: result
       };
     } catch (error) {
       logger.error('更新采购订单失败', { error, baseId, orderId, service: 'milicard-api' });
