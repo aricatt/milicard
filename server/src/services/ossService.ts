@@ -97,7 +97,17 @@ class OSSService {
     // 使用OSS
     try {
       const result = await this.client.put(objectName, buffer);
-      return result.url;
+      
+      // 根据环境变量决定返回签名URL还是普通URL
+      // OSS_USE_SIGNED_URL=true: 返回签名URL（私有Bucket）
+      // OSS_USE_SIGNED_URL=false: 返回普通URL（公共读Bucket）
+      const useSignedUrl = process.env.OSS_USE_SIGNED_URL !== 'false';
+      
+      if (useSignedUrl) {
+        return this.getSignedUrl(objectName);
+      } else {
+        return result.url; // 公共读Bucket的普通URL
+      }
     } catch (error) {
       console.error('Failed to upload file to OSS:', error);
       throw new Error('Failed to upload file to OSS');
@@ -222,6 +232,54 @@ class OSSService {
    */
   isUsingOSS(): boolean {
     return !this.useLocalStorage;
+  }
+
+  /**
+   * Generate signed URL for private bucket access
+   * @param objectName Object name in OSS
+   * @param expiresInSeconds URL expiration time in seconds (default: 24 hours)
+   * @returns Signed URL
+   */
+  getSignedUrl(objectName: string, expiresInSeconds: number = 86400): string {
+    if (this.useLocalStorage) {
+      // 本地存储直接返回URL
+      const baseUrl = process.env.BASE_URL || 'http://localhost:6801';
+      return `${baseUrl}/uploads/${objectName}`;
+    }
+
+    try {
+      // 生成OSS签名URL（默认24小时有效）
+      const url = this.client.signatureUrl(objectName, {
+        expires: expiresInSeconds,
+      });
+      return url;
+    } catch (error) {
+      console.error('Failed to generate signed URL:', error);
+      // 如果签名失败，返回普通URL（适用于公共读Bucket）
+      return `https://${this.config?.bucket}.${this.config?.endpoint}/${objectName}`;
+    }
+  }
+
+  /**
+   * Refresh signed URLs for existing image URLs
+   * @param urls Array of existing URLs (signed or unsigned)
+   * @returns Array of fresh signed URLs
+   */
+  async refreshSignedUrls(urls: string[]): Promise<string[]> {
+    if (this.useLocalStorage) {
+      return urls; // 本地存储URL不需要刷新
+    }
+
+    return urls.map(url => {
+      try {
+        // 从URL提取objectName
+        const objectName = this.extractObjectNameFromUrl(url);
+        return this.getSignedUrl(objectName);
+      } catch (error) {
+        console.error('Failed to refresh signed URL:', url, error);
+        return url; // 失败时返回原URL
+      }
+    });
   }
 }
 
