@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
+import path from 'path'
 import 'express-async-errors'
 
 import { logger } from './utils/logger'
@@ -18,7 +19,9 @@ const app = express()
 const PORT = process.env.PORT || 6801
 
 // 基础中间件
-app.use(helmet())
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}))
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
@@ -27,6 +30,9 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(requestLogger)
+
+// 静态文件服务 - 提供上传文件访问
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // 健康检查端点
 app.get('/health', (req, res) => {
@@ -72,6 +78,7 @@ import goodsLocalSettingRoutes from './routes/goodsLocalSettingRoutes'
 import categoryRoutes from './routes/categoryRoutes'
 import currencyRateRoutes from './routes/currencyRateRoutes'
 import internationalLogisticsRoutes from './routes/internationalLogisticsRoutes'
+import pointVisitRoutes from './routes/pointVisitRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
@@ -106,6 +113,7 @@ app.use('/api/v1/bases/:baseId/goods-settings', goodsLocalSettingRoutes)
 app.use('/api/v1/categories', categoryRoutes)
 app.use('/api/v1/currency-rates', currencyRateRoutes)
 app.use('/api/v1/bases', internationalLogisticsRoutes)
+app.use('/api/v1', pointVisitRoutes)
 
 // 开发环境路由（仅在开发环境下启用）
 if (process.env.NODE_ENV === 'development') {

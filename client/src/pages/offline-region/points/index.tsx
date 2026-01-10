@@ -7,6 +7,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ShoppingCartOu
 import { request, useAccess, history, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
 import PointForm from './components/PointForm';
+import VisitTab from './components/VisitTab';
 import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 
 interface PointItem {
@@ -677,6 +678,11 @@ const PointsPage: React.FC = () => {
                     )}
                   </div>
                 ),
+              },
+              {
+                key: 'visits',
+                label: '到访/回访情况',
+                children: <VisitTab pointId={detailPoint.id} pointName={detailPoint.name} />,
               },
             ]}
           />

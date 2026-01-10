@@ -51,6 +51,7 @@ model User {
   createdPointOrders     PointOrder[]        @relation("PointOrderCreator")
   confirmedPointOrders   PointOrder[]        @relation("PointOrderConfirmer")
   createdLocationProfits LocationProfit[]    @relation("LocationProfitCreator")
+  createdPointVisits     PointVisit[]        @relation("PointVisitCreator")
 
   @@index([username])
   @@index([email])
@@ -910,6 +911,7 @@ model Point {
   pointInventory  PointInventory[]
   pointGoods      PointGoods[]
   locationProfits LocationProfit[]
+  pointVisits     PointVisit[]
 
   @@index([code])
   @@index([name])
@@ -1158,5 +1160,31 @@ model CurrencyRate {
   @@index([currencyCode])
   @@index([isActive])
   @@map("currency_rates")
+}
+
+/// 点位到访/回访记录表
+model PointVisit {
+  id            String   @id @default(uuid())
+  pointId       String   @map("point_id")
+  visitDate     DateTime @map("visit_date") @db.Timestamp(6)
+  visitorName   String   @map("visitor_name")              // 拜访人员姓名
+  customerName  String?  @map("customer_name")             // 客户名字/店名
+  latitude      Decimal? @db.Decimal(10, 7)                // 纬度
+  longitude     Decimal? @db.Decimal(11, 7)                // 经度
+  locationName  String?  @map("location_name")             // 地理位置名称
+  images        String[] @default([])                      // 图片OSS URLs（最多3张）
+  notes         String?                                    // 拜访备注
+  createdBy     String   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  point         Point    @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  creator       User     @relation("PointVisitCreator", fields: [createdBy], references: [id])
+
+  @@index([pointId])
+  @@index([visitDate])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("point_visits")
 }
 
