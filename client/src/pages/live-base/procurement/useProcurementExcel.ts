@@ -122,6 +122,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
     { header: '应付总金额', key: 'totalAmount', width: 12 },
     { header: '实付金额', key: 'actualAmount', width: 12 },
     { header: '未支付金额', key: 'unpaidAmount', width: 12 },
+    { header: '国内物流单号', key: 'trackingNumbers', width: 30 },
     { header: '创建时间', key: 'createdAt', width: 20 },
   ];
 
@@ -200,6 +201,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
           totalAmount: formatAmount(totalAmount),
           actualAmount: formatAmount(actualAmount),
           unpaidAmount: formatAmount(unpaidAmount),
+          trackingNumbers: item.trackingNumbers || '',  // 国内物流单号（逗号分隔）
           createdAt: formatDateTime(item.createdAt),
         };
       });

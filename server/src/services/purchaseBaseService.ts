@@ -49,7 +49,8 @@ export class PurchaseBaseService {
           poi.total_price as "totalAmount",
           COALESCE(arr.arrived_box, 0) as "arrivedBoxQty",
           COALESCE(arr.arrived_pack, 0) as "arrivedPackQty",
-          COALESCE(arr.arrived_piece, 0) as "arrivedPieceQty"
+          COALESCE(arr.arrived_piece, 0) as "arrivedPieceQty",
+          COALESCE(logistics.tracking_numbers, '') as "trackingNumbers"
         FROM purchase_order_items poi
         JOIN purchase_orders po ON poi.purchase_order_id = po.id
         JOIN goods g ON poi.goods_id = g.id
@@ -65,6 +66,13 @@ export class PurchaseBaseService {
           FROM arrival_records
           GROUP BY purchase_order_id
         ) arr ON arr.purchase_order_id = po.id
+        LEFT JOIN (
+          SELECT 
+            purchase_order_id,
+            STRING_AGG(tracking_number, ',' ORDER BY created_at) as tracking_numbers
+          FROM purchase_order_logistics
+          GROUP BY purchase_order_id
+        ) logistics ON logistics.purchase_order_id = po.id
         WHERE po.base_id = ${baseId}
       `;
 
@@ -177,6 +185,7 @@ export class PurchaseBaseService {
           totalAmount: Number(item.totalAmount),
           actualAmount: Number(item.actualAmount) || 0,
           cnyPaymentAmount: Number(item.cnyPaymentAmount) || 0,
+          trackingNumbers: item.trackingNumbers || '',
           createdBy: item.createdBy,
           createdAt: item.createdAt?.toISOString?.() || item.createdAt,
         };
