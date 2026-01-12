@@ -101,6 +101,20 @@ JWT_SECRET=your_jwt_secret_here
 
 # 物流查询AppCode（可选）
 LOGISTICS_APPCODE=
+
+# ============================================
+# 文件上传配置
+# ============================================
+# 服务器访问地址（必填，用于生成图片URL）
+BASE_URL=http://your-server-ip:8175
+
+# 阿里云OSS配置（点位拜访图片上传）
+OSS_REGION=oss-ap-southeast-7
+OSS_ACCESS_KEY_ID=
+OSS_ACCESS_KEY_SECRET=
+OSS_BUCKET=milisystem-bucket
+OSS_ENDPOINT=oss-ap-southeast-7.aliyuncs.com
+# OSS_USE_SIGNED_URL=true  # true=私有Bucket使用签名URL(默认), false=公共读Bucket使用普通URL
 EOF
     echo -e "${RED}Please edit $ENV_FILE and configure RDS connection${NC}"
     echo -e "${CYAN}Required settings:${NC}"
@@ -316,6 +330,13 @@ docker run -d \
     -e JWT_SECRET="${JWT_SECRET}" \
     -e NODE_ENV="${ENV}" \
     -e LOGISTICS_APPCODE="${LOGISTICS_APPCODE:-}" \
+    -e BASE_URL="${BASE_URL:-}" \
+    -e OSS_REGION="${OSS_REGION:-}" \
+    -e OSS_ACCESS_KEY_ID="${OSS_ACCESS_KEY_ID:-}" \
+    -e OSS_ACCESS_KEY_SECRET="${OSS_ACCESS_KEY_SECRET:-}" \
+    -e OSS_BUCKET="${OSS_BUCKET:-}" \
+    -e OSS_ENDPOINT="${OSS_ENDPOINT:-}" \
+    -e OSS_USE_SIGNED_URL="${OSS_USE_SIGNED_URL:-true}" \
     -e USE_EXTERNAL_DB="true" \
     ${IMAGE_NAME}:${ENV}
 

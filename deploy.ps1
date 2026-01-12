@@ -61,6 +61,13 @@ JWT_SECRET=$jwtSecret
 $envContent = Get-Content $ENV_FILE | Where-Object { $_ -match "^\s*[^#]" }
 $DB_PASSWORD = ""
 $JWT_SECRET = ""
+$BASE_URL = ""
+$OSS_REGION = ""
+$OSS_ACCESS_KEY_ID = ""
+$OSS_ACCESS_KEY_SECRET = ""
+$OSS_BUCKET = ""
+$OSS_ENDPOINT = ""
+$OSS_USE_SIGNED_URL = "true"
 
 foreach ($line in $envContent) {
     if ($line -match "^\s*DB_PASSWORD\s*=\s*(.+)$") {
@@ -71,6 +78,27 @@ foreach ($line in $envContent) {
     }
     if ($line -match "^\s*PORT\s*=\s*(.+)$") {
         $PORT = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*BASE_URL\s*=\s*(.+)$") {
+        $BASE_URL = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*OSS_REGION\s*=\s*(.+)$") {
+        $OSS_REGION = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*OSS_ACCESS_KEY_ID\s*=\s*(.+)$") {
+        $OSS_ACCESS_KEY_ID = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*OSS_ACCESS_KEY_SECRET\s*=\s*(.+)$") {
+        $OSS_ACCESS_KEY_SECRET = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*OSS_BUCKET\s*=\s*(.+)$") {
+        $OSS_BUCKET = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*OSS_ENDPOINT\s*=\s*(.+)$") {
+        $OSS_ENDPOINT = $Matches[1].Trim()
+    }
+    if ($line -match "^\s*OSS_USE_SIGNED_URL\s*=\s*(.+)$") {
+        $OSS_USE_SIGNED_URL = $Matches[1].Trim()
     }
 }
 
@@ -163,6 +191,13 @@ docker run -d `
     -e "JWT_SECRET=$JWT_SECRET" `
     -e "NODE_ENV=$Env" `
     -e "LOGISTICS_APPCODE=$LOGISTICS_APPCODE" `
+    -e "BASE_URL=$BASE_URL" `
+    -e "OSS_REGION=$OSS_REGION" `
+    -e "OSS_ACCESS_KEY_ID=$OSS_ACCESS_KEY_ID" `
+    -e "OSS_ACCESS_KEY_SECRET=$OSS_ACCESS_KEY_SECRET" `
+    -e "OSS_BUCKET=$OSS_BUCKET" `
+    -e "OSS_ENDPOINT=$OSS_ENDPOINT" `
+    -e "OSS_USE_SIGNED_URL=$OSS_USE_SIGNED_URL" `
     "${IMAGE_NAME}:${Env}"
 
 if ($LASTEXITCODE -ne 0) {

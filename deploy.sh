@@ -154,6 +154,13 @@ docker run -d \
     -e JWT_SECRET="${JWT_SECRET}" \
     -e NODE_ENV="${ENV}" \
     -e LOGISTICS_APPCODE="${LOGISTICS_APPCODE:-}" \
+    -e BASE_URL="${BASE_URL:-}" \
+    -e OSS_REGION="${OSS_REGION:-}" \
+    -e OSS_ACCESS_KEY_ID="${OSS_ACCESS_KEY_ID:-}" \
+    -e OSS_ACCESS_KEY_SECRET="${OSS_ACCESS_KEY_SECRET:-}" \
+    -e OSS_BUCKET="${OSS_BUCKET:-}" \
+    -e OSS_ENDPOINT="${OSS_ENDPOINT:-}" \
+    -e OSS_USE_SIGNED_URL="${OSS_USE_SIGNED_URL:-true}" \
     ${IMAGE_NAME}:${ENV}
 
 # 等待容器启动
