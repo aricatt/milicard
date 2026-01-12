@@ -211,14 +211,14 @@ const ProductSettingsPage: React.FC = () => {
     { 
       field: '零售价(一箱)', 
       required: true, 
-      description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, 
-      example: `[${currentCurrencyCode}]22356 或 [CNY]5600` 
+      description: `必须带货币标记（前置或后置）：[${currentCurrencyCode}]金额 或 金额[${currentCurrencyCode}]，人民币会自动按汇率转换`, 
+      example: `[${currentCurrencyCode}]22356 或 22356[${currentCurrencyCode}] 或 [CNY]5600 或 5600[CNY]` 
     },
     { 
       field: '采购价(一箱)', 
       required: false, 
-      description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, 
-      example: `[${currentCurrencyCode}]18000 或 [CNY]4500` 
+      description: `必须带货币标记（前置或后置）：[${currentCurrencyCode}]金额 或 金额[${currentCurrencyCode}]，人民币会自动按汇率转换`, 
+      example: `[${currentCurrencyCode}]18000 或 18000[${currentCurrencyCode}] 或 [CNY]4500 或 4500[CNY]` 
     },
   ];
 

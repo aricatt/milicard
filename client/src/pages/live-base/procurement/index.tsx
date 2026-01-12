@@ -609,8 +609,9 @@ const ProcurementManagement: React.FC = () => {
           { field: '采购箱', required: false, description: '采购箱数', example: '0' },
           { field: '采购盒', required: false, description: '采购盒数', example: '17' },
           { field: '采购包', required: false, description: '采购包数', example: '0' },
-          { field: '拿货单价箱', required: true, description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, example: `[${currentCurrencyCode}]9697.5 或 [CNY]2500` },
-          { field: '实付金额', required: false, description: `必须带货币标记：[${currentCurrencyCode}]金额 或 [CNY]金额（人民币会自动按汇率转换）`, example: `[${currentCurrencyCode}]4995 或 [CNY]1200` },
+          { field: '拿货单价箱', required: true, description: `必须带货币标记（前置或后置）：[${currentCurrencyCode}]金额 或 金额[${currentCurrencyCode}]，人民币会自动按汇率转换`, example: `[${currentCurrencyCode}]9697.5 或 9697.5[${currentCurrencyCode}] 或 [CNY]2500 或 2500[CNY]` },
+          { field: '实付金额', required: false, description: `必须带货币标记（前置或后置）：[${currentCurrencyCode}]金额 或 金额[${currentCurrencyCode}]，人民币会自动按汇率转换`, example: `[${currentCurrencyCode}]4995 或 4995[${currentCurrencyCode}] 或 [CNY]1200 或 1200[CNY]` },
+          { field: '国内物流单号', required: false, description: '支持多个物流单号，用逗号分隔（支持逗号、中文逗号、分号、空格）', example: 'SF1234567890,YTO0987654321 或 JD2024011200001' },
         ]}
       />
 

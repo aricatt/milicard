@@ -48,7 +48,7 @@ interface UseProductExcelProps {
   onImportSuccess?: () => void;
 }
 
-// 解析带货币标记的金额，如 "[CNY]45123" 或 "[VND]1000000"
+// 解析带货币标记的金额，支持 "[CNY]45123"、"45123[CNY]" 或 "[VND]1000000"、"1000000[VND]"
 const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: number): { value: number | null; error: string | null } => {
   if (value === undefined || value === null || value === '') {
     return { value: null, error: null };
@@ -56,12 +56,20 @@ const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: nu
 
   const strValue = String(value).trim();
   
-  // 检查是否有货币标记 [XXX]
-  const currencyMatch = strValue.match(/^\[([A-Z]{3})\](.+)$/);
+  // 检查是否有货币标记 [XXX]，支持前置和后置两种格式
+  // 前置格式: [CNY]1791
+  const prefixMatch = strValue.match(/^\[([A-Z]{3})\](.+)$/);
+  // 后置格式: 1791[CNY]
+  const suffixMatch = strValue.match(/^(.+)\[([A-Z]{3})\]$/);
+  
+  const currencyMatch = prefixMatch || suffixMatch;
   
   if (currencyMatch) {
-    const sourceCurrency = currencyMatch[1];
-    const numValue = parseFloat(currencyMatch[2]);
+    // 前置格式: currencyMatch[1]=货币, currencyMatch[2]=数值
+    // 后置格式: currencyMatch[1]=数值, currencyMatch[2]=货币
+    const sourceCurrency = prefixMatch ? currencyMatch[1] : currencyMatch[2];
+    const numStr = prefixMatch ? currencyMatch[2] : currencyMatch[1];
+    const numValue = parseFloat(numStr);
     
     if (isNaN(numValue)) {
       return { value: null, error: `无效的数字格式: ${strValue}` };
@@ -422,9 +430,9 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
       '2. 必填字段：「品类」和「商品名称」至少需要填写（除非有商品编号）',
       '3. 商品必须先在「全局信息 > 所有商品」页面添加后才能导入',
       '4. 本导入只更新基地级设置（零售价、采购价、别名），不会修改全局商品信息',
-      '5. 【重要】金额字段必须带货币标记：',
-      `   - 当前基地货币：[${currencyCode}]金额，如 [${currencyCode}]22356`,
-      '   - 人民币：[CNY]金额，如 [CNY]5600，系统会自动按汇率转换',
+      '5. 【重要】金额字段必须带货币标记（支持前置或后置）：',
+      `   - 当前基地货币：[${currencyCode}]22356 或 22356[${currencyCode}]`,
+      '   - 人民币：[CNY]5600 或 5600[CNY]，系统会自动按汇率转换',
     ];
 
     const result = downloadTemplate(

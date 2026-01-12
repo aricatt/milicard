@@ -386,7 +386,7 @@ export class PurchaseBaseService {
    */
   static async importPurchaseOrder(baseId: number, orderData: any, userId: string) {
     try {
-      const { orderNo, supplierName, purchaseDate, notes, actualAmount = 0, items = [] } = orderData;
+      const { orderNo, supplierName, purchaseDate, notes, actualAmount = 0, cnyPaymentAmount = 0, trackingNumbers = [], items = [] } = orderData;
 
       // 通过供应商名称查找供应商（需要是该基地的供应商）
       const supplierSql = `
@@ -438,10 +438,10 @@ export class PurchaseBaseService {
       const createSql = `
         INSERT INTO purchase_orders (
           id, code, supplier_id, base_id, 
-          purchase_date, total_amount, actual_amount, notes, created_by, created_at, updated_at
+          purchase_date, total_amount, actual_amount, cny_payment_amount, notes, created_by, created_at, updated_at
         ) VALUES (
           gen_random_uuid(), '${finalOrderNo}', '${supplierId}', ${baseId},
-          '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
+          '${purchaseDate}', ${totalAmount}, ${actualAmount}, ${cnyPaymentAmount}, ${notes ? `'${notes}'` : 'NULL'}, '${userId}', NOW(), NOW()
         ) RETURNING *
       `;
 
@@ -509,13 +509,37 @@ export class PurchaseBaseService {
       `;
       await prisma.$queryRawUnsafe(updateTotalSql);
 
+      // 批量创建物流单号记录
+      if (trackingNumbers && trackingNumbers.length > 0) {
+        for (const trackingNumber of trackingNumbers) {
+          if (trackingNumber && trackingNumber.trim()) {
+            const logisticsSql = `
+              INSERT INTO purchase_order_logistics (
+                id, purchase_order_id, tracking_number, created_at, updated_at
+              ) VALUES (
+                gen_random_uuid(), '${purchaseOrder.id}', '${trackingNumber.trim().replace(/'/g, "''")}', NOW(), NOW()
+              )
+              ON CONFLICT (purchase_order_id, tracking_number) DO NOTHING
+            `;
+            await prisma.$queryRawUnsafe(logisticsSql);
+          }
+        }
+        
+        logger.info('批量创建物流单号记录成功', {
+          service: 'milicard-api',
+          orderId: purchaseOrder.id,
+          trackingNumberCount: trackingNumbers.length
+        });
+      }
+
       logger.info('导入采购订单成功', {
         service: 'milicard-api',
         baseId,
         orderId: purchaseOrder.id,
         orderNo: finalOrderNo,
         totalAmount,
-        isUpdate: !!existingOrderId
+        isUpdate: !!existingOrderId,
+        trackingNumberCount: trackingNumbers?.length || 0
       });
 
       return {
@@ -530,6 +554,7 @@ export class PurchaseBaseService {
           actualAmount,
           notes,
           itemCount: items.length,
+          trackingNumberCount: trackingNumbers?.length || 0,
           isUpdate: !!existingOrderId
         }
       };

@@ -542,7 +542,7 @@ const PayablesPage: React.FC = () => {
                     precision={2}
                     min={0.01}
                     max={currentPayable.unpaidAmount}
-                    addonBefore="¥"
+                    addonAfter="¥"
                   />
                 ) : (
                   <DualCurrencyInput

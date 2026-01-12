@@ -17,47 +17,75 @@ interface UseProcurementExcelProps {
   onImportSuccess?: () => void;
 }
 
-// 解析带货币标记的金额，如 "[CNY]45123" 或 "[VND]1000000"
-const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: number): { value: number | null; error: string | null } => {
+// 解析带货币标记的金额，支持 "[CNY]45123"、"45123[CNY]" 或 "[VND]1000000"、"1000000[VND]"
+const parseCurrencyValue = (value: any, targetCurrency: string, exchangeRate: number): { 
+  value: number | null; 
+  error: string | null;
+  sourceCurrency: string | null;  // 原始货币类型
+  originalValue: number | null;   // 原始金额（转换前）
+} => {
   if (value === undefined || value === null || value === '') {
-    return { value: null, error: null };
+    return { value: null, error: null, sourceCurrency: null, originalValue: null };
   }
 
   const strValue = String(value).trim();
   
-  // 检查是否有货币标记 [XXX]
-  const currencyMatch = strValue.match(/^\[([A-Z]{3})\](.+)$/);
+  // 检查是否有货币标记 [XXX]，支持前置和后置两种格式
+  // 前置格式: [CNY]1791
+  const prefixMatch = strValue.match(/^\[([A-Z]{3})\](.+)$/);
+  // 后置格式: 1791[CNY]
+  const suffixMatch = strValue.match(/^(.+)\[([A-Z]{3})\]$/);
+  
+  const currencyMatch = prefixMatch || suffixMatch;
   
   if (currencyMatch) {
-    const sourceCurrency = currencyMatch[1];
-    const numValue = parseFloat(currencyMatch[2]);
+    // 前置格式: currencyMatch[1]=货币, currencyMatch[2]=数值
+    // 后置格式: currencyMatch[1]=数值, currencyMatch[2]=货币
+    const sourceCurrency = prefixMatch ? currencyMatch[1] : currencyMatch[2];
+    const numStr = prefixMatch ? currencyMatch[2] : currencyMatch[1];
+    const numValue = parseFloat(numStr);
     
     if (isNaN(numValue)) {
-      return { value: null, error: `无效的数字格式: ${strValue}` };
+      return { value: null, error: `无效的数字格式: ${strValue}`, sourceCurrency: null, originalValue: null };
     }
     
     // 如果货币标记与基地货币相同，直接使用数值
     if (sourceCurrency === targetCurrency) {
-      return { value: numValue, error: null };
+      return { value: numValue, error: null, sourceCurrency, originalValue: numValue };
     }
     
     // 如果是人民币，转换为基地货币
     if (sourceCurrency === 'CNY') {
       const convertedValue = Number((numValue * exchangeRate).toFixed(2));
-      return { value: convertedValue, error: null };
+      return { value: convertedValue, error: null, sourceCurrency: 'CNY', originalValue: numValue };
     }
     
     // 其他货币暂不支持
-    return { value: null, error: `不支持的货币标记: ${sourceCurrency}，只支持 [CNY] 或 [${targetCurrency}]` };
+    return { value: null, error: `不支持的货币标记: ${sourceCurrency}，只支持 [CNY] 或 [${targetCurrency}]`, sourceCurrency: null, originalValue: null };
   }
   
   // 没有货币标记，视为基地货币直接录入
   const numValue = parseFloat(strValue);
   if (!isNaN(numValue)) {
-    return { value: numValue, error: null };
+    return { value: numValue, error: null, sourceCurrency: targetCurrency, originalValue: numValue };
   }
   
-  return { value: null, error: `无效的金额格式: ${strValue}` };
+  return { value: null, error: `无效的金额格式: ${strValue}`, sourceCurrency: null, originalValue: null };
+};
+
+// 解析物流单号字符串，支持逗号分隔的多个物流单号
+const parseTrackingNumbers = (value: any): string[] => {
+  if (!value || String(value).trim() === '') {
+    return [];
+  }
+  
+  const strValue = String(value).trim();
+  
+  // 支持多种分隔符：逗号、中文逗号、分号、空格
+  return strValue
+    .split(/[,，;；\s]+/)
+    .map(num => num.trim())
+    .filter(num => num.length > 0);
 };
 
 export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRate, showInCNY = false, onImportSuccess }: UseProcurementExcelProps) => {
@@ -241,6 +269,11 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
           currencyErrors.push(`第${index + 2}行 实付金额：${actualAmountResult.error}`);
         }
         
+        // 计算人民币支付金额：如果实付金额使用了[CNY]标记，记录原始人民币金额
+        const cnyPaymentAmount = actualAmountResult.sourceCurrency === 'CNY' 
+          ? actualAmountResult.originalValue ?? 0 
+          : 0;
+        
         return {
           orderNo: String(row['采购编号'] || '').trim(),  // 用于判断更新还是新增
           purchaseDate: excelDateToString(row['采购日期']),
@@ -252,6 +285,8 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
           purchasePieceQty: parseInt(row['采购包'] || '0') || 0,
           unitPriceBox: unitPriceBoxResult.value ?? 0,
           actualAmount: actualAmountResult.value ?? 0,
+          cnyPaymentAmount,  // 人民币支付金额
+          trackingNumbers: parseTrackingNumbers(row['国内物流单号']),  // 解析物流单号
         };
       });
 
@@ -302,11 +337,12 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
 
         try {
           // 构造后端API期望的数据格式
-          const requestData = {
+          const requestData: any = {
             orderNo: item.orderNo || undefined,  // 如果有采购编号则用于更新
             supplierName: item.supplierName,
             purchaseDate: item.purchaseDate,
             actualAmount: item.actualAmount,
+            trackingNumbers: item.trackingNumbers,  // 物流单号数组
             items: [
               {
                 categoryName: item.categoryName,  // 品类名称
@@ -318,6 +354,11 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
               }
             ]
           };
+          
+          // 如果有人民币支付金额，添加到请求数据中
+          if (item.cnyPaymentAmount > 0) {
+            requestData.cnyPaymentAmount = item.cnyPaymentAmount;
+          }
 
           const result = await request(`/api/v1/bases/${baseId}/purchase-orders/import`, {
             method: 'POST',
@@ -421,6 +462,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
     { header: '采购包', key: 'purchasePieceQty', width: 10 },
     { header: '拿货单价箱', key: 'unitPriceBox', width: 12 },
     { header: '实付金额', key: 'actualAmount', width: 12 },
+    { header: '国内物流单号', key: 'trackingNumbers', width: 30 },
   ];
 
   // 下载导入模板
@@ -438,6 +480,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
         purchasePieceQty: 0,
         unitPriceBox: `[${currencyCode}]9697.5`,
         actualAmount: `[${currencyCode}]4995`,
+        trackingNumbers: 'SF1234567890,YTO0987654321',
       },
       {
         purchaseDate: '2025-11-17',
@@ -450,6 +493,7 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
         purchasePieceQty: 0,
         unitPriceBox: '[CNY]2500',
         actualAmount: '[CNY]2500',
+        trackingNumbers: 'JD2024011200001',
       },
     ];
 
@@ -461,9 +505,13 @@ export const useProcurementExcel = ({ baseId, baseName, currencyCode, exchangeRa
       '3. 品类、商品名称：必填，用于匹配全局商品',
       '4. 供应商：必填',
       '5. 采购箱/盒/包：数量，至少填一项',
-      '6. 【重要】金额字段必须带货币标记：',
-      `   - 当前基地货币：[${currencyCode}]金额，如 [${currencyCode}]9697.5`,
-      '   - 人民币：[CNY]金额，如 [CNY]2500，系统会自动按汇率转换',
+      '6. 【重要】金额字段必须带货币标记（支持前置或后置）：',
+      `   - 当前基地货币：[${currencyCode}]9697.5 或 9697.5[${currencyCode}]`,
+      '   - 人民币：[CNY]2500 或 2500[CNY]，系统会自动按汇率转换并标记为"人民币支付"',
+      '7. 国内物流单号：选填，支持多个物流单号，用逗号分隔',
+      '   - 单个物流单号：SF1234567890',
+      '   - 多个物流单号：SF1234567890,YTO0987654321,JD2024011200001',
+      '   - 支持分隔符：逗号、中文逗号、分号、空格',
     ];
 
     downloadTemplate(templateData, importTemplateColumns, '采购导入模板', '采购导入模板', instructions);

@@ -125,8 +125,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
         placeholder={placeholder}
         disabled={disabled}
         style={{ width: '100%', ...style }}
-        addonBefore="¥"
-        addonAfter={addonAfter}
+        addonAfter={addonAfter || "¥"}
       />
     );
   }
@@ -148,7 +147,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
           placeholder="¥"
           disabled={cnyDisabled}
           style={{ width: '35%' }}
-          addonBefore="¥"
+          addonAfter="¥"
         />
       </Tooltip>
       <div style={{ 
@@ -171,8 +170,7 @@ const DualCurrencyInput: React.FC<DualCurrencyInputProps> = ({
           placeholder={currencySymbol}
           disabled={localDisabled}
           style={{ width: '55%' }}
-          addonBefore={currencySymbol}
-          addonAfter={addonAfter}
+          addonAfter={addonAfter || currencySymbol}
         />
       </Tooltip>
     </Space.Compact>

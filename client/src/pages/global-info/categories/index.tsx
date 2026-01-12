@@ -316,7 +316,10 @@ const CategoriesPage: React.FC = () => {
             <Input 
               placeholder={intl.formatMessage({ id: 'categories.form.codePlaceholder' })} 
               disabled={!!editingCategory}
-              style={{ textTransform: 'uppercase' }}
+              onChange={(e) => {
+                const upperValue = e.target.value.toUpperCase();
+                form.setFieldValue('code', upperValue);
+              }}
             />
           </Form.Item>
           <Form.Item
