@@ -100,7 +100,7 @@ interface ProductStats {
 const GlobalProductManagement: React.FC = () => {
   const { message } = App.useApp();
   const intl = useIntl();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   
   // 状态管理
   const [stats, setStats] = useState<ProductStats>({
@@ -125,6 +125,9 @@ const GlobalProductManagement: React.FC = () => {
   
   // 品类列表
   const [categories, setCategories] = useState<Category[]>([]);
+  
+  // 批量选择
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   
   // 表单实例
   const [createForm] = Form.useForm();
@@ -312,6 +315,53 @@ const GlobalProductManagement: React.FC = () => {
       console.error('删除全局商品失败:', error);
       message.error(intl.formatMessage({ id: 'globalProducts.message.deleteFailed' }));
     }
+  };
+
+  /**
+   * 批量删除全局商品
+   */
+  const handleBatchDelete = async () => {
+    if (selectedRowKeys.length === 0) return;
+
+    Modal.confirm({
+      title: '确认删除',
+      content: `确定要删除选中的 ${selectedRowKeys.length} 个全局商品吗？此操作不可恢复。`,
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          let successCount = 0;
+          let failCount = 0;
+
+          for (const id of selectedRowKeys) {
+            try {
+              const result = await request(`/api/v1/global-goods/${id}`, {
+                method: 'DELETE',
+              });
+              if (result.success) {
+                successCount++;
+              } else {
+                failCount++;
+              }
+            } catch (error) {
+              failCount++;
+            }
+          }
+
+          if (successCount > 0) {
+            message.success(`成功删除 ${successCount} 个商品${failCount > 0 ? `，失败 ${failCount} 个` : ''}`);
+            setSelectedRowKeys([]);
+            actionRef.current?.reload();
+          } else {
+            message.error('删除失败');
+          }
+        } catch (error: any) {
+          console.error('批量删除全局商品失败:', error);
+          message.error('批量删除失败');
+        }
+      },
+    });
   };
 
   /**
@@ -650,6 +700,33 @@ const GlobalProductManagement: React.FC = () => {
         columns={columns}
         request={fetchProductData}
         rowKey="id"
+        rowSelection={{
+          selectedRowKeys,
+          onChange: (keys) => setSelectedRowKeys(keys),
+          preserveSelectedRowKeys: false,
+        }}
+        tableAlertRender={({ selectedRowKeys }) => (
+          <Space size={24}>
+            <span>
+              已选择 <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a> 项
+              <a style={{ marginLeft: 8 }} onClick={() => setSelectedRowKeys([])}>
+                取消选择
+              </a>
+            </span>
+          </Space>
+        )}
+        tableAlertOptionRender={() => (
+          <Space size={16}>
+            <Button
+              type="link"
+              size="small"
+              danger
+              onClick={handleBatchDelete}
+            >
+              批量删除
+            </Button>
+          </Space>
+        )}
         
         columnsState={{
           persistenceKey: 'global-product-table-columns',
