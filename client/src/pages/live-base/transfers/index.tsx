@@ -49,7 +49,7 @@ const TransferManagement: React.FC = () => {
   const { currentBase } = useBase();
   const { message } = App.useApp();
   const intl = useIntl();
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [form] = Form.useForm();
 
   // Excel导入导出Hook
@@ -87,6 +87,9 @@ const TransferManagement: React.FC = () => {
   const [personnelOptions, setPersonnelOptions] = useState<PersonnelOption[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<GoodsOption[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
+  
+  // 批量选择
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   /**
    * 加载统计数据
@@ -166,6 +169,54 @@ const TransferManagement: React.FC = () => {
       console.error('删除调货记录失败:', error);
       message.error('删除失败');
     }
+  };
+
+  /**
+   * 批量删除调货记录
+   */
+  const handleBatchDelete = async () => {
+    if (!currentBase || selectedRowKeys.length === 0) return;
+
+    Modal.confirm({
+      title: '确认删除',
+      content: `确定要删除选中的 ${selectedRowKeys.length} 条调货记录吗？此操作不可恢复。`,
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          let successCount = 0;
+          let failCount = 0;
+
+          for (const id of selectedRowKeys) {
+            try {
+              const result = await request(`/api/v1/bases/${currentBase.id}/transfers/${id}`, {
+                method: 'DELETE',
+              });
+              if (result.success) {
+                successCount++;
+              } else {
+                failCount++;
+              }
+            } catch (error) {
+              failCount++;
+            }
+          }
+
+          if (successCount > 0) {
+            message.success(`成功删除 ${successCount} 条记录${failCount > 0 ? `，失败 ${failCount} 条` : ''}`);
+            setSelectedRowKeys([]);
+            actionRef.current?.reload();
+            loadStats();
+          } else {
+            message.error('删除失败');
+          }
+        } catch (error: any) {
+          console.error('批量删除调货记录失败:', error);
+          message.error('批量删除失败');
+        }
+      },
+    });
   };
 
   /**
@@ -284,6 +335,33 @@ const TransferManagement: React.FC = () => {
           }
         }}
         rowKey="id"
+        rowSelection={{
+          selectedRowKeys,
+          onChange: (keys) => setSelectedRowKeys(keys),
+          preserveSelectedRowKeys: false,
+        }}
+        tableAlertRender={({ selectedRowKeys }) => (
+          <Space size={24}>
+            <span>
+              已选择 <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a> 项
+              <a style={{ marginLeft: 8 }} onClick={() => setSelectedRowKeys([])}>
+                取消选择
+              </a>
+            </span>
+          </Space>
+        )}
+        tableAlertOptionRender={() => (
+          <Space size={16}>
+            <Button
+              type="link"
+              size="small"
+              danger
+              onClick={handleBatchDelete}
+            >
+              批量删除
+            </Button>
+          </Space>
+        )}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
