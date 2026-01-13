@@ -7,6 +7,7 @@ import { BaseInfo, BASE_TYPE_OPTIONS, getBaseTypeLabel, BaseType } from '@/conte
 import type { ColumnsType } from 'antd/es/table';
 import { CURRENCY_OPTIONS, getCurrencySymbol } from '@/utils/currency';
 import { LANGUAGE_OPTIONS, getLanguageName } from '@/utils/language';
+import { getFirstAccessibleRoute, getDefaultHomePath } from '@/utils/routeHelper';
 import styles from './BaseSelector.less';
 
 const { Title, Text } = Typography;
@@ -54,13 +55,28 @@ const BaseSelectorContent: React.FC = () => {
     console.log('handleSelectBase called with:', base);
     // 直接保存到 localStorage，让全局 BaseProvider 在页面加载时读取
     localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
-    message.success(`已选择基地：${base.name} (ID: ${base.id})`);
+    
+    // 智能选择首页：根据用户权限找到第一个可访问的页面
+    const accessibleRoute = getFirstAccessibleRoute(base.type, access);
+    
+    if (!accessibleRoute) {
+      // 没有任何可访问的页面
+      Modal.error({
+        title: '无访问权限',
+        content: `您当前没有访问基地"${base.name}"任何页面的权限。请联系管理员为您分配相应的权限。`,
+        okText: '知道了',
+      });
+      return;
+    }
+    
+    // 找到了有权限的页面
+    const { path: targetPath, name: targetName } = accessibleRoute;
+    message.success(`已选择基地：${base.name}，正在进入${targetName}...`);
+    
+    console.log('Redirecting to:', targetPath, '(', targetName, ')');
+    
     // 使用 window.location.href 强制刷新页面，确保 BaseProvider 重新初始化
     setTimeout(() => {
-      // 直播基地 → 直播间/仓库页，线下基地 → 小区页
-      const targetPath = base.type === BaseType.OFFLINE_REGION 
-        ? '/offline-region/sub-districts' 
-        : '/live-base/locations';
       // 使用完整 URL 确保端口号不丢失
       window.location.href = `${window.location.origin}${targetPath}`;
     }, 100);
