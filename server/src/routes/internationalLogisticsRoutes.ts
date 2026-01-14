@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { InternationalLogisticsController } from '../controllers/internationalLogisticsController';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { checkPermission } from '../middleware/permissionMiddleware';
+import { checkPermission, injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware';
 
 const router = Router();
 
@@ -10,7 +10,9 @@ const router = Router();
 router.get(
   '/:baseId/purchase-orders/:purchaseOrderId/international-logistics',
   authenticateToken,
-  checkPermission('purchase', 'read'),
+  checkPermission('purchase_order', 'read'),
+  injectDataPermission('internationalLogistics'),
+  filterResponseFields(),
   InternationalLogisticsController.getByPurchaseOrderId
 );
 
@@ -19,7 +21,7 @@ router.get(
 router.post(
   '/:baseId/purchase-orders/:purchaseOrderId/international-logistics',
   authenticateToken,
-  checkPermission('purchase', 'write'),
+  checkPermission('purchase_order', 'create'),
   InternationalLogisticsController.create
 );
 
@@ -28,7 +30,9 @@ router.post(
 router.get(
   '/:baseId/international-logistics/:id',
   authenticateToken,
-  checkPermission('purchase', 'read'),
+  checkPermission('purchase_order', 'read'),
+  injectDataPermission('internationalLogistics'),
+  filterResponseFields(),
   InternationalLogisticsController.getById
 );
 
@@ -37,7 +41,7 @@ router.get(
 router.put(
   '/:baseId/international-logistics/:id',
   authenticateToken,
-  checkPermission('purchase', 'write'),
+  checkPermission('purchase_order', 'update'),
   InternationalLogisticsController.update
 );
 
@@ -46,7 +50,7 @@ router.put(
 router.delete(
   '/:baseId/international-logistics/:id',
   authenticateToken,
-  checkPermission('purchase', 'write'),
+  checkPermission('purchase_order', 'delete'),
   InternationalLogisticsController.delete
 );
 

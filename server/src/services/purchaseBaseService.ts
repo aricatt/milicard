@@ -9,12 +9,61 @@ import * as logisticsService from './logisticsService';
  */
 export class PurchaseBaseService {
   /**
+   * 将数据权限过滤条件转换为SQL WHERE子句
+   */
+  private static buildDataFilterSQL(dataFilter: any): string {
+    if (!dataFilter || Object.keys(dataFilter).length === 0) {
+      return '';
+    }
+
+    const conditions: string[] = [];
+
+    // 处理简单的等值条件
+    for (const [field, value] of Object.entries(dataFilter)) {
+      if (field === 'OR' && Array.isArray(value)) {
+        // 处理OR条件
+        const orConditions = value.map((orFilter: any) => {
+          return this.buildDataFilterSQL(orFilter);
+        }).filter(c => c);
+        
+        if (orConditions.length > 0) {
+          conditions.push(`(${orConditions.join(' OR ')})`);
+        }
+      } else if (typeof value === 'object' && value !== null) {
+        // 处理复杂条件（如 in, contains 等）
+        if ('in' in value && Array.isArray(value.in)) {
+          const values = value.in.map((v: any) => `'${v}'`).join(',');
+          conditions.push(`g.${field} IN (${values})`);
+        } else if ('contains' in value) {
+          conditions.push(`g.${field} ILIKE '%${value.contains}%'`);
+        } else if ('not' in value) {
+          conditions.push(`g.${field} != '${value.not}'`);
+        }
+      } else {
+        // 简单等值条件 - 根据字段名判断表别名
+        if (field === 'createdBy') {
+          conditions.push(`po.created_by = '${value}'`);
+        } else if (field === 'supplierId') {
+          conditions.push(`po.supplier_id = '${value}'`);
+        } else {
+          conditions.push(`g.${field} = '${value}'`);
+        }
+      }
+    }
+
+    return conditions.length > 0 ? ` AND ${conditions.join(' AND ')}` : '';
+  }
+
+  /**
    * 获取基地的采购订单列表
    */
-  static async getBasePurchaseOrderList(baseId: number, params: any = {}) {
+  static async getBasePurchaseOrderList(baseId: number, params: any = {}, dataFilter: any = {}) {
     try {
       const { current = 1, pageSize = 10, orderNo, supplierName, goodsName, startDate, endDate } = params;
       const skip = (current - 1) * pageSize;
+
+      // 构建数据权限过滤SQL
+      const dataFilterSQL = this.buildDataFilterSQL(dataFilter);
 
       // 构建查询SQL - 关联订单明细、商品信息、供应商信息和到货统计
       // 注意：retail_price 已从 goods 表移至 goods_local_settings 表
@@ -76,7 +125,10 @@ export class PurchaseBaseService {
         WHERE po.base_id = ${baseId}
       `;
 
-      // 添加过滤条件
+      // 添加数据权限过滤
+      sql += dataFilterSQL;
+
+      // 添加搜索过滤条件
       if (orderNo) {
         sql += ` AND po.code ILIKE '%${orderNo}%'`;
       }
@@ -108,6 +160,10 @@ export class PurchaseBaseService {
         WHERE po.base_id = ${baseId}
       `;
 
+      // 添加数据权限过滤
+      countSql += dataFilterSQL;
+
+      // 添加搜索过滤条件
       if (orderNo) {
         countSql += ` AND po.code ILIKE '%${orderNo}%'`;
       }

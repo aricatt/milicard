@@ -185,6 +185,16 @@ const ArrivalManagement: React.FC = () => {
               : '';
             // 商品名称翻译
             const goodsName = getLocalizedGoodsName(item.goodsName, item.goodsNameI18n, locale);
+            
+            // 生成采购名称：采购日期 + [品类] + 商品名称
+            // 如果品类和商品名称都为空，则显示供应商信息
+            let purchaseName = `${dateStr}${categoryDisplay}${goodsName || ''}`;
+            if (!categoryDisplay && !goodsName && item.supplierName) {
+              purchaseName = `${dateStr} - ${item.supplierName}`;
+            } else if (!categoryDisplay && !goodsName) {
+              purchaseName = `${dateStr} - 采购单${item.orderNo}`;
+            }
+            
             // 计算待到货数量 = 采购数量 - 已到货数量
             const pendingBoxQty = purchaseBox - arrivedBox;
             const pendingPackQty = purchasePack - arrivedPack;
@@ -208,8 +218,8 @@ const ArrivalManagement: React.FC = () => {
               pendingBoxQty: Math.max(0, pendingBoxQty),
               pendingPackQty: Math.max(0, pendingPackQty),
               pendingPieceQty: Math.max(0, pendingPieceQty),
-              // 生成采购名称：采购日期 + [品类] + 商品名称
-              purchaseName: `${dateStr}${categoryDisplay}${goodsName || ''}`,
+              // 采购名称
+              purchaseName: purchaseName,
             });
           }
         });

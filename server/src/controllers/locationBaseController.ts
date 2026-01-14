@@ -46,7 +46,9 @@ export class LocationBaseController {
         });
       }
 
-      const result = await LocationBaseService.getBaseLocationList(baseId, req.query);
+      const dataFilter = req.permissionContext?.dataFilter || {};
+
+      const result = await LocationBaseService.getBaseLocationList(baseId, req.query, dataFilter);
       
       res.json(result);
     } catch (error) {

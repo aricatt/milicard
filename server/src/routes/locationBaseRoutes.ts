@@ -17,8 +17,9 @@ router.get('/:baseId/locations/stats', checkPermission('location', 'read'), inje
 /**
  * 获取基地的位置列表
  * GET /api/v1/bases/{baseId}/locations
+ * 注意：此API返回包含baseName字段，需要合并base资源的字段权限
  */
-router.get('/:baseId/locations', checkPermission('location', 'read'), injectDataPermission('location'), filterResponseFields(), LocationBaseController.getBaseLocationList);
+router.get('/:baseId/locations', checkPermission('location', 'read'), injectDataPermission('location', ['base']), filterResponseFields(), LocationBaseController.getBaseLocationList);
 
 /**
  * 获取位置详情

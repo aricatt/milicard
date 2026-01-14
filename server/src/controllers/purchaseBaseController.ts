@@ -22,7 +22,10 @@ export class PurchaseBaseController {
         });
       }
 
-      const result = await PurchaseBaseService.getBasePurchaseOrderList(baseId, params);
+      // 从权限中间件获取数据过滤条件
+      const dataFilter = req.permissionContext?.dataFilter || {};
+
+      const result = await PurchaseBaseService.getBasePurchaseOrderList(baseId, params, dataFilter);
       
       res.json(result);
     } catch (error) {

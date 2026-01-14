@@ -19,8 +19,9 @@ router.get('/:baseId/purchase-orders/stats', authenticateToken, checkPermission(
 /**
  * 获取基地的采购订单列表
  * GET /api/v1/bases/{baseId}/purchase-orders
+ * 注意：此API返回多表JOIN数据，需要合并相关资源的字段权限
  */
-router.get('/:baseId/purchase-orders', authenticateToken, checkPermission('purchase_order', 'read'), injectDataPermission('purchaseOrder'), filterResponseFields(), PurchaseBaseController.getBasePurchaseOrderList);
+router.get('/:baseId/purchase-orders', authenticateToken, checkPermission('purchase_order', 'read'), injectDataPermission('purchaseOrder', ['goods', 'category', 'supplier']), filterResponseFields(), PurchaseBaseController.getBasePurchaseOrderList);
 
 /**
  * 创建采购订单
@@ -67,8 +68,9 @@ router.delete('/:baseId/suppliers/:supplierId', authenticateToken, checkPermissi
 /**
  * 获取采购订单物流信息（所有物流记录）
  * GET /api/v1/bases/{baseId}/purchase-orders/:orderId/logistics
+ * 注意：物流数据是复杂的嵌套结构，包含国内物流和国际物流，不使用字段权限过滤
  */
-router.get('/:baseId/purchase-orders/:orderId/logistics', authenticateToken, checkPermission('purchase_order', 'read'), injectDataPermission('purchaseOrder'), filterResponseFields(), PurchaseBaseController.getPurchaseOrderLogistics);
+router.get('/:baseId/purchase-orders/:orderId/logistics', authenticateToken, checkPermission('purchase_order', 'read'), PurchaseBaseController.getPurchaseOrderLogistics);
 
 /**
  * 添加物流单号

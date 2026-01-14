@@ -149,8 +149,11 @@ export const checkSystemPermission = (resource: string, action: string) => {
 /**
  * 数据权限注入中间件（基于 Casbin）
  * 将数据过滤条件注入到 req.permissionContext
+ * @param resource 主资源名称
+ * @param relatedResources 相关资源名称数组（用于多表JOIN场景，合并字段权限）
  */
-export const injectDataPermission = (resource: string) => {
+export const injectDataPermission = (resource: string, relatedResources: string[] = []) => {
+  console.log('🚀 injectDataPermission 被调用:', { resource, relatedResources })
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.id
@@ -178,19 +181,116 @@ export const injectDataPermission = (resource: string) => {
         resource
       )
 
-      // 获取字段权限
+      // 获取主资源的字段权限
       const fieldPermissions = await dataPermissionService.getFieldPermissions(
         { userId, baseId, roles },
         resource
       )
 
-      // 调试日志
-      logger.debug('injectDataPermission - 字段权限', {
-        resource,
-        roles,
-        readable: fieldPermissions.readable,
-        writable: fieldPermissions.writable
+      console.log('🔍 检查 relatedResources:', {
+        relatedResources,
+        type: typeof relatedResources,
+        isArray: Array.isArray(relatedResources),
+        length: relatedResources?.length
       })
+
+      // 如果有相关资源，合并它们的字段权限
+      if (relatedResources && relatedResources.length > 0) {
+        console.log('🔍 开始合并字段权限:', { resource, relatedResources, roles })
+        
+        const allReadableFields = new Set(fieldPermissions.readable)
+        const allWritableFields = new Set(fieldPermissions.writable)
+
+        console.log('📋 主资源字段权限:', { 
+          resource, 
+          readable: fieldPermissions.readable,
+          readableCount: fieldPermissions.readable.length 
+        })
+
+        // 特殊字段映射：处理别名字段（用于主资源）
+        const specialFieldMap: Record<string, string[]> = {
+          'code': ['orderNo'],  // purchaseOrder.code -> orderNo
+          'id': ['purchaseOrderId']  // purchaseOrder.id -> purchaseOrderId (仅用于采购单明细项)
+        }
+
+        // 为主资源添加特殊别名字段
+        if (resource === 'purchaseOrder') {
+          fieldPermissions.readable.forEach(field => {
+            if (specialFieldMap[field]) {
+              specialFieldMap[field].forEach(alias => {
+                allReadableFields.add(alias)
+              })
+            }
+          })
+        }
+
+        // 字段前缀映射：资源名 -> 字段前缀
+        const fieldPrefixMap: Record<string, string> = {
+          'goods': 'goods',
+          'category': 'category',
+          'supplier': 'supplier',
+          'base': 'base',
+          'location': 'location'
+        }
+
+        for (const relatedResource of relatedResources) {
+          const relatedPermissions = await dataPermissionService.getFieldPermissions(
+            { userId, baseId, roles },
+            relatedResource
+          )
+          
+          console.log(`📋 相关资源 ${relatedResource} 字段权限:`, {
+            readable: relatedPermissions.readable,
+            readableCount: relatedPermissions.readable.length
+          })
+          
+          const prefix = fieldPrefixMap[relatedResource]
+          
+          // 合并可读字段（原始字段名 + 带前缀的字段名）
+          relatedPermissions.readable.forEach(field => {
+            allReadableFields.add(field) // 原始字段名
+            if (prefix && field !== 'id') {
+              // 添加带前缀的字段名，如 name -> goodsName, code -> categoryCode
+              const prefixedField = prefix + field.charAt(0).toUpperCase() + field.slice(1)
+              allReadableFields.add(prefixedField)
+            }
+          })
+          
+          // 合并可写字段
+          relatedPermissions.writable.forEach(field => {
+            allWritableFields.add(field)
+            if (prefix && field !== 'id') {
+              const prefixedField = prefix + field.charAt(0).toUpperCase() + field.slice(1)
+              allWritableFields.add(prefixedField)
+            }
+          })
+        }
+
+        fieldPermissions.readable = Array.from(allReadableFields)
+        fieldPermissions.writable = Array.from(allWritableFields)
+
+        console.log('✅ 合并后的字段权限:', {
+          readableCount: fieldPermissions.readable.length,
+          readable: fieldPermissions.readable
+        })
+
+        // 调试日志
+        logger.debug('injectDataPermission - 合并多资源字段权限', {
+          resource,
+          relatedResources,
+          roles,
+          readableCount: fieldPermissions.readable.length,
+          writableCount: fieldPermissions.writable.length
+        })
+      } else {
+        // 调试日志
+        logger.debug('injectDataPermission - 字段权限', {
+          resource,
+          roles,
+          readable: fieldPermissions.readable,
+          writable: fieldPermissions.writable
+        })
+      }
 
       // 注入到请求对象
       req.permissionContext = {
@@ -673,7 +773,15 @@ export const filterResponseFields = () => {
         // 处理标准响应格式：{ success: true, data: ... }
         if (body.success && body.data) {
           if (Array.isArray(body.data)) {
+            // 调试：查看第一条数据的字段
+            if (body.data.length > 0) {
+              console.log('🔍 过滤前的字段:', Object.keys(body.data[0]))
+            }
             body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
+            // 调试：查看过滤后的字段
+            if (body.data.length > 0) {
+              console.log('🔍 过滤后的字段:', Object.keys(body.data[0]))
+            }
           } else if (typeof body.data === 'object') {
             body.data = filterObject(body.data, fieldPermissions.readable)
           }

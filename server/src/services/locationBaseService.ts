@@ -8,7 +8,7 @@ export class LocationBaseService {
   /**
    * 获取基地的位置列表
    */
-  static async getBaseLocationList(baseId: number, params: any = {}) {
+  static async getBaseLocationList(baseId: number, params: any = {}, dataFilter: any = {}) {
     try {
       const { current = 1, pageSize = 10, name, type, isActive } = params;
       
@@ -38,6 +38,11 @@ export class LocationBaseService {
       
       if (isActive !== undefined) {
         where.isActive = isActive === 'true';
+      }
+
+      // 应用数据权限过滤
+      if (dataFilter && Object.keys(dataFilter).length > 0) {
+        Object.assign(where, dataFilter);
       }
 
       // 查询数据和总数
