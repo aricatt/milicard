@@ -45,6 +45,15 @@ export class LocationBaseService {
         Object.assign(where, dataFilter);
       }
 
+      // 调试：查看查询条件
+      logger.info('🔍 Location查询条件', {
+        where,
+        baseId,
+        params,
+        dataFilter,
+        service: 'milicard-api'
+      });
+
       // 查询数据和总数
       const [locations, total] = await Promise.all([
         prisma.location.findMany({
@@ -60,6 +69,18 @@ export class LocationBaseService {
         }),
         prisma.location.count({ where }),
       ]);
+
+      // 调试：查看 Prisma 返回的所有数据
+      logger.info('📊 Prisma 查询返回的数据', {
+        total: locations.length,
+        allLocations: locations.map(loc => ({
+          id: loc.id,
+          name: loc.name,
+          type: loc.type,
+          isActive: loc.isActive
+        })),
+        service: 'milicard-api'
+      });
 
       // 调试：查看 Prisma 返回的原始数据
       if (locations.length > 0) {

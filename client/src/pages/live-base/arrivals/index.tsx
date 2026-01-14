@@ -243,6 +243,7 @@ const ArrivalManagement: React.FC = () => {
       // 加载所有类型的位置（直播间和仓库）
       const result = await request(`/api/v1/bases/${currentBase.id}/locations`, {
         method: 'GET',
+        params: { pageSize: 500 },  // 使用大分页确保加载所有位置
       });
       
       if (result.success && result.data) {
