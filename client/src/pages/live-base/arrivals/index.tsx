@@ -267,10 +267,17 @@ const ArrivalManagement: React.FC = () => {
       // 加载主播和仓管
       const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
         method: 'GET',
+        params: { pageSize: 500 },  // 使用大分页确保加载所有人员
       });
       
       if (result.success && result.data) {
-        setHandlers(result.data);
+        // 按角色排序：仓管(WAREHOUSE_KEEPER)在前，主播(STREAMER)在后
+        const sortedHandlers = result.data.sort((a: any, b: any) => {
+          if (a.role === 'WAREHOUSE_KEEPER' && b.role !== 'WAREHOUSE_KEEPER') return -1;
+          if (a.role !== 'WAREHOUSE_KEEPER' && b.role === 'WAREHOUSE_KEEPER') return 1;
+          return a.name.localeCompare(b.name);  // 同角色按名称排序
+        });
+        setHandlers(sortedHandlers);
       }
     } catch (error) {
       console.error('加载人员列表失败:', error);

@@ -17,7 +17,8 @@ router.use(authenticateToken);
 router.get('/:baseId/arrivals/stats', checkPermission('arrival_order', 'read'), injectDataPermission('arrivalRecord'), filterResponseFields(), ArrivalController.getArrivalStats);
 
 // 获取基地到货记录列表
-router.get('/:baseId/arrivals', checkPermission('arrival_order', 'read'), injectDataPermission('arrivalRecord'), filterResponseFields(), ArrivalController.getArrivalRecords);
+// 注意：到货记录包含采购单、商品、品类等关联数据，需要合并相关资源的字段权限
+router.get('/:baseId/arrivals', checkPermission('arrival_order', 'read'), injectDataPermission('arrivalRecord', ['purchaseOrder', 'goods', 'category', 'location', 'handler']), filterResponseFields(), ArrivalController.getArrivalRecords);
 
 // 创建到货记录
 router.post('/:baseId/arrivals', checkPermission('arrival_order', 'create'), ArrivalController.createArrivalRecord);
