@@ -198,8 +198,11 @@ export const injectDataPermission = (resource: string, relatedResources: string[
       if (relatedResources && relatedResources.length > 0) {
         console.log('🔍 开始合并字段权限:', { resource, relatedResources, roles })
         
-        const allReadableFields = new Set(fieldPermissions.readable)
-        const allWritableFields = new Set(fieldPermissions.writable)
+        const allReadableFields = new Set<string>()
+        const allWritableFields = new Set<string>()
+        
+        // 记录主资源明确禁止的字段（用于优先级控制）
+        const mainResourceForbiddenFields = new Set<string>()
 
         console.log('📋 主资源字段权限:', { 
           resource, 
@@ -213,17 +216,6 @@ export const injectDataPermission = (resource: string, relatedResources: string[
           'id': ['purchaseOrderId']  // purchaseOrder.id -> purchaseOrderId (仅用于采购单明细项)
         }
 
-        // 为主资源添加特殊别名字段
-        if (resource === 'purchaseOrder') {
-          fieldPermissions.readable.forEach(field => {
-            if (specialFieldMap[field]) {
-              specialFieldMap[field].forEach(alias => {
-                allReadableFields.add(alias)
-              })
-            }
-          })
-        }
-
         // 字段前缀映射：资源名 -> 字段前缀
         const fieldPrefixMap: Record<string, string> = {
           'goods': 'goods',
@@ -233,6 +225,7 @@ export const injectDataPermission = (resource: string, relatedResources: string[
           'location': 'location'
         }
 
+        // 先处理相关资源的字段权限
         for (const relatedResource of relatedResources) {
           const relatedPermissions = await dataPermissionService.getFieldPermissions(
             { userId, baseId, roles },
@@ -264,6 +257,46 @@ export const injectDataPermission = (resource: string, relatedResources: string[
               allWritableFields.add(prefixedField)
             }
           })
+        }
+
+        // 最后处理主资源字段权限（优先级最高）
+        // 如果主资源明确配置了某个字段，则以主资源的配置为准
+        fieldPermissions.readable.forEach(field => {
+          allReadableFields.add(field)
+        })
+        
+        fieldPermissions.writable.forEach(field => {
+          allWritableFields.add(field)
+        })
+
+        // 为主资源添加特殊别名字段
+        if (resource === 'purchaseOrder') {
+          fieldPermissions.readable.forEach(field => {
+            if (specialFieldMap[field]) {
+              specialFieldMap[field].forEach(alias => {
+                allReadableFields.add(alias)
+              })
+            }
+          })
+        }
+
+        // 移除主资源中明确禁止的字段
+        // 检查主资源是否有字段权限配置，如果有配置但不在可读列表中，说明是明确禁止的
+        const mainResourceConfiguredFields = new Set(fieldPermissions.readable)
+        
+        // 如果主资源有配置字段权限（不是默认的 *），则检查哪些字段被明确禁止
+        if (!fieldPermissions.readable.includes('*')) {
+          // 获取主资源的所有可能字段（从前端定义或数据库schema）
+          // 这里我们通过检查相关资源的字段来推断主资源可能有哪些字段
+          for (const relatedResource of relatedResources) {
+            if (relatedResource === 'goods') {
+              // 如果 goods 的 retailPrice 在可读列表中，但主资源的 retailPrice 不在，说明主资源明确禁止
+              if (allReadableFields.has('retailPrice') && !mainResourceConfiguredFields.has('retailPrice')) {
+                allReadableFields.delete('retailPrice')
+                console.log('🚫 移除主资源明确禁止的字段: retailPrice')
+              }
+            }
+          }
         }
 
         fieldPermissions.readable = Array.from(allReadableFields)

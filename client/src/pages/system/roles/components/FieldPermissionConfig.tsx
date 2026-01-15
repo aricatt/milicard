@@ -73,9 +73,7 @@ const RESOURCES: Resource[] = [
       { key: 'updatedAt', label: '更新时间', type: 'date' },
       { key: 'createdBy', label: '创建人', type: 'string' },
       { key: 'updatedBy', label: '更新人', type: 'string' },
-      { key: 'retailPrice', label: '零售价', type: 'number' },
-      { key: 'packPrice', label: '盒价', type: 'number' },
-      { key: 'alias', label: '别名', type: 'string' },
+      // 注意：retailPrice, packPrice, alias 已移至商品本地设置（goodsLocalSetting）
     ],
   },
   {
@@ -195,18 +193,57 @@ const RESOURCES: Resource[] = [
     key: 'purchaseOrder',
     label: '采购订单',
     fields: [
+      // 基础信息
       { key: 'id', label: 'ID', type: 'string' },
       { key: 'code', label: '订单号', type: 'string' },
       { key: 'baseId', label: '基地ID', type: 'number' },
-      { key: 'supplierId', label: '供应商ID', type: 'string' },
-      { key: 'supplierName', label: '供应商', type: 'string' },
+      { key: 'status', label: '状态', type: 'string' },
       { key: 'purchaseDate', label: '采购日期', type: 'date' },
+      
+      // 供应商信息
+      { key: 'supplierId', label: '供应商ID', type: 'string' },
+      { key: 'supplierCode', label: '供应商编号', type: 'string' },
+      { key: 'supplierName', label: '供应商', type: 'string' },
+      
+      // 商品信息
+      { key: 'goodsId', label: '商品ID', type: 'string' },
+      { key: 'goodsCode', label: '商品编号', type: 'string' },
+      { key: 'goodsName', label: '商品名称', type: 'string' },
+      { key: 'categoryCode', label: '品类编号', type: 'string' },
+      { key: 'categoryName', label: '品类名称', type: 'string' },
+      
+      // 价格相关
+      { key: 'retailPrice', label: '零售价', type: 'number' },
+      { key: 'discount', label: '折扣', type: 'number' },
+      { key: 'unitPriceBox', label: '拿货单价/箱', type: 'number' },
+      { key: 'unitPricePack', label: '拿货单价/盒', type: 'number' },
+      { key: 'unitPricePiece', label: '拿货单价/包', type: 'number' },
+      
+      // 采购数量
+      { key: 'purchaseBoxQty', label: '采购/箱', type: 'number' },
+      { key: 'purchasePackQty', label: '采购/盒', type: 'number' },
+      { key: 'purchasePieceQty', label: '采购/包', type: 'number' },
+      
+      // 到货数量
+      { key: 'arrivedBoxQty', label: '到货/箱', type: 'number' },
+      { key: 'arrivedPackQty', label: '到货/盒', type: 'number' },
+      { key: 'arrivedPieceQty', label: '到货/包', type: 'number' },
+      
+      // 相差数量
+      { key: 'diffBoxQty', label: '相差/箱', type: 'number' },
+      { key: 'diffPackQty', label: '相差/盒', type: 'number' },
+      { key: 'diffPieceQty', label: '相差/包', type: 'number' },
+      
+      // 金额相关
       { key: 'totalAmount', label: '总金额', type: 'number' },
       { key: 'actualAmount', label: '实付金额', type: 'number' },
       { key: 'cnyPaymentAmount', label: '人民币支付', type: 'number' },
+      
+      // 其他信息
       { key: 'targetLocationId', label: '目标位置ID', type: 'number' },
       { key: 'targetLocation', label: '目标位置', type: 'object' },
       { key: 'notes', label: '备注', type: 'string' },
+      { key: 'trackingNumbers', label: '物流单号', type: 'string' },
       { key: 'createdBy', label: '创建人', type: 'string' },
       { key: 'createdAt', label: '创建时间', type: 'date' },
       { key: 'updatedAt', label: '更新时间', type: 'date' },
