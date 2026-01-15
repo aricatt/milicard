@@ -403,6 +403,102 @@ class StockOutService {
       })),
     };
   }
+
+  /**
+   * 导入出库记录（支持商品编号或品类名称+商品名称查找）
+   */
+  async importRecord(data: {
+    baseId: number;
+    date: Date | string;
+    type: StockOutType;
+    goodsCode?: string;
+    categoryName?: string;
+    goodsName?: string;
+    locationName: string;
+    targetName?: string;
+    relatedOrderCode?: string;
+    boxQuantity?: number;
+    packQuantity?: number;
+    pieceQuantity?: number;
+    remark?: string;
+    createdBy: string;
+  }) {
+    let goods;
+
+    // 优先使用商品编号查找
+    if (data.goodsCode) {
+      goods = await prisma.goods.findFirst({
+        where: {
+          code: data.goodsCode,
+        },
+        select: { id: true, code: true, name: true },
+      });
+
+      if (!goods) {
+        throw new Error(`商品编号 ${data.goodsCode} 不存在`);
+      }
+    } 
+    // 如果没有商品编号，使用品类名称+商品名称查找
+    else if (data.categoryName && data.goodsName) {
+      // 先通过品类名称找到品类
+      const category = await prisma.category.findFirst({
+        where: {
+          name: data.categoryName,
+        },
+        select: { id: true },
+      });
+
+      if (!category) {
+        throw new Error(`品类 ${data.categoryName} 不存在`);
+      }
+
+      // 再通过品类ID和商品名称查找商品
+      goods = await prisma.goods.findFirst({
+        where: {
+          categoryId: category.id,
+          name: data.goodsName,
+        },
+        select: { id: true, code: true, name: true },
+      });
+
+      if (!goods) {
+        throw new Error(`找不到品类 ${data.categoryName} 下名称为 ${data.goodsName} 的商品`);
+      }
+    } 
+    // 两种方式都没有提供
+    else {
+      throw new Error('必须提供商品编号，或者同时提供品类名称和商品名称');
+    }
+
+    // 根据位置名称查找位置
+    const location = await prisma.location.findFirst({
+      where: {
+        name: data.locationName,
+        baseId: data.baseId,
+      },
+      select: { id: true, name: true },
+    });
+
+    if (!location) {
+      throw new Error(`位置 ${data.locationName} 不存在`);
+    }
+
+    // 创建出库记录
+    return this.create({
+      baseId: data.baseId,
+      date: data.date,
+      goodsId: goods.id,
+      type: data.type,
+      targetName: data.targetName,
+      relatedOrderCode: data.relatedOrderCode,
+      locationId: location.id,
+      boxQuantity: data.boxQuantity || 0,
+      packQuantity: data.packQuantity || 0,
+      pieceQuantity: data.pieceQuantity || 0,
+      remark: data.remark,
+      createdBy: data.createdBy,
+    });
+  }
 }
 
 export const stockOutService = new StockOutService();

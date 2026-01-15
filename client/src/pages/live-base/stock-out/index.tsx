@@ -20,6 +20,8 @@ import {
   EditOutlined,
   DeleteOutlined,
   ExportOutlined,
+  ImportOutlined,
+  DownloadOutlined,
   InfoCircleOutlined,
   SendOutlined,
   SwapOutlined,
@@ -32,6 +34,8 @@ import { useBase } from '@/contexts/BaseContext';
 import dayjs from 'dayjs';
 import GoodsNameText, { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 import BaseGoodsSelectModal, { type BaseGoodsItem } from '@/components/BaseGoodsSelectModal';
+import { useStockOutExcel } from './useStockOutExcel';
+import ImportModal from '@/components/ImportModal';
 
 const { TextArea } = Input;
 
@@ -103,6 +107,23 @@ const StockOutPage: React.FC = () => {
   const { message } = App.useApp();
   const intl = useIntl();
   const actionRef = useRef<ActionType>(null);
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useStockOutExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+    },
+  });
 
   // 状态管理
   const [stats, setStats] = useState<StockOutStats>({
@@ -286,6 +307,7 @@ const StockOutPage: React.FC = () => {
         method: 'POST',
         data: {
           ...values,
+          type: 'MANUAL', // 强制设置为手动出库
           date: values.date.format('YYYY-MM-DD'),
         },
       });
@@ -320,6 +342,7 @@ const StockOutPage: React.FC = () => {
           method: 'PUT',
           data: {
             ...values,
+            type: 'MANUAL', // 强制设置为手动出库
             date: values.date.format('YYYY-MM-DD'),
           },
         }
@@ -912,6 +935,27 @@ const StockOutPage: React.FC = () => {
         }}
         toolBarRender={() => [
           <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            {intl.formatMessage({ id: 'pages.common.export' })}
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            {intl.formatMessage({ id: 'pages.common.import' })}
+          </Button>,
+          <Button
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            {intl.formatMessage({ id: 'pages.common.downloadTemplate' })}
+          </Button>,
+          <Button
             key="create"
             type="primary"
             icon={<PlusOutlined />}
@@ -993,6 +1037,30 @@ const StockOutPage: React.FC = () => {
         }}
         baseId={currentBase?.id || 0}
         title={intl.formatMessage({ id: 'stockOut.form.selectGoods' })}
+      />
+
+      {/* 导入模态框 */}
+      <ImportModal
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        loading={importLoading}
+        progress={importProgress}
+        title="导入出库记录（仅支持手动出库）"
+        width={700}
+        fields={[
+          { field: '出库日期', description: '必填，格式：YYYY-MM-DD，例如：2026-01-15', required: true },
+          { field: '商品编号', description: '方式1：提供商品编号，例如：GOODS-6635T4P3HUC', required: false },
+          { field: '品类名称', description: '方式2：提供品类名称，例如：创造营亚洲第二季·星光熠梦收藏卡（需配合商品名称）', required: false },
+          { field: '商品名称', description: '方式2：提供商品名称，例如：创造营亚洲第二季·星光熠梦收藏卡（需配合品类名称）', required: false },
+          { field: '出库位置', description: '必填，仓库或直播间名称，例如：G层仓库', required: true },
+          { field: '目标/对象', description: '选填，出库目标，例如：【3L】-A（直播间）、损耗、调拨等', required: false },
+          { field: '关联单号', description: '选填，关联的订单编号，例如：ORDER-123456', required: false },
+          { field: '出库箱', description: '选填，出库箱数，默认为0', required: false },
+          { field: '出库盒', description: '选填，出库盒数，默认为0', required: false },
+          { field: '出库包', description: '选填，出库包数，默认为0', required: false },
+          { field: '备注', description: '选填，出库备注信息', required: false },
+        ]}
       />
     </PageContainer>
   );

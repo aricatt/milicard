@@ -346,7 +346,7 @@ export default {
 
   // ==================== 出库管理 ====================
   'stockOut.title': '出库管理',
-  'stockOut.add': '手动出库',
+  'stockOut.add': '新增出库',
   'stockOut.edit': '编辑出库记录',
   'stockOut.column.date': '出库日期',
   'stockOut.column.category': '品类',
@@ -359,8 +359,8 @@ export default {
   'stockOut.column.packQty': '出库/盒',
   'stockOut.column.pieceQty': '出库/包',
   'stockOut.column.keyword': '关键词',
-  'stockOut.type.pointOrder': '点位发货',
-  'stockOut.type.transfer': '跨基地调货',
+  'stockOut.type.pointOrder': '点单出库',
+  'stockOut.type.transfer': '调拨出库',
   'stockOut.type.manual': '手动出库',
   'stockOut.stats.total': '出库总数',
   'stockOut.form.dateRequired': '请选择出库日期',

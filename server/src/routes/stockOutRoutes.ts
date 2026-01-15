@@ -42,6 +42,13 @@ router.post('/:baseId/stock-outs',
   StockOutController.create
 );
 
+// 导入出库记录
+router.post('/:baseId/stock-outs/import',
+  authenticateToken,
+  checkPermission('stock_out', 'create'),
+  StockOutController.importRecord
+);
+
 // 更新出库记录
 router.put('/:baseId/stock-outs/:id',
   authenticateToken,

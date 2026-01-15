@@ -227,4 +227,97 @@ export class StockOutController {
       });
     }
   }
+
+  /**
+   * 导入出库记录
+   */
+  static async importRecord(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId, 10);
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '未授权',
+        });
+      }
+
+      const {
+        date,
+        type,
+        goodsCode,
+        categoryName,
+        goodsName,
+        locationName,
+        targetName,
+        relatedOrderCode,
+        boxQuantity,
+        packQuantity,
+        pieceQuantity,
+        remark,
+      } = req.body;
+
+      // 验证必填字段
+      if (!date || !type || !locationName) {
+        return res.status(400).json({
+          success: false,
+          message: '出库日期、出库类型和出库位置为必填项',
+        });
+      }
+
+      // 验证商品识别方式：必须提供商品编号，或者同时提供品类名称和商品名称
+      if (!goodsCode && !(categoryName && goodsName)) {
+        return res.status(400).json({
+          success: false,
+          message: '必须提供商品编号，或者同时提供品类名称和商品名称',
+        });
+      }
+
+      // 出库类型映射
+      const typeMap: Record<string, string> = {
+        '点单出库': 'POINT_ORDER',
+        '调拨出库': 'TRANSFER',
+        '手动出库': 'MANUAL',
+      };
+
+      const stockOutType = typeMap[type] || type;
+
+      if (!['POINT_ORDER', 'TRANSFER', 'MANUAL'].includes(stockOutType)) {
+        return res.status(400).json({
+          success: false,
+          message: '出库类型无效，可选值：点单出库、调拨出库、手动出库',
+        });
+      }
+
+      const stockOut = await stockOutService.importRecord({
+        baseId,
+        date,
+        type: stockOutType as 'POINT_ORDER' | 'TRANSFER' | 'MANUAL',
+        goodsCode,
+        categoryName,
+        goodsName,
+        locationName,
+        targetName,
+        relatedOrderCode,
+        boxQuantity: boxQuantity || 0,
+        packQuantity: packQuantity || 0,
+        pieceQuantity: pieceQuantity || 0,
+        remark,
+        createdBy: userId,
+      });
+
+      res.status(201).json({
+        success: true,
+        data: stockOut,
+        message: '导入成功',
+      });
+    } catch (error: any) {
+      logger.error('导入出库记录失败', { error });
+      res.status(400).json({
+        success: false,
+        message: error.message || '导入出库记录失败',
+      });
+    }
+  }
 }
