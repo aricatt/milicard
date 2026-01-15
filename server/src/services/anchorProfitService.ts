@@ -86,6 +86,8 @@ export class AnchorProfitService {
         handlerName: record.consumption?.handler?.name || '未关联',
         gmvAmount: Number(record.gmvAmount),
         refundAmount: Number(record.refundAmount),
+        cancelOrderAmount: Number(record.cancelOrderAmount),
+        shopOrderAmount: Number(record.shopOrderAmount),
         waterAmount: Number(record.offlineAmount),
         salesAmount: Number(record.dailySales),
         consumptionAmount: Number(record.consumptionValue),
@@ -160,6 +162,8 @@ export class AnchorProfitService {
           profitDate: new Date(data.profitDate),
           gmvAmount: data.gmvAmount,
           refundAmount: data.refundAmount,
+          cancelOrderAmount: data.cancelOrderAmount || 0,
+          shopOrderAmount: data.shopOrderAmount || 0,
           offlineAmount: data.waterAmount,
           consumptionValue: data.consumptionAmount,
           adCost: data.adSpendAmount,
@@ -201,6 +205,8 @@ export class AnchorProfitService {
       handlerId?: string;
       gmvAmount?: number;
       refundAmount?: number;
+      cancelOrderAmount?: number;
+      shopOrderAmount?: number;
       waterAmount?: number;
       consumptionAmount?: number;
       adSpendAmount?: number;
@@ -217,6 +223,8 @@ export class AnchorProfitService {
       if (data.profitDate) updateData.profitDate = new Date(data.profitDate);
       if (data.gmvAmount !== undefined) updateData.gmvAmount = data.gmvAmount;
       if (data.refundAmount !== undefined) updateData.refundAmount = data.refundAmount;
+      if (data.cancelOrderAmount !== undefined) updateData.cancelOrderAmount = data.cancelOrderAmount;
+      if (data.shopOrderAmount !== undefined) updateData.shopOrderAmount = data.shopOrderAmount;
       if (data.waterAmount !== undefined) updateData.offlineAmount = data.waterAmount;
       if (data.consumptionAmount !== undefined) updateData.consumptionValue = data.consumptionAmount;
       if (data.adSpendAmount !== undefined) updateData.adCost = data.adSpendAmount;

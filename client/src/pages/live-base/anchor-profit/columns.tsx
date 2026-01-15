@@ -63,6 +63,28 @@ export const getColumns = (
     ),
   },
   {
+    title: intl?.formatMessage({ id: 'anchorProfit.column.cancelOrder' }) || '取消订单',
+    dataIndex: 'cancelOrderAmount',
+    valueType: 'money',
+    width: 110,
+    render: (_, record) => (
+      <span style={{ color: record.cancelOrderAmount > 0 ? '#ff7a45' : '#999' }}>
+        {formatAmount(record.cancelOrderAmount)}
+      </span>
+    ),
+  },
+  {
+    title: intl?.formatMessage({ id: 'anchorProfit.column.shopOrder' }) || '店铺订单',
+    dataIndex: 'shopOrderAmount',
+    valueType: 'money',
+    width: 110,
+    render: (_, record) => (
+      <span style={{ color: record.shopOrderAmount > 0 ? '#13c2c2' : '#999' }}>
+        {formatAmount(record.shopOrderAmount)}
+      </span>
+    ),
+  },
+  {
     title: intl?.formatMessage({ id: 'anchorProfit.column.extra' }) || '走水金额',
     dataIndex: 'waterAmount',
     valueType: 'money',
@@ -80,7 +102,7 @@ export const getColumns = (
     width: 120,
     sorter: true,
     render: (_, record) => (
-      <Tooltip title="GMV - 退款 + 走水">
+      <Tooltip title="GMV + 店铺订单 + 走水 - 取消订单 - 退款">
         <span style={{ color: '#722ed1', fontWeight: 500 }}>
           {formatAmount(record.salesAmount)}
         </span>

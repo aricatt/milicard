@@ -222,14 +222,16 @@ const AnchorProfitPage: React.FC = () => {
   const calculateProfit = useCallback(() => {
     const gmv = form.getFieldValue('gmvAmount') || 0;
     const refund = form.getFieldValue('refundAmount') || 0;
+    const cancelOrder = form.getFieldValue('cancelOrderAmount') || 0;
+    const shopOrder = form.getFieldValue('shopOrderAmount') || 0;
     const water = form.getFieldValue('waterAmount') || 0;
     const adSpend = form.getFieldValue('adSpendAmount') || 0;
     const platformFeeRate = form.getFieldValue('platformFeeRate') || 17; // 默认17%
 
-    // 当日销售额 = 走平台GMV + 走水金额 - 退款金额
-    const salesAmount = gmv + water - refund;
-    // 平台扣点 = (走平台GMV - 退款金额) * 扣点比例
-    const platformFeeAmount = (gmv - refund) * (platformFeeRate / 100);
+    // 当日销售额 = GMV + 店铺订单 + 走水 - 取消订单 - 退款
+    const salesAmount = gmv + shopOrder + water - cancelOrder - refund;
+    // 平台扣点 = (GMV - 取消订单 - 退款) * 扣点比例
+    const platformFeeAmount = (gmv - cancelOrder - refund) * (platformFeeRate / 100);
     // 利润 = 销售 - 消耗 - 投流 - 平台扣点
     const profitAmount = salesAmount - consumptionAmount - adSpend - platformFeeAmount;
     // 毛利率 = 利润 / 销售 * 100
@@ -369,6 +371,8 @@ const AnchorProfitPage: React.FC = () => {
       handlerId: record.handlerId,
       gmvAmount: record.gmvAmount,
       refundAmount: record.refundAmount,
+      cancelOrderAmount: record.cancelOrderAmount,
+      shopOrderAmount: record.shopOrderAmount,
       waterAmount: record.waterAmount,
       adSpendAmount: record.adSpendAmount,
       platformFeeRate: record.salesAmount > 0 
@@ -606,6 +610,38 @@ const AnchorProfitPage: React.FC = () => {
             label={intl.formatMessage({ id: 'anchorProfit.form.refundAmount' })}
             name="refundAmount"
             initialValue={0}
+          >
+            <InputNumber
+              min={0}
+              precision={2}
+              style={{ width: '100%' }}
+              placeholder="0"
+            />
+          </Form.Item>
+        </Col>
+        <Col span={8}>
+          <Form.Item
+            label={intl.formatMessage({ id: 'anchorProfit.form.cancelOrderAmount' })}
+            name="cancelOrderAmount"
+            initialValue={0}
+            extra={intl.formatMessage({ id: 'anchorProfit.form.cancelOrderAmountHint' })}
+          >
+            <InputNumber
+              min={0}
+              precision={2}
+              style={{ width: '100%' }}
+              placeholder="0"
+            />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Row gutter={16}>
+        <Col span={8}>
+          <Form.Item
+            label={intl.formatMessage({ id: 'anchorProfit.form.shopOrderAmount' })}
+            name="shopOrderAmount"
+            initialValue={0}
+            extra={intl.formatMessage({ id: 'anchorProfit.form.shopOrderAmountHint' })}
           >
             <InputNumber
               min={0}

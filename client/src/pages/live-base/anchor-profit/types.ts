@@ -11,8 +11,10 @@ export interface AnchorProfitRecord {
   // 收入部分
   gmvAmount: number;               // GMV金额
   refundAmount: number;            // 退款金额
-  waterAmount: number;             // 走水金额（补单等）
-  salesAmount: number;             // 当日销售金额 = GMV + 走水 - 退款
+  cancelOrderAmount: number;       // 取消订单金额
+  shopOrderAmount: number;         // 店铺订单金额
+  waterAmount: number;             // 走水金额（二维码付款等）
+  salesAmount: number;             // 当日销售金额 = GMV + 店铺订单 + 走水 - 取消订单 - 退款
   
   // 成本部分
   consumptionAmount: number;       // 消耗金额（从消耗记录获取）
@@ -49,6 +51,8 @@ export interface AnchorProfitFormValues {
   consumptionId: string;           // 关联的消耗记录ID
   gmvAmount: number;
   refundAmount: number;
+  cancelOrderAmount: number;
+  shopOrderAmount: number;
   waterAmount: number;
   adSpendAmount: number;
   platformFeeRate: number;         // 平台扣点比例（用于计算）
