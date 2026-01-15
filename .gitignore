@@ -34,5 +34,6 @@ coverage/
 tmp/
 temp/
 backups/
+backuprds/
 
 scripts/data-migration/output
