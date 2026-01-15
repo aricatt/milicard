@@ -26,7 +26,7 @@ export const getColumns = (
 ): ProColumns<PurchaseOrder>[] => {
   // 金额显示转换函数
   const formatAmount = (value: number | undefined | null, showCNY: boolean = false): string => {
-    if (value === undefined || value === null) return '-';
+    if (value === undefined || value === null || isNaN(value)) return '0.00';
     if (showCNY && exchangeRate && exchangeRate > 0) {
       const cnyValue = value / exchangeRate;
       return `¥ ${floorTo2(cnyValue)}`;

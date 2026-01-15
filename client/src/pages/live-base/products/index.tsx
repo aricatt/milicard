@@ -525,10 +525,12 @@ const ProductSettingsPage: React.FC = () => {
       hideInSearch: true,
       align: 'right',
       render: (price: any) => {
+        if (price === undefined || price === null) return '0.00';
         const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        if (isNaN(numPrice)) return '0.00';
         if (showInCNY && currentExchangeRate > 0) {
           const cnyPrice = numPrice / currentExchangeRate;
-          return <span>¥ {cnyPrice.toFixed(2)}</span>;
+          return <span>{cnyPrice.toFixed(2)}</span>;
         }
         return <span>{numPrice.toFixed(2)}</span>;
       },
@@ -541,7 +543,13 @@ const ProductSettingsPage: React.FC = () => {
       hideInSearch: true,
       align: 'right',
       render: (price: any, record: ProductSetting) => {
+        if (price === undefined || price === null) {
+          return <span style={{ color: '#f5222d', fontWeight: 'bold' }}>0.00</span>;
+        }
         const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        if (isNaN(numPrice)) {
+          return <span style={{ color: '#f5222d', fontWeight: 'bold' }}>0.00</span>;
+        }
         // 计算单包价格 = 箱价 / (每箱盒数 × 每盒包数)
         const packPerBox = record.goods?.packPerBox || 1;
         const piecePerPack = record.goods?.piecePerPack || 1;
@@ -556,7 +564,7 @@ const ProductSettingsPage: React.FC = () => {
           const cnyPrice = piecePrice / currentExchangeRate;
           return (
             <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
-              ¥ {cnyPrice.toFixed(2)}
+              {cnyPrice.toFixed(2)}
             </span>
           );
         }
@@ -575,13 +583,14 @@ const ProductSettingsPage: React.FC = () => {
       hideInSearch: true,
       align: 'right',
       render: (price: any) => {
-        if (!price) return '-';
+        if (price === undefined || price === null) return '0.00';
         const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        if (isNaN(numPrice)) return '0.00';
         if (showInCNY && currentExchangeRate > 0) {
           const cnyPrice = numPrice / currentExchangeRate;
           return (
             <span style={{ color: '#fa8c16' }}>
-              ¥ {cnyPrice.toFixed(2)}
+              {cnyPrice.toFixed(2)}
             </span>
           );
         }

@@ -157,8 +157,8 @@ const ConsumptionManagement: React.FC = () => {
     setOptionsLoading(true);
     try {
       const [locationsRes, personnelRes, goodsRes] = await Promise.all([
-        request(`/api/v1/bases/${currentBase.id}/locations`, { method: 'GET' }),
-        request(`/api/v1/bases/${currentBase.id}/personnel`, { method: 'GET' }),
+        request(`/api/v1/bases/${currentBase.id}/locations`, { method: 'GET', params: { pageSize: 1000 } }),
+        request(`/api/v1/bases/${currentBase.id}/personnel`, { method: 'GET', params: { pageSize: 1000 } }),
         request(`/api/v1/bases/${currentBase.id}/goods`, { method: 'GET', params: { pageSize: 1000 } }),
       ]);
 

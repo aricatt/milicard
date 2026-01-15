@@ -340,11 +340,14 @@ const ProductManagement: React.FC = () => {
       width: 120,
       hideInSearch: true,
       align: 'right',
-      render: (price: number) => (
-        <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
-          ¥{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
-        </span>
-      ),
+      render: (price: number) => {
+        const value = typeof price === 'number' && !isNaN(price) ? price : 0;
+        return (
+          <span style={{ color: '#f5222d', fontWeight: 'bold' }}>
+            {value.toFixed(2)}
+          </span>
+        );
+      },
     },
     {
       title: '平拆价',
@@ -354,11 +357,14 @@ const ProductManagement: React.FC = () => {
       hideInSearch: true,
       hideInTable: false,
       align: 'right',
-      render: (price: number) => price ? (
-        <span style={{ color: '#fa8c16' }}>
-          ¥{typeof price === 'number' ? price.toFixed(2) : parseFloat(price || '0').toFixed(2)}
-        </span>
-      ) : '-',
+      render: (price: number) => {
+        const value = (price === undefined || price === null || isNaN(price)) ? 0 : price;
+        return (
+          <span style={{ color: '#fa8c16' }}>
+            {value.toFixed(2)}
+          </span>
+        );
+      },
     },
     {
       title: '采购价',
