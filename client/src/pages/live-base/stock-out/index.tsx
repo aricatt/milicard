@@ -511,7 +511,6 @@ const StockOutPage: React.FC = () => {
     createForm.resetFields();
     createForm.setFieldsValue({
       date: dayjs(),
-      targetName: intl.formatMessage({ id: 'common.other' }),
       boxQuantity: 0,
       packQuantity: 0,
       pieceQuantity: 0,
@@ -853,14 +852,7 @@ const StockOutPage: React.FC = () => {
         name="targetName"
         rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.targetNameRequired' }) }]}
       >
-        <Select 
-          placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} 
-          options={anchorOptions}
-          showSearch
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
-        />
+        <Input placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} />
       </Form.Item>
 
       <Space style={{ width: '100%' }} size="middle">
@@ -924,14 +916,7 @@ const StockOutPage: React.FC = () => {
         name="targetName"
         rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.targetNameRequired' }) }]}
       >
-        <Select 
-          placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} 
-          options={anchorOptions}
-          showSearch
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
-        />
+        <Input placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} />
       </Form.Item>
 
       <Space style={{ width: '100%' }} size="middle">

@@ -112,7 +112,8 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
     { header: '厂家名称', key: 'manufacturer', width: 15 },
     { header: '商品别名', key: 'alias', width: 25 },
     { header: '零售价(一箱)', key: 'retailPrice', width: 14 },
-    { header: '采购价(一箱)', key: 'purchasePrice', width: 14 },
+    { header: '平拆价(一包)', key: 'packPrice', width: 14 },
+    { header: '授权价(一包)', key: 'purchasePrice', width: 14 },
     { header: '多少盒1箱', key: 'packPerBox', width: 12 },
     { header: '多少包1盒', key: 'piecePerPack', width: 12 },
     { header: '状态', key: 'status', width: 8 },
@@ -126,7 +127,8 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
     { header: '商品名称', key: 'name', width: 35 },
     { header: '商品别名', key: 'alias', width: 25 },
     { header: '零售价(一箱)', key: 'retailPrice', width: 14 },
-    { header: '采购价(一箱)', key: 'purchasePrice', width: 14 },
+    { header: '平拆价(一包)', key: 'packPrice', width: 14 },
+    { header: '授权价(一包)', key: 'purchasePrice', width: 14 },
   ];
 
   // 导出商品数据
@@ -161,6 +163,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
         manufacturer: item.manufacturer,
         alias: item.alias || '',
         retailPrice: formatAmount(item.retailPrice),
+        packPrice: item.packPrice ? formatAmount(item.packPrice) : '',
         purchasePrice: item.purchasePrice ? formatAmount(item.purchasePrice) : '',
         packPerBox: item.packPerBox,
         piecePerPack: item.piecePerPack,
@@ -247,14 +250,18 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
         } else {
           // 解析带货币标记的金额
           const retailPriceResult = parseCurrencyValue(row['零售价(一箱)'], currencyCode, exchangeRate);
-          const purchasePriceResult = parseCurrencyValue(row['采购价(一箱)'], currencyCode, exchangeRate);
+          const packPriceResult = parseCurrencyValue(row['平拆价(一包)'], currencyCode, exchangeRate);
+          const purchasePriceResult = parseCurrencyValue(row['授权价(一包)'], currencyCode, exchangeRate);
           
           // 收集货币解析错误
           if (retailPriceResult.error) {
             currencyErrors.push(`第${index + 2}行 零售价：${retailPriceResult.error}`);
           }
+          if (packPriceResult.error) {
+            currencyErrors.push(`第${index + 2}行 平拆价：${packPriceResult.error}`);
+          }
           if (purchasePriceResult.error) {
-            currencyErrors.push(`第${index + 2}行 采购价：${purchasePriceResult.error}`);
+            currencyErrors.push(`第${index + 2}行 授权价：${purchasePriceResult.error}`);
           }
           
           importData.push({
@@ -263,6 +270,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
             globalGoodsName: globalProduct.name,
             alias: String(row['商品别名'] || '').trim() || undefined,
             retailPrice: retailPriceResult.value,
+            packPrice: packPriceResult.value,
             purchasePrice: purchasePriceResult.value,
             isNew: !existingGoodsIdSet.has(globalProduct.id),
           });
@@ -335,6 +343,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
                 globalGoodsId: item.globalGoodsId,
                 alias: item.alias,
                 retailPrice: item.retailPrice,
+                packPrice: item.packPrice,
                 purchasePrice: item.purchasePrice,
               },
             });
@@ -352,6 +361,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
               data: {
                 alias: item.alias,
                 retailPrice: item.retailPrice,
+                packPrice: item.packPrice,
                 purchasePrice: item.purchasePrice,
               },
             });
@@ -409,6 +419,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
         name: '琦趣创想航海王 和之国篇',
         alias: '航海王和之国',
         retailPrice: `[${currencyCode}]22356`,
+        packPrice: `[${currencyCode}]800`,
         purchasePrice: `[${currencyCode}]18000`,
       },
       {
@@ -417,6 +428,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
         name: '名侦探柯南挂件-星绽版-第1弹',
         alias: '',
         retailPrice: '[CNY]5600',
+        packPrice: '[CNY]200',
         purchasePrice: '[CNY]4500',
       },
     ];
@@ -429,7 +441,7 @@ export const useProductExcel = ({ baseId, baseName, currencyCode, exchangeRate, 
       '   - 如果没有编号或编号匹配失败，按「品类 + 商品名称」组合匹配',
       '2. 必填字段：「品类」和「商品名称」至少需要填写（除非有商品编号）',
       '3. 商品必须先在「全局信息 > 所有商品」页面添加后才能导入',
-      '4. 本导入只更新基地级设置（零售价、采购价、别名），不会修改全局商品信息',
+      '4. 本导入只更新基地级设置（零售价、平拆价、授权价、别名），不会修改全局商品信息',
       '5. 【重要】金额字段必须带货币标记（支持前置或后置）：',
       `   - 当前基地货币：[${currencyCode}]22356 或 22356[${currencyCode}]`,
       '   - 人民币：[CNY]5600 或 5600[CNY]，系统会自动按汇率转换',

@@ -218,7 +218,13 @@ const ProductSettingsPage: React.FC = () => {
       example: `[${currentCurrencyCode}]22356 或 22356[${currentCurrencyCode}] 或 [CNY]5600 或 5600[CNY]` 
     },
     { 
-      field: '采购价(一箱)', 
+      field: '平拆价(一包)', 
+      required: false, 
+      description: `必须带货币标记（前置或后置）：[${currentCurrencyCode}]金额 或 金额[${currentCurrencyCode}]，人民币会自动按汇率转换`, 
+      example: `[${currentCurrencyCode}]800 或 800[${currentCurrencyCode}] 或 [CNY]200 或 200[CNY]` 
+    },
+    { 
+      field: '授权价(一包)', 
       required: false, 
       description: `必须带货币标记（前置或后置）：[${currentCurrencyCode}]金额 或 金额[${currentCurrencyCode}]，人民币会自动按汇率转换`, 
       example: `[${currentCurrencyCode}]18000 或 18000[${currentCurrencyCode}] 或 [CNY]4500 或 4500[CNY]` 
@@ -602,6 +608,32 @@ const ProductSettingsPage: React.FC = () => {
       },
     },
     {
+      title: intl.formatMessage({ id: 'products.column.purchasePrice' }),
+      dataIndex: 'purchasePrice',
+      key: 'purchasePrice',
+      width: 120,
+      hideInSearch: true,
+      align: 'right',
+      render: (price: any) => {
+        if (price === undefined || price === null) return '0.00';
+        const numPrice = typeof price === 'number' ? price : parseFloat(price || '0');
+        if (isNaN(numPrice)) return '0.00';
+        if (showInCNY && currentExchangeRate > 0) {
+          const cnyPrice = numPrice / currentExchangeRate;
+          return (
+            <span style={{ color: '#52c41a' }}>
+              {cnyPrice.toFixed(2)}
+            </span>
+          );
+        }
+        return (
+          <span style={{ color: '#52c41a' }}>
+            {numPrice.toFixed(2)}
+          </span>
+        );
+      },
+    },
+    {
       title: intl.formatMessage({ id: 'products.column.packPerBox' }),
       dataIndex: ['goods', 'packPerBox'],
       key: 'packPerBox',
@@ -764,6 +796,7 @@ const ProductSettingsPage: React.FC = () => {
           defaultValue: {
             alias: { show: false },
             packPrice: { show: false },
+            purchasePrice: { show: false },
             updatedAt: { show: false },
             retailPricePerPiece: { show: true },
           },
@@ -1009,7 +1042,7 @@ const ProductSettingsPage: React.FC = () => {
               currencyCode={currentBase?.currency || 'CNY'}
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
-              addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perPiece' })}
               cnyPaymentMode={createCnyPaymentMode}
             />
           </Form.Item>
@@ -1138,7 +1171,7 @@ const ProductSettingsPage: React.FC = () => {
               currencyCode={currentBase?.currency || 'CNY'}
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.purchasePricePlaceholder' })}
-              addonAfter={intl.formatMessage({ id: 'unit.perBox' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perPiece' })}
               cnyPaymentMode={editCnyPaymentMode}
             />
           </Form.Item>
