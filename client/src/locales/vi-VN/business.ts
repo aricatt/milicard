@@ -18,6 +18,9 @@ export default {
   'button.submit': 'Gửi',
   'button.close': 'Đóng',
 
+  // ==================== Văn bản chung ====================
+  'common.other': 'Khác',
+
   // ==================== Cột bảng chung ====================
   'table.column.id': 'ID',
   'table.column.code': 'Mã',
@@ -375,6 +378,7 @@ export default {
   'stockOut.form.quantityRequired': 'Vui lòng nhập số lượng xuất kho',
   'stockOut.form.insufficientStock': 'Không đủ hàng tồn kho, không thể tiếp tục',
   'stockOut.form.locationRequired': 'Vui lòng chọn kho',
+  'stockOut.form.targetNameRequired': 'Vui lòng chọn tên đích',
   'stockOut.form.targetPlaceholder': 'Nhập tên đích (ví dụ: khách hàng, phòng live)',
   'stockOut.deleteConfirm': 'Bạn có chắc muốn xóa bản ghi xuất kho này?',
   'stockOut.search.placeholder': 'Tìm kiếm tên đích, mã đơn, ghi chú',

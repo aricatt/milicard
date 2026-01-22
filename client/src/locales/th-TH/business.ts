@@ -18,6 +18,9 @@ export default {
   'button.submit': 'ส่ง',
   'button.close': 'ปิด',
 
+  // ==================== ข้อความทั่วไป ====================
+  'common.other': 'อื่นๆ',
+
   // ==================== คอลัมน์ตารางทั่วไป ====================
   'table.column.id': 'ID',
   'table.column.code': 'รหัส',
@@ -375,6 +378,7 @@ export default {
   'stockOut.form.quantityRequired': 'กรุณากรอกจำนวนเบิกสินค้า',
   'stockOut.form.insufficientStock': 'สต็อกไม่เพียงพอ ไม่สามารถดำเนินการได้',
   'stockOut.form.locationRequired': 'กรุณาเลือกคลัง',
+  'stockOut.form.targetNameRequired': 'กรุณาเลือกชื่อปลายทาง',
   'stockOut.form.targetPlaceholder': 'กรอกชื่อปลายทาง (เช่น ลูกค้า, ห้องไลฟ์)',
   'stockOut.deleteConfirm': 'คุณแน่ใจว่าต้องการลบบันทึกการเบิกสินค้านี้?',
   'stockOut.search.placeholder': 'ค้นหาชื่อเป้าหมาย เลขคำสั่ง หมายเหตุ',

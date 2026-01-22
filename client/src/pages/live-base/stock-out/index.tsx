@@ -13,6 +13,7 @@ import {
   Select,
   DatePicker,
   InputNumber,
+  Tooltip,
 } from 'antd';
 import {
   PlusOutlined,
@@ -141,6 +142,7 @@ const StockOutPage: React.FC = () => {
 
   // 下拉选项
   const [locationOptions, setLocationOptions] = useState<any[]>([]);
+  const [anchorOptions, setAnchorOptions] = useState<any[]>([]);
   
   // 商品选择弹窗状态
   const [goodsSelectModalVisible, setGoodsSelectModalVisible] = useState(false);
@@ -197,7 +199,7 @@ const StockOutPage: React.FC = () => {
   };
 
   /**
-   * 获取仓库列表
+   * 获取仓库列表（只获取仓库类型，不包含直播间）
    */
   const fetchLocations = async () => {
     if (!currentBase) return;
@@ -207,14 +209,40 @@ const StockOutPage: React.FC = () => {
       });
       if (result.success) {
         setLocationOptions(
-          (result.data || []).map((l: any) => ({
-            label: l.name,
-            value: l.id,
-          }))
+          (result.data || [])
+            .filter((l: any) => l.type === 'WAREHOUSE' || l.type === 'MAIN_WAREHOUSE')
+            .map((l: any) => ({
+              label: l.name,
+              value: l.id,
+            }))
         );
       }
     } catch (error) {
       console.error('获取仓库列表失败:', error);
+    }
+  };
+
+  /**
+   * 获取主播列表
+   */
+  const fetchAnchors = async () => {
+    if (!currentBase) return;
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
+        params: { role: 'ANCHOR', pageSize: 1000, isActive: true },
+      });
+      if (result.success) {
+        const anchors = (result.data || []).map((p: any) => ({
+          label: p.name,
+          value: p.name,
+        }));
+        setAnchorOptions([
+          ...anchors,
+          { label: intl.formatMessage({ id: 'common.other' }), value: intl.formatMessage({ id: 'common.other' }) },
+        ]);
+      }
+    } catch (error) {
+      console.error('获取主播列表失败:', error);
     }
   };
 
@@ -294,8 +322,24 @@ const StockOutPage: React.FC = () => {
       return;
     }
     
-    if (stockInfo) {
-      if (boxQty > stockInfo.currentBox || packQty > stockInfo.currentPack || pieceQty > stockInfo.currentPiece) {
+    if (stockInfo && selectedGoods) {
+      // 将库存和出库数量都换算成最小单位（包）进行比较
+      const packPerBox = selectedGoods.packPerBox || 1;
+      const piecePerPack = selectedGoods.piecePerPack || 1;
+      
+      // 当前库存总包数
+      const totalStockInPieces = 
+        stockInfo.currentBox * packPerBox * piecePerPack +
+        stockInfo.currentPack * piecePerPack +
+        stockInfo.currentPiece;
+      
+      // 出库总包数
+      const totalOutInPieces = 
+        boxQty * packPerBox * piecePerPack +
+        packQty * piecePerPack +
+        pieceQty;
+      
+      if (totalOutInPieces > totalStockInPieces) {
         message.error(intl.formatMessage({ id: 'stockOut.form.insufficientStock' }));
         return;
       }
@@ -441,6 +485,8 @@ const StockOutPage: React.FC = () => {
    * 编辑出库记录
    */
   const handleEdit = (record: StockOut) => {
+    fetchLocations();
+    fetchAnchors();
     setEditingRecord(record);
     editForm.setFieldsValue({
       date: dayjs(record.date),
@@ -460,10 +506,12 @@ const StockOutPage: React.FC = () => {
    */
   const openCreateModal = () => {
     fetchLocations();
+    fetchAnchors();
     setSelectedGoods(null);
     createForm.resetFields();
     createForm.setFieldsValue({
       date: dayjs(),
+      targetName: intl.formatMessage({ id: 'common.other' }),
       boxQuantity: 0,
       packQuantity: 0,
       pieceQuantity: 0,
@@ -635,47 +683,47 @@ const StockOutPage: React.FC = () => {
         if (record.type !== 'MANUAL') {
           return <span style={{ color: '#999' }}>-</span>;
         }
-        return [
-          <Button
-            key="edit"
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              fetchLocations();
-              // 设置编辑时选中的商品
-              if (record.goods) {
-                setEditSelectedGoods({
-                  id: record.goods.id,
-                  code: record.goods.code,
-                  name: record.goods.name,
-                  nameI18n: record.goods.nameI18n || undefined,
-                  categoryCode: record.goods.category?.code,
-                  categoryName: record.goods.category?.name,
-                  packPerBox: record.goods.packPerBox,
-                  piecePerPack: record.goods.piecePerPack,
-                  isActive: true,
-                });
-              }
-              handleEdit(record);
-            }}
-          >
-            {intl.formatMessage({ id: 'button.edit' })}
-          </Button>,
-          <Popconfirm
-            key="delete"
-            title={intl.formatMessage({ id: 'message.deleteConfirm' })}
-            description={intl.formatMessage({ id: 'stockOut.deleteConfirm' })}
-            onConfirm={() => handleDelete(record)}
-            okText={intl.formatMessage({ id: 'button.confirm' })}
-            cancelText={intl.formatMessage({ id: 'button.cancel' })}
-            icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
-          >
-            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-              {intl.formatMessage({ id: 'button.delete' })}
-            </Button>
-          </Popconfirm>,
-        ];
+        return (
+          <Space>
+            <Tooltip title={intl.formatMessage({ id: 'button.edit' })}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  fetchLocations();
+                  // 设置编辑时选中的商品
+                  if (record.goods) {
+                    setEditSelectedGoods({
+                      id: record.goods.id,
+                      code: record.goods.code,
+                      name: record.goods.name,
+                      nameI18n: record.goods.nameI18n || undefined,
+                      categoryCode: record.goods.category?.code,
+                      categoryName: record.goods.category?.name,
+                      packPerBox: record.goods.packPerBox,
+                      piecePerPack: record.goods.piecePerPack,
+                      isActive: true,
+                    });
+                  }
+                  handleEdit(record);
+                }}
+              />
+            </Tooltip>
+            <Popconfirm
+              title={intl.formatMessage({ id: 'message.deleteConfirm' })}
+              description={intl.formatMessage({ id: 'stockOut.deleteConfirm' })}
+              onConfirm={() => handleDelete(record)}
+              okText={intl.formatMessage({ id: 'button.confirm' })}
+              cancelText={intl.formatMessage({ id: 'button.cancel' })}
+              icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+            >
+              <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+                <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+              </Tooltip>
+            </Popconfirm>
+          </Space>
+        );
       },
     },
   ];
@@ -800,8 +848,19 @@ const StockOutPage: React.FC = () => {
         </Form.Item>
       )}
 
-      <Form.Item label={intl.formatMessage({ id: 'stockOut.column.targetName' })} name="targetName">
-        <Input placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} />
+      <Form.Item 
+        label={intl.formatMessage({ id: 'stockOut.column.targetName' })} 
+        name="targetName"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.targetNameRequired' }) }]}
+      >
+        <Select 
+          placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} 
+          options={anchorOptions}
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
       </Form.Item>
 
       <Space style={{ width: '100%' }} size="middle">
@@ -860,8 +919,19 @@ const StockOutPage: React.FC = () => {
         <Select placeholder={intl.formatMessage({ id: 'form.placeholder.select' })} options={locationOptions} />
       </Form.Item>
 
-      <Form.Item label={intl.formatMessage({ id: 'stockOut.column.targetName' })} name="targetName">
-        <Input placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} />
+      <Form.Item 
+        label={intl.formatMessage({ id: 'stockOut.column.targetName' })} 
+        name="targetName"
+        rules={[{ required: true, message: intl.formatMessage({ id: 'stockOut.form.targetNameRequired' }) }]}
+      >
+        <Select 
+          placeholder={intl.formatMessage({ id: 'stockOut.form.targetPlaceholder' })} 
+          options={anchorOptions}
+          showSearch
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
       </Form.Item>
 
       <Space style={{ width: '100%' }} size="middle">

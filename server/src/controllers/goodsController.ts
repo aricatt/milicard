@@ -51,7 +51,7 @@ export class GoodsController {
       const queryParams = {
         page: req.query.page ? parseInt(req.query.page as string) : 1,
         pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 20,
-        search: req.query.search as string,
+        search: (req.query.search || req.query.keyword) as string,
         isActive: req.query.isActive === 'true' ? true : req.query.isActive === 'false' ? false : undefined,
         manufacturer: req.query.manufacturer as string
       }

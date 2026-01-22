@@ -18,6 +18,9 @@ export default {
   'button.submit': '提交',
   'button.close': '關閉',
 
+  // ==================== 通用文本 ====================
+  'common.other': '其他',
+
   // ==================== 通用表格列 ====================
   'table.column.id': 'ID',
   'table.column.code': '編號',
@@ -375,6 +378,7 @@ export default {
   'stockOut.form.quantityRequired': '請輸入出庫數量',
   'stockOut.form.insufficientStock': '庫存不足，無法出庫',
   'stockOut.form.locationRequired': '請選擇出庫倉庫',
+  'stockOut.form.targetNameRequired': '請選擇目標名稱',
   'stockOut.form.targetPlaceholder': '請輸入目標名稱（如客戶名、直播間等）',
   'stockOut.deleteConfirm': '確定要刪除這條出庫記錄嗎？',
   'stockOut.search.placeholder': '搜索目標名稱、訂單號、備註',

@@ -18,6 +18,9 @@ export default {
   'button.submit': '提交',
   'button.close': '关闭',
 
+  // ==================== 通用文本 ====================
+  'common.other': '其他',
+
   // ==================== 通用表格列 ====================
   'table.column.id': 'ID',
   'table.column.code': '编号',
@@ -375,6 +378,7 @@ export default {
   'stockOut.form.quantityRequired': '请输入出库数量',
   'stockOut.form.insufficientStock': '库存不足，无法出库',
   'stockOut.form.locationRequired': '请选择出库仓库',
+  'stockOut.form.targetNameRequired': '请选择目标名称',
   'stockOut.form.targetPlaceholder': '请输入目标名称（如客户名、直播间等）',
   'stockOut.deleteConfirm': '确定要删除这条出库记录吗？',
   'stockOut.search.placeholder': '搜索目标名称、订单号、备注',

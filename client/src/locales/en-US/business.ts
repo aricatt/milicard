@@ -18,6 +18,9 @@ export default {
   'button.submit': 'Submit',
   'button.close': 'Close',
 
+  // ==================== Common Text ====================
+  'common.other': 'Other',
+
   // ==================== Common Table Columns ====================
   'table.column.id': 'ID',
   'table.column.code': 'Code',
@@ -372,10 +375,11 @@ export default {
   'stockOut.form.clickToSelect': 'Click to select goods',
   'stockOut.form.reselect': 'Reselect',
   'stockOut.form.currentStock': 'Current Stock',
-  'stockOut.form.quantityRequired': 'Please enter stock-out quantity',
+  'stockOut.form.quantityRequired': 'Please enter stock out quantity',
   'stockOut.form.insufficientStock': 'Insufficient stock, cannot proceed',
   'stockOut.form.locationRequired': 'Please select warehouse',
-  'stockOut.form.targetPlaceholder': 'Enter target name (e.g. customer, live room)',
+  'stockOut.form.targetNameRequired': 'Please select target name',
+  'stockOut.form.targetPlaceholder': 'Enter target name (e.g., customer, live room)',
   'stockOut.deleteConfirm': 'Are you sure to delete this stock-out record?',
   'stockOut.search.placeholder': 'Search target name, order number, notes',
 
