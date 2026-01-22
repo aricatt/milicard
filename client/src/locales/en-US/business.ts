@@ -71,6 +71,7 @@ export default {
   'unit.item': 'Item',
   'unit.perBox': '/Box',
   'unit.perPack': '/Pack',
+  'unit.perPiece': '/Piece',
   'unit.pricePerPack': 'Price/Pack',
   'unit.yuan': 'Yuan',
 
@@ -649,7 +650,7 @@ export default {
   'products.form.manufacturer': 'Manufacturer',
   'products.form.description': 'Product Description',
   'products.form.retailPrice': 'Retail Price (per box)',
-  'products.form.packPrice': 'Pack Price (per pack)',
+  'products.form.packPrice': 'Pack Price (per Piece)',
   'products.form.boxQuantity': 'Box Quantity',
   'products.form.packPerBox': 'Packs/Box',
   'products.form.piecePerPack': 'Pieces/Pack',

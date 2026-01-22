@@ -71,6 +71,7 @@ export default {
   'unit.item': '个',
   'unit.perBox': '/箱',
   'unit.perPack': '/盒',
+  'unit.perPiece': '/包',
   'unit.pricePerPack': '单价/盒',
   'unit.yuan': '元',
 
@@ -649,7 +650,7 @@ export default {
   'products.form.manufacturer': '厂家名称',
   'products.form.description': '商品描述',
   'products.form.retailPrice': '零售价(一箱)',
-  'products.form.packPrice': '平拆价(一盒)',
+  'products.form.packPrice': '平拆价(一包)',
   'products.form.boxQuantity': '箱装数量',
   'products.form.packPerBox': '盒/箱',
   'products.form.piecePerPack': '包/盒',

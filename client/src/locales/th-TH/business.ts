@@ -71,6 +71,7 @@ export default {
   'unit.item': 'รายการ',
   'unit.perBox': '/กล่อง',
   'unit.perPack': '/แพ็ค',
+  'unit.perPiece': '/ชิ้น',
   'unit.pricePerPack': 'ราคา/แพ็ค',
   'unit.yuan': 'หยวน',
 
@@ -649,7 +650,7 @@ export default {
   'products.form.manufacturer': 'ผู้ผลิต',
   'products.form.description': 'รายละเอียดสินค้า',
   'products.form.retailPrice': 'ราคาขายปลีก (ต่อกล่อง)',
-  'products.form.packPrice': 'ราคาแพ็ค (ต่อแพ็ค)',
+  'products.form.packPrice': 'ราคาแพ็ค (ต่อชิ้น)',
   'products.form.boxQuantity': 'จำนวนกล่อง',
   'products.form.packPerBox': 'แพ็ค/กล่อง',
   'products.form.piecePerPack': 'ชิ้น/แพ็ค',

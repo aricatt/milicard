@@ -56,7 +56,7 @@
 - ✅ 厂家名称（必填）
 - ✅ 商品描述（选填）
 - ✅ 零售价(一箱)（必填，InputNumber）
-- ✅ 平拆价(一盒)（选填，InputNumber）
+- ✅ 平拆价(一包)（选填，InputNumber）
 - ✅ 箱装数量（固定为1，禁用）
 - ✅ 盒/箱（必填，InputNumber）
 - ✅ 包/盒（必填，InputNumber）

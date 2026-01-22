@@ -993,7 +993,7 @@ const ProductSettingsPage: React.FC = () => {
               currencyCode={currentBase?.currency || 'CNY'}
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
-              addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perPiece' })}
               cnyPaymentMode={createCnyPaymentMode}
             />
           </Form.Item>
@@ -1122,7 +1122,7 @@ const ProductSettingsPage: React.FC = () => {
               currencyCode={currentBase?.currency || 'CNY'}
               exchangeRate={formExchangeRate}
               placeholder={intl.formatMessage({ id: 'products.form.packPricePlaceholder' })}
-              addonAfter={intl.formatMessage({ id: 'unit.perPack' })}
+              addonAfter={intl.formatMessage({ id: 'unit.perPiece' })}
               cnyPaymentMode={editCnyPaymentMode}
             />
           </Form.Item>

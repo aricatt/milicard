@@ -71,6 +71,7 @@ export default {
   'unit.item': 'Cái',
   'unit.perBox': '/Thùng',
   'unit.perPack': '/Hộp',
+  'unit.perPiece': '/Gói',
   'unit.pricePerPack': 'Đơn giá/Hộp',
   'unit.yuan': 'Nhân dân tệ',
 
@@ -649,7 +650,7 @@ export default {
   'products.form.manufacturer': 'Nhà sản xuất',
   'products.form.description': 'Mô tả sản phẩm',
   'products.form.retailPrice': 'Giá bán lẻ (mỗi thùng)',
-  'products.form.packPrice': 'Giá gói (mỗi gói)',
+  'products.form.packPrice': 'Giá gói (mỗi Cái)',
   'products.form.boxQuantity': 'Số lượng thùng',
   'products.form.packPerBox': 'Gói/Thùng',
   'products.form.piecePerPack': 'Cái/Gói',
