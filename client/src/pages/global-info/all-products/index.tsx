@@ -32,7 +32,7 @@ import type { FieldDescription } from '@/components/ImportModal';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl, getLocale } from '@umijs/max';
-import { getCategoryDisplayName } from '@/components/GoodsNameText';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 const { TextArea } = Input;
 
@@ -423,16 +423,10 @@ const GlobalProductManagement: React.FC = () => {
       dataIndex: 'name',
       key: 'name',
       width: 220,
-      ellipsis: true,
       render: (text: any, record: GlobalProduct) => {
-        // 根据当前语言获取对应的翻译名称
-        const locale = getLocale();
-        const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
-        const displayName = (localeKey && record.nameI18n?.[localeKey]) || record.name;
-        
         return (
           <Space size={4}>
-            <strong>{displayName}</strong>
+            <GoodsNameText text={record.name} nameI18n={record.nameI18n} />
             <Tooltip title={intl.formatMessage({ id: 'products.translate.tooltip' })}>
               <Button
                 type="text"
