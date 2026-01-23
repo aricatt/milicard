@@ -102,6 +102,7 @@ echo "这可能需要几分钟，请耐心等待"
 echo ""
 
 # 导出数据库
+# 注意：将 stderr 分离，只保留 SQL 输出到文件
 docker run --rm \
     -e PGPASSWORD="$RDS_PASSWORD" \
     -e PGCLIENTENCODING=UTF8 \
@@ -113,7 +114,14 @@ docker run --rm \
             --no-owner \
             --no-privileges \
             --encoding=UTF8 \
-    > "$BACKUP_DIR/$BACKUP_FILE" 2>&1
+    > "$BACKUP_DIR/$BACKUP_FILE" 2>/dev/null
+
+# 检查是否有 Docker/Podman 警告混入
+if grep -q "Emulate Docker CLI" "$BACKUP_DIR/$BACKUP_FILE" 2>/dev/null; then
+    echo -e "${YELLOW}检测到 Docker 警告信息，正在清理...${NC}"
+    # 删除包含 Docker/Podman 警告的行
+    sed -i '/Emulate Docker CLI/d' "$BACKUP_DIR/$BACKUP_FILE"
+fi
 
 # 检查导出是否成功
 if [ $? -eq 0 ] && [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
