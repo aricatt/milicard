@@ -80,9 +80,11 @@ echo ""
 
 # 确认操作
 echo -e "${YELLOW}即将执行以下操作:${NC}"
-echo "  1. 将迁移文件夹重命名: 20250110091000_add_point_visit_tracking"
-echo "                    → 20260110091000_add_point_visit_tracking"
-echo "  2. 更新数据库中的迁移记录"
+echo "  更新数据库中的迁移记录:"
+echo "    20250110091000_add_point_visit_tracking"
+echo "  → 20260110091000_add_point_visit_tracking"
+echo ""
+echo -e "${CYAN}注意: 迁移文件需要通过 git pull 同步${NC}"
 echo ""
 read -p "确认执行? (y/N) " -n 1 -r
 echo
@@ -91,22 +93,8 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# 步骤 1: 重命名迁移文件夹
-echo -e "${YELLOW}步骤 1: 重命名迁移文件夹...${NC}"
-MIGRATION_DIR="server/prisma/migrations"
-OLD_NAME="20250110091000_add_point_visit_tracking"
-NEW_NAME="20260110091000_add_point_visit_tracking"
-
-if [ -d "$MIGRATION_DIR/$OLD_NAME" ]; then
-    mv "$MIGRATION_DIR/$OLD_NAME" "$MIGRATION_DIR/$NEW_NAME"
-    echo -e "${GREEN}✅ 迁移文件夹已重命名${NC}"
-else
-    echo -e "${YELLOW}⚠️  迁移文件夹不存在或已经重命名${NC}"
-fi
-echo ""
-
-# 步骤 2: 更新数据库记录
-echo -e "${YELLOW}步骤 2: 更新数据库迁移记录...${NC}"
+# 更新数据库记录
+echo -e "${YELLOW}更新数据库迁移记录...${NC}"
 PGPASSWORD="$RDS_PASSWORD" psql -h "$RDS_HOST" -p "$RDS_PORT" -U "$RDS_USER" -d "$RDS_DATABASE" << EOF
 -- 更新迁移名称
 UPDATE _prisma_migrations 
