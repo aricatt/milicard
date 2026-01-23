@@ -89,6 +89,14 @@ export default [
         component: './global-info/currency-rates',
         access: 'canAccessProducts',
       },
+      // 全局配置
+      {
+        name: 'global-setting',
+        icon: 'setting',
+        path: '/global-info/global-setting',
+        component: './global-info/global-setting',
+        access: 'canAccessProducts',
+      },
     ],
   },
   // 直播基地管理系统 - 所有功能都在直播基地下

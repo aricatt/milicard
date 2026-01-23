@@ -52,6 +52,7 @@ export default {
   'menu.global-info.categories': 'หมวดหมู่สินค้า',
   'menu.global-info.all-products': 'สินค้าทั้งหมด',
   'menu.global-info.currency-rates': 'อัตราแลกเปลี่ยน',
+  'menu.global-info.global-setting': 'การตั้งค่าทั่วโลก',
   // 系统管理
   'menu.system': 'จัดการระบบ',
   'menu.system.users': 'จัดการผู้ใช้',

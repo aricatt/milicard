@@ -15,6 +15,7 @@ export default {
   'menu.global-info.categories': '商品品类',
   'menu.global-info.all-products': '所有商品',
   'menu.global-info.currency-rates': '货币汇率',
+  'menu.global-info.global-setting': '全局配置',
   'menu.live-base': '直播基地',
   'menu.live-base.overview': '基地概览',
   'menu.live-base.base-list': '基地列表',

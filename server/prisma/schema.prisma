@@ -52,6 +52,7 @@ model User {
   confirmedPointOrders   PointOrder[]        @relation("PointOrderConfirmer")
   createdLocationProfits LocationProfit[]    @relation("LocationProfitCreator")
   createdPointVisits     PointVisit[]        @relation("PointVisitCreator")
+  createdGlobalSettings  GlobalSetting[]     @relation("GlobalSettingCreator")
 
   @@index([username])
   @@index([email])
@@ -1188,5 +1189,25 @@ model PointVisit {
   @@index([createdBy])
   @@index([createdAt])
   @@map("point_visits")
+}
+
+/// 全局配置表（key-value 格式，支持任意类型的值）
+model GlobalSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique                    // 配置键名
+  value       Json                                // 配置值（支持任意 JSON 类型）
+  description String?                             // 配置说明
+  category    String?                             // 配置分类
+  isActive    Boolean  @default(true) @map("is_active")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  creator     User     @relation("GlobalSettingCreator", fields: [createdBy], references: [id])
+
+  @@index([key])
+  @@index([category])
+  @@index([isActive])
+  @@map("global_settings")
 }
 

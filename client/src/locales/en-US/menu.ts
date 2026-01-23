@@ -15,6 +15,7 @@ export default {
   'menu.global-info.categories': 'Product Categories',
   'menu.global-info.all-products': 'All Products',
   'menu.global-info.currency-rates': 'Currency Rates',
+  'menu.global-info.global-setting': 'Global Settings',
   // 直播基地
   'menu.live-base': 'Live Base',
   'menu.live-base.overview': 'Base Overview',

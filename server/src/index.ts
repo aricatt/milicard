@@ -79,6 +79,7 @@ import categoryRoutes from './routes/categoryRoutes'
 import currencyRateRoutes from './routes/currencyRateRoutes'
 import internationalLogisticsRoutes from './routes/internationalLogisticsRoutes'
 import pointVisitRoutes from './routes/pointVisitRoutes'
+import globalSettingRoutes from './routes/globalSettingRoutes'
 
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/translations', translationRoutes)
@@ -112,6 +113,7 @@ app.use('/api/v1/global-goods', globalGoodsRoutes)
 app.use('/api/v1/bases/:baseId/goods-settings', goodsLocalSettingRoutes)
 app.use('/api/v1/categories', categoryRoutes)
 app.use('/api/v1/currency-rates', currencyRateRoutes)
+app.use('/api/v1/global-settings', globalSettingRoutes)
 app.use('/api/v1/bases', internationalLogisticsRoutes)
 app.use('/api/v1', pointVisitRoutes)
 
