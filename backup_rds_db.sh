@@ -104,6 +104,7 @@ echo ""
 # 导出数据库
 docker run --rm \
     -e PGPASSWORD="$RDS_PASSWORD" \
+    -e PGCLIENTENCODING=UTF8 \
     postgres:18 \
     pg_dump -h $RDS_HOST \
             -p $RDS_PORT \
@@ -111,13 +112,37 @@ docker run --rm \
             -d $RDS_DATABASE \
             --no-owner \
             --no-privileges \
+            --encoding=UTF8 \
     > "$BACKUP_DIR/$BACKUP_FILE" 2>&1
 
 # 检查导出是否成功
 if [ $? -eq 0 ] && [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
-    FILE_SIZE=$(du -h "$BACKUP_DIR/$BACKUP_FILE" | cut -f1)
-    
     echo -e "${GREEN}✓ 数据库导出成功${NC}"
+    echo ""
+    
+    # 转换编码并添加客户端编码设置
+    echo "正在优化 SQL 文件编码..."
+    TEMP_FILE="$BACKUP_DIR/${BACKUP_FILE}.tmp"
+    
+    # 在文件开头添加编码设置，并确保 UTF-8 编码
+    {
+        echo "-- Encoding: UTF-8"
+        echo "SET client_encoding = 'UTF8';"
+        echo ""
+        cat "$BACKUP_DIR/$BACKUP_FILE"
+    } > "$TEMP_FILE"
+    
+    # 使用 iconv 确保文件是 UTF-8 编码（如果可用）
+    if command -v iconv &> /dev/null; then
+        iconv -f UTF-8 -t UTF-8 -c "$TEMP_FILE" > "$BACKUP_DIR/$BACKUP_FILE"
+        rm "$TEMP_FILE"
+        echo -e "${GREEN}✓ 编码优化完成${NC}"
+    else
+        mv "$TEMP_FILE" "$BACKUP_DIR/$BACKUP_FILE"
+        echo -e "${YELLOW}⚠ iconv 不可用，跳过编码转换${NC}"
+    fi
+    
+    FILE_SIZE=$(du -h "$BACKUP_DIR/$BACKUP_FILE" | cut -f1)
     echo ""
     echo "备份文件: $BACKUP_FILE"
     echo "文件大小: $FILE_SIZE"
