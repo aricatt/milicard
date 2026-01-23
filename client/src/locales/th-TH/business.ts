@@ -220,6 +220,7 @@ export default {
   'anchorProfit.column.profit': 'กำไร',
   'anchorProfit.column.sales': 'ยอดขายวันนี้',
   'anchorProfit.column.profitRate': 'อัตรากำไร',
+  'anchorProfit.warning.needsReview': 'ต้องตรวจสอบ',
   'anchorProfit.import.title': 'นำเข้ากำไรสตรีมเมอร์',
 
   // ==================== ห้องไลฟ์/คลังสินค้า ====================

@@ -69,6 +69,7 @@ const AnchorProfitPage: React.FC = () => {
   });
 
   // 状态
+  const [profitMarginThreshold, setProfitMarginThreshold] = useState<number>(0.3);
   const [stats, setStats] = useState<AnchorProfitStats>({
     totalRecords: 0,
     totalGmv: 0,
@@ -173,8 +174,10 @@ const AnchorProfitPage: React.FC = () => {
 
   /**
    * 加载未关联利润的消耗记录（根据主播）
+   * @param handlerId 主播ID
+   * @param currentConsumptionId 当前编辑记录的消耗ID（编辑时需要包含）
    */
-  const loadUnlinkedConsumptions = useCallback(async (handlerId: string) => {
+  const loadUnlinkedConsumptions = useCallback(async (handlerId: string, currentConsumptionId?: string) => {
     if (!currentBase || !handlerId) {
       setConsumptionOptions([]);
       setConsumptionAmount(0);
@@ -187,7 +190,10 @@ const AnchorProfitPage: React.FC = () => {
         `/api/v1/bases/${currentBase.id}/anchor-profits/unlinked-consumptions`,
         {
           method: 'GET',
-          params: { handlerId },
+          params: { 
+            handlerId,
+            currentConsumptionId, // 传递当前消耗ID，后端会包含它
+          },
         }
       );
 
@@ -270,12 +276,31 @@ const AnchorProfitPage: React.FC = () => {
   }, [consumptionAmount, calculateProfit]);
 
   /**
+   * 获取系统参数 - 毛利率预警阈值
+   */
+  const loadProfitMarginThreshold = async () => {
+    try {
+      const result = await request('/api/v1/global-settings/value/business.profit_margin_threshold');
+      if (result.success && typeof result.data === 'number') {
+        setProfitMarginThreshold(result.data);
+      } else if (result.success && result.data === null) {
+        // 参数不存在，使用默认值
+        console.warn('System parameter "business.profit_margin_threshold" not found, using default value 0.3');
+      }
+    } catch (error) {
+      // API 请求失败，使用默认值
+      console.error('Failed to load profit margin threshold, using default value 0.3:', error);
+    }
+  };
+
+  /**
    * 初始化加载
    */
   useEffect(() => {
     if (currentBase) {
       loadStats();
       loadPersonnelOptions();
+      loadProfitMarginThreshold();
     }
   }, [currentBase]);
 
@@ -364,11 +389,18 @@ const AnchorProfitPage: React.FC = () => {
   /**
    * 编辑利润记录
    */
-  const handleEdit = (record: AnchorProfitRecord) => {
+  const handleEdit = async (record: AnchorProfitRecord) => {
     setEditingRecord(record);
+    
+    // 先加载该主播的消耗记录选项（包括已关联的）
+    if (record.handlerId) {
+      await loadUnlinkedConsumptions(record.handlerId, record.consumptionId);
+    }
+    
     form.setFieldsValue({
       profitDate: dayjs(record.profitDate),
       handlerId: record.handlerId,
+      consumptionId: record.consumptionId, // 设置消耗记录ID
       gmvAmount: record.gmvAmount,
       refundAmount: record.refundAmount,
       cancelOrderAmount: record.cancelOrderAmount,
@@ -514,7 +546,7 @@ const AnchorProfitPage: React.FC = () => {
   };
 
   // 列定义
-  const columns = getColumns(handleEdit, handleDelete, intl, showInCNY, currentExchangeRate);
+  const columns = getColumns(handleEdit, handleDelete, intl, showInCNY, currentExchangeRate, profitMarginThreshold);
 
   // 无基地时显示提示
   if (!currentBase) {

@@ -1198,6 +1198,7 @@ model GlobalSetting {
   value       Json                                // 配置值（支持任意 JSON 类型）
   description String?                             // 配置说明
   category    String?                             // 配置分类
+  isSystem    Boolean  @default(false) @map("is_system")  // 是否为系统预置参数（不可删除）
   isActive    Boolean  @default(true) @map("is_active")
   createdBy   String   @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
@@ -1208,6 +1209,7 @@ model GlobalSetting {
   @@index([key])
   @@index([category])
   @@index([isActive])
+  @@index([isSystem])
   @@map("global_settings")
 }
 

@@ -220,6 +220,7 @@ export default {
   'anchorProfit.column.profit': '利潤',
   'anchorProfit.column.sales': '當日銷售',
   'anchorProfit.column.profitRate': '毛利率',
+  'anchorProfit.warning.needsReview': '需要核查',
   'anchorProfit.import.title': '導入主播利潤',
 
   // ==================== 直播間/倉庫 ====================

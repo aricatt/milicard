@@ -28,6 +28,7 @@ interface GlobalSetting {
   value: any;
   description: string | null;
   category: string | null;
+  isSystem: boolean;
   isActive: boolean;
   createdBy: string;
   createdAt: string;
@@ -228,7 +229,12 @@ const GlobalSettingPage: React.FC = () => {
       width: 200,
       fixed: 'left',
       ellipsis: true,
-      render: (text) => <strong>{text}</strong>,
+      render: (text, record) => (
+        <Space>
+          <strong>{text}</strong>
+          {record.isSystem && <Tag color="orange">系统</Tag>}
+        </Space>
+      ),
     },
     {
       title: '配置值',
@@ -306,21 +312,23 @@ const GlobalSettingPage: React.FC = () => {
           >
             编辑
           </Button>
-          <Popconfirm
-            title="确定删除这条配置吗？"
-            onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button
-              type="link"
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
+          {!record.isSystem && (
+            <Popconfirm
+              title="确定删除这条配置吗？"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
             >
-              删除
-            </Button>
-          </Popconfirm>
+              <Button
+                type="link"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -341,16 +349,6 @@ const GlobalSettingPage: React.FC = () => {
           showSizeChanger: true,
         }}
         scroll={{ x: 1200 }}
-        toolBarRender={() => [
-          <Button
-            key="add"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => handleOpenModal()}
-          >
-            新增配置
-          </Button>,
-        ]}
       />
 
       <Modal
@@ -384,6 +382,7 @@ const GlobalSettingPage: React.FC = () => {
             rules={[{ required: true }]}
           >
             <Select
+              disabled={editingSetting?.isSystem}
               onChange={(value) => setValueType(value)}
               options={[
                 { label: '字符串', value: 'string' },
@@ -419,6 +418,7 @@ const GlobalSettingPage: React.FC = () => {
             label="分类"
           >
             <Select
+              disabled={editingSetting?.isSystem}
               placeholder="请选择或输入分类"
               allowClear
               showSearch
@@ -440,7 +440,7 @@ const GlobalSettingPage: React.FC = () => {
             label="状态"
             valuePropName="checked"
           >
-            <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+            <Switch disabled={editingSetting?.isSystem} checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
         </Form>
       </Modal>

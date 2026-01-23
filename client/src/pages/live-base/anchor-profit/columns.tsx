@@ -9,7 +9,8 @@ export const getColumns = (
   onDelete: (id: string) => void,
   intl?: IntlShape,
   showInCNY: boolean = false,
-  exchangeRate: number = 1
+  exchangeRate: number = 1,
+  profitMarginThreshold: number = 0.3
 ): ProColumns<AnchorProfitRecord>[] => {
   // 金额格式化函数，支持以人民币显示
   const formatAmount = (amount: number | undefined | null) => {
@@ -181,9 +182,29 @@ export const getColumns = (
   {
     title: intl?.formatMessage({ id: 'table.column.notes' }) || '备注',
     dataIndex: 'notes',
-    width: 150,
+    width: 200,
     ellipsis: true,
     hideInSearch: true,
+    render: (text, record) => {
+      const profitRate = record.profitRate || 0;
+      const needsReview = profitRate <= profitMarginThreshold * 100;
+      const noteText = record.notes || '';
+      
+      if (needsReview) {
+        const warningText = intl?.formatMessage({ id: 'anchorProfit.warning.needsReview' }) || '需要核查';
+        const fullText = noteText ? `${warningText}：${noteText}` : warningText;
+        return (
+          <Tooltip title={fullText}>
+            <span style={{ color: '#ff4d4f' }}>
+              <strong>{warningText}</strong>
+              {noteText && `：${noteText}`}
+            </span>
+          </Tooltip>
+        );
+      }
+      
+      return noteText || '-';
+    },
   },
   {
     title: intl?.formatMessage({ id: 'table.column.createdAt' }) || '创建时间',

@@ -408,18 +408,25 @@ export class AnchorProfitService {
 
   /**
    * 获取未关联利润的消耗记录（根据主播）
+   * @param baseId 基地ID
+   * @param handlerId 主播ID
+   * @param currentConsumptionId 当前编辑记录的消耗ID（编辑时需要包含）
    */
   static async getUnlinkedConsumptions(
     baseId: number,
-    handlerId: string
+    handlerId: string,
+    currentConsumptionId?: string
   ) {
     try {
-      // 查询该主播的消耗记录，排除已关联利润的
+      // 查询该主播的消耗记录，排除已关联利润的（但包含当前编辑的）
       const consumptions = await prisma.stockConsumption.findMany({
         where: {
           baseId,
           handlerId,
-          anchorProfit: null, // 未关联利润
+          OR: [
+            { anchorProfit: null }, // 未关联利润
+            { id: currentConsumptionId }, // 或者是当前编辑记录的消耗
+          ],
         },
         include: {
           goods: { 

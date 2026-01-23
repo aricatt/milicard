@@ -220,6 +220,7 @@ export default {
   'anchorProfit.column.profit': 'Lợi nhuận',
   'anchorProfit.column.sales': 'Doanh số hôm nay',
   'anchorProfit.column.profitRate': 'Tỷ lệ lợi nhuận',
+  'anchorProfit.warning.needsReview': 'Cần kiểm tra',
   'anchorProfit.import.title': 'Nhập lợi nhuận streamer',
 
   // ==================== Phòng live/Kho ====================

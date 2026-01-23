@@ -219,8 +219,9 @@ export default {
   'anchorProfit.column.platformFee': 'Platform Fee',
   'anchorProfit.column.profit': 'Profit',
   'anchorProfit.column.sales': 'Daily Sales',
-  'anchorProfit.column.profitRate': 'Profit Rate',
-  'anchorProfit.import.title': 'Import Streamer Profit',
+  'anchorProfit.column.profitRate': 'Profit Margin',
+  'anchorProfit.warning.needsReview': 'Needs Review',
+  'anchorProfit.import.title': 'Import Anchor Profit',
 
   // ==================== Locations ====================
   'locations.title': 'Live Rooms/Warehouses',

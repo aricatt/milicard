@@ -182,6 +182,11 @@ export class GlobalSettingService {
       throw new Error('配置不存在');
     }
 
+    // 系统参数不允许修改 key
+    if (existing.isSystem && data.key && data.key !== existing.key) {
+      throw new Error('系统预置参数不允许修改键名');
+    }
+
     // 如果更新 key，检查是否与其他记录冲突
     if (data.key && data.key !== existing.key) {
       const conflict = await prisma.globalSetting.findUnique({
@@ -223,6 +228,11 @@ export class GlobalSettingService {
 
     if (!existing) {
       throw new Error('配置不存在');
+    }
+
+    // 系统参数不允许删除
+    if (existing.isSystem) {
+      throw new Error('系统预置参数不允许删除');
     }
 
     return prisma.globalSetting.delete({

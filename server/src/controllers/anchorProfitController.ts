@@ -195,7 +195,7 @@ export class AnchorProfitController {
         });
       }
 
-      const { handlerId } = req.query;
+      const { handlerId, currentConsumptionId } = req.query;
 
       if (!handlerId) {
         return res.status(400).json({
@@ -206,7 +206,8 @@ export class AnchorProfitController {
 
       const result = await AnchorProfitService.getUnlinkedConsumptions(
         baseId,
-        handlerId as string
+        handlerId as string,
+        currentConsumptionId as string | undefined
       );
 
       res.json(result);
