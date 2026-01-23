@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Form, DatePicker, Select, InputNumber, Row, Col, Tag, Alert, Space, Tooltip, Checkbox } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { useIntl, getLocale } from '@umijs/max';
@@ -196,6 +196,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         rules={[{ required: true, message: intl.formatMessage({ id: 'procurement.form.goodsRequired' }) }]}
       >
         <Select
+          key={intl.locale}
           showSearch
           placeholder={intl.formatMessage({ id: 'procurement.form.goodsPlaceholder' })}
           loading={goodsLoading}
@@ -206,9 +207,8 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
           }
         >
           {goodsOptions.map(goods => {
-            const locale = getLocale();
-            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, goods.categoryNameI18n, locale);
-            const goodsName = getLocalizedGoodsName(goods.name, goods.nameI18n, locale);
+            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, goods.categoryNameI18n, intl.locale);
+            const goodsName = getLocalizedGoodsName(goods.name, goods.nameI18n, intl.locale);
             const displayName = categoryDisplay ? `[${categoryDisplay}]${goodsName}` : goodsName;
             return (
               <Option key={goods.code} value={goods.code}>

@@ -94,6 +94,7 @@ export interface GoodsResponse {
   categoryId: number | null
   categoryCode?: string | null
   categoryName?: string | null
+  categoryNameI18n?: NameI18n | null
   manufacturer: string
   retailPrice: number
   packPerBox: number
