@@ -17,7 +17,8 @@ export interface AnchorProfitRecord {
   salesAmount: number;             // 当日销售金额 = GMV + 店铺订单 + 走水 - 取消订单 - 退款
   
   // 成本部分
-  consumptionAmount: number;       // 消耗金额（从消耗记录获取）
+  consumptionAmount: number;       // 消耗金额（用户录入的消耗金额）
+  calculatedCostPrice?: number;    // 拿货价（基于商品 packPrice 动态计算，仅用于显示）
   adSpendAmount: number;           // 投流金额
   platformFeeAmount: number;       // 平台扣点金额 = (GMV - 退款) * 扣点比例
   

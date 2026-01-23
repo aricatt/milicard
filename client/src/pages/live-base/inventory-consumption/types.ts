@@ -38,6 +38,8 @@ export interface ConsumptionRecord {
   pieceQuantity: number;
   // 平均单价/箱
   unitPricePerBox: number;
+  // 拿货价（基于商品 packPrice 动态计算，仅用于显示）
+  calculatedCostPrice?: number;
   notes?: string;
   createdAt: string;
   updatedAt: string;

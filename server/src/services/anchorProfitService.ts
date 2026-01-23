@@ -62,9 +62,25 @@ export class AnchorProfitService {
             consumption: {
               select: {
                 id: true,
+                boxQuantity: true,
+                packQuantity: true,
+                pieceQuantity: true,
                 handler: {
                   select: { id: true, name: true },
                 },
+                goods: {
+                  select: {
+                    id: true,
+                    packPerBox: true,
+                    piecePerPack: true,
+                    localSettings: {
+                      where: { baseId },
+                      select: {
+                        packPrice: true, // 注意：packPrice 字段实际存储的是 piecePrice（每包的价格），历史原因字段名未修改
+                      }
+                    }
+                  }
+                }
               },
             },
           },
@@ -76,29 +92,53 @@ export class AnchorProfitService {
       ]);
 
       // 格式化数据
-      const formattedRecords = records.map((record) => ({
-        id: record.id,
-        profitDate: record.profitDate.toISOString().split('T')[0],
-        locationId: record.locationId,
-        locationName: record.location.name,
-        consumptionId: record.consumptionId,
-        handlerId: record.consumption?.handler?.id || '',
-        handlerName: record.consumption?.handler?.name || '未关联',
-        gmvAmount: Number(record.gmvAmount),
-        refundAmount: Number(record.refundAmount),
-        cancelOrderAmount: Number(record.cancelOrderAmount),
-        shopOrderAmount: Number(record.shopOrderAmount),
-        waterAmount: Number(record.offlineAmount),
-        salesAmount: Number(record.dailySales),
-        consumptionAmount: Number(record.consumptionValue),
-        adSpendAmount: Number(record.adCost),
-        platformFeeAmount: Number(record.platformFee),
-        profitAmount: Number(record.profitAmount),
-        profitRate: Number(record.profitRate),
-        notes: record.notes,
-        createdAt: record.createdAt.toISOString(),
-        updatedAt: record.updatedAt.toISOString(),
-      }));
+      const formattedRecords = records.map((record) => {
+        // 计算拿货价（基于 packPrice）
+        let calculatedCostPrice = 0;
+        if (record.consumption) {
+          const packPerBox = Number(record.consumption.goods.packPerBox) || 1;
+          const piecePerPack = Number(record.consumption.goods.piecePerPack) || 1;
+          const packPrice = record.consumption.goods.localSettings?.[0]?.packPrice;
+          
+          if (packPrice) {
+            // packPrice 实际是 piecePrice（每包的价格）
+            const unitPricePerPiece = Number(packPrice);
+            const unitPricePerPack = unitPricePerPiece * piecePerPack;  // 单价/盒 = 单价/包 × 多少包1盒
+            const unitPricePerBox = unitPricePerPack * packPerBox;      // 单价/箱 = 单价/盒 × 多少盒1箱
+            
+            // 拿货价 = 箱数×单价/箱 + 盒数×单价/盒 + 包数×单价/包
+            calculatedCostPrice = 
+              Number(record.consumption.boxQuantity) * unitPricePerBox +
+              Number(record.consumption.packQuantity) * unitPricePerPack +
+              Number(record.consumption.pieceQuantity) * unitPricePerPiece;
+          }
+        }
+        
+        return {
+          id: record.id,
+          profitDate: record.profitDate.toISOString().split('T')[0],
+          locationId: record.locationId,
+          locationName: record.location.name,
+          consumptionId: record.consumptionId,
+          handlerId: record.consumption?.handler?.id || '',
+          handlerName: record.consumption?.handler?.name || '未关联',
+          gmvAmount: Number(record.gmvAmount),
+          refundAmount: Number(record.refundAmount),
+          cancelOrderAmount: Number(record.cancelOrderAmount),
+          shopOrderAmount: Number(record.shopOrderAmount),
+          waterAmount: Number(record.offlineAmount),
+          salesAmount: Number(record.dailySales),
+          consumptionAmount: Number(record.consumptionValue),
+          calculatedCostPrice, // 新增：基于 packPrice 计算的拿货价
+          adSpendAmount: Number(record.adCost),
+          platformFeeAmount: Number(record.platformFee),
+          profitAmount: Number(record.profitAmount),
+          profitRate: Number(record.profitRate),
+          notes: record.notes,
+          createdAt: record.createdAt.toISOString(),
+          updatedAt: record.updatedAt.toISOString(),
+        };
+      });
 
       return {
         success: true,

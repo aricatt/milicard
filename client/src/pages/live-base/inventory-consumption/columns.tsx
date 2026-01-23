@@ -132,16 +132,20 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
       return <Tag color="purple">{displayName}</Tag>;
     },
   },
-  // 6. 消耗金额
+  // 6. 拿货价
   {
-    title: '消耗金额',
-    key: 'consumptionAmount',
+    title: '拿货价',
+    key: 'calculatedCostPrice',
     width: 100,
     align: 'right',
     search: false,
     render: (_, record) => {
-      const amount = calcConsumptionAmount(record);
-      return <span style={{ color: '#f5222d', fontWeight: 500 }}>{formatAmount(amount)}</span>;
+      const amount = record.calculatedCostPrice || 0;
+      return (
+        <Tooltip title="基于商品平拆价(一包)动态计算：单价/包 × 包数 + 单价/盒 × 盒数 + 单价/箱 × 箱数">
+          <span style={{ color: '#13c2c2', fontWeight: 500 }}>{formatAmount(amount)}</span>
+        </Tooltip>
+      );
     },
   },
   // 7. 期初/包

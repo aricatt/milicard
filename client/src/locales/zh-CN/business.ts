@@ -214,6 +214,7 @@ export default {
   'anchorProfit.column.shopOrder': '店铺订单',
   'anchorProfit.column.extra': '走水金额',
   'anchorProfit.column.consumption': '消耗金额',
+  'anchorProfit.column.calculatedCostPrice': '拿货价',
   'anchorProfit.column.adSpend': '投流金额',
   'anchorProfit.column.platformFee': '平台扣点',
   'anchorProfit.column.profit': '利润',

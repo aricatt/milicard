@@ -110,14 +110,16 @@ export const getColumns = (
     ),
   },
   {
-    title: intl?.formatMessage({ id: 'anchorProfit.column.consumption' }) || '消耗金额',
-    dataIndex: 'consumptionAmount',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.calculatedCostPrice' }) || '拿货价',
+    dataIndex: 'calculatedCostPrice',
     valueType: 'money',
     width: 110,
     render: (_, record) => (
-      <span style={{ color: '#fa8c16' }}>
-        {formatAmount(record.consumptionAmount)}
-      </span>
+      <Tooltip title="基于商品平拆价(一包)动态计算：单价/包 × 包数 + 单价/盒 × 盒数 + 单价/箱 × 箱数">
+        <span style={{ color: '#13c2c2' }}>
+          {formatAmount(record.calculatedCostPrice || 0)}
+        </span>
+      </Tooltip>
     ),
   },
   {

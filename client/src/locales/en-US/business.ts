@@ -214,6 +214,7 @@ export default {
   'anchorProfit.column.shopOrder': 'Shop Orders',
   'anchorProfit.column.extra': 'Offline Payment',
   'anchorProfit.column.consumption': 'Consumption',
+  'anchorProfit.column.calculatedCostPrice': 'Cost Price',
   'anchorProfit.column.adSpend': 'Ad Spend',
   'anchorProfit.column.platformFee': 'Platform Fee',
   'anchorProfit.column.profit': 'Profit',

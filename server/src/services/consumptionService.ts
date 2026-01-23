@@ -120,7 +120,13 @@ export class ConsumptionService {
             goods: { 
               select: { 
                 id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true,
-                category: { select: { code: true, name: true } }
+                category: { select: { code: true, name: true } },
+                localSettings: {
+                  where: { baseId },
+                  select: {
+                    packPrice: true, // 注意：packPrice 字段实际存储的是 piecePrice（每包的价格），历史原因字段名未修改
+                  }
+                }
               } 
             },
             location: { select: { id: true, name: true } },
@@ -137,37 +143,59 @@ export class ConsumptionService {
         prisma.stockConsumption.count({ where })
       ]);
 
-      const data = records.map(record => ({
-        id: record.id,
-        consumptionDate: record.consumptionDate.toISOString().split('T')[0],
-        goodsId: record.goodsId,
-        goodsCode: record.goods?.code || '',
-        goodsName: record.goods?.name || '',
-        goodsNameI18n: record.goods?.nameI18n as any,
-        categoryCode: (record.goods as any)?.category?.code || '',
-        categoryName: (record.goods as any)?.category?.name || '',
-        packPerBox: record.goods?.packPerBox || 1,
-        piecePerPack: record.goods?.piecePerPack || 1,
-        locationId: record.locationId,
-        locationName: record.location?.name || '',
-        handlerId: record.handlerId,
-        handlerName: record.handler?.name || '',
-        baseId: record.baseId,
-        baseName: record.base?.name || '',
-        openingBoxQty: record.openingBoxQty,
-        openingPackQty: record.openingPackQty,
-        openingPieceQty: record.openingPieceQty,
-        closingBoxQty: record.closingBoxQty,
-        closingPackQty: record.closingPackQty,
-        closingPieceQty: record.closingPieceQty,
-        boxQuantity: record.boxQuantity,
-        packQuantity: record.packQuantity,
-        pieceQuantity: record.pieceQuantity,
-        unitPricePerBox: Number(record.unitPricePerBox),
-        notes: record.notes || undefined,
-        createdAt: record.createdAt.toISOString(),
-        updatedAt: record.updatedAt.toISOString()
-      }));
+      const data = records.map(record => {
+        // 计算拿货价（基于 packPrice）
+        let calculatedCostPrice = 0;
+        const packPerBox = Number(record.goods?.packPerBox) || 1;
+        const piecePerPack = Number(record.goods?.piecePerPack) || 1;
+        const packPrice = (record.goods as any)?.localSettings?.[0]?.packPrice;
+        
+        if (packPrice) {
+          // packPrice 实际是 piecePrice（每包的价格）
+          const unitPricePerPiece = Number(packPrice);
+          const unitPricePerPack = unitPricePerPiece * piecePerPack;  // 单价/盒 = 单价/包 × 多少包1盒
+          const unitPricePerBox = unitPricePerPack * packPerBox;      // 单价/箱 = 单价/盒 × 多少盒1箱
+          
+          // 拿货价 = 箱数×单价/箱 + 盒数×单价/盒 + 包数×单价/包
+          calculatedCostPrice = 
+            Number(record.boxQuantity) * unitPricePerBox +
+            Number(record.packQuantity) * unitPricePerPack +
+            Number(record.pieceQuantity) * unitPricePerPiece;
+        }
+        
+        return {
+          id: record.id,
+          consumptionDate: record.consumptionDate.toISOString().split('T')[0],
+          goodsId: record.goodsId,
+          goodsCode: record.goods?.code || '',
+          goodsName: record.goods?.name || '',
+          goodsNameI18n: record.goods?.nameI18n as any,
+          categoryCode: (record.goods as any)?.category?.code || '',
+          categoryName: (record.goods as any)?.category?.name || '',
+          packPerBox: record.goods?.packPerBox || 1,
+          piecePerPack: record.goods?.piecePerPack || 1,
+          locationId: record.locationId,
+          locationName: record.location?.name || '',
+          handlerId: record.handlerId,
+          handlerName: record.handler?.name || '',
+          baseId: record.baseId,
+          baseName: record.base?.name || '',
+          openingBoxQty: record.openingBoxQty,
+          openingPackQty: record.openingPackQty,
+          openingPieceQty: record.openingPieceQty,
+          closingBoxQty: record.closingBoxQty,
+          closingPackQty: record.closingPackQty,
+          closingPieceQty: record.closingPieceQty,
+          boxQuantity: record.boxQuantity,
+          packQuantity: record.packQuantity,
+          pieceQuantity: record.pieceQuantity,
+          unitPricePerBox: Number(record.unitPricePerBox),
+          calculatedCostPrice, // 新增：基于 packPrice 计算的拿货价
+          notes: record.notes || undefined,
+          createdAt: record.createdAt.toISOString(),
+          updatedAt: record.updatedAt.toISOString()
+        };
+      });
 
       return { success: true, data, total };
 

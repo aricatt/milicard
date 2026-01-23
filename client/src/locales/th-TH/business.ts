@@ -214,6 +214,7 @@ export default {
   'anchorProfit.column.shopOrder': 'ออเดอร์ร้านค้า',
   'anchorProfit.column.extra': 'ชำระออฟไลน์',
   'anchorProfit.column.consumption': 'การใช้',
+  'anchorProfit.column.calculatedCostPrice': 'ราคารับสินค้า',
   'anchorProfit.column.adSpend': 'ค่าโฆษณา',
   'anchorProfit.column.platformFee': 'ค่าธรรมเนียมแพลตฟอร์ม',
   'anchorProfit.column.profit': 'กำไร',
