@@ -197,9 +197,11 @@ const ConsumptionManagement: React.FC = () => {
       } else {
         message.error(result.message || '删除失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('删除消耗记录失败:', error);
-      message.error('删除消耗记录失败');
+      // 显示后端返回的详细错误信息
+      const errorMessage = error?.response?.data?.message || error?.message || '删除消耗记录失败';
+      message.error(errorMessage);
     }
   };
 
@@ -219,6 +221,7 @@ const ConsumptionManagement: React.FC = () => {
         try {
           let successCount = 0;
           let failCount = 0;
+          const errorMessages: string[] = [];
 
           for (const id of selectedRowKeys) {
             try {
@@ -230,19 +233,40 @@ const ConsumptionManagement: React.FC = () => {
                 successCount++;
               } else {
                 failCount++;
+                if (result.message) {
+                  errorMessages.push(result.message);
+                }
               }
-            } catch (error) {
+            } catch (error: any) {
               failCount++;
+              const errorMsg = error?.response?.data?.message || error?.message;
+              if (errorMsg && !errorMessages.includes(errorMsg)) {
+                errorMessages.push(errorMsg);
+              }
             }
           }
 
           if (successCount > 0) {
             message.success(`成功删除 ${successCount} 条记录${failCount > 0 ? `，失败 ${failCount} 条` : ''}`);
+            if (errorMessages.length > 0) {
+              // 显示失败原因
+              Modal.warning({
+                title: '部分记录删除失败',
+                content: errorMessages.join('\n'),
+              });
+            }
             setSelectedRowKeys([]);
             actionRef.current?.reload();
             loadStats();
           } else {
-            message.error('删除失败');
+            if (errorMessages.length > 0) {
+              Modal.error({
+                title: '删除失败',
+                content: errorMessages.join('\n'),
+              });
+            } else {
+              message.error('删除失败');
+            }
           }
         } catch (error: any) {
           console.error('批量删除消耗记录失败:', error);

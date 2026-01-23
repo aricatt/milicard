@@ -689,11 +689,22 @@ export class ConsumptionService {
   static async deleteConsumption(baseId: number, recordId: string): Promise<void> {
     try {
       const record = await prisma.stockConsumption.findFirst({
-        where: { id: recordId, baseId }
+        where: { id: recordId, baseId },
+        include: {
+          anchorProfit: true, // 检查是否有关联的利润记录
+        }
       });
 
       if (!record) {
         throw new BaseError('消耗记录不存在', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 检查是否有关联的利润数据
+      if (record.anchorProfit) {
+        throw new BaseError(
+          '该消耗记录已关联主播利润数据，无法删除。请先删除关联的利润记录。',
+          BaseErrorType.VALIDATION_ERROR
+        );
       }
 
       await prisma.stockConsumption.delete({
