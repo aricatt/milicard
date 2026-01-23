@@ -22,6 +22,7 @@ export interface PurchaseOrder {
   goodsNameI18n?: NameI18n | null; // 商品多语言名称
   categoryCode?: string;        // 品类编号
   categoryName?: string;        // 品类名称
+  categoryNameI18n?: NameI18n | null; // 品类多语言名称
   retailPrice?: number;         // 零售价
   discount?: number;            // 折扣
   supplierCode: string;         // 供应商编号（关联供应商表）
@@ -119,6 +120,7 @@ export interface GoodsOption {
   piecePerPack: number;    // 多少包1盒
   categoryCode?: string;   // 品类编号
   categoryName?: string;   // 品类名称
+  categoryNameI18n?: NameI18n | null;  // 品类多语言名称
 }
 
 // 供应商选项类型

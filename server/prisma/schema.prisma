@@ -175,6 +175,7 @@ model Category {
   id          Int      @id @default(autoincrement())
   code        String   @unique // 品类编码，如 CARD, TOY
   name        String   // 品类名称，如 卡牌, 玩具
+  nameI18n    Json?    @map("name_i18n") // 多语言名称 {"en": "...", "th": "...", "vi": "..."}
   description String?  // 品类描述
   sortOrder   Int      @default(0) @map("sort_order") // 排序
   isActive    Boolean  @default(true) @map("is_active")

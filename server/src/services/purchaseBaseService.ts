@@ -87,6 +87,7 @@ export class PurchaseBaseService {
           g.name_i18n as "goodsNameI18n",
           c.code as "categoryCode",
           c.name as "categoryName",
+          c.name_i18n as "categoryNameI18n",
           COALESCE(gls.retail_price, 0) as "retailPrice",
           g.pack_per_box as "packPerBox",
           g.piece_per_pack as "piecePerPack",
@@ -222,6 +223,7 @@ export class PurchaseBaseService {
           goodsNameI18n: item.goodsNameI18n,
           categoryCode: item.categoryCode || '',
           categoryName: item.categoryName || '',
+          categoryNameI18n: item.categoryNameI18n,
           retailPrice: Number(item.retailPrice),
           // 商品拆分关系（用于运费计算）
           packPerBox,

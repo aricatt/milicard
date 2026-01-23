@@ -85,9 +85,17 @@ export class PurchaseService {
                     id: true,
                     code: true,
                     name: true,
+                    nameI18n: true,
                     boxQuantity: true,
                     packPerBox: true,
-                    piecePerPack: true
+                    piecePerPack: true,
+                    category: {
+                      select: {
+                        code: true,
+                        name: true,
+                        nameI18n: true
+                      }
+                    }
                   }
                 }
               }
@@ -116,6 +124,12 @@ export class PurchaseService {
           id: item.id,
           purchaseOrderId: item.purchaseOrderId,
           goodsId: item.goodsId,
+          goodsCode: item.goods.code,
+          goodsName: item.goods.name,
+          goodsNameI18n: item.goods.nameI18n,
+          categoryCode: item.goods.category?.code,
+          categoryName: item.goods.category?.name,
+          categoryNameI18n: item.goods.category?.nameI18n,
           goods: item.goods,
           boxQuantity: item.boxQuantity,
           packQuantity: item.packQuantity,

@@ -207,7 +207,7 @@ const ProcurementForm: React.FC<ProcurementFormProps> = ({
         >
           {goodsOptions.map(goods => {
             const locale = getLocale();
-            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, locale);
+            const categoryDisplay = getCategoryDisplayName(goods.categoryCode, goods.categoryName, goods.categoryNameI18n, locale);
             const goodsName = getLocalizedGoodsName(goods.name, goods.nameI18n, locale);
             const displayName = categoryDisplay ? `[${categoryDisplay}]${goodsName}` : goodsName;
             return (

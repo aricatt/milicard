@@ -1250,6 +1250,15 @@ export default {
   'categories.import.descriptionDesc': 'Category description (optional)',
   'categories.import.sortOrderDesc': 'Sort order, smaller number comes first (optional, default 0)',
 
+  // Category Translation
+  'categories.translate.title': 'Edit Category Translation',
+  'categories.translate.originalName': 'Original Name (Chinese)',
+  'categories.translate.success': 'Translation saved successfully',
+  'categories.translate.failed': 'Failed to save translation',
+  'categories.form.nameEn': 'English Name',
+  'categories.form.nameTh': 'Thai Name',
+  'categories.form.nameVi': 'Vietnamese Name',
+
   // ==================== Product Settings (Base Level) ====================
   'productSettings.title': 'Product Settings',
   'productSettings.add': 'Add Product',

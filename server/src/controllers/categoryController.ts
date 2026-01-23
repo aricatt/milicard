@@ -28,24 +28,24 @@ export class CategoryController {
     try {
       const id = parseInt(req.params.id)
       if (isNaN(id)) {
-        res.status(400).json({ error: '无效的品类ID' })
+        res.status(400).json({ success: false, message: '无效的品类ID' })
         return
       }
 
       const data: UpdateCategoryRequest = req.body
       const category = await categoryService.update(id, data)
-      res.json(category)
+      res.json({ success: true, data: category })
     } catch (error: any) {
       if (error.code === 'P2025') {
-        res.status(404).json({ error: '品类不存在' })
+        res.status(404).json({ success: false, message: '品类不存在' })
         return
       }
       if (error.code === 'P2002') {
-        res.status(400).json({ error: '品类编码已存在' })
+        res.status(400).json({ success: false, message: '品类编码已存在' })
         return
       }
       console.error('Update category error:', error)
-      res.status(500).json({ error: '更新品类失败' })
+      res.status(500).json({ success: false, message: '更新品类失败' })
     }
   }
 

@@ -18,19 +18,29 @@ import {
   DownloadOutlined,
   UploadOutlined,
   FileExcelOutlined,
+  TranslationOutlined,
 } from '@ant-design/icons';
 import { useCategoryExcel } from './useCategoryExcel';
 import ImportModal from '@/components/ImportModal';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import { request, useIntl } from '@umijs/max';
+import CategoryNameText from '@/components/CategoryNameText';
 
 const { TextArea } = Input;
+
+interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
 
 interface Category {
   id: number;
   code: string;
   name: string;
+  nameI18n?: NameI18n | null;
   description: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -46,6 +56,12 @@ const CategoriesPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 翻译弹窗状态
+  const [translateModalVisible, setTranslateModalVisible] = useState(false);
+  const [translatingCategory, setTranslatingCategory] = useState<Category | null>(null);
+  const [translateLoading, setTranslateLoading] = useState(false);
+  const [translateForm] = Form.useForm();
 
   // 导入导出功能
   const {
@@ -161,7 +177,28 @@ const CategoriesPage: React.FC = () => {
     {
       title: intl.formatMessage({ id: 'categories.column.name' }),
       dataIndex: 'name',
-      width: 120,
+      width: 150,
+      render: (text, record) => (
+        <Space size={4}>
+          <CategoryNameText text={record.name} nameI18n={record.nameI18n} />
+          <Button
+            type="text"
+            size="small"
+            icon={<TranslationOutlined />}
+            style={{ color: record.nameI18n && Object.keys(record.nameI18n).length > 0 ? '#52c41a' : '#999' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setTranslatingCategory(record);
+              translateForm.setFieldsValue({
+                en: record.nameI18n?.en || '',
+                th: record.nameI18n?.th || '',
+                vi: record.nameI18n?.vi || '',
+              });
+              setTranslateModalVisible(true);
+            }}
+          />
+        </Space>
+      ),
     },
     {
       title: intl.formatMessage({ id: 'categories.column.description' }),
@@ -362,6 +399,95 @@ const CategoriesPage: React.FC = () => {
         title={intl.formatMessage({ id: 'categories.import.title' })}
         fields={importFields}
       />
+
+      {/* 翻译弹窗 */}
+      <Modal
+        title={
+          <Space>
+            <TranslationOutlined />
+            {intl.formatMessage({ id: 'categories.translate.title' })}
+          </Space>
+        }
+        open={translateModalVisible}
+        onOk={() => translateForm.submit()}
+        onCancel={() => {
+          setTranslateModalVisible(false);
+          setTranslatingCategory(null);
+          translateForm.resetFields();
+        }}
+        confirmLoading={translateLoading}
+        width={500}
+        destroyOnHidden
+      >
+        {translatingCategory && (
+          <div style={{ marginBottom: 16, padding: '8px 12px', background: '#f5f5f5', borderRadius: 4 }}>
+            <div style={{ color: '#666', fontSize: 12 }}>
+              {intl.formatMessage({ id: 'categories.translate.originalName' })}
+            </div>
+            <div style={{ fontWeight: 'bold' }}>{translatingCategory.name}</div>
+          </div>
+        )}
+        <Form
+          form={translateForm}
+          layout="vertical"
+          onFinish={async (values) => {
+            if (!translatingCategory) return;
+            setTranslateLoading(true);
+            try {
+              const nameI18n: Record<string, string> = {};
+              if (values.en?.trim()) nameI18n.en = values.en.trim();
+              if (values.th?.trim()) nameI18n.th = values.th.trim();
+              if (values.vi?.trim()) nameI18n.vi = values.vi.trim();
+              
+              console.log('保存翻译 - 品类ID:', translatingCategory.id);
+              console.log('保存翻译 - nameI18n:', nameI18n);
+              
+              const result = await request(`/api/v1/categories/${translatingCategory.id}`, {
+                method: 'PUT',
+                data: { nameI18n: Object.keys(nameI18n).length > 0 ? nameI18n : null },
+              });
+              
+              console.log('保存翻译 - 响应:', result);
+              
+              if (result.success) {
+                message.success(intl.formatMessage({ id: 'categories.translate.success' }));
+                setTranslateModalVisible(false);
+                setTranslatingCategory(null);
+                translateForm.resetFields();
+                actionRef.current?.reload();
+              } else {
+                console.error('保存翻译失败 - 错误信息:', result.message);
+                message.error(result.message || intl.formatMessage({ id: 'categories.translate.failed' }));
+              }
+            } catch (error: any) {
+              console.error('保存翻译失败 - 异常:', error);
+              console.error('错误详情:', error.response?.data || error.message);
+              message.error(error.response?.data?.message || error.message || intl.formatMessage({ id: 'categories.translate.failed' }));
+            } finally {
+              setTranslateLoading(false);
+            }
+          }}
+        >
+          <Form.Item
+            label={intl.formatMessage({ id: 'categories.form.nameEn' })}
+            name="en"
+          >
+            <Input placeholder="Enter English name" />
+          </Form.Item>
+          <Form.Item
+            label={intl.formatMessage({ id: 'categories.form.nameTh' })}
+            name="th"
+          >
+            <Input placeholder="ป้อนชื่อภาษาไทย" />
+          </Form.Item>
+          <Form.Item
+            label={intl.formatMessage({ id: 'categories.form.nameVi' })}
+            name="vi"
+          >
+            <Input placeholder="Nhập tên tiếng Việt" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 };

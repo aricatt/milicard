@@ -137,6 +137,7 @@ const ProcurementManagement: React.FC = () => {
           piecePerPack: item.piecePerPack || 1,  // 多少包1盒
           categoryCode: item.categoryCode || '',
           categoryName: item.categoryName || '',
+          categoryNameI18n: item.categoryNameI18n || null,
         }));
         setGoodsOptions(options);
       }

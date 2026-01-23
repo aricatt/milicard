@@ -1250,6 +1250,15 @@ export default {
   'categories.import.descriptionDesc': '品类描述信息（选填）',
   'categories.import.sortOrderDesc': '排序序号，数字越小越靠前（选填，默认0）',
 
+  // 品类翻译
+  'categories.translate.title': '编辑品类翻译',
+  'categories.translate.originalName': '原始名称（中文）',
+  'categories.translate.success': '翻译保存成功',
+  'categories.translate.failed': '翻译保存失败',
+  'categories.form.nameEn': '英文名称',
+  'categories.form.nameTh': '泰语名称',
+  'categories.form.nameVi': '越南语名称',
+
   // ==================== 商品设置（基地级） ====================
   'productSettings.title': '商品设置',
   'productSettings.add': '添加商品',

@@ -41,6 +41,7 @@ interface Category {
   id: number;
   code: string;
   name: string;
+  nameI18n?: Record<string, string> | null;
   isActive: boolean;
 }
 
@@ -409,8 +410,9 @@ const GlobalProductManagement: React.FC = () => {
       render: (_, record) => {
         const categoryName = record.category?.name || '';
         const categoryCode = record.category?.code || '';
+        const categoryNameI18n = record.category?.nameI18n || null;
         const color = CategoryColors[categoryCode] || 'default';
-        const displayName = getCategoryDisplayName(categoryCode, categoryName, getLocale());
+        const displayName = getCategoryDisplayName(categoryCode, categoryName, categoryNameI18n, getLocale());
         return displayName ? (
           <Tag color={color}>{displayName}</Tag>
         ) : (

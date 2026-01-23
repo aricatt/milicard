@@ -28,6 +28,7 @@ export class CategoryService {
       data: {
         ...(data.code && { code: data.code.toUpperCase() }),
         ...(data.name && { name: data.name }),
+        ...(data.nameI18n !== undefined && { nameI18n: data.nameI18n }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
         ...(data.isActive !== undefined && { isActive: data.isActive })
@@ -106,6 +107,7 @@ export class CategoryService {
     id: number
     code: string
     name: string
+    nameI18n?: any
     description: string | null
     sortOrder: number
     isActive: boolean
@@ -116,6 +118,7 @@ export class CategoryService {
       id: category.id,
       code: category.code,
       name: category.name,
+      nameI18n: category.nameI18n as Record<string, string> | null | undefined,
       description: category.description,
       sortOrder: category.sortOrder,
       isActive: category.isActive,

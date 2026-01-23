@@ -26,21 +26,36 @@ type GoodsNameTextProps = {
   nameI18n?: NameI18n | null;
   categoryCode?: string | null;
   categoryName?: string | null;
+  categoryNameI18n?: NameI18n | null;
   showCategory?: boolean;
 };
 
 /**
  * 根据当前语言获取品类显示名称
- * 中文显示品类名称，其他语言显示品类编号
+ * 优先使用多语言翻译，如果没有则回退到默认逻辑
  */
-export function getCategoryDisplayName(categoryCode?: string | null, categoryName?: string | null, locale?: string): string {
+export function getCategoryDisplayName(
+  categoryCode?: string | null, 
+  categoryName?: string | null, 
+  nameI18n?: NameI18n | null,
+  locale?: string
+): string {
   if (!categoryCode) return '';
   
   const currentLocale = locale || getLocale();
-  // 中文显示品类名称，其他语言显示品类编号
-  if (currentLocale === 'zh-CN') {
+  
+  // 优先使用多语言翻译
+  const localeKey = currentLocale === 'en-US' ? 'en' : currentLocale === 'th-TH' ? 'th' : currentLocale === 'vi-VN' ? 'vi' : '';
+  if (localeKey && nameI18n?.[localeKey]) {
+    return nameI18n[localeKey]!;
+  }
+  
+  // 中文显示品类名称
+  if (currentLocale === 'zh-CN' || currentLocale === 'zh-TW') {
     return categoryName || CategoryNameMap[categoryCode] || categoryCode;
   }
+  
+  // 其他语言显示品类编号
   return categoryCode;
 }
 
@@ -70,28 +85,29 @@ export function getGoodsNameWithCategory(
   nameI18n?: NameI18n | null,
   categoryCode?: string | null,
   categoryName?: string | null,
+  categoryNameI18n?: NameI18n | null,
   locale?: string
 ): string {
   const goodsName = getLocalizedGoodsName(name, nameI18n, locale);
   if (goodsName === '-') return '-';
   
-  const categoryDisplay = getCategoryDisplayName(categoryCode, categoryName, locale);
+  const categoryDisplay = getCategoryDisplayName(categoryCode, categoryName, categoryNameI18n, locale);
   if (!categoryDisplay) return goodsName;
   
   return `[${categoryDisplay}]${goodsName}`;
 }
 
-export default function GoodsNameText({ text, nameI18n, categoryCode, categoryName, showCategory = false }: GoodsNameTextProps) {
+export default function GoodsNameText({ text, nameI18n, categoryCode, categoryName, categoryNameI18n, showCategory = false }: GoodsNameTextProps) {
   // 使用 useIntl 来订阅语言变化，确保语言切换时组件重新渲染
   const intl = useIntl();
   
   const displayText = useMemo(() => {
     if (showCategory) {
-      return getGoodsNameWithCategory(text, nameI18n, categoryCode, categoryName, intl.locale);
+      return getGoodsNameWithCategory(text, nameI18n, categoryCode, categoryName, categoryNameI18n, intl.locale);
     }
     if (!nameI18n) return text || '-';
     return getLocalizedGoodsName(text, nameI18n, intl.locale);
-  }, [text, nameI18n, categoryCode, categoryName, showCategory, intl.locale]);
+  }, [text, nameI18n, categoryCode, categoryName, categoryNameI18n, showCategory, intl.locale]);
   
   return (
     <span

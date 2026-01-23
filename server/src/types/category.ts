@@ -8,6 +8,7 @@ export interface CreateCategoryRequest {
 export interface UpdateCategoryRequest {
   code?: string
   name?: string
+  nameI18n?: Record<string, string> | null
   description?: string
   sortOrder?: number
   isActive?: boolean
@@ -24,6 +25,7 @@ export interface CategoryResponse {
   id: number
   code: string
   name: string
+  nameI18n?: Record<string, string> | null
   description: string | null
   sortOrder: number
   isActive: boolean
