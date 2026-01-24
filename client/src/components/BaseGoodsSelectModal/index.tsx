@@ -33,6 +33,7 @@ interface Category {
   id: number;
   code: string;
   name: string;
+  nameI18n?: NameI18n;
 }
 
 // 组件属性
@@ -279,7 +280,10 @@ const BaseGoodsSelectModal: React.FC<BaseGoodsSelectModalProps> = ({
               setSelectedCategoryCode(value);
               setCurrent(1);
             }}
-            options={categories.map(cat => ({ value: cat.code, label: locale === 'zh-CN' ? cat.name : cat.code }))}
+            options={categories.map(cat => ({ 
+              value: cat.code, 
+              label: getCategoryDisplayName(cat.code, cat.name, cat.nameI18n)
+            }))}
           />
         </Col>
         <Col span={6}>

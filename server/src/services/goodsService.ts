@@ -222,7 +222,8 @@ export class GoodsService {
         search,
         isActive,
         manufacturer,
-        categoryId
+        categoryId,
+        categoryCode
       } = params
 
       const skip = (page - 1) * pageSize
@@ -246,6 +247,13 @@ export class GoodsService {
 
       if (categoryId) {
         goodsWhere.categoryId = categoryId
+      }
+
+      // 如果提供了 categoryCode，通过 category 表查询
+      if (categoryCode) {
+        goodsWhere.category = {
+          code: categoryCode
+        }
       }
 
       if (Object.keys(goodsWhere).length > 0) {

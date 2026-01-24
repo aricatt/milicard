@@ -77,6 +77,7 @@ export interface GoodsQueryParams {
   isActive?: boolean
   manufacturer?: string
   categoryId?: number
+  categoryCode?: string
 }
 
 export interface NameI18n {

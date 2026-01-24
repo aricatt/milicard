@@ -53,7 +53,8 @@ export class GoodsController {
         pageSize: req.query.pageSize ? parseInt(req.query.pageSize as string) : 20,
         search: (req.query.search || req.query.keyword) as string,
         isActive: req.query.isActive === 'true' ? true : req.query.isActive === 'false' ? false : undefined,
-        manufacturer: req.query.manufacturer as string
+        manufacturer: req.query.manufacturer as string,
+        categoryCode: req.query.categoryCode as string
       }
 
       const result = await GoodsService.getBaseGoods(baseId, queryParams)
