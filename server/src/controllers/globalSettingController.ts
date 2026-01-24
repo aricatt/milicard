@@ -157,12 +157,19 @@ export class GlobalSettingController {
   static async create(req: Request, res: Response) {
     try {
       const { key, value, description, category, isActive } = req.body;
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).user?.id;
 
       if (!key || value === undefined) {
         return res.status(400).json({
           success: false,
           message: '缺少必要参数: key, value',
+        });
+      }
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '未授权：缺少用户信息',
         });
       }
 
@@ -286,7 +293,7 @@ export class GlobalSettingController {
   static async setValues(req: Request, res: Response) {
     try {
       const { values } = req.body;
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).user?.id;
 
       if (!Array.isArray(values)) {
         return res.status(400).json({

@@ -37,6 +37,7 @@ export enum ResourceModule {
   GOODS = 'goods',                         // 全局商品
   CATEGORY = 'category',                   // 商品品类
   CURRENCY_RATE = 'currency_rate',         // 货币汇率
+  GLOBAL_SETTING = 'global_setting',       // 全局配置
   GOODS_LOCAL_SETTING = 'goods_local_setting', // 基地商品设置（依赖 GOODS:read）
   
   // 库存管理
@@ -200,6 +201,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.USER),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ROLE),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.PERMISSION),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.GLOBAL_SETTING),
     
     // 所有业务模块完全权限
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.BASE),

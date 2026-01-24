@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons';
 import { ProTable, PageContainer } from '@ant-design/pro-components';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
-import { request, useIntl } from '@umijs/max';
+import { request, useIntl, useModel } from '@umijs/max';
 
 const { TextArea } = Input;
 
@@ -43,6 +43,8 @@ interface GlobalSetting {
 const GlobalSettingPage: React.FC = () => {
   const intl = useIntl();
   const { message } = App.useApp();
+  const { initialState } = useModel('@@initialState');
+  const currentUser = initialState?.currentUser;
   const actionRef = useRef<ActionType>(null);
   const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(false);
@@ -50,6 +52,9 @@ const GlobalSettingPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [valueType, setValueType] = useState<'string' | 'number' | 'boolean' | 'json'>('string');
+  
+  // 判断是否是 SUPER_ADMIN
+  const isSuperAdmin = currentUser?.roles?.some((role: any) => role.name === 'SUPER_ADMIN') || false;
 
   // 获取配置列表
   const fetchSettings = async (params: any) => {
@@ -104,13 +109,14 @@ const GlobalSettingPage: React.FC = () => {
         description: record.description,
         category: record.category,
         isActive: record.isActive,
+        isSystem: record.isSystem,
         valueType: detectedType,
       });
     } else {
       setEditingSetting(null);
       setValueType('string');
       form.resetFields();
-      form.setFieldsValue({ isActive: true, valueType: 'string' });
+      form.setFieldsValue({ isActive: true, isSystem: false, valueType: 'string' });
     }
     setModalVisible(true);
     fetchCategories();
@@ -159,13 +165,18 @@ const GlobalSettingPage: React.FC = () => {
       // 解析值
       const parsedValue = parseFormValue(values.value, values.valueType);
 
-      const data = {
+      const data: any = {
         key: values.key,
         value: parsedValue,
         description: values.description,
         category: values.category,
         isActive: values.isActive,
       };
+
+      // 只有 SUPER_ADMIN 可以设置 isSystem
+      if (isSuperAdmin && values.isSystem !== undefined) {
+        data.isSystem = values.isSystem;
+      }
 
       if (editingSetting) {
         await request(`/api/v1/global-settings/${editingSetting.id}`, {
@@ -223,11 +234,19 @@ const GlobalSettingPage: React.FC = () => {
 
   const columns: ProColumns<GlobalSetting>[] = [
     {
+      title: '参数描述',
+      dataIndex: 'description',
+      key: 'description',
+      width: 250,
+      fixed: 'left',
+      search: false,
+      ellipsis: true,
+    },
+    {
       title: '配置键名',
       dataIndex: 'key',
       key: 'key',
       width: 200,
-      fixed: 'left',
       ellipsis: true,
       render: (text, record) => (
         <Space>
@@ -256,14 +275,6 @@ const GlobalSettingPage: React.FC = () => {
         options: categories.map(cat => ({ label: cat, value: cat })),
       },
       render: (text) => text ? <Tag>{text}</Tag> : '-',
-    },
-    {
-      title: '说明',
-      dataIndex: 'description',
-      key: 'description',
-      width: 250,
-      search: false,
-      ellipsis: true,
     },
     {
       title: '状态',
@@ -309,10 +320,9 @@ const GlobalSettingPage: React.FC = () => {
             size="small"
             icon={<EditOutlined />}
             onClick={() => handleOpenModal(record)}
-          >
-            编辑
-          </Button>
-          {!record.isSystem && (
+          />
+          {/* 只有 SUPER_ADMIN 且非系统参数时才显示删除按钮 */}
+          {isSuperAdmin && !record.isSystem && (
             <Popconfirm
               title="确定删除这条配置吗？"
               onConfirm={() => handleDelete(record.id)}
@@ -349,6 +359,32 @@ const GlobalSettingPage: React.FC = () => {
           showSizeChanger: true,
         }}
         scroll={{ x: 1200 }}
+        toolBarRender={() => {
+          const buttons = [];
+          // 只有 SUPER_ADMIN 才能看到新增按钮
+          if (isSuperAdmin) {
+            buttons.push(
+              <Button
+                key="add"
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => handleOpenModal()}
+              >
+                新增配置
+              </Button>
+            );
+          }
+          return buttons;
+        }}
+        columnsState={{
+          persistenceKey: 'global-setting-table-columns',
+          persistenceType: 'localStorage',
+          defaultValue: {
+            key: { show: false },
+            category: { show: false },
+            creator: { show: false },
+          },
+        }}
       />
 
       <Modal
@@ -430,17 +466,29 @@ const GlobalSettingPage: React.FC = () => {
 
           <Form.Item
             name="description"
-            label="说明"
+            label="参数描述"
           >
-            <TextArea rows={3} placeholder="请输入配置说明" />
+            <TextArea rows={3} placeholder="请输入参数描述" />
           </Form.Item>
+
+          {/* 系统参数标记 - 只有 SUPER_ADMIN 可见 */}
+          {isSuperAdmin && (
+            <Form.Item
+              name="isSystem"
+              label="系统参数"
+              valuePropName="checked"
+              tooltip="系统参数不可删除，仅 SUPER_ADMIN 可修改"
+            >
+              <Switch checkedChildren="是" unCheckedChildren="否" />
+            </Form.Item>
+          )}
 
           <Form.Item
             name="isActive"
             label="状态"
             valuePropName="checked"
           >
-            <Switch disabled={editingSetting?.isSystem} checkedChildren="启用" unCheckedChildren="禁用" />
+            <Switch disabled={editingSetting?.isSystem && !isSuperAdmin} checkedChildren="启用" unCheckedChildren="禁用" />
           </Form.Item>
         </Form>
       </Modal>

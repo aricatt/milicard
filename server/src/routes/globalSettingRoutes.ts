@@ -21,13 +21,13 @@ router.post('/values/batch', checkSystemPermission('global_setting', 'read'), Gl
 router.post('/values/batch-set', checkSystemPermission('global_setting', 'update'), GlobalSettingController.setValues);
 
 // 根据 key 获取配置（完整信息）
-router.get('/key/:key', checkSystemPermission('global_setting', 'read'), injectDataPermission('globalSetting'), filterResponseFields(), GlobalSettingController.getByKey);
+router.get('/key/:key', checkSystemPermission('global_setting', 'read'), injectDataPermission('global_setting'), filterResponseFields(), GlobalSettingController.getByKey);
 
 // 获取配置列表
-router.get('/', checkSystemPermission('global_setting', 'read'), injectDataPermission('globalSetting'), filterResponseFields(), GlobalSettingController.getList);
+router.get('/', checkSystemPermission('global_setting', 'read'), injectDataPermission('global_setting'), filterResponseFields(), GlobalSettingController.getList);
 
 // 根据 ID 获取配置
-router.get('/:id', checkSystemPermission('global_setting', 'read'), injectDataPermission('globalSetting'), filterResponseFields(), GlobalSettingController.getById);
+router.get('/:id', checkSystemPermission('global_setting', 'read'), injectDataPermission('global_setting'), filterResponseFields(), GlobalSettingController.getById);
 
 // 创建配置
 router.post('/', checkSystemPermission('global_setting', 'create'), GlobalSettingController.create);

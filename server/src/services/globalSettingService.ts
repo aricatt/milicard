@@ -9,6 +9,7 @@ interface GlobalSettingInput {
   description?: string;
   category?: string;
   isActive?: boolean;
+  isSystem?: boolean;
 }
 
 interface ListParams {
@@ -156,7 +157,10 @@ export class GlobalSettingService {
         description: data.description,
         category: data.category,
         isActive: data.isActive ?? true,
-        createdBy,
+        isSystem: data.isSystem ?? false,
+        creator: {
+          connect: { id: createdBy },
+        },
       },
       include: {
         creator: {
@@ -205,6 +209,7 @@ export class GlobalSettingService {
         ...(data.description !== undefined && { description: data.description }),
         ...(data.category !== undefined && { category: data.category }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.isSystem !== undefined && { isSystem: data.isSystem }),
       },
       include: {
         creator: {

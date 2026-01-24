@@ -90,6 +90,23 @@ const RESOURCES: Resource[] = [
       { key: 'updatedAt', label: '更新时间', type: 'date' },
     ],
   },
+  {
+    key: 'global_setting',
+    label: '全局配置',
+    fields: [
+      { key: 'id', label: 'ID', type: 'string' },
+      { key: 'key', label: '配置键名', type: 'string' },
+      { key: 'value', label: '配置值', type: 'json' },
+      { key: 'description', label: '参数描述', type: 'string' },
+      { key: 'category', label: '分类', type: 'string' },
+      { key: 'isSystem', label: '系统参数', type: 'boolean' },
+      { key: 'isActive', label: '状态', type: 'boolean' },
+      { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'creator', label: '创建人信息', type: 'object' },
+      { key: 'createdAt', label: '创建时间', type: 'date' },
+      { key: 'updatedAt', label: '更新时间', type: 'date' },
+    ],
+  },
   // ========== 基地数据 ==========
   {
     key: 'base',
