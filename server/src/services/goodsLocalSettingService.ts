@@ -255,7 +255,11 @@ export class GoodsLocalSettingService {
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          goods: true
+          goods: {
+            include: {
+              category: true
+            }
+          }
         }
       })
     ])

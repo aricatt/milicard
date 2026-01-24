@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Modal, Table, Input, Select, Tag, Button, Space, Row, Col, message } from 'antd';
 import { SearchOutlined, ReloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { request, useIntl, getLocale } from '@umijs/max';
+import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 import type { ColumnsType } from 'antd/es/table';
 import debounce from 'lodash/debounce';
 
@@ -24,6 +25,7 @@ interface GlobalProduct {
     id: number;
     code: string;
     name: string;
+    nameI18n?: NameI18n;
   };
   manufacturer: string;
   packPerBox: number;
@@ -36,6 +38,7 @@ interface Category {
   id: number;
   code: string;
   name: string;
+  nameI18n?: NameI18n;
 }
 
 // 组件属性
@@ -204,16 +207,14 @@ const GlobalGoodsSelectModal: React.FC<GlobalGoodsSelectModalProps> = ({
       key: 'category',
       width: 100,
       render: (_, record) => {
-        const categoryName = record.category?.name || '';
         const categoryCode = record.category?.code || '';
+        const categoryName = record.category?.name || '';
+        const categoryNameI18n = record.category?.nameI18n;
         const color = CategoryColors[categoryCode] || 'default';
         if (!categoryCode) {
           return <Tag color="default">{intl.formatMessage({ id: 'products.uncategorized' })}</Tag>;
         }
-        // 中文显示品类名称，其他语言显示品类编号
-        const locale = getLocale();
-        const displayName = locale === 'zh-CN' ? categoryName : categoryCode;
-        return <Tag color={color}>{displayName}</Tag>;
+        return <Tag color={color}>{getCategoryDisplayName(categoryCode, categoryName, categoryNameI18n, intl.locale)}</Tag>;
       },
     },
     {

@@ -187,6 +187,7 @@ export default {
   'transfers.column.packQty': '调货盒',
   'transfers.column.pieceQty': '调货包',
   'transfers.import.title': '导入调货记录',
+  'transfers.modal.createTitle': '新增调货记录',
 
   // ==================== 库存消耗 ====================
   'consumption.title': '库存和消耗',

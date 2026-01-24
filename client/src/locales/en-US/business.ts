@@ -187,6 +187,7 @@ export default {
   'transfers.column.packQty': 'Pack Qty',
   'transfers.column.pieceQty': 'Piece Qty',
   'transfers.import.title': 'Import Transfers',
+  'transfers.modal.createTitle': 'Add Transfer Record',
 
   // ==================== Inventory Consumption ====================
   'consumption.title': 'Inventory & Consumption',

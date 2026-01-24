@@ -187,6 +187,7 @@ export default {
   'transfers.column.packQty': 'จำนวนแพ็ค',
   'transfers.column.pieceQty': 'จำนวนชิ้น',
   'transfers.import.title': 'นำเข้าข้อมูลโอนย้าย',
+  'transfers.modal.createTitle': 'เพิ่มบันทึกการโอนย้าย',
 
   // ==================== สต็อกและการใช้ ====================
   'consumption.title': 'สต็อกและการใช้',

@@ -187,6 +187,7 @@ export default {
   'transfers.column.packQty': 'SL hộp',
   'transfers.column.pieceQty': 'SL gói',
   'transfers.import.title': 'Nhập dữ liệu chuyển kho',
+  'transfers.modal.createTitle': 'Thêm bản ghi chuyển kho',
 
   // ==================== Tồn kho và tiêu thụ ====================
   'consumption.title': 'Tồn kho & Tiêu thụ',

@@ -445,7 +445,7 @@ const TransferManagement: React.FC = () => {
 
       {/* 新增调货模态框 */}
       <Modal
-        title="新增调货记录"
+        title={intl.formatMessage({ id: 'transfers.modal.createTitle' })}
         open={createModalVisible}
         onCancel={() => {
           setCreateModalVisible(false);

@@ -36,7 +36,7 @@ import { getCurrencySymbol } from '@/utils/currency';
 import { useProductExcel } from './useProductExcel';
 import ImportModal from '@/components/ImportModal';
 import type { FieldDescription } from '@/components/ImportModal';
-import GoodsNameText, { getLocalizedGoodsName } from '@/components/GoodsNameText';
+import GoodsNameText, { getLocalizedGoodsName, getCategoryDisplayName } from '@/components/GoodsNameText';
 import GlobalGoodsSelectModal from '@/components/GlobalGoodsSelectModal';
 
 const { TextArea } = Input;
@@ -95,10 +95,16 @@ interface GlobalProduct {
   name: string;
   nameI18n?: NameI18n | null;
   categoryId?: number;
+  // 后端返回的扁平品类字段
+  categoryCode?: string | null;
+  categoryName?: string | null;
+  categoryNameI18n?: NameI18n | null;
+  // 兼容旧的嵌套结构（用于其他组件）
   category?: {
     id: number;
     code: string;
     name: string;
+    nameI18n?: NameI18n;
   };
   manufacturer: string;
   packPerBox: number;
@@ -492,10 +498,17 @@ const ProductSettingsPage: React.FC = () => {
       width: 80,
       hideInSearch: true,
       render: (_, record) => {
-        const category = record.goods?.category || GoodsCategory.CARD;
+        // 后端返回的是嵌套结构 record.goods.category
+        const categoryCode = record.goods?.category?.code;
+        const categoryName = record.goods?.category?.name;
+        const categoryNameI18n = record.goods?.category?.nameI18n;
+        const color = GoodsCategoryColors[categoryCode as GoodsCategory] || 'default';
+        if (!categoryCode) {
+          return <Tag color="default">{intl.formatMessage({ id: 'products.uncategorized' })}</Tag>;
+        }
         return (
-          <Tag color={GoodsCategoryColors[category]}>
-            {GoodsCategoryLabels[category]}
+          <Tag color={color}>
+            {getCategoryDisplayName(categoryCode, categoryName, categoryNameI18n, intl.locale)}
           </Tag>
         );
       },
