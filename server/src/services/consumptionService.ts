@@ -730,6 +730,172 @@ export class ConsumptionService {
   }
 
   /**
+   * 更新消耗记录
+   */
+  static async updateConsumption(
+    baseId: number,
+    recordId: string,
+    data: CreateConsumptionRequest,
+    userId: string
+  ): Promise<ConsumptionResponse> {
+    try {
+      // 验证记录是否存在
+      const existingRecord = await prisma.stockConsumption.findFirst({
+        where: { id: recordId, baseId }
+      });
+
+      if (!existingRecord) {
+        throw new BaseError('消耗记录不存在', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 验证必填字段
+      if (!data.consumptionDate || !data.goodsId || !data.locationId || !data.handlerId) {
+        throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);
+      }
+
+      // 验证商品是否存在且在该基地有配置
+      const goodsSetting = await prisma.goodsLocalSetting.findFirst({
+        where: {
+          goodsId: data.goodsId,
+          baseId: baseId,
+          isActive: true
+        },
+        include: {
+          goods: true
+        }
+      });
+      if (!goodsSetting || !goodsSetting.goods) {
+        throw new BaseError('商品不存在或未在该基地启用', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+      const goods = goodsSetting.goods;
+
+      // 验证位置是否存在
+      const location = await prisma.location.findFirst({
+        where: { id: data.locationId, baseId }
+      });
+      if (!location) {
+        throw new BaseError('直播间/仓库不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 验证主播是否存在
+      const handler = await prisma.personnel.findFirst({
+        where: { id: data.handlerId, baseId }
+      });
+      if (!handler) {
+        throw new BaseError('主播不存在或不属于该基地', BaseErrorType.RESOURCE_NOT_FOUND);
+      }
+
+      // 获取平均单价/箱（从Inventory获取）
+      const inventory = await prisma.inventory.findFirst({
+        where: { goodsId: data.goodsId, baseId }
+      });
+      const unitPricePerBox = inventory?.averageCost || 0;
+
+      // 获取换算关系
+      const packPerBox = goods.packPerBox || 1;
+      const piecePerPack = goods.piecePerPack || 1;
+      const piecesPerBox = packPerBox * piecePerPack;
+
+      // 将期初和期末转换为总包数（最小单位）
+      const openingTotal = data.openingBoxQty * piecesPerBox + data.openingPackQty * piecePerPack + data.openingPieceQty;
+      const closingTotal = data.closingBoxQty * piecesPerBox + data.closingPackQty * piecePerPack + data.closingPieceQty;
+
+      // 验证期末不能超过期初
+      if (closingTotal > openingTotal) {
+        throw new BaseError(
+          `期末数量(${data.closingBoxQty}箱${data.closingPackQty}盒${data.closingPieceQty}包)超过期初数量(${data.openingBoxQty}箱${data.openingPackQty}盒${data.openingPieceQty}包)`,
+          BaseErrorType.VALIDATION_ERROR
+        );
+      }
+
+      const consumptionTotal = openingTotal - closingTotal;
+
+      // 将消耗总量转换回箱-盒-包
+      const boxQuantity = Math.floor(consumptionTotal / piecesPerBox);
+      const remainingAfterBox = consumptionTotal % piecesPerBox;
+      const packQuantity = Math.floor(remainingAfterBox / piecePerPack);
+      const pieceQuantity = remainingAfterBox % piecePerPack;
+
+      // 更新消耗记录
+      const record = await prisma.stockConsumption.update({
+        where: { id: recordId },
+        data: {
+          consumptionDate: new Date(data.consumptionDate),
+          goodsId: data.goodsId,
+          locationId: data.locationId,
+          handlerId: data.handlerId,
+          openingBoxQty: data.openingBoxQty,
+          openingPackQty: data.openingPackQty,
+          openingPieceQty: data.openingPieceQty,
+          closingBoxQty: data.closingBoxQty,
+          closingPackQty: data.closingPackQty,
+          closingPieceQty: data.closingPieceQty,
+          boxQuantity,
+          packQuantity,
+          pieceQuantity,
+          unitPricePerBox,
+          notes: data.notes,
+          updatedBy: userId
+        },
+        include: {
+          goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
+          location: { select: { id: true, name: true } },
+          handler: { select: { id: true, name: true } },
+          base: { select: { id: true, name: true } }
+        }
+      });
+
+      logger.info('消耗记录更新成功', {
+        recordId: record.id,
+        baseId,
+        userId,
+        service: 'milicard-api'
+      });
+
+      return {
+        id: record.id,
+        consumptionDate: record.consumptionDate.toISOString().split('T')[0],
+        goodsId: record.goodsId,
+        goodsCode: record.goods?.code || '',
+        goodsName: record.goods?.name || '',
+        goodsNameI18n: record.goods?.nameI18n as any,
+        packPerBox: record.goods?.packPerBox || 1,
+        piecePerPack: record.goods?.piecePerPack || 1,
+        locationId: record.locationId,
+        locationName: record.location?.name || '',
+        handlerId: record.handlerId,
+        handlerName: record.handler?.name || '',
+        baseId: record.baseId,
+        baseName: record.base?.name || '',
+        openingBoxQty: record.openingBoxQty,
+        openingPackQty: record.openingPackQty,
+        openingPieceQty: record.openingPieceQty,
+        closingBoxQty: record.closingBoxQty,
+        closingPackQty: record.closingPackQty,
+        closingPieceQty: record.closingPieceQty,
+        boxQuantity: record.boxQuantity,
+        packQuantity: record.packQuantity,
+        pieceQuantity: record.pieceQuantity,
+        unitPricePerBox: Number(record.unitPricePerBox),
+        notes: record.notes || undefined,
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString()
+      };
+
+    } catch (error) {
+      logger.error('更新消耗记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId,
+        recordId,
+        data,
+        userId,
+        service: 'milicard-api'
+      });
+      throw error;
+    }
+  }
+
+  /**
    * 获取消耗统计
    */
   static async getConsumptionStats(baseId: number): Promise<{

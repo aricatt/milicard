@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, Tag, Popconfirm, Tooltip } from 'antd';
-import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { Button, Tag, Popconfirm, Tooltip, Space } from 'antd';
+import { DeleteOutlined, ShoppingOutlined, EditOutlined } from '@ant-design/icons';
 import type { ProColumns } from '@ant-design/pro-components';
 import dayjs from 'dayjs';
 import type { ConsumptionRecord } from './types';
@@ -13,6 +13,7 @@ interface AnchorOption {
 }
 
 interface ColumnsConfig {
+  onEdit: (record: ConsumptionRecord) => void;
   onDelete: (record: ConsumptionRecord) => void;
   intl?: IntlShape;
   showInCNY?: boolean;
@@ -56,7 +57,7 @@ const calcInventoryValue = (record: ConsumptionRecord) => {
   );
 };
 
-export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1, anchorOptions = [] }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => {
+export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchangeRate = 1, anchorOptions = [] }: ColumnsConfig): ProColumns<ConsumptionRecord>[] => {
   // 金额格式化函数，支持以人民币显示
   const formatAmount = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return '-';
@@ -256,21 +257,31 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
   {
     title: intl?.formatMessage({ id: 'table.column.operation' }) || '操作',
     key: 'action',
-    width: 70,
+    width: 100,
     fixed: 'right',
     search: false,
     render: (_, record) => (
-      <Popconfirm
-        title={intl?.formatMessage({ id: 'message.confirmDelete' }) || '确定删除这条消耗记录吗？'}
-        description={intl?.formatMessage({ id: 'message.deleteConfirmContent' }) || ''}
-        onConfirm={() => onDelete(record)}
-        okText={intl?.formatMessage({ id: 'button.confirm' }) || '确定'}
-        cancelText={intl?.formatMessage({ id: 'button.cancel' }) || '取消'}
-      >
-        <Tooltip title={intl?.formatMessage({ id: 'button.delete' }) || '删除'}>
-          <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+      <Space size="small">
+        <Tooltip title={intl?.formatMessage({ id: 'button.edit' }) || '编辑'}>
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<EditOutlined />} 
+            onClick={() => onEdit(record)}
+          />
         </Tooltip>
-      </Popconfirm>
+        <Popconfirm
+          title={intl?.formatMessage({ id: 'message.confirmDelete' }) || '确定删除这条消耗记录吗？'}
+          description={intl?.formatMessage({ id: 'message.deleteConfirmContent' }) || ''}
+          onConfirm={() => onDelete(record)}
+          okText={intl?.formatMessage({ id: 'button.confirm' }) || '确定'}
+          cancelText={intl?.formatMessage({ id: 'button.cancel' }) || '取消'}
+        >
+          <Tooltip title={intl?.formatMessage({ id: 'button.delete' }) || '删除'}>
+            <Button type="link" size="small" danger icon={<DeleteOutlined />} />
+          </Tooltip>
+        </Popconfirm>
+      </Space>
     ),
   },
 ];

@@ -31,4 +31,7 @@ router.post('/:baseId/consumptions', checkPermission('stock_consumption', 'creat
 // 删除消耗记录
 router.delete('/:baseId/consumptions/:recordId', checkPermission('stock_consumption', 'delete'), ConsumptionController.deleteConsumption);
 
+// 更新消耗记录
+router.put('/:baseId/consumptions/:recordId', checkPermission('stock_consumption', 'update'), ConsumptionController.updateConsumption);
+
 export default router;

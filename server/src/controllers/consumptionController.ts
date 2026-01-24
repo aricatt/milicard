@@ -167,6 +167,52 @@ export class ConsumptionController {
   }
 
   /**
+   * 更新消耗记录
+   */
+  static async updateConsumption(req: Request, res: Response) {
+    try {
+      const baseId = parseInt(req.params.baseId);
+      const recordId = req.params.recordId;
+
+      if (isNaN(baseId)) {
+        return res.status(400).json({
+          success: false,
+          message: '基地ID无效'
+        });
+      }
+
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: '未授权'
+        });
+      }
+
+      const result = await ConsumptionService.updateConsumption(baseId, recordId, req.body, userId);
+      res.json({ success: true, data: result });
+
+    } catch (error) {
+      logger.error('更新消耗记录失败', {
+        error: error instanceof Error ? error.message : String(error),
+        baseId: req.params.baseId,
+        recordId: req.params.recordId,
+        body: req.body,
+        controller: 'ConsumptionController'
+      });
+
+      if (error instanceof BaseError) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: error instanceof Error ? error.message : '服务器内部错误'
+        });
+      }
+    }
+  }
+
+  /**
    * 获取期初数据（调入总量）
    * 按主播查询，因为直播间的货物归属是人
    */

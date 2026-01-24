@@ -67,6 +67,12 @@ const ConsumptionManagement: React.FC = () => {
   });
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  
+  // 编辑相关状态
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<ConsumptionRecord | null>(null);
+  const [editForm] = Form.useForm();
 
   // 期初数据状态
   const [openingStock, setOpeningStock] = useState<{
@@ -405,6 +411,80 @@ const ConsumptionManagement: React.FC = () => {
   };
 
   /**
+   * 打开编辑表单
+   */
+  const handleEdit = (record: ConsumptionRecord) => {
+    setEditingRecord(record);
+    // 设置表单初始值
+    editForm.setFieldsValue({
+      consumptionDate: dayjs(record.consumptionDate),
+      goodsId: record.goodsId,
+      locationId: record.locationId,
+      handlerId: record.handlerId,
+      notes: record.notes,
+    });
+    // 设置期初和期末数据
+    setOpeningStock({
+      openingBoxQty: record.openingBoxQty,
+      openingPackQty: record.openingPackQty,
+      openingPieceQty: record.openingPieceQty,
+      unitPricePerBox: record.unitPricePerBox || 0,
+      packPerBox: record.packPerBox || 1,
+      piecePerPack: record.piecePerPack || 1,
+    });
+    setClosingStock({
+      closingBoxQty: record.closingBoxQty,
+      closingPackQty: record.closingPackQty,
+      closingPieceQty: record.closingPieceQty,
+    });
+    setEditModalVisible(true);
+  };
+
+  /**
+   * 更新消耗记录
+   */
+  const handleUpdate = async (values: ConsumptionFormValues) => {
+    if (!currentBase || !editingRecord || !openingStock) return;
+
+    setEditLoading(true);
+    try {
+      const result = await request(`/api/v1/bases/${currentBase.id}/consumptions/${editingRecord.id}`, {
+        method: 'PUT',
+        data: {
+          consumptionDate: values.consumptionDate.format('YYYY-MM-DD'),
+          goodsId: values.goodsId,
+          locationId: values.locationId,
+          handlerId: values.handlerId,
+          openingBoxQty: openingStock.openingBoxQty,
+          openingPackQty: openingStock.openingPackQty,
+          openingPieceQty: openingStock.openingPieceQty,
+          closingBoxQty: closingStock.closingBoxQty,
+          closingPackQty: closingStock.closingPackQty,
+          closingPieceQty: closingStock.closingPieceQty,
+          notes: values.notes,
+        },
+      });
+
+      if (result.success) {
+        message.success('更新成功');
+        setEditModalVisible(false);
+        editForm.resetFields();
+        setEditingRecord(null);
+        setOpeningStock(null);
+        setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
+        actionRef.current?.reload();
+        loadStats();
+      } else {
+        message.error(result.message || '更新失败');
+      }
+    } catch (error: any) {
+      console.error('更新消耗记录失败:', error);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  /**
    * 创建消耗记录
    */
   const handleCreate = async (values: ConsumptionFormValues) => {
@@ -484,7 +564,7 @@ const ConsumptionManagement: React.FC = () => {
     .filter(p => p.role === 'ANCHOR')
     .map(p => ({ value: p.id, label: p.name }));
 
-  const columns = getColumns({ onDelete: handleDelete, intl, showInCNY, exchangeRate: currentExchangeRate, anchorOptions });
+  const columns = getColumns({ onEdit: handleEdit, onDelete: handleDelete, intl, showInCNY, exchangeRate: currentExchangeRate, anchorOptions });
 
   return (
     <PageContainer header={{ title: false }}>
@@ -880,6 +960,249 @@ const ConsumptionManagement: React.FC = () => {
                 disabled={!openingStock || !isClosingStockValid()}
               >
                 {intl.formatMessage({ id: 'button.create' })}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 编辑消耗记录模态框 */}
+      <Modal
+        title={intl.formatMessage({ id: 'button.edit' })}
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setEditingRecord(null);
+          setOpeningStock(null);
+          setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
+        }}
+        footer={null}
+        width={800}
+        destroyOnClose
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={handleUpdate}
+        >
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label={intl.formatMessage({ id: 'consumption.form.consumptionDate' })}
+                name="consumptionDate"
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.consumptionDateRequired' }) }]}
+              >
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label={intl.formatMessage({ id: 'consumption.form.goods' })}
+                name="goodsId"
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.goodsRequired' }) }]}
+              >
+                <Select
+                  key={intl.locale}
+                  placeholder={intl.formatMessage({ id: 'consumption.form.goodsPlaceholder' })}
+                  loading={optionsLoading}
+                  showSearch
+                  optionFilterProp="label"
+                  options={goodsOptions.map(g => {
+                    const categoryDisplay = getCategoryDisplayName(g.categoryCode, g.categoryName, g.categoryNameI18n, intl.locale);
+                    const goodsName = getLocalizedGoodsName(g.name, g.nameI18n, intl.locale);
+                    const label = categoryDisplay ? `[${categoryDisplay}]${goodsName}` : goodsName;
+                    return { value: g.id, label };
+                  })}
+                  disabled
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label={intl.formatMessage({ id: 'consumption.form.location' })}
+                name="locationId"
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.locationRequired' }) }]}
+              >
+                <Select
+                  placeholder={intl.formatMessage({ id: 'consumption.form.locationPlaceholder' })}
+                  loading={optionsLoading}
+                  showSearch
+                  optionFilterProp="label"
+                  options={locationOptions
+                    .filter(l => l.type === 'LIVE_ROOM')
+                    .map(l => ({ value: l.id, label: l.name }))}
+                  disabled
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item
+                label={intl.formatMessage({ id: 'consumption.form.handler' })}
+                name="handlerId"
+                rules={[{ required: true, message: intl.formatMessage({ id: 'consumption.form.handlerRequired' }) }]}
+                extra={intl.formatMessage({ id: 'consumption.form.handlerHint' })}
+              >
+                <Select
+                  placeholder={intl.formatMessage({ id: 'consumption.form.handlerPlaceholder' })}
+                  loading={optionsLoading}
+                  showSearch
+                  optionFilterProp="label"
+                  options={personnelOptions
+                    .filter(p => p.role === 'ANCHOR')
+                    .map(p => ({ value: p.id, label: `🎤 ${p.name}` }))}
+                  disabled
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* 期初数据显示 */}
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'consumption.form.openingSection' })}</Divider>
+          {openingStock && (
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item label={intl.formatMessage({ id: 'consumption.form.openingBox' })}>
+                  <InputNumber
+                    value={openingStock.openingBoxQty}
+                    disabled
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item label={intl.formatMessage({ id: 'consumption.form.openingPack' })}>
+                  <InputNumber
+                    value={openingStock.openingPackQty}
+                    disabled
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item label={intl.formatMessage({ id: 'consumption.form.openingPiece' })}>
+                  <InputNumber
+                    value={openingStock.openingPieceQty}
+                    disabled
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
+
+          {/* 期末数据输入 */}
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'consumption.form.closingSection' })}</Divider>
+          {openingStock && !isClosingStockValid() && (
+            <Alert
+              message={intl.formatMessage({ id: 'consumption.form.closingError' })}
+              description={`期初总量: ${getOpeningTotalPieces()} 包，当前期末: ${getClosingTotalPieces()} 包（换算关系: 1箱=${openingStock.packPerBox}盒, 1盒=${openingStock.piecePerPack}包）`}
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item 
+                label={intl.formatMessage({ id: 'consumption.form.closingBox' })}
+                extra={openingStock ? `期初: ${openingStock.openingBoxQty} 箱` : undefined}
+              >
+                <InputNumber
+                  min={0}
+                  value={closingStock.closingBoxQty}
+                  onChange={(v) => setClosingStock(prev => ({ ...prev, closingBoxQty: v || 0 }))}
+                  disabled={!openingStock}
+                  style={{ width: '100%' }}
+                  placeholder="0"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item 
+                label={intl.formatMessage({ id: 'consumption.form.closingPack' })}
+                extra={openingStock ? `期初: ${openingStock.openingPackQty} 盒（1箱=${openingStock.packPerBox}盒）` : undefined}
+              >
+                <InputNumber
+                  min={0}
+                  value={closingStock.closingPackQty}
+                  onChange={(v) => setClosingStock(prev => ({ ...prev, closingPackQty: v || 0 }))}
+                  disabled={!openingStock}
+                  style={{ width: '100%' }}
+                  placeholder="0"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item 
+                label={intl.formatMessage({ id: 'consumption.form.closingPiece' })}
+                extra={openingStock ? `期初: ${openingStock.openingPieceQty} 包（1盒=${openingStock.piecePerPack}包）` : undefined}
+              >
+                <InputNumber
+                  min={0}
+                  value={closingStock.closingPieceQty}
+                  onChange={(v) => setClosingStock(prev => ({ ...prev, closingPieceQty: v || 0 }))}
+                  disabled={!openingStock}
+                  style={{ width: '100%' }}
+                  placeholder="0"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* 消耗数据显示（自动计算） */}
+          <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'consumption.form.consumptionSection' })}</Divider>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item label={intl.formatMessage({ id: 'consumption.form.consumptionBox' })}>
+                <InputNumber
+                  value={calculateConsumption().boxQty}
+                  disabled
+                  style={{ width: '100%', backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label={intl.formatMessage({ id: 'consumption.form.consumptionPack' })}>
+                <InputNumber
+                  value={calculateConsumption().packQty}
+                  disabled
+                  style={{ width: '100%', backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label={intl.formatMessage({ id: 'consumption.form.consumptionPiece' })}>
+                <InputNumber
+                  value={calculateConsumption().pieceQty}
+                  disabled
+                  style={{ width: '100%', backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item label={intl.formatMessage({ id: 'consumption.form.notes' })} name="notes">
+            <TextArea rows={2} placeholder={intl.formatMessage({ id: 'consumption.form.notesPlaceholder' })} maxLength={500} showCount />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => {
+                setEditModalVisible(false);
+                setEditingRecord(null);
+                setOpeningStock(null);
+                setClosingStock({ closingBoxQty: 0, closingPackQty: 0, closingPieceQty: 0 });
+              }}>{intl.formatMessage({ id: 'button.cancel' })}</Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={editLoading}
+                disabled={!openingStock || !isClosingStockValid()}
+              >
+                {intl.formatMessage({ id: 'button.save' })}
               </Button>
             </Space>
           </Form.Item>
