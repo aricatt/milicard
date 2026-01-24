@@ -116,19 +116,57 @@ export class MultilingualHelper {
 export const SUPPORTED_I18N_KEYS = ['en', 'th', 'vi', 'zh_TW'] as const
 
 /**
- * 生成多语言名称搜索条件
- * 用于 Prisma 查询中搜索 nameI18n JSON 字段
+ * 生成多语言名称搜索条件（支持大小写不敏感）
+ * 
+ * 策略：同时搜索多个大小写变体，实现全面的大小写不敏感搜索
+ * 这样可以在不修改数据存储的情况下，匹配各种大小写组合
+ * 
+ * 生成的搜索变体：
+ * 1. 原始词（用户输入的）
+ * 2. 全小写
+ * 3. 首字母大写
+ * 4. 全大写
+ * 
+ * 示例：用户输入 "kayou"
+ * - 搜索 "kayou"（原始）
+ * - 搜索 "kayou"（小写）
+ * - 搜索 "Kayou"（首字母大写）
+ * - 搜索 "KAYOU"（全大写）
+ * 
+ * 可以匹配到数据库中的：
+ * - "kayou" ✓
+ * - "Kayou" ✓
+ * - "KAYOU" ✓
+ * - "KaYoU" ✓（包含 "kayou" 子串）
+ * 
  * @param search 搜索关键词
  * @param fieldName JSON 字段名，默认为 'nameI18n'
  * @returns Prisma OR 条件数组
  */
 export function buildI18nSearchConditions(search: string, fieldName: string = 'nameI18n'): any[] {
-  return SUPPORTED_I18N_KEYS.map(key => ({
-    [fieldName]: {
-      path: [key],
-      string_contains: search,
-    }
-  }))
+  const conditions: any[] = []
+  
+  // 生成不同的大小写变体
+  const searchVariants = new Set<string>([
+    search,                                                    // 原始词
+    search.toLowerCase(),                                      // 全小写
+    search.charAt(0).toUpperCase() + search.slice(1).toLowerCase(), // 首字母大写
+    search.toUpperCase(),                                      // 全大写
+  ])
+  
+  // 为每个语言键和每个搜索变体生成条件
+  SUPPORTED_I18N_KEYS.forEach(key => {
+    searchVariants.forEach(variant => {
+      conditions.push({
+        [fieldName]: {
+          path: [key],
+          string_contains: variant,
+        }
+      })
+    })
+  })
+  
+  return conditions
 }
 
 /**
@@ -151,23 +189,43 @@ export function buildGoodsSearchConditions(search: string, includeCode: boolean 
 }
 
 /**
- * 生成关联商品的多语言搜索条件（用于关联查询）
+ * 生成关联商品的多语言搜索条件（用于关联查询，支持大小写不敏感）
+ * 
+ * 策略：同时搜索多个大小写变体，实现全面的大小写不敏感搜索
+ * 
  * @param search 搜索关键词
  * @param relationField 关联字段名，默认为 'goods'
  * @returns Prisma OR 条件数组
  */
 export function buildRelatedGoodsSearchConditions(search: string, relationField: string = 'goods'): any[] {
-  return [
-    { [relationField]: { name: { contains: search, mode: 'insensitive' } } },
-    ...SUPPORTED_I18N_KEYS.map(key => ({
-      [relationField]: {
-        nameI18n: {
-          path: [key],
-          string_contains: search,
+  const conditions: any[] = []
+  
+  // 主名称搜索（已支持大小写不敏感）
+  conditions.push({ [relationField]: { name: { contains: search, mode: 'insensitive' } } })
+  
+  // 生成不同的大小写变体
+  const searchVariants = new Set<string>([
+    search,                                                    // 原始词
+    search.toLowerCase(),                                      // 全小写
+    search.charAt(0).toUpperCase() + search.slice(1).toLowerCase(), // 首字母大写
+    search.toUpperCase(),                                      // 全大写
+  ])
+  
+  // 多语言字段搜索
+  SUPPORTED_I18N_KEYS.forEach(key => {
+    searchVariants.forEach(variant => {
+      conditions.push({
+        [relationField]: {
+          nameI18n: {
+            path: [key],
+            string_contains: variant,
+          }
         }
-      }
-    }))
-  ]
+      })
+    })
+  })
+  
+  return conditions
 }
 
 // Express中间件：自动处理多语言响应
