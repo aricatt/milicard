@@ -703,7 +703,7 @@ const AnchorProfitPage: React.FC = () => {
       <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.costSection' })}</Divider>
       <Row gutter={16}>
         <Col span={8}>
-          <Form.Item label={intl.formatMessage({ id: 'anchorProfit.form.consumptionAmount' })} extra={intl.formatMessage({ id: 'anchorProfit.form.consumptionAmountHint' })}>
+          <Form.Item label={intl.formatMessage({ id: 'anchorProfit.form.costPrice' })} extra={intl.formatMessage({ id: 'anchorProfit.form.costPriceHint' })}>
             <InputNumber
               value={consumptionAmount}
               disabled

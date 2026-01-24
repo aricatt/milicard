@@ -748,6 +748,15 @@ export class ConsumptionService {
         throw new BaseError('消耗记录不存在', BaseErrorType.RESOURCE_NOT_FOUND);
       }
 
+      // 检查该消耗记录是否已被主播利润记录引用
+      const relatedProfit = await prisma.anchorProfit.findFirst({
+        where: { consumptionId: recordId }
+      });
+
+      if (relatedProfit) {
+        throw new BaseError('对应的利润已记录，不能直接修改此消耗数据！', BaseErrorType.VALIDATION_ERROR);
+      }
+
       // 验证必填字段
       if (!data.consumptionDate || !data.goodsId || !data.locationId || !data.handlerId) {
         throw new BaseError('缺少必填字段', BaseErrorType.VALIDATION_ERROR);

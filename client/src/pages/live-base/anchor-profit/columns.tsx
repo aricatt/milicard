@@ -111,7 +111,7 @@ export const getColumns = (
     ),
   },
   {
-    title: intl?.formatMessage({ id: 'anchorProfit.column.calculatedCostPrice' }) || '拿货价',
+    title: intl?.formatMessage({ id: 'anchorProfit.column.consumptionAmount' }) || '消耗金额',
     dataIndex: 'calculatedCostPrice',
     valueType: 'money',
     width: 110,

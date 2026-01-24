@@ -133,9 +133,9 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
       return <Tag color="purple">{displayName}</Tag>;
     },
   },
-  // 6. 拿货价
+  // 6. 消耗金额
   {
-    title: '拿货价',
+    title: '消耗金额',
     key: 'calculatedCostPrice',
     width: 100,
     align: 'right',

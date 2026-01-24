@@ -283,7 +283,7 @@ const UsersPage: React.FC = () => {
       WAREHOUSE_KEEPER: 'purple',
       ANCHOR: 'cyan',
     };
-    // 直接使用数据库中的描述或角色名
+    // 优先使用描述（友好名称），如果没有描述则使用角色标识
     return { 
       label: description || roleName, 
       color: roleColorMap[roleName] || 'default' 
