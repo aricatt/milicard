@@ -156,7 +156,7 @@ export class GlobalSettingController {
    */
   static async create(req: Request, res: Response) {
     try {
-      const { key, value, description, category, isActive } = req.body;
+      const { key, value, description, category, isActive, isSystem } = req.body;
       const userId = (req as any).user?.id;
 
       if (!key || value === undefined) {
@@ -180,6 +180,7 @@ export class GlobalSettingController {
           description,
           category,
           isActive,
+          isSystem,
         },
         userId
       );
@@ -209,7 +210,7 @@ export class GlobalSettingController {
   static async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { key, value, description, category, isActive } = req.body;
+      const { key, value, description, category, isActive, isSystem } = req.body;
 
       const setting = await GlobalSettingService.update(id, {
         key,
@@ -217,6 +218,7 @@ export class GlobalSettingController {
         description,
         category,
         isActive,
+        isSystem,
       });
 
       res.json({

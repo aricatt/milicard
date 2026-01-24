@@ -334,9 +334,7 @@ const GlobalSettingPage: React.FC = () => {
                 size="small"
                 danger
                 icon={<DeleteOutlined />}
-              >
-                删除
-              </Button>
+              />
             </Popconfirm>
           )}
         </Space>
