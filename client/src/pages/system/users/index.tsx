@@ -31,7 +31,7 @@ import {
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-import { request, useModel } from '@umijs/max';
+import { request, useModel, useIntl } from '@umijs/max';
 
 // 用户类型定义
 interface UserItem {
@@ -73,6 +73,7 @@ interface UserStats {
 }
 
 const UsersPage: React.FC = () => {
+  const intl = useIntl();
   const { message } = App.useApp();
   const { initialState } = useModel('@@initialState');
   const currentLoginUser = initialState?.currentUser;
@@ -105,7 +106,7 @@ const UsersPage: React.FC = () => {
         setRoles(result.data || []);
       }
     } catch (error) {
-      console.error('获取角色列表失败', error);
+      console.error('Failed to fetch roles', error);
     }
   };
 
@@ -120,7 +121,7 @@ const UsersPage: React.FC = () => {
         setAvailableBases(result.data || []);
       }
     } catch (error) {
-      console.error('获取可用基地列表失败', error);
+      console.error('Failed to fetch available bases', error);
     }
   };
 
@@ -132,7 +133,7 @@ const UsersPage: React.FC = () => {
         setStats(result.data);
       }
     } catch (error) {
-      console.error('获取统计数据失败', error);
+      console.error('Failed to fetch stats', error);
     }
   };
 
@@ -164,11 +165,11 @@ const UsersPage: React.FC = () => {
           total: result.total || 0,
         };
       } else {
-        message.error(result.message || '获取用户列表失败');
+        message.error(result.message || intl.formatMessage({ id: 'users.message.fetchFailed' }));
         return { data: [], success: false, total: 0 };
       }
     } catch (error) {
-      message.error('获取用户列表失败');
+      message.error(intl.formatMessage({ id: 'users.message.fetchFailed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -182,17 +183,17 @@ const UsersPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('创建用户成功');
+        message.success(intl.formatMessage({ id: 'users.message.createSuccess' }));
         setCreateModalVisible(false);
         actionRef.current?.reload();
         fetchStats();
         return true;
       } else {
-        message.error(result.message || '创建用户失败');
+        message.error(result.message || intl.formatMessage({ id: 'users.message.createFailed' }));
         return false;
       }
     } catch (error) {
-      message.error('创建用户失败');
+      message.error(intl.formatMessage({ id: 'users.message.createFailed' }));
       return false;
     }
   };
@@ -208,18 +209,18 @@ const UsersPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('更新用户成功');
+        message.success(intl.formatMessage({ id: 'users.message.updateSuccess' }));
         setEditModalVisible(false);
         setCurrentUser(null);
         actionRef.current?.reload();
         fetchStats();
         return true;
       } else {
-        message.error(result.message || '更新用户失败');
+        message.error(result.message || intl.formatMessage({ id: 'users.message.updateFailed' }));
         return false;
       }
     } catch (error) {
-      message.error('更新用户失败');
+      message.error(intl.formatMessage({ id: 'users.message.updateFailed' }));
       return false;
     }
   };
@@ -232,14 +233,14 @@ const UsersPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('删除用户成功');
+        message.success(intl.formatMessage({ id: 'users.message.deleteSuccess' }));
         actionRef.current?.reload();
         fetchStats();
       } else {
-        message.error(result.message || '删除用户失败');
+        message.error(result.message || intl.formatMessage({ id: 'users.message.deleteFailed' }));
       }
     } catch (error) {
-      message.error('删除用户失败');
+      message.error(intl.formatMessage({ id: 'users.message.deleteFailed' }));
     }
   };
 
@@ -254,36 +255,39 @@ const UsersPage: React.FC = () => {
       });
 
       if (result.success) {
-        message.success('重置密码成功');
+        message.success(intl.formatMessage({ id: 'users.message.resetPasswordSuccess' }));
         setResetPasswordModalVisible(false);
         setCurrentUser(null);
         return true;
       } else {
-        message.error(result.message || '重置密码失败');
+        message.error(result.message || intl.formatMessage({ id: 'users.message.resetPasswordFailed' }));
         return false;
       }
     } catch (error) {
-      message.error('重置密码失败');
+      message.error(intl.formatMessage({ id: 'users.message.resetPasswordFailed' }));
       return false;
     }
   };
 
-  // 角色名称映射
+  // 角色名称映射（颜色）
   const getRoleLabel = (roleName: string, description?: string) => {
-    const roleMap: Record<string, { label: string; color: string }> = {
-      SUPER_ADMIN: { label: '超级管理员', color: 'red' },
-      ADMIN: { label: '系统管理员', color: 'volcano' },
-      MANAGER: { label: '经理', color: 'blue' },
-      OPERATOR: { label: '操作员', color: 'green' },
-      VIEWER: { label: '查看者', color: 'cyan' },
-      BASE_MANAGER: { label: '基地管理员', color: 'blue' },
-      POINT_OWNER: { label: '点位老板', color: 'green' },
-      CUSTOMER_SERVICE: { label: '客服', color: 'orange' },
-      WAREHOUSE_KEEPER: { label: '仓管', color: 'purple' },
-      ANCHOR: { label: '主播', color: 'cyan' },
+    const roleColorMap: Record<string, string> = {
+      SUPER_ADMIN: 'red',
+      ADMIN: 'volcano',
+      MANAGER: 'blue',
+      OPERATOR: 'green',
+      VIEWER: 'cyan',
+      BASE_MANAGER: 'blue',
+      POINT_OWNER: 'green',
+      CUSTOMER_SERVICE: 'orange',
+      WAREHOUSE_KEEPER: 'purple',
+      ANCHOR: 'cyan',
     };
-    // 如果有映射则使用映射，否则使用描述或角色名
-    return roleMap[roleName] || { label: description || roleName, color: 'default' };
+    // 直接使用数据库中的描述或角色名
+    return { 
+      label: description || roleName, 
+      color: roleColorMap[roleName] || 'default' 
+    };
   };
 
   // 获取角色下拉选项显示文本（格式：角色标识 - 角色名称）
@@ -295,31 +299,31 @@ const UsersPage: React.FC = () => {
   // 表格列定义
   const columns: ProColumns<UserItem>[] = [
     {
-      title: '用户名',
+      title: intl.formatMessage({ id: 'users.column.username' }),
       dataIndex: 'username',
       width: 120,
       fixed: 'left',
     },
     {
-      title: '姓名',
+      title: intl.formatMessage({ id: 'users.column.name' }),
       dataIndex: 'name',
       width: 100,
     },
     {
-      title: '手机号',
+      title: intl.formatMessage({ id: 'users.column.phone' }),
       dataIndex: 'phone',
       width: 130,
       search: false,
     },
     {
-      title: '邮箱',
+      title: intl.formatMessage({ id: 'users.column.email' }),
       dataIndex: 'email',
       width: 180,
       search: false,
       ellipsis: true,
     },
     {
-      title: '角色',
+      title: intl.formatMessage({ id: 'users.column.roles' }),
       dataIndex: 'roles',
       width: 200,
       search: false,
@@ -333,12 +337,12 @@ const UsersPage: React.FC = () => {
               </Tag>
             );
           })}
-          {record.roles.length === 0 && <Tag>无角色</Tag>}
+          {record.roles.length === 0 && <Tag>{intl.formatMessage({ id: 'users.noRoles' })}</Tag>}
         </Space>
       ),
     },
     {
-      title: '关联基地',
+      title: intl.formatMessage({ id: 'users.column.bases' }),
       dataIndex: 'bases',
       width: 200,
       search: false,
@@ -347,7 +351,7 @@ const UsersPage: React.FC = () => {
         if (record.hasGlobalBaseAccess) {
           return (
             <Tag color="gold" icon={<CheckCircleOutlined />}>
-              全局访问
+              {intl.formatMessage({ id: 'users.globalAccess' })}
             </Tag>
           );
         }
@@ -362,47 +366,47 @@ const UsersPage: React.FC = () => {
                 <Tag>+{record.bases.length - 2}</Tag>
               </Tooltip>
             )}
-            {record.bases.length === 0 && <Tag>无关联</Tag>}
+            {record.bases.length === 0 && <Tag>{intl.formatMessage({ id: 'users.noBases' })}</Tag>}
           </Space>
         );
       },
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'users.column.status' }),
       dataIndex: 'isActive',
       width: 80,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Error' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Error' },
       },
       render: (_, record) =>
         record.isActive ? (
           <Tag icon={<CheckCircleOutlined />} color="success">
-            启用
+            {intl.formatMessage({ id: 'status.enabled' })}
           </Tag>
         ) : (
           <Tag icon={<CloseCircleOutlined />} color="error">
-            禁用
+            {intl.formatMessage({ id: 'status.disabled' })}
           </Tag>
         ),
     },
     {
-      title: '最后登录',
+      title: intl.formatMessage({ id: 'users.column.lastLoginAt' }),
       dataIndex: 'lastLoginAt',
       width: 160,
       search: false,
       valueType: 'dateTime',
     },
     {
-      title: '创建时间',
+      title: intl.formatMessage({ id: 'users.column.createdAt' }),
       dataIndex: 'createdAt',
       width: 160,
       search: false,
       valueType: 'dateTime',
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       valueType: 'option',
       width: 100,
       fixed: 'right',
@@ -434,7 +438,7 @@ const UsersPage: React.FC = () => {
         
         return [
           canEdit && (
-            <Tooltip key="edit" title={isSelf ? "编辑个人信息" : "编辑"}>
+            <Tooltip key="edit" title={isSelf ? intl.formatMessage({ id: 'users.editProfile' }) : intl.formatMessage({ id: 'button.edit' })}>
               <Button
                 type="link"
                 size="small"
@@ -447,7 +451,7 @@ const UsersPage: React.FC = () => {
             </Tooltip>
           ),
           canResetPassword && (
-            <Tooltip key="resetPassword" title={isSelf ? "修改密码" : "重置密码"}>
+            <Tooltip key="resetPassword" title={isSelf ? intl.formatMessage({ id: 'users.changePassword' }) : intl.formatMessage({ id: 'users.resetPassword' })}>
               <Button
                 type="link"
                 size="small"
@@ -462,13 +466,13 @@ const UsersPage: React.FC = () => {
           canDelete && (
             <Popconfirm
               key="delete"
-              title="确定要删除该用户吗？"
-              description="删除后用户将无法登录系统"
+              title={intl.formatMessage({ id: 'users.deleteConfirm' })}
+              description={intl.formatMessage({ id: 'users.deleteDescription' })}
               onConfirm={() => handleDelete(record.id)}
-              okText="确定"
-              cancelText="取消"
+              okText={intl.formatMessage({ id: 'button.confirm' })}
+              cancelText={intl.formatMessage({ id: 'button.cancel' })}
             >
-              <Tooltip title="删除">
+              <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
                 <Button type="link" size="small" danger icon={<DeleteOutlined />} />
               </Tooltip>
             </Popconfirm>
@@ -482,14 +486,14 @@ const UsersPage: React.FC = () => {
   const statsContent = (
     <div style={{ width: 280 }}>
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="用户总数">
+        <Descriptions.Item label={intl.formatMessage({ id: 'users.stats.total' })}>
           <Space>
             <TeamOutlined />
             <span style={{ fontWeight: 'bold', fontSize: 16 }}>{stats.total}</span>
-            <span style={{ color: '#999' }}>人</span>
+            <span style={{ color: '#999' }}>{intl.formatMessage({ id: 'users.stats.unit' })}</span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="启用用户">
+        <Descriptions.Item label={intl.formatMessage({ id: 'users.stats.active' })}>
           <Space>
             <CheckCircleOutlined style={{ color: '#52c41a' }} />
             <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{stats.active}</span>
@@ -498,7 +502,7 @@ const UsersPage: React.FC = () => {
             </span>
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="禁用用户">
+        <Descriptions.Item label={intl.formatMessage({ id: 'users.stats.inactive' })}>
           <Space>
             <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
             <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{stats.inactive}</span>
@@ -526,10 +530,10 @@ const UsersPage: React.FC = () => {
         }}
         headerTitle={
           <Space>
-            <span>用户列表</span>
+            <span>{intl.formatMessage({ id: 'users.title' })}</span>
             <Popover
               content={statsContent}
-              title="统计详情"
+              title={intl.formatMessage({ id: 'users.statsDetail' })}
               trigger="click"
               placement="bottomLeft"
             >
@@ -539,7 +543,7 @@ const UsersPage: React.FC = () => {
                 icon={<InfoCircleOutlined />}
                 style={{ color: '#1890ff' }}
               >
-                详情
+                {intl.formatMessage({ id: 'button.detail' })}
               </Button>
             </Popover>
           </Space>
@@ -551,7 +555,7 @@ const UsersPage: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            新建用户
+            {intl.formatMessage({ id: 'users.add' })}
           </Button>,
         ]}
         pagination={{
@@ -562,7 +566,7 @@ const UsersPage: React.FC = () => {
 
       {/* 创建用户弹窗 */}
       <ModalForm
-        title="新建用户"
+        title={intl.formatMessage({ id: 'users.add' })}
         open={createModalVisible}
         onOpenChange={setCreateModalVisible}
         onFinish={handleCreate}
@@ -571,47 +575,47 @@ const UsersPage: React.FC = () => {
       >
         <ProFormText
           name="username"
-          label="用户名"
-          placeholder="请输入用户名"
+          label={intl.formatMessage({ id: 'users.form.username' })}
+          placeholder={intl.formatMessage({ id: 'users.form.usernamePlaceholder' })}
           fieldProps={{ autoComplete: 'off' }}
           rules={[
-            { required: true, message: '请输入用户名' },
-            { min: 3, message: '用户名至少3个字符' },
-            { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线' },
+            { required: true, message: intl.formatMessage({ id: 'users.form.usernameRequired' }) },
+            { min: 3, message: intl.formatMessage({ id: 'users.form.usernameMinLength' }) },
+            { pattern: /^[a-zA-Z0-9_]+$/, message: intl.formatMessage({ id: 'users.form.usernamePattern' }) },
           ]}
         />
         <ProFormText.Password
           name="password"
-          label="密码"
-          placeholder="请输入密码"
+          label={intl.formatMessage({ id: 'users.form.password' })}
+          placeholder={intl.formatMessage({ id: 'users.form.passwordPlaceholder' })}
           fieldProps={{ autoComplete: 'new-password' }}
           rules={[
-            { required: true, message: '请输入密码' },
-            { min: 6, message: '密码至少6个字符' },
+            { required: true, message: intl.formatMessage({ id: 'users.form.passwordRequired' }) },
+            { min: 6, message: intl.formatMessage({ id: 'users.form.passwordMinLength' }) },
           ]}
         />
         <ProFormText
           name="name"
-          label="姓名"
-          placeholder="请输入姓名"
-          rules={[{ required: true, message: '请输入姓名' }]}
+          label={intl.formatMessage({ id: 'users.form.name' })}
+          placeholder={intl.formatMessage({ id: 'users.form.namePlaceholder' })}
+          rules={[{ required: true, message: intl.formatMessage({ id: 'users.form.nameRequired' }) }]}
         />
         <ProFormText
           name="phone"
-          label="手机号"
-          placeholder="请输入手机号"
+          label={intl.formatMessage({ id: 'users.form.phone' })}
+          placeholder={intl.formatMessage({ id: 'users.form.phonePlaceholder' })}
         />
         <ProFormText
           name="email"
-          label="邮箱"
-          placeholder="请输入邮箱"
-          rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]}
+          label={intl.formatMessage({ id: 'users.form.email' })}
+          placeholder={intl.formatMessage({ id: 'users.form.emailPlaceholder' })}
+          rules={[{ type: 'email', message: intl.formatMessage({ id: 'users.form.emailInvalid' }) }]}
         />
         <ProFormSelect
           name="roleIds"
-          label="角色"
+          label={intl.formatMessage({ id: 'users.form.roles' })}
           mode="multiple"
-          placeholder="请选择角色"
+          placeholder={intl.formatMessage({ id: 'users.form.rolesPlaceholder' })}
           options={roles.map((role) => ({
             label: getRoleOptionLabel(role),
             value: role.id,
@@ -621,11 +625,11 @@ const UsersPage: React.FC = () => {
         {currentUserLevel <= 1 && (
           <ProFormSwitch
             name="hasGlobalBaseAccess"
-            label="全局基地访问"
-            tooltip="开启后，用户可以访问所有基地，无需单独关联基地"
+            label={intl.formatMessage({ id: 'users.form.globalBaseAccess' })}
+            tooltip={intl.formatMessage({ id: 'users.form.globalBaseAccessTooltip' })}
             fieldProps={{
-              checkedChildren: "已开启",
-              unCheckedChildren: "已关闭",
+              checkedChildren: intl.formatMessage({ id: 'users.form.enabled' }),
+              unCheckedChildren: intl.formatMessage({ id: 'users.form.disabled' }),
             }}
           />
         )}
@@ -633,16 +637,16 @@ const UsersPage: React.FC = () => {
           {({ hasGlobalBaseAccess }) => (
             <ProFormSelect
               name="baseIds"
-              label="关联基地"
+              label={intl.formatMessage({ id: 'users.form.bases' })}
               mode="multiple"
-              placeholder={hasGlobalBaseAccess ? "全局访问已开启，无需选择" : "请选择关联基地"}
+              placeholder={hasGlobalBaseAccess ? intl.formatMessage({ id: 'users.form.globalAccessEnabled' }) : intl.formatMessage({ id: 'users.form.basesPlaceholder' })}
               disabled={hasGlobalBaseAccess}
               initialValue={[]}
               options={availableBases.map((base) => ({
                 label: `${base.name} (${base.code})`,
                 value: base.id,
               }))}
-              extra={hasGlobalBaseAccess ? "全局访问已开启，用户可访问所有基地" : "用户只能访问关联的基地数据"}
+              extra={hasGlobalBaseAccess ? intl.formatMessage({ id: 'users.form.globalAccessEnabledExtra' }) : intl.formatMessage({ id: 'users.form.basesExtra' })}
             />
           )}
         </ProFormDependency>
@@ -650,7 +654,7 @@ const UsersPage: React.FC = () => {
 
       {/* 编辑用户弹窗 */}
       <ModalForm
-        title={currentUser?.id === currentLoginUser?.id ? "编辑个人信息" : "编辑用户"}
+        title={currentUser?.id === currentLoginUser?.id ? intl.formatMessage({ id: 'users.editProfile' }) : intl.formatMessage({ id: 'users.edit' })}
         open={editModalVisible}
         onOpenChange={(visible) => {
           setEditModalVisible(visible);
@@ -675,29 +679,29 @@ const UsersPage: React.FC = () => {
       >
         <ProFormText
           name="name"
-          label="姓名"
-          placeholder="请输入姓名"
-          rules={[{ required: true, message: '请输入姓名' }]}
+          label={intl.formatMessage({ id: 'users.form.name' })}
+          placeholder={intl.formatMessage({ id: 'users.form.namePlaceholder' })}
+          rules={[{ required: true, message: intl.formatMessage({ id: 'users.form.nameRequired' }) }]}
         />
         <ProFormText
           name="phone"
-          label="手机号"
-          placeholder="请输入手机号"
+          label={intl.formatMessage({ id: 'users.form.phone' })}
+          placeholder={intl.formatMessage({ id: 'users.form.phonePlaceholder' })}
         />
         <ProFormText
           name="email"
-          label="邮箱"
-          placeholder="请输入邮箱"
-          rules={[{ type: 'email', message: '请输入有效的邮箱地址' }]}
+          label={intl.formatMessage({ id: 'users.form.email' })}
+          placeholder={intl.formatMessage({ id: 'users.form.emailPlaceholder' })}
+          rules={[{ type: 'email', message: intl.formatMessage({ id: 'users.form.emailInvalid' }) }]}
         />
         {/* 只有编辑他人时才显示角色和基地字段 */}
         {currentUser?.id !== currentLoginUser?.id && (
           <>
             <ProFormSelect
               name="roleIds"
-              label="角色"
+              label={intl.formatMessage({ id: 'users.form.roles' })}
               mode="multiple"
-              placeholder="请选择角色"
+              placeholder={intl.formatMessage({ id: 'users.form.rolesPlaceholder' })}
               options={roles.map((role) => ({
                 label: getRoleOptionLabel(role),
                 value: role.id,
@@ -707,11 +711,11 @@ const UsersPage: React.FC = () => {
             {currentUserLevel <= 1 && (
               <ProFormSwitch
                 name="hasGlobalBaseAccess"
-                label="全局基地访问"
-                tooltip="开启后，用户可以访问所有基地，无需单独关联基地"
+                label={intl.formatMessage({ id: 'users.form.globalBaseAccess' })}
+                tooltip={intl.formatMessage({ id: 'users.form.globalBaseAccessTooltip' })}
                 fieldProps={{
-                  checkedChildren: "已开启",
-                  unCheckedChildren: "已关闭",
+                  checkedChildren: intl.formatMessage({ id: 'users.form.enabled' }),
+                  unCheckedChildren: intl.formatMessage({ id: 'users.form.disabled' }),
                 }}
               />
             )}
@@ -719,19 +723,19 @@ const UsersPage: React.FC = () => {
               {({ hasGlobalBaseAccess }) => (
                 <ProFormSelect
                   name="baseIds"
-                  label="关联基地"
+                  label={intl.formatMessage({ id: 'users.form.bases' })}
                   mode="multiple"
-                  placeholder={hasGlobalBaseAccess ? "全局访问已开启，无需选择" : "请选择关联基地"}
+                  placeholder={hasGlobalBaseAccess ? intl.formatMessage({ id: 'users.form.globalAccessEnabled' }) : intl.formatMessage({ id: 'users.form.basesPlaceholder' })}
                   disabled={hasGlobalBaseAccess}
                   options={availableBases.map((base) => ({
                     label: `${base.name} (${base.code})`,
                     value: base.id,
                   }))}
-                  extra={hasGlobalBaseAccess ? "全局访问已开启，用户可访问所有基地" : "用户只能访问关联的基地数据"}
+                  extra={hasGlobalBaseAccess ? intl.formatMessage({ id: 'users.form.globalAccessEnabledExtra' }) : intl.formatMessage({ id: 'users.form.basesExtra' })}
                 />
               )}
             </ProFormDependency>
-            <ProFormSwitch name="isActive" label="启用状态" />
+            <ProFormSwitch name="isActive" label={intl.formatMessage({ id: 'users.form.status' })} />
           </>
         )}
       </ModalForm>
@@ -740,8 +744,8 @@ const UsersPage: React.FC = () => {
       <ModalForm
         title={
           currentUser?.id === currentLoginUser?.id
-            ? "修改密码"
-            : `重置密码 - ${currentUser?.name || ''}`
+            ? intl.formatMessage({ id: 'users.changePassword' })
+            : `${intl.formatMessage({ id: 'users.resetPassword' })} - ${currentUser?.name || ''}`
         }
         open={resetPasswordModalVisible}
         onOpenChange={(visible) => {
@@ -754,25 +758,25 @@ const UsersPage: React.FC = () => {
       >
         <ProFormText.Password
           name="newPassword"
-          label="新密码"
-          placeholder="请输入新密码"
+          label={intl.formatMessage({ id: 'users.form.newPassword' })}
+          placeholder={intl.formatMessage({ id: 'users.form.newPasswordPlaceholder' })}
           rules={[
-            { required: true, message: '请输入新密码' },
-            { min: 6, message: '密码至少6个字符' },
+            { required: true, message: intl.formatMessage({ id: 'users.form.newPasswordRequired' }) },
+            { min: 6, message: intl.formatMessage({ id: 'users.form.passwordMinLength' }) },
           ]}
         />
         <ProFormText.Password
           name="confirmPassword"
-          label="确认密码"
-          placeholder="请再次输入新密码"
+          label={intl.formatMessage({ id: 'users.form.confirmPassword' })}
+          placeholder={intl.formatMessage({ id: 'users.form.confirmPasswordPlaceholder' })}
           rules={[
-            { required: true, message: '请确认新密码' },
+            { required: true, message: intl.formatMessage({ id: 'users.form.confirmPasswordRequired' }) },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('newPassword') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('两次输入的密码不一致'));
+                return Promise.reject(new Error(intl.formatMessage({ id: 'users.form.passwordMismatch' })));
               },
             }),
           ]}
