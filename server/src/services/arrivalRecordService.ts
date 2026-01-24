@@ -3,6 +3,7 @@ import { logger } from '../utils/logger';
 import { BaseError, BaseErrorType } from '../types/base';
 import { GoodsCostService } from './goodsCostService';
 import { StockService } from './stockService';
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper';
 import type {
   CreateArrivalRequest,
   UpdateArrivalRequest,
@@ -62,13 +63,10 @@ export class ArrivalRecordService {
         where.goodsId = goodsId;
       }
 
-      // 商品名称模糊搜索
+      // 商品名称模糊搜索（支持多语言和大小写不敏感）
       if (goodsName) {
         where.goods = {
-          name: {
-            contains: goodsName,
-            mode: 'insensitive'
-          }
+          OR: buildGoodsSearchConditions(goodsName, false)
         };
       }
 
