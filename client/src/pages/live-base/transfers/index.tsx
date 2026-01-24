@@ -30,6 +30,7 @@ import dayjs from 'dayjs';
 import { getColumns } from './columns';
 import { useTransferExcel } from './useTransferExcel';
 import ImportModal from '@/components/ImportModal';
+import { getCategoryDisplayName, getLocalizedGoodsName } from '@/components/GoodsNameText';
 import type { 
   TransferRecord, 
   TransferStats, 
@@ -482,15 +483,16 @@ const TransferManagement: React.FC = () => {
                 rules={[{ required: true, message: intl.formatMessage({ id: 'transfers.form.goodsRequired' }) }]}
               >
                 <Select
+                  key={intl.locale}
                   placeholder={intl.formatMessage({ id: 'transfers.form.goodsPlaceholder' })}
                   showSearch
                   optionFilterProp="label"
                   loading={optionsLoading}
                   options={goodsOptions.map(g => {
-                    const categoryDisplay = g.categoryCode 
-                      ? `[${g.categoryName || g.categoryCode}]` 
-                      : '';
-                    return { value: g.id, label: `${categoryDisplay}${g.name}` };
+                    const categoryDisplay = getCategoryDisplayName(g.categoryCode, g.categoryName, g.categoryNameI18n, intl.locale);
+                    const goodsName = getLocalizedGoodsName(g.name, g.nameI18n, intl.locale);
+                    const label = categoryDisplay ? `[${categoryDisplay}]${goodsName}` : goodsName;
+                    return { value: g.id, label };
                   })}
                 />
               </Form.Item>

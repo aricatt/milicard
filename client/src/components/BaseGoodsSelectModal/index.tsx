@@ -21,6 +21,7 @@ export interface BaseGoodsItem {
   nameI18n?: NameI18n;
   categoryCode?: string;
   categoryName?: string;
+  categoryNameI18n?: NameI18n;
   manufacturer?: string;
   packPerBox: number;
   piecePerPack: number;
@@ -175,8 +176,18 @@ const BaseGoodsSelectModal: React.FC<BaseGoodsSelectModalProps> = ({
   };
 
   // 获取品类显示名称
-  const getCategoryDisplayName = (categoryCode?: string, categoryName?: string) => {
+  const getCategoryDisplayName = (categoryCode?: string, categoryName?: string, nameI18n?: NameI18n) => {
     if (!categoryCode) return '-';
+    
+    // 优先使用多语言翻译
+    if (nameI18n && locale) {
+      const localeKey = locale === 'en-US' ? 'en' : locale === 'th-TH' ? 'th' : locale === 'vi-VN' ? 'vi' : '';
+      if (localeKey && nameI18n[localeKey]) {
+        return nameI18n[localeKey] as string;
+      }
+    }
+    
+    // 中文显示品类名称，其他语言显示品类编号
     if (locale === 'zh-CN') return categoryName || categoryCode;
     return categoryCode;
   };
@@ -205,11 +216,12 @@ const BaseGoodsSelectModal: React.FC<BaseGoodsSelectModalProps> = ({
       render: (_, record) => {
         const categoryCode = record.categoryCode || '';
         const categoryName = record.categoryName || '';
+        const categoryNameI18n = record.categoryNameI18n;
         const color = CategoryColors[categoryCode] || 'default';
         if (!categoryCode) {
           return <Tag color="default">{intl.formatMessage({ id: 'products.uncategorized' })}</Tag>;
         }
-        return <Tag color={color}>{getCategoryDisplayName(categoryCode, categoryName)}</Tag>;
+        return <Tag color={color}>{getCategoryDisplayName(categoryCode, categoryName, categoryNameI18n)}</Tag>;
       },
     },
     {

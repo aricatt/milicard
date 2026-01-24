@@ -181,7 +181,7 @@ const ArrivalManagement: React.FC = () => {
             // 品类显示：中文显示品类名称，其他语言显示品类编号
             const locale = getLocale();
             const categoryDisplay = item.categoryCode 
-              ? `[${getCategoryDisplayName(item.categoryCode, item.categoryName, locale)}]` 
+              ? `[${getCategoryDisplayName(item.categoryCode, item.categoryName, item.categoryNameI18n, locale)}]` 
               : '';
             // 商品名称翻译
             const goodsName = getLocalizedGoodsName(item.goodsName, item.goodsNameI18n, locale);

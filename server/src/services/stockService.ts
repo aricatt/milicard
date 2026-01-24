@@ -305,6 +305,7 @@ export class StockService {
               select: {
                 code: true,
                 name: true,
+                nameI18n: true,
               },
             },
           },
@@ -549,6 +550,7 @@ export class StockService {
               select: {
                 code: true,
                 name: true,
+                nameI18n: true,
               },
             },
           },
@@ -628,6 +630,7 @@ export class StockService {
           goodsNameI18n: goods.nameI18n as NameI18n | null,
           categoryCode: goods.category?.code || '',
           categoryName: goods.category?.name || '',
+          categoryNameI18n: (goods.category as any)?.nameI18n as NameI18n | null,
           packPerBox,
           piecePerPack,
           stockBox: totalBox,

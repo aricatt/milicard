@@ -14,6 +14,7 @@ export interface PayableInfo {
   goodsNameI18n?: any;         // 商品名称国际化
   categoryCode?: string;       // 品类编号
   categoryName?: string;       // 品类名称
+  categoryNameI18n?: any;      // 品类名称国际化
   totalAmount: number;         // 应付总金额
   paidAmount: number;          // 已付金额
   unpaidAmount: number;        // 未付金额
@@ -97,6 +98,7 @@ export class PayableService {
                     select: {
                       code: true,
                       name: true,
+                      nameI18n: true,
                     },
                   },
                 },
@@ -125,6 +127,7 @@ export class PayableService {
       const goodsNameI18n = firstGoods?.nameI18n || null;
       const categoryCode = firstGoods?.category?.code || '';
       const categoryName = firstGoods?.category?.name || '';
+      const categoryNameI18n = (firstGoods?.category as any)?.nameI18n || null;
       
       // 格式化采购日期
       const dateStr = order.purchaseDate
@@ -146,6 +149,7 @@ export class PayableService {
         goodsNameI18n,
         categoryCode,
         categoryName,
+        categoryNameI18n,
         totalAmount,
         paidAmount,
         unpaidAmount,

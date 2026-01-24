@@ -98,7 +98,8 @@ export class TransferRecordService {
                 category: {
                   select: {
                     code: true,
-                    name: true
+                    name: true,
+                    nameI18n: true
                   }
                 }
               }
@@ -151,6 +152,7 @@ export class TransferRecordService {
         goodsNameI18n: record.goods?.nameI18n as any,
         categoryCode: (record.goods as any)?.category?.code || '',
         categoryName: (record.goods as any)?.category?.name || '',
+        categoryNameI18n: (record.goods as any)?.category?.nameI18n as any,
         sourceLocationId: record.sourceLocationId,
         sourceLocationName: record.sourceLocation?.name || '',
         sourceHandlerName: record.sourceHandler?.name || '',

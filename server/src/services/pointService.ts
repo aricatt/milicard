@@ -408,6 +408,7 @@ export class PointService {
                 id: true,
                 code: true,
                 name: true,
+                nameI18n: true,
               },
             },
           },
@@ -537,6 +538,7 @@ export class PointService {
                 id: true,
                 code: true,
                 name: true,
+                nameI18n: true,
               },
             },
             localSettings: {

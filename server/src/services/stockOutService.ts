@@ -173,6 +173,7 @@ class StockOutService {
                 select: {
                   code: true,
                   name: true,
+                  nameI18n: true,
                 },
               },
             },
@@ -229,6 +230,7 @@ class StockOutService {
               select: {
                 code: true,
                 name: true,
+                nameI18n: true,
               },
             },
           },

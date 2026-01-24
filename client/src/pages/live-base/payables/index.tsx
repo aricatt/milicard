@@ -22,7 +22,7 @@ import {
 import { DollarOutlined, CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { request, useIntl } from '@umijs/max';
 import { useBase } from '@/contexts/BaseContext';
-import GoodsNameText from '@/components/GoodsNameText';
+import GoodsNameText, { getLocalizedGoodsName } from '@/components/GoodsNameText';
 import DualCurrencyInput from '@/components/DualCurrencyInput';
 import { getCurrencySymbol } from '@/utils/currency';
 
@@ -37,6 +37,7 @@ interface PayableInfo {
   goodsNameI18n?: { en?: string; th?: string; vi?: string; [key: string]: string | undefined } | null;
   categoryCode?: string;
   categoryName?: string;
+  categoryNameI18n?: { en?: string; th?: string; vi?: string; [key: string]: string | undefined } | null;
   totalAmount: number;
   paidAmount: number;
   unpaidAmount: number;
@@ -213,9 +214,26 @@ const PayablesPage: React.FC = () => {
       title: intl.formatMessage({ id: 'payables.column.purchaseName' }),
       dataIndex: 'purchaseName',
       key: 'purchaseName',
-      width: 300,
-      ellipsis: true,
-      copyable: true,
+      width: 320,
+      hideInSearch: true,
+      render: (_, record) => {
+        // 与采购页面保持一致：采购日期 + [品类] + 商品名称（换行显示）
+        const date = record.paymentDate || '';
+        if (!date) return '-';
+        return (
+          <div style={{ lineHeight: 1.4 }}>
+            <div style={{ color: '#666', fontSize: '12px' }}>{date}</div>
+            <GoodsNameText 
+              text={record.goodsName} 
+              nameI18n={record.goodsNameI18n}
+              categoryCode={record.categoryCode}
+              categoryName={record.categoryName}
+              categoryNameI18n={record.categoryNameI18n}
+              showCategory={true}
+            />
+          </div>
+        );
+      },
     },
     {
       title: intl.formatMessage({ id: 'payables.column.supplier' }),
@@ -236,6 +254,7 @@ const PayablesPage: React.FC = () => {
           nameI18n={record.goodsNameI18n}
           categoryCode={record.categoryCode}
           categoryName={record.categoryName}
+          categoryNameI18n={record.categoryNameI18n}
           showCategory={true}
         />
       ),
@@ -468,7 +487,17 @@ const PayablesPage: React.FC = () => {
 
               <Descriptions column={1} bordered size="small">
                 <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.purchaseName' })}>
-                  {currentPayable.purchaseName}
+                  <div style={{ lineHeight: 1.4 }}>
+                    <div style={{ color: '#666', fontSize: '12px' }}>{currentPayable.paymentDate}</div>
+                    <GoodsNameText 
+                      text={currentPayable.goodsName} 
+                      nameI18n={currentPayable.goodsNameI18n}
+                      categoryCode={currentPayable.categoryCode}
+                      categoryName={currentPayable.categoryName}
+                      categoryNameI18n={currentPayable.categoryNameI18n}
+                      showCategory={true}
+                    />
+                  </div>
                 </Descriptions.Item>
                 <Descriptions.Item label={intl.formatMessage({ id: 'payables.column.supplier' })}>
                   {currentPayable.supplierName}

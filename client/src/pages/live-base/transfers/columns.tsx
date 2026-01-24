@@ -37,7 +37,7 @@ export const getColumns = (
     width: 80,
     hideInSearch: true,
     render: (_, record) => {
-      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, record.categoryNameI18n, intl?.locale);
       if (!displayName) return '-';
       return <Tag color="cyan">{displayName}</Tag>;
     },

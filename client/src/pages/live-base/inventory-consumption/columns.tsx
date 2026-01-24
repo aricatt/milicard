@@ -127,7 +127,7 @@ export const getColumns = ({ onDelete, intl, showInCNY = false, exchangeRate = 1
     width: 80,
     search: false,
     render: (_, record) => {
-      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, record.categoryNameI18n, intl?.locale);
       if (!displayName) return '-';
       return <Tag color="purple">{displayName}</Tag>;
     },

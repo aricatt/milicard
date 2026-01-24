@@ -43,6 +43,13 @@ export interface ArrivalQueryParams {
   endDate?: string;
 }
 
+export interface NameI18n {
+  en?: string;
+  th?: string;
+  vi?: string;
+  [key: string]: string | undefined;
+}
+
 export interface ArrivalResponse {
   id: string;
   arrivalDate: string;
@@ -52,6 +59,10 @@ export interface ArrivalResponse {
   goodsId: string;
   goodsCode: string;
   goodsName: string;
+  goodsNameI18n?: NameI18n | null;
+  categoryCode?: string;
+  categoryName?: string;
+  categoryNameI18n?: NameI18n | null;
   locationId: number;             // 修正类型为number
   locationName: string;
   handlerId: string;

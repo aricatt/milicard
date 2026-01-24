@@ -40,6 +40,7 @@ interface RealTimeStock {
   goodsNameI18n?: NameI18n | null;
   categoryCode?: string;
   categoryName?: string;
+  categoryNameI18n?: NameI18n | null;
   packPerBox: number;
   piecePerPack: number;
   stockBox: number;
@@ -147,7 +148,7 @@ const RealTimeStockPage: React.FC = () => {
       width: 80,
       search: false,
       render: (_, record) => {
-        const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl.locale);
+        const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, record.categoryNameI18n, intl.locale);
         if (!displayName) return '-';
         return <Tag color="geekblue">{displayName}</Tag>;
       },

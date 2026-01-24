@@ -542,7 +542,8 @@ const StockOutPage: React.FC = () => {
       render: (_, record) => {
         const categoryCode = record.goods?.category?.code;
         const categoryName = record.goods?.category?.name;
-        const displayName = getCategoryDisplayName(categoryCode, categoryName, intl.locale);
+        const categoryNameI18n = record.goods?.category?.nameI18n;
+        const displayName = getCategoryDisplayName(categoryCode, categoryName, categoryNameI18n, intl.locale);
         if (!displayName) return '-';
         return <Tag color="orange">{displayName}</Tag>;
       },

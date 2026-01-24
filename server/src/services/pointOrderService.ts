@@ -259,6 +259,7 @@ export class PointOrderService {
                     id: true,
                     code: true,
                     name: true,
+                    nameI18n: true,
                   },
                 },
               },

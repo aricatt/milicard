@@ -120,7 +120,7 @@ export class ConsumptionService {
             goods: { 
               select: { 
                 id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true,
-                category: { select: { code: true, name: true } },
+                category: { select: { code: true, name: true, nameI18n: true } },
                 localSettings: {
                   where: { baseId },
                   select: {
@@ -172,6 +172,7 @@ export class ConsumptionService {
           goodsNameI18n: record.goods?.nameI18n as any,
           categoryCode: (record.goods as any)?.category?.code || '',
           categoryName: (record.goods as any)?.category?.name || '',
+          categoryNameI18n: (record.goods as any)?.category?.nameI18n as any,
           packPerBox: record.goods?.packPerBox || 1,
           piecePerPack: record.goods?.piecePerPack || 1,
           locationId: record.locationId,

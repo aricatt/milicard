@@ -61,6 +61,7 @@ export const getColumns = (
             nameI18n={record.goodsNameI18n}
             categoryCode={record.categoryCode}
             categoryName={record.categoryName}
+            categoryNameI18n={record.categoryNameI18n}
             showCategory={true}
           />
         </div>
@@ -74,7 +75,7 @@ export const getColumns = (
     width: 80,
     hideInSearch: true,
     render: (_, record) => {
-      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, intl?.locale);
+      const displayName = getCategoryDisplayName(record.categoryCode, record.categoryName, record.categoryNameI18n, intl?.locale);
       if (!displayName) return '-';
       return <Tag color="blue">{displayName}</Tag>;
     },

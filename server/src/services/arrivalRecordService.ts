@@ -120,6 +120,7 @@ export class ArrivalRecordService {
         goodsNameI18n: record.goods?.nameI18n as any,
         categoryCode: (record.goods as any)?.category?.code || '',
         categoryName: (record.goods as any)?.category?.name || '',
+        categoryNameI18n: (record.goods as any)?.category?.nameI18n as any,
         locationId: record.locationId,
         locationName: record.location?.name || '',
         handlerId: record.handlerId,

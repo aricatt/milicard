@@ -576,7 +576,7 @@ const PointOrdersPage: React.FC = () => {
       dataIndex: ['goods', 'category'],
       width: 100,
       render: (category: any) => category ? (
-        <Tag color="blue">{getCategoryDisplayName(category.code, category.name, intl.locale)}</Tag>
+        <Tag color="blue">{getCategoryDisplayName(category.code, category.name, category.nameI18n, intl.locale)}</Tag>
       ) : '-',
     },
     {

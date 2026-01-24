@@ -628,7 +628,7 @@ const PointsPage: React.FC = () => {
                               <tr key={pg.id}>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>
                                   {category ? (
-                                    <Tag color="blue">{getCategoryDisplayName(category.code, category.name, intl.locale)}</Tag>
+                                    <Tag color="blue">{getCategoryDisplayName(category.code, category.name, category.nameI18n, intl.locale)}</Tag>
                                   ) : '-'}
                                 </td>
                                 <td style={{ padding: 8, border: '1px solid #f0f0f0' }}>{getLocalizedGoodsName(pg.goods.name, pg.goods.nameI18n, intl.locale)}</td>
