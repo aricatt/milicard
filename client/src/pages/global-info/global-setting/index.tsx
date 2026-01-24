@@ -76,7 +76,7 @@ const GlobalSettingPage: React.FC = () => {
         total: response.pagination?.total || 0,
       };
     } catch (error) {
-      message.error('获取配置列表失败');
+      message.error(intl.formatMessage({ id: 'globalSetting.message.fetchFailed' }));
       return { data: [], success: false, total: 0 };
     }
   };
@@ -144,7 +144,7 @@ const GlobalSettingPage: React.FC = () => {
       try {
         return JSON.parse(value);
       } catch (e) {
-        throw new Error('JSON 格式错误');
+        throw new Error(intl.formatMessage({ id: 'globalSetting.message.jsonFormatError' }));
       }
     }
     if (type === 'number') {
@@ -183,22 +183,22 @@ const GlobalSettingPage: React.FC = () => {
           method: 'PUT',
           data,
         });
-        message.success('更新成功');
+        message.success(intl.formatMessage({ id: 'globalSetting.message.updateSuccess' }));
       } else {
         await request('/api/v1/global-settings/', {
           method: 'POST',
           data,
         });
-        message.success('创建成功');
+        message.success(intl.formatMessage({ id: 'globalSetting.message.createSuccess' }));
       }
 
       setModalVisible(false);
       actionRef.current?.reload();
     } catch (error: any) {
-      if (error.message === 'JSON 格式错误') {
-        message.error('JSON 格式错误，请检查');
+      if (error.message === intl.formatMessage({ id: 'globalSetting.message.jsonFormatError' })) {
+        message.error(intl.formatMessage({ id: 'globalSetting.message.jsonFormatError' }));
       } else {
-        message.error(editingSetting ? '更新失败' : '创建失败');
+        message.error(intl.formatMessage({ id: 'globalSetting.message.operationFailed' }));
       }
     } finally {
       setLoading(false);
@@ -211,10 +211,10 @@ const GlobalSettingPage: React.FC = () => {
       await request(`/api/v1/global-settings/${id}`, {
         method: 'DELETE',
       });
-      message.success('删除成功');
+      message.success(intl.formatMessage({ id: 'globalSetting.message.deleteSuccess' }));
       actionRef.current?.reload();
     } catch (error) {
-      message.error('删除失败');
+      message.error(intl.formatMessage({ id: 'globalSetting.message.operationFailed' }));
     }
   };
 
@@ -234,7 +234,7 @@ const GlobalSettingPage: React.FC = () => {
 
   const columns: ProColumns<GlobalSetting>[] = [
     {
-      title: '参数描述',
+      title: intl.formatMessage({ id: 'globalSetting.column.description' }),
       dataIndex: 'description',
       key: 'description',
       width: 250,
@@ -243,7 +243,7 @@ const GlobalSettingPage: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: '配置键名',
+      title: intl.formatMessage({ id: 'globalSetting.column.key' }),
       dataIndex: 'key',
       key: 'key',
       width: 200,
@@ -251,12 +251,12 @@ const GlobalSettingPage: React.FC = () => {
       render: (text, record) => (
         <Space>
           <strong>{text}</strong>
-          {record.isSystem && <Tag color="orange">系统</Tag>}
+          {record.isSystem && <Tag color="orange">{intl.formatMessage({ id: 'status.system' })}</Tag>}
         </Space>
       ),
     },
     {
-      title: '配置值',
+      title: intl.formatMessage({ id: 'globalSetting.column.value' }),
       dataIndex: 'value',
       key: 'value',
       width: 250,
@@ -265,7 +265,7 @@ const GlobalSettingPage: React.FC = () => {
       render: (_, record) => renderValue(record.value),
     },
     {
-      title: '分类',
+      title: intl.formatMessage({ id: 'globalSetting.column.category' }),
       dataIndex: 'category',
       key: 'category',
       width: 120,
@@ -277,30 +277,30 @@ const GlobalSettingPage: React.FC = () => {
       render: (text) => text ? <Tag>{text}</Tag> : '-',
     },
     {
-      title: '状态',
+      title: intl.formatMessage({ id: 'globalSetting.column.status' }),
       dataIndex: 'isActive',
       key: 'isActive',
       width: 100,
       valueType: 'select',
       valueEnum: {
-        true: { text: '启用', status: 'Success' },
-        false: { text: '禁用', status: 'Default' },
+        true: { text: intl.formatMessage({ id: 'status.enabled' }), status: 'Success' },
+        false: { text: intl.formatMessage({ id: 'status.disabled' }), status: 'Default' },
       },
       render: (_, record) => (
         <Tag color={record.isActive ? 'green' : 'default'}>
-          {record.isActive ? '启用' : '禁用'}
+          {record.isActive ? intl.formatMessage({ id: 'status.enabled' }) : intl.formatMessage({ id: 'status.disabled' })}
         </Tag>
       ),
     },
     {
-      title: '创建人',
+      title: intl.formatMessage({ id: 'globalSetting.column.creator' }),
       dataIndex: ['creator', 'name'],
       key: 'creator',
       width: 120,
       search: false,
     },
     {
-      title: '更新时间',
+      title: intl.formatMessage({ id: 'globalSetting.column.updatedAt' }),
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 180,
@@ -308,7 +308,7 @@ const GlobalSettingPage: React.FC = () => {
       search: false,
     },
     {
-      title: '操作',
+      title: intl.formatMessage({ id: 'table.column.operation' }),
       key: 'action',
       width: 150,
       fixed: 'right',
@@ -324,10 +324,10 @@ const GlobalSettingPage: React.FC = () => {
           {/* 只有 SUPER_ADMIN 且非系统参数时才显示删除按钮 */}
           {isSuperAdmin && !record.isSystem && (
             <Popconfirm
-              title="确定删除这条配置吗？"
+              title={intl.formatMessage({ id: 'globalSetting.deleteConfirm' })}
               onConfirm={() => handleDelete(record.id)}
-              okText="确定"
-              cancelText="取消"
+              okText={intl.formatMessage({ id: 'button.confirm' })}
+              cancelText={intl.formatMessage({ id: 'button.cancel' })}
             >
               <Button
                 type="link"
@@ -368,7 +368,7 @@ const GlobalSettingPage: React.FC = () => {
                 icon={<PlusOutlined />}
                 onClick={() => handleOpenModal()}
               >
-                新增配置
+                {intl.formatMessage({ id: 'globalSetting.add' })}
               </Button>
             );
           }
@@ -386,7 +386,7 @@ const GlobalSettingPage: React.FC = () => {
       />
 
       <Modal
-        title={editingSetting ? '编辑配置' : '新增配置'}
+        title={editingSetting ? intl.formatMessage({ id: 'globalSetting.edit' }) : intl.formatMessage({ id: 'globalSetting.add' })}
         open={modalVisible}
         onOk={handleSubmit}
         onCancel={() => setModalVisible(false)}
@@ -401,59 +401,59 @@ const GlobalSettingPage: React.FC = () => {
         >
           <Form.Item
             name="key"
-            label="配置键名"
+            label={intl.formatMessage({ id: 'globalSetting.form.key' })}
             rules={[
-              { required: true, message: '请输入配置键名' },
-              { pattern: /^[a-zA-Z0-9_.-]+$/, message: '只能包含字母、数字、下划线、点和横线' },
+              { required: true, message: intl.formatMessage({ id: 'globalSetting.form.keyRequired' }) },
+              { pattern: /^[a-zA-Z0-9_.-]+$/, message: intl.formatMessage({ id: 'globalSetting.form.keyPattern' }) },
             ]}
           >
-            <Input placeholder="例如: system.max_upload_size" disabled={!!editingSetting} />
+            <Input placeholder={intl.formatMessage({ id: 'globalSetting.form.keyPlaceholder' })} disabled={!!editingSetting} />
           </Form.Item>
 
           <Form.Item
             name="valueType"
-            label="值类型"
+            label={intl.formatMessage({ id: 'globalSetting.form.valueType' })}
             rules={[{ required: true }]}
           >
             <Select
               disabled={editingSetting?.isSystem}
               onChange={(value) => setValueType(value)}
               options={[
-                { label: '字符串', value: 'string' },
-                { label: '数字', value: 'number' },
-                { label: '布尔值', value: 'boolean' },
-                { label: 'JSON', value: 'json' },
+                { label: intl.formatMessage({ id: 'globalSetting.form.valueTypeString' }), value: 'string' },
+                { label: intl.formatMessage({ id: 'globalSetting.form.valueTypeNumber' }), value: 'number' },
+                { label: intl.formatMessage({ id: 'globalSetting.form.valueTypeBoolean' }), value: 'boolean' },
+                { label: intl.formatMessage({ id: 'globalSetting.form.valueTypeJson' }), value: 'json' },
               ]}
             />
           </Form.Item>
 
           <Form.Item
             name="value"
-            label="配置值"
-            rules={[{ required: true, message: '请输入配置值' }]}
+            label={intl.formatMessage({ id: 'globalSetting.form.value' })}
+            rules={[{ required: true, message: intl.formatMessage({ id: 'globalSetting.form.valueRequired' }) }]}
           >
             {valueType === 'boolean' ? (
               <Switch checkedChildren="true" unCheckedChildren="false" />
             ) : valueType === 'json' ? (
               <TextArea
                 rows={6}
-                placeholder='例如: {"key": "value"}'
+                placeholder={intl.formatMessage({ id: 'globalSetting.form.valueJsonPlaceholder' })}
                 style={{ fontFamily: 'monospace' }}
               />
             ) : valueType === 'number' ? (
-              <Input type="number" placeholder="请输入数字" />
+              <Input type="number" placeholder={intl.formatMessage({ id: 'globalSetting.form.valuePlaceholder' })} />
             ) : (
-              <Input placeholder="请输入配置值" />
+              <Input placeholder={intl.formatMessage({ id: 'globalSetting.form.valuePlaceholder' })} />
             )}
           </Form.Item>
 
           <Form.Item
             name="category"
-            label="分类"
+            label={intl.formatMessage({ id: 'globalSetting.form.category' })}
           >
             <Select
               disabled={editingSetting?.isSystem}
-              placeholder="请选择或输入分类"
+              placeholder={intl.formatMessage({ id: 'globalSetting.form.categoryPlaceholder' })}
               allowClear
               showSearch
               mode="tags"
@@ -464,29 +464,29 @@ const GlobalSettingPage: React.FC = () => {
 
           <Form.Item
             name="description"
-            label="参数描述"
+            label={intl.formatMessage({ id: 'globalSetting.form.description' })}
           >
-            <TextArea rows={3} placeholder="请输入参数描述" />
+            <TextArea rows={3} placeholder={intl.formatMessage({ id: 'globalSetting.form.descriptionPlaceholder' })} />
           </Form.Item>
 
           {/* 系统参数标记 - 只有 SUPER_ADMIN 可见 */}
           {isSuperAdmin && (
             <Form.Item
               name="isSystem"
-              label="系统参数"
+              label={intl.formatMessage({ id: 'globalSetting.form.isSystem' })}
               valuePropName="checked"
-              tooltip="系统参数不可删除，仅 SUPER_ADMIN 可修改"
+              tooltip={intl.formatMessage({ id: 'globalSetting.form.isSystemTooltip' })}
             >
-              <Switch checkedChildren="是" unCheckedChildren="否" />
+              <Switch checkedChildren={intl.formatMessage({ id: 'common.yes' })} unCheckedChildren={intl.formatMessage({ id: 'common.no' })} />
             </Form.Item>
           )}
 
           <Form.Item
             name="isActive"
-            label="状态"
+            label={intl.formatMessage({ id: 'globalSetting.form.status' })}
             valuePropName="checked"
           >
-            <Switch disabled={editingSetting?.isSystem && !isSuperAdmin} checkedChildren="启用" unCheckedChildren="禁用" />
+            <Switch disabled={editingSetting?.isSystem && !isSuperAdmin} checkedChildren={intl.formatMessage({ id: 'status.enabled' })} unCheckedChildren={intl.formatMessage({ id: 'status.disabled' })} />
           </Form.Item>
         </Form>
       </Modal>

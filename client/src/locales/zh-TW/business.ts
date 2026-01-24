@@ -1395,4 +1395,63 @@ export default {
   'arrivals.form.pendingPackQty': '待到貨盒數',
   'arrivals.form.pendingPieceQty': '待到貨包數',
   'arrivals.form.noIntlLogisticsWarning': '當前採購單未錄入國際貨運信息，如需自動計算物流費用，請先到採購頁錄入。',
+
+  // ==================== 通用狀態 ====================
+  'status.system': '系統',
+
+  // ==================== 通用文本 ====================
+  'common.yes': '是',
+  'common.no': '否',
+
+  // 品類翻譯
+  'categories.translate.title': '編輯品類翻譯',
+  'categories.translate.originalName': '原始名稱（中文）',
+  'categories.translate.success': '翻譯保存成功',
+  'categories.translate.failed': '翻譯保存失敗',
+  'categories.form.nameEn': '英文名稱',
+  'categories.form.nameTh': '泰語名稱',
+  'categories.form.nameVi': '越南語名稱',
+
+  // ==================== 全局配置 ====================
+  'globalSetting.title': '全局配置',
+  'globalSetting.subTitle': '管理系統全局配置參數',
+  'globalSetting.add': '新增配置',
+  'globalSetting.edit': '編輯配置',
+  'globalSetting.column.key': '配置鍵名',
+  'globalSetting.column.value': '配置值',
+  'globalSetting.column.category': '分類',
+  'globalSetting.column.description': '說明',
+  'globalSetting.column.status': '狀態',
+  'globalSetting.column.creator': '創建人',
+  'globalSetting.column.updatedAt': '更新時間',
+  'globalSetting.deleteConfirm': '確定刪除這條配置嗎？',
+  'globalSetting.form.key': '配置鍵名',
+  'globalSetting.form.keyRequired': '請輸入配置鍵名',
+  'globalSetting.form.keyPattern': '只能包含字母、數字、下劃線、點和橫線',
+  'globalSetting.form.keyPlaceholder': '例如: system.max_upload_size',
+  'globalSetting.form.valueType': '值類型',
+  'globalSetting.form.valueTypeString': '字符串',
+  'globalSetting.form.valueTypeNumber': '數字',
+  'globalSetting.form.valueTypeBoolean': '布爾值',
+  'globalSetting.form.valueTypeJson': 'JSON',
+  'globalSetting.form.value': '配置值',
+  'globalSetting.form.valueRequired': '請輸入配置值',
+  'globalSetting.form.valuePlaceholder': '請輸入配置值',
+  'globalSetting.form.valueJsonPlaceholder': '例如: {"key": "value"}',
+  'globalSetting.form.category': '分類',
+  'globalSetting.form.categoryPlaceholder': '請選擇或輸入分類',
+  'globalSetting.form.description': '說明',
+  'globalSetting.form.descriptionPlaceholder': '請輸入配置說明',
+  'globalSetting.form.isSystem': '系統參數',
+  'globalSetting.form.isSystemTooltip': '系統參數不可刪除，僅 SUPER_ADMIN 可修改',
+  'globalSetting.form.status': '狀態',
+  'globalSetting.message.fetchFailed': '獲取配置列表失敗',
+  'globalSetting.message.createSuccess': '創建成功',
+  'globalSetting.message.updateSuccess': '更新成功',
+  'globalSetting.message.deleteSuccess': '刪除成功',
+  'globalSetting.message.operationFailed': '操作失敗',
+  'globalSetting.message.jsonFormatError': 'JSON 格式錯誤，請檢查',
+
+  // ==================== 調貨 ====================
+  'transfers.modal.createTitle': '新增調貨',
 };

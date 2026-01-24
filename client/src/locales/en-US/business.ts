@@ -45,6 +45,11 @@ export default {
   'status.pending': 'Pending',
   'status.completed': 'Completed',
   'status.cancelled': 'Cancelled',
+  'status.system': 'System',
+
+  // ==================== Common Text ====================
+  'common.yes': 'Yes',
+  'common.no': 'No',
 
   // ==================== Common Messages ====================
   'message.loading': 'Loading...',
@@ -1355,6 +1360,8 @@ export default {
   'globalSetting.form.categoryPlaceholder': 'Select or enter category',
   'globalSetting.form.description': 'Description',
   'globalSetting.form.descriptionPlaceholder': 'Please enter description',
+  'globalSetting.form.isSystem': 'System Parameter',
+  'globalSetting.form.isSystemTooltip': 'System parameters cannot be deleted, only SUPER_ADMIN can modify',
   'globalSetting.form.status': 'Status',
   'globalSetting.message.fetchFailed': 'Failed to fetch settings',
   'globalSetting.message.createSuccess': 'Created successfully',

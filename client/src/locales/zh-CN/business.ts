@@ -45,6 +45,11 @@ export default {
   'status.pending': '待处理',
   'status.completed': '已完成',
   'status.cancelled': '已取消',
+  'status.system': '系统',
+
+  // ==================== 通用文本 ====================
+  'common.yes': '是',
+  'common.no': '否',
 
   // ==================== 通用提示 ====================
   'message.loading': '加载中...',
@@ -1355,6 +1360,8 @@ export default {
   'globalSetting.form.categoryPlaceholder': '请选择或输入分类',
   'globalSetting.form.description': '说明',
   'globalSetting.form.descriptionPlaceholder': '请输入配置说明',
+  'globalSetting.form.isSystem': '系统参数',
+  'globalSetting.form.isSystemTooltip': '系统参数不可删除，仅 SUPER_ADMIN 可修改',
   'globalSetting.form.status': '状态',
   'globalSetting.message.fetchFailed': '获取配置列表失败',
   'globalSetting.message.createSuccess': '创建成功',
