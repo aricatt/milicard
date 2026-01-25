@@ -166,6 +166,54 @@ echo "  RDS Host:     $RDS_HOST"
 echo "  RDS Database: $RDS_DATABASE"
 echo "=========================================="
 
+# 检查磁盘空间
+echo -e "${YELLOW}Checking disk space...${NC}"
+ROOT_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+ROOT_AVAIL=$(df -BG / | awk 'NR==2 {print $4}' | sed 's/G//')
+
+echo "Root partition usage: ${ROOT_USAGE}%"
+echo "Available space: ${ROOT_AVAIL}GB"
+
+# 检查是否空间不足（使用率>90% 或 可用空间<5GB）
+if [ "$ROOT_USAGE" -gt 90 ] || [ "$ROOT_AVAIL" -lt 5 ]; then
+    echo -e "${RED}=========================================="
+    echo "  ❌ INSUFFICIENT DISK SPACE!"
+    echo "=========================================="
+    echo "  Root partition usage: ${ROOT_USAGE}%"
+    echo "  Available space: ${ROOT_AVAIL}GB"
+    echo ""
+    echo -e "${YELLOW}Deployment aborted to prevent build failure.${NC}"
+    echo ""
+    echo -e "${CYAN}Recommended actions (in order):${NC}"
+    echo ""
+    echo "  1. Clean up dangling images (fast, no impact on build speed):"
+    echo -e "     ${GREEN}podman image prune -f${NC}"
+    echo "     This removes temporary build layers only"
+    echo ""
+    echo "  2. If still not enough, clean up all unused images:"
+    echo -e "     ${GREEN}podman image prune -a -f${NC}"
+    echo "     ⚠️  Warning: Next build will be slower (need to re-download base images)"
+    echo ""
+    echo "  3. Clean up system resources:"
+    echo -e "     ${GREEN}podman system prune -f --volumes${NC}"
+    echo "     This removes unused containers, networks, and volumes"
+    echo ""
+    echo "  3. Clean up system logs:"
+    echo -e "     ${GREEN}sudo journalctl --vacuum-time=7d${NC}"
+    echo "     This will keep only last 7 days of logs"
+    echo ""
+    echo "  4. Check disk usage:"
+    echo -e "     ${GREEN}df -h${NC}"
+    echo -e "     ${GREEN}du -h / --max-depth=1 | sort -rh | head -20${NC}"
+    echo ""
+    echo -e "${CYAN}After cleanup, run this script again.${NC}"
+    echo "==========================================${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Disk space check passed${NC}"
+echo ""
+
 # 测试RDS连接（可选，需要安装psql）
 echo -e "${YELLOW}Testing RDS connection...${NC}"
 if command -v psql &> /dev/null; then
