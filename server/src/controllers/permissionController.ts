@@ -26,6 +26,7 @@ const MODULE_NAMES: Record<string, string> = {
   stock_out: '出库管理',
   stock_consumption: '消耗管理',
   anchor_profit: '主播利润',
+  ads_record: '投流记录',
   receivable: '应收管理',
   point: '点位管理',
   point_order: '点位订单',

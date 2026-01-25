@@ -50,6 +50,7 @@ export enum ResourceModule {
   
   // 财务管理
   ANCHOR_PROFIT = 'anchor_profit',
+  ADS_RECORD = 'ads_record',           // 投流记录（GMV-ADS统计）
   RECEIVABLE = 'receivable',
   
   // 点位订单系统（新增）
@@ -218,6 +219,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_OUT),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.STOCK_CONSUMPTION),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ANCHOR_PROFIT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ADS_RECORD),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.RECEIVABLE),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.POINT_ORDER),
@@ -249,6 +251,7 @@ export const SYSTEM_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
     
     // 财务管理
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ANCHOR_PROFIT),
+    ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.ADS_RECORD),
     ...PERMISSION_PRESETS.FULL_MANAGE(ResourceModule.RECEIVABLE),
     
     // 点位订单管理

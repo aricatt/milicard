@@ -134,6 +134,7 @@ export default function access(
     canAccessLocations: hasPermission(roles, 'location:read') || isAdmin(roles),
     canAccessBases: hasPermission(roles, 'base:read') || isAdmin(roles),
     canAccessAnchorProfit: hasPermission(roles, 'anchor_profit:read') || isAdmin(roles),
+    canAccessAdsRecord: hasPermission(roles, 'ads_record:read') || isAdmin(roles),
     canAccessStockOut: hasPermission(roles, 'stock_out:read') || isAdmin(roles),
     canAccessStock: hasPermission(roles, 'stock:read') || hasPermission(roles, 'inventory:read') || isAdmin(roles),
     canAccessPayables: hasPermission(roles, 'payable:read') || isAdmin(roles),

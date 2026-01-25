@@ -117,6 +117,10 @@ const PERMISSION_DEPENDENCIES: Record<string, { permissions: string[]; descripti
     permissions: ['personnel:read', 'stock_consumption:read'],
     description: '主播利润需要查看人员和消耗记录',
   },
+  ads_record: {
+    permissions: ['personnel:read'],
+    description: '投流记录需要查看人员（主播）',
+  },
   inventory: {
     permissions: ['goods:read', 'location:read'],
     description: '库存管理需要查看商品和地点',
@@ -141,6 +145,7 @@ const MODULE_LABELS: Record<string, string> = {
   stock_consumption: '消耗管理',
   personnel: '人员',
   anchor_profit: '主播利润',
+  ads_record: '投流记录',
   receivable: '应收管理',
   customer: '客户',
   currency_rate: '货币汇率',

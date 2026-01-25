@@ -192,7 +192,7 @@ export default [
         icon: 'fundProjectionScreen',
         path: '/live-base/ads-record',
         component: './live-base/ads-record',
-        access: 'canAccessAnchorProfit',
+        access: 'canAccessAdsRecord',
       },
       // 出库管理
       {
