@@ -62,6 +62,7 @@ import arrivalRoutes from './routes/arrivalRoutes'
 import transferRoutes from './routes/transferRoutes'
 import consumptionRoutes from './routes/consumptionRoutes'
 import anchorProfitRoutes from './routes/anchorProfitRoutes'
+import anchorGmvAdsRoutes from './routes/anchorGmvAdsRoutes'
 import userRoutes from './routes/userRoutes'
 import userManagementRoutes from './routes/userManagementRoutes'
 import roleRoutes from './routes/roleRoutes'
@@ -99,6 +100,7 @@ app.use('/api/v1/bases', arrivalRoutes)
 app.use('/api/v1/bases', transferRoutes)
 app.use('/api/v1/bases', consumptionRoutes)
 app.use('/api/v1/bases', anchorProfitRoutes)
+app.use('/api/v1/anchor-gmv-ads', anchorGmvAdsRoutes)
 app.use('/api', userRoutes)
 app.use('/api/v1/users', userManagementRoutes)
 app.use('/api/v1/roles', roleRoutes)

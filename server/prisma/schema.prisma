@@ -668,6 +668,7 @@ model Base {
   points           Point[]
   pointOrders      PointOrder[]
   locationProfits  LocationProfit[]
+  anchorMonthlyAds AnchorMonthlyAds[]
 
   @@index([code])
   @@index([name])
@@ -761,6 +762,7 @@ model Personnel {
   updater                    User?              @relation("PersonnelUpdater", fields: [updatedBy], references: [id])
   transferSourceRecords      TransferRecord[]   @relation("TransferSourceHandler")
   transferDestinationRecords TransferRecord[]   @relation("TransferDestinationHandler")
+  anchorMonthlyAds           AnchorMonthlyAds[]
 
   @@index([code])
   @@index([name])
@@ -1212,5 +1214,57 @@ model GlobalSetting {
   @@index([isActive])
   @@index([isSystem])
   @@map("global_settings")
+}
+
+/// 主播月度ADS投流数据表（存储每个主播每月每天的投流金额）
+model AnchorMonthlyAds {
+  id          String   @id @default(cuid())
+  baseId      Int      @map("base_id")
+  month       String   // 格式: "2026-01"
+  handlerId   String   @map("handler_id")
+  handlerName String?  @map("handler_name")
+  
+  // 每日ADS投流金额（1-31号）
+  day1Ads     Decimal? @default(0) @map("day1_ads") @db.Decimal(10, 2)
+  day2Ads     Decimal? @default(0) @map("day2_ads") @db.Decimal(10, 2)
+  day3Ads     Decimal? @default(0) @map("day3_ads") @db.Decimal(10, 2)
+  day4Ads     Decimal? @default(0) @map("day4_ads") @db.Decimal(10, 2)
+  day5Ads     Decimal? @default(0) @map("day5_ads") @db.Decimal(10, 2)
+  day6Ads     Decimal? @default(0) @map("day6_ads") @db.Decimal(10, 2)
+  day7Ads     Decimal? @default(0) @map("day7_ads") @db.Decimal(10, 2)
+  day8Ads     Decimal? @default(0) @map("day8_ads") @db.Decimal(10, 2)
+  day9Ads     Decimal? @default(0) @map("day9_ads") @db.Decimal(10, 2)
+  day10Ads    Decimal? @default(0) @map("day10_ads") @db.Decimal(10, 2)
+  day11Ads    Decimal? @default(0) @map("day11_ads") @db.Decimal(10, 2)
+  day12Ads    Decimal? @default(0) @map("day12_ads") @db.Decimal(10, 2)
+  day13Ads    Decimal? @default(0) @map("day13_ads") @db.Decimal(10, 2)
+  day14Ads    Decimal? @default(0) @map("day14_ads") @db.Decimal(10, 2)
+  day15Ads    Decimal? @default(0) @map("day15_ads") @db.Decimal(10, 2)
+  day16Ads    Decimal? @default(0) @map("day16_ads") @db.Decimal(10, 2)
+  day17Ads    Decimal? @default(0) @map("day17_ads") @db.Decimal(10, 2)
+  day18Ads    Decimal? @default(0) @map("day18_ads") @db.Decimal(10, 2)
+  day19Ads    Decimal? @default(0) @map("day19_ads") @db.Decimal(10, 2)
+  day20Ads    Decimal? @default(0) @map("day20_ads") @db.Decimal(10, 2)
+  day21Ads    Decimal? @default(0) @map("day21_ads") @db.Decimal(10, 2)
+  day22Ads    Decimal? @default(0) @map("day22_ads") @db.Decimal(10, 2)
+  day23Ads    Decimal? @default(0) @map("day23_ads") @db.Decimal(10, 2)
+  day24Ads    Decimal? @default(0) @map("day24_ads") @db.Decimal(10, 2)
+  day25Ads    Decimal? @default(0) @map("day25_ads") @db.Decimal(10, 2)
+  day26Ads    Decimal? @default(0) @map("day26_ads") @db.Decimal(10, 2)
+  day27Ads    Decimal? @default(0) @map("day27_ads") @db.Decimal(10, 2)
+  day28Ads    Decimal? @default(0) @map("day28_ads") @db.Decimal(10, 2)
+  day29Ads    Decimal? @default(0) @map("day29_ads") @db.Decimal(10, 2)
+  day30Ads    Decimal? @default(0) @map("day30_ads") @db.Decimal(10, 2)
+  day31Ads    Decimal? @default(0) @map("day31_ads") @db.Decimal(10, 2)
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  base        Base     @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  handler     Personnel @relation(fields: [handlerId], references: [id], onDelete: Cascade)
+
+  @@unique([baseId, month, handlerId])
+  @@index([baseId, month])
+  @@map("anchor_monthly_ads")
 }
 

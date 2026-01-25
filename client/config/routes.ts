@@ -187,6 +187,13 @@ export default [
         component: './live-base/anchor-profit',
         access: 'canAccessAnchorProfit',
       },
+      {
+        name: 'ads-record',
+        icon: 'fundProjectionScreen',
+        path: '/live-base/ads-record',
+        component: './live-base/ads-record',
+        access: 'canAccessAnchorProfit',
+      },
       // 出库管理
       {
         name: 'stock-out',

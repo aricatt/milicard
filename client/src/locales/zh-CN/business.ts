@@ -238,6 +238,21 @@ export default {
   'anchorProfit.warning.needsReview': '需要核查',
   'anchorProfit.import.title': '导入主播利润',
 
+  // ==================== 投流记录 ====================
+  'adsRecord.title': '投流记录',
+  'adsRecord.add': '新增记录',
+  'adsRecord.edit': '编辑记录',
+  'adsRecord.selectMonth': '选择月份',
+  'adsRecord.selectHandlers': '选择主播',
+  'adsRecord.selectDates': '选择日期',
+  'adsRecord.column.month': '月份',
+  'adsRecord.column.handler': '主播',
+  'adsRecord.column.totalGmv': '累计GMV',
+  'adsRecord.column.totalAds': '投流金额',
+  'adsRecord.column.adsRatio': 'GMV占比',
+  'adsRecord.column.liveDays': '直播天数',
+  'adsRecord.column.avgDailyGmv': '日均GMV',
+
   // ==================== 直播间/仓库 ====================
   'locations.title': '直播间/仓库',
   'locations.add': '新增直播间',

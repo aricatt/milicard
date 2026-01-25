@@ -28,6 +28,7 @@ export default {
   'menu.live-base.transfers': '调货',
   'menu.live-base.inventory-consumption': '库存和消耗',
   'menu.live-base.anchor-profit': '主播利润',
+  'menu.live-base.ads-record': '投流记录',
   'menu.live-base.stock-out': '出库',
   'menu.live-base.real-time-stock': '实时库存',
   'menu.live-base.payables': '应付',
