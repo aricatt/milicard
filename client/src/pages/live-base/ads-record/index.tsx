@@ -19,9 +19,17 @@ const AdsRecordPage: React.FC = () => {
   const { currentBase, currencyRate } = useBase();
   const baseId = currentBase?.id;
 
-  // 金额格式化函数
+  // 获取当前汇率和货币代码
+  const currentExchangeRate = currencyRate?.fixedRate || 1;
+  const currentCurrencyCode = currentBase?.currency || 'CNY';
+
+  // 金额格式化函数，支持以人民币显示
   const formatAmount = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return '-';
+    if (showInCNY && currentExchangeRate > 0) {
+      const cnyAmount = amount / currentExchangeRate;
+      return `¥${cnyAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
     return amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
