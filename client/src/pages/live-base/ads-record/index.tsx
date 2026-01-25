@@ -24,16 +24,38 @@ const AdsRecordPage: React.FC = () => {
 
   const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('YYYY-MM'));
   const [selectedHandlers, setSelectedHandlers] = useState<string[]>([]);
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>(() => {
+    // 默认选中当月已过去的所有天（包括今天）
+    const today = dayjs();
+    const startOfMonth = today.startOf('month');
+    const dates: string[] = [];
+    
+    let current = startOfMonth;
+    while (current.isBefore(today) || current.isSame(today, 'day')) {
+      dates.push(current.format('YYYY-MM-DD'));
+      current = current.add(1, 'day');
+    }
+    
+    return dates;
+  });
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [handlerOptions, setHandlerOptions] = useState<HandlerOption[]>([]);
 
-  // 动态生成列（1-31号GMV和ADS）
+  // 动态生成列（只显示选中日期的列）
   const getDynamicColumns = (): ProColumns<MonthlyGmvAdsStats>[] => {
-    const daysInMonth = dayjs(selectedMonth, 'YYYY-MM').daysInMonth();
     const columns: ProColumns<MonthlyGmvAdsStats>[] = [];
 
-    for (let day = 1; day <= daysInMonth; day++) {
+    // 如果没有选中日期，不显示任何日期列
+    if (selectedDates.length === 0) {
+      return columns;
+    }
+
+    // 获取选中日期对应的天数，并排序
+    const selectedDays = selectedDates
+      .map(dateStr => dayjs(dateStr).date())
+      .sort((a, b) => a - b);
+
+    selectedDays.forEach(day => {
       // GMV列
       columns.push({
         title: `${day}号GMV`,
@@ -69,7 +91,7 @@ const AdsRecordPage: React.FC = () => {
           );
         },
       });
-    }
+    });
 
     return columns;
   };
@@ -105,6 +127,7 @@ const AdsRecordPage: React.FC = () => {
       title: intl.formatMessage({ id: 'adsRecord.column.totalAds' }),
       dataIndex: 'totalAds',
       width: 140,
+      fixed: 'left',
       hideInSearch: true,
       render: (_, record) => (
         <span style={{ color: '#52c41a', fontWeight: 'bold', fontSize: 16 }}>
@@ -116,6 +139,7 @@ const AdsRecordPage: React.FC = () => {
       title: intl.formatMessage({ id: 'adsRecord.column.adsRatio' }),
       dataIndex: 'adsRatio',
       width: 100,
+      fixed: 'left',
       hideInSearch: true,
       render: (_, record) => (
         <span style={{ color: '#faad14', fontWeight: 500 }}>
@@ -127,6 +151,7 @@ const AdsRecordPage: React.FC = () => {
       title: intl.formatMessage({ id: 'adsRecord.column.liveDays' }),
       dataIndex: 'liveDays',
       width: 100,
+      fixed: 'left',
       hideInSearch: true,
       render: (_, record) => (
         <span style={{ color: '#722ed1' }}>
@@ -138,6 +163,7 @@ const AdsRecordPage: React.FC = () => {
       title: intl.formatMessage({ id: 'adsRecord.column.avgDailyGmv' }),
       dataIndex: 'avgDailyGmv',
       width: 140,
+      fixed: 'left',
       hideInSearch: true,
       render: (_, record) => (
         <span style={{ color: '#13c2c2', fontWeight: 500 }}>
@@ -204,8 +230,26 @@ const AdsRecordPage: React.FC = () => {
               value={dayjs(selectedMonth, 'YYYY-MM')}
               onChange={(date) => {
                 if (date) {
-                  setSelectedMonth(date.format('YYYY-MM'));
-                  setSelectedDates([]);
+                  const newMonth = date.format('YYYY-MM');
+                  setSelectedMonth(newMonth);
+                  
+                  // 自动选中该月已过去的所有天（包括今天）
+                  const today = dayjs();
+                  const selectedMonthObj = dayjs(newMonth, 'YYYY-MM');
+                  const startOfMonth = selectedMonthObj.startOf('month');
+                  const endOfMonth = selectedMonthObj.endOf('month');
+                  const dates: string[] = [];
+                  
+                  let current = startOfMonth;
+                  // 如果选择的是当前月份，选中到今天；否则选中整月
+                  const endDate = selectedMonthObj.isSame(today, 'month') ? today : endOfMonth;
+                  
+                  while (current.isBefore(endDate) || current.isSame(endDate, 'day')) {
+                    dates.push(current.format('YYYY-MM-DD'));
+                    current = current.add(1, 'day');
+                  }
+                  
+                  setSelectedDates(dates);
                   actionRef.current?.reload();
                 }
               }}

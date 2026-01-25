@@ -80,40 +80,52 @@ export class AnchorGmvAdsService {
         },
       });
 
-      // 按主播分组GMV数据
-      const gmvByHandler = new Map<string, Map<number, number>>();
+      // 按主播分组GMV数据，同时收集主播信息
+      const gmvByHandler = new Map<string, { gmvData: Map<number, number>, handlerName: string }>();
       
       profitRecords.forEach(record => {
         const handlerId = record.consumption?.handlerId;
+        const handlerName = record.consumption?.handler?.name;
         if (!handlerId) return;
 
         if (!gmvByHandler.has(handlerId)) {
-          gmvByHandler.set(handlerId, new Map());
+          gmvByHandler.set(handlerId, {
+            gmvData: new Map(),
+            handlerName: handlerName || '',
+          });
         }
 
         const day = dayjs(record.profitDate).date();
-        const currentGmv = gmvByHandler.get(handlerId)!.get(day) || 0;
-        gmvByHandler.get(handlerId)!.set(day, currentGmv + Number(record.gmvAmount));
+        const handlerInfo = gmvByHandler.get(handlerId)!;
+        const currentGmv = handlerInfo.gmvData.get(day) || 0;
+        handlerInfo.gmvData.set(day, currentGmv + Number(record.gmvAmount));
       });
 
+      // 收集所有主播ID（ADS + GMV）
+      const allHandlerIds = new Set<string>();
+      adsRecords.forEach(record => allHandlerIds.add(record.handlerId));
+      gmvByHandler.forEach((_, handlerId) => allHandlerIds.add(handlerId));
+
       // 合并ADS和GMV数据
-      const results = adsRecords.map(adsRecord => {
-        const handlerId = adsRecord.handlerId;
-        const handlerGmv = gmvByHandler.get(handlerId) || new Map();
+      const results = Array.from(allHandlerIds).map(handlerId => {
+        const adsRecord = adsRecords.find(r => r.handlerId === handlerId);
+        const gmvInfo = gmvByHandler.get(handlerId);
+        const handlerGmv = gmvInfo?.gmvData || new Map();
+        const handlerName = adsRecord?.handlerName || adsRecord?.handler?.name || gmvInfo?.handlerName || '';
 
         // 构建每日数据
         const dailyData: any = {
-          id: adsRecord.id,
-          baseId: adsRecord.baseId,
-          month: adsRecord.month,
-          handlerId: adsRecord.handlerId,
-          handlerName: adsRecord.handlerName || adsRecord.handler?.name || '',
+          id: adsRecord?.id || `temp-${handlerId}`, // 如果没有ADS记录，使用临时ID
+          baseId,
+          month,
+          handlerId,
+          handlerName,
         };
 
         // 添加每日GMV和ADS
         for (let day = 1; day <= 31; day++) {
           dailyData[`day${day}Gmv`] = Number(handlerGmv.get(day) || 0);
-          dailyData[`day${day}Ads`] = Number((adsRecord as any)[`day${day}Ads`] || 0);
+          dailyData[`day${day}Ads`] = Number((adsRecord as any)?.[`day${day}Ads`] || 0);
         }
 
         // 计算统计字段
@@ -122,8 +134,8 @@ export class AnchorGmvAdsService {
         return {
           ...dailyData,
           ...stats,
-          createdAt: adsRecord.createdAt.toISOString(),
-          updatedAt: adsRecord.updatedAt.toISOString(),
+          createdAt: adsRecord?.createdAt?.toISOString() || new Date().toISOString(),
+          updatedAt: adsRecord?.updatedAt?.toISOString() || new Date().toISOString(),
         };
       });
 

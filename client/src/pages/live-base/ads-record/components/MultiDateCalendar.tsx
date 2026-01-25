@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Calendar, Badge } from 'antd';
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from 'antd';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import './MultiDateCalendar.less';
@@ -7,7 +8,7 @@ import './MultiDateCalendar.less';
 interface MultiDateCalendarProps {
   value?: string[];
   onChange?: (dates: string[]) => void;
-  month?: string; // 格式: "2026-01"
+  month?: string;
   onMonthChange?: (month: string) => void;
 }
 
@@ -21,65 +22,154 @@ const MultiDateCalendar: React.FC<MultiDateCalendarProps> = ({
   const [currentMonth, setCurrentMonth] = useState<Dayjs>(
     month ? dayjs(month, 'YYYY-MM') : dayjs()
   );
+  const [isDragging, setIsDragging] = useState(false);
+  const dragModeRef = useRef<'select' | 'deselect'>('select');
+  const onChangeRef = useRef(onChange);
+  const isInitialMount = useRef(true);
 
-  const handleSelect = (date: Dayjs) => {
-    const dateStr = date.format('YYYY-MM-DD');
-    const monthStr = date.format('YYYY-MM');
-    
-    // 只允许选择当前月份的日期
-    if (monthStr !== currentMonth.format('YYYY-MM')) {
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
+    onChangeRef.current?.(selectedDates);
+  }, [selectedDates]);
 
-    let newSelectedDates: string[];
+  const handleDateToggle = (dateStr: string, shouldSelect: boolean) => {
+    setSelectedDates(prev => {
+      const exists = prev.includes(dateStr);
+      if (shouldSelect && !exists) {
+        return [...prev, dateStr];
+      } else if (!shouldSelect && exists) {
+        return prev.filter(d => d !== dateStr);
+      }
+      return prev;
+    });
+  };
+
+  const handleMouseDown = (dateStr: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
     const exists = selectedDates.includes(dateStr);
-
-    if (exists) {
-      // 取消选择
-      newSelectedDates = selectedDates.filter(d => d !== dateStr);
-    } else {
-      // 添加选择
-      newSelectedDates = [...selectedDates, dateStr];
-    }
-
-    setSelectedDates(newSelectedDates);
-    onChange?.(newSelectedDates);
+    dragModeRef.current = exists ? 'deselect' : 'select';
+    handleDateToggle(dateStr, !exists);
   };
 
-  const handlePanelChange = (date: Dayjs) => {
-    const newMonth = date.format('YYYY-MM');
-    setCurrentMonth(date);
-    onMonthChange?.(newMonth);
+  const handleMouseEnter = (dateStr: string) => {
+    if (!isDragging) return;
+    const shouldSelect = dragModeRef.current === 'select';
+    handleDateToggle(dateStr, shouldSelect);
+  };
+
+  const handlePrevMonth = () => {
+    const newMonth = currentMonth.subtract(1, 'month');
+    setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth.format('YYYY-MM'));
+  };
+
+  const handleNextMonth = () => {
+    const newMonth = currentMonth.add(1, 'month');
+    setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth.format('YYYY-MM'));
+  };
+
+  const handleSelectAll = () => {
+    const startOfMonth = currentMonth.startOf('month');
+    const endOfMonth = currentMonth.endOf('month');
+    const allDates: string[] = [];
     
-    // 清空选中日期（切换月份时）
-    setSelectedDates([]);
-    onChange?.([]);
+    let current = startOfMonth;
+    while (current.isBefore(endOfMonth) || current.isSame(endOfMonth, 'day')) {
+      allDates.push(current.format('YYYY-MM-DD'));
+      current = current.add(1, 'day');
+    }
+    
+    setSelectedDates(allDates);
   };
 
-  const dateCellRender = (date: Dayjs) => {
-    const dateStr = date.format('YYYY-MM-DD');
-    const isSelected = selectedDates.includes(dateStr);
-    const isCurrentMonth = date.format('YYYY-MM') === currentMonth.format('YYYY-MM');
+  const handleInvertSelection = () => {
+    const startOfMonth = currentMonth.startOf('month');
+    const endOfMonth = currentMonth.endOf('month');
+    const allDates: string[] = [];
+    
+    let current = startOfMonth;
+    while (current.isBefore(endOfMonth) || current.isSame(endOfMonth, 'day')) {
+      const dateStr = current.format('YYYY-MM-DD');
+      if (!selectedDates.includes(dateStr)) {
+        allDates.push(dateStr);
+      }
+      current = current.add(1, 'day');
+    }
+    
+    setSelectedDates(allDates);
+  };
 
-    if (!isCurrentMonth) {
-      return null;
+  const renderCalendar = () => {
+    const startOfMonth = currentMonth.startOf('month');
+    const endOfMonth = currentMonth.endOf('month');
+    const startDate = startOfMonth.startOf('week');
+    const endDate = endOfMonth.endOf('week');
+
+    const weeks: Dayjs[][] = [];
+    let currentWeek: Dayjs[] = [];
+    let current = startDate;
+
+    while (current.isBefore(endDate) || current.isSame(endDate, 'day')) {
+      currentWeek.push(current);
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+      current = current.add(1, 'day');
     }
 
     return (
-      <div className={`date-cell ${isSelected ? 'selected' : ''}`}>
-        {isSelected && <Badge status="processing" />}
-      </div>
-    );
-  };
-
-  const headerRender = () => {
-    return (
-      <div className="calendar-header">
-        <div className="month-display">
-          {currentMonth.format('YYYY年MM月')}
+      <div className="calendar-body">
+        <div className="calendar-weekdays">
+          {['日', '一', '二', '三', '四', '五', '六'].map(day => (
+            <div key={day} className="weekday">{day}</div>
+          ))}
         </div>
-        <div className="selected-count">
-          已选择 {selectedDates.length} 天
+        <div className="calendar-dates">
+          {weeks.map((week, weekIndex) => (
+            <div key={weekIndex} className="calendar-week">
+              {week.map(date => {
+                const dateStr = date.format('YYYY-MM-DD');
+                const isSelected = selectedDates.includes(dateStr);
+                const isCurrentMonth = date.month() === currentMonth.month();
+                const isToday = date.isSame(dayjs(), 'day');
+
+                return (
+                  <div
+                    key={dateStr}
+                    className={`calendar-date ${
+                      isSelected ? 'selected' : ''
+                    } ${
+                      !isCurrentMonth ? 'other-month' : ''
+                    } ${
+                      isToday ? 'today' : ''
+                    }`}
+                    onMouseDown={(e) => isCurrentMonth && handleMouseDown(dateStr, e)}
+                    onMouseEnter={() => isCurrentMonth && handleMouseEnter(dateStr)}
+                  >
+                    <span className="date-number">{date.date()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -87,14 +177,43 @@ const MultiDateCalendar: React.FC<MultiDateCalendarProps> = ({
 
   return (
     <div className="multi-date-calendar">
-      {headerRender()}
-      <Calendar
-        value={currentMonth}
-        onSelect={handleSelect}
-        onPanelChange={handlePanelChange}
-        fullscreen={false}
-        cellRender={dateCellRender}
-      />
+      <div className="calendar-header">
+        <div className="month-nav">
+          <Button
+            type="text"
+            size="small"
+            icon={<LeftOutlined />}
+            onClick={handlePrevMonth}
+          />
+          <span className="month-display">
+            {currentMonth.format('YYYY年MM月')}
+          </span>
+          <Button
+            type="text"
+            size="small"
+            icon={<RightOutlined />}
+            onClick={handleNextMonth}
+          />
+        </div>
+        <div className="header-actions">
+          <Button
+            size="small"
+            onClick={handleSelectAll}
+          >
+            全选
+          </Button>
+          <Button
+            size="small"
+            onClick={handleInvertSelection}
+          >
+            反选
+          </Button>
+          <span className="selected-count">
+            已选择 {selectedDates.length} 天
+          </span>
+        </div>
+      </div>
+      {renderCalendar()}
     </div>
   );
 };

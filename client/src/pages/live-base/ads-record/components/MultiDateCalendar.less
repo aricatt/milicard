@@ -1,4 +1,9 @@
 .multi-date-calendar {
+  user-select: none;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fff;
+  
   .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -6,69 +11,122 @@
     padding: 12px 16px;
     background: #fafafa;
     border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 12px;
 
-    .month-display {
-      font-size: 16px;
-      font-weight: 500;
-      color: #262626;
+    .month-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .month-display {
+        font-size: 16px;
+        font-weight: 500;
+        color: #262626;
+        min-width: 120px;
+        text-align: center;
+      }
     }
 
-    .selected-count {
-      font-size: 14px;
-      color: #1890ff;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .selected-count {
+        font-size: 14px;
+        color: #1890ff;
+        font-weight: 500;
+        margin-left: 8px;
+      }
     }
   }
 
-  .ant-picker-calendar {
-    .ant-picker-cell {
-      cursor: pointer;
-      
+  .calendar-body {
+    padding: 16px;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+
+    .weekday {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #8c8c8c;
+      padding: 8px 0;
+    }
+  }
+
+  .calendar-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .calendar-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .calendar-date {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    border: 1px solid transparent;
+
+    .date-number {
+      font-size: 14px;
+      color: #262626;
+    }
+
+    &:hover {
+      background-color: #f5f5f5;
+      border-color: #d9d9d9;
+    }
+
+    &.selected {
+      background-color: #1890ff;
+      border-color: #1890ff;
+
+      .date-number {
+        color: #fff;
+        font-weight: 500;
+      }
+
       &:hover {
-        .ant-picker-cell-inner {
-          background: #e6f7ff;
-        }
+        background-color: #40a9ff;
+        border-color: #40a9ff;
       }
     }
 
-    .date-cell {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &.selected {
-        .ant-picker-cell-inner {
-          background: #1890ff !important;
-          color: #fff !important;
-          border-radius: 4px;
-        }
+    &.other-month {
+      .date-number {
+        color: #bfbfbf;
       }
 
-      .ant-badge {
-        position: absolute;
-        top: 2px;
-        right: 2px;
+      &:hover {
+        background-color: transparent;
+        border-color: transparent;
+        cursor: default;
       }
     }
 
-    .ant-picker-cell-in-view {
-      &.ant-picker-cell-selected {
-        .ant-picker-cell-inner {
-          background: #1890ff;
-          color: #fff;
-        }
-      }
-    }
-
-    .ant-picker-cell-disabled {
-      cursor: not-allowed;
+    &.today {
+      border-color: #1890ff;
       
-      .ant-picker-cell-inner {
-        color: rgba(0, 0, 0, 0.25);
-        background: transparent;
+      &:not(.selected) {
+        .date-number {
+          color: #1890ff;
+          font-weight: 500;
+        }
       }
     }
   }
