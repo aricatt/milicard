@@ -56,10 +56,29 @@ export class AnchorGmvAdsController {
       const baseId = parseInt(req.params.baseId);
       const data = req.body;
 
-      if (!data.month || !data.handlerId) {
+      if (!data.month) {
         return res.status(400).json({
           success: false,
-          message: '缺少必要参数：month 和 handlerId',
+          message: '缺少必要参数：month',
+        });
+      }
+
+      // 如果没有handlerId但有handlerName，则通过handlerName查找handlerId（用于导入）
+      if (!data.handlerId && data.handlerName) {
+        const result = await AnchorGmvAdsService.upsertAdsRecord(baseId, data);
+        
+        if (!result.success) {
+          return res.status(400).json(result);
+        }
+        
+        return res.json(result);
+      }
+
+      // 必须有handlerId或handlerName
+      if (!data.handlerId && !data.handlerName) {
+        return res.status(400).json({
+          success: false,
+          message: '缺少必要参数：handlerId 或 handlerName',
         });
       }
 

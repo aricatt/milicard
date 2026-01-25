@@ -558,11 +558,11 @@ const AdsRecordPage: React.FC = () => {
         fields={[
           { field: '月份', required: true, description: '格式为YYYY-MM', example: '2025-01' },
           { field: '主播', required: true, description: '需与系统中主播姓名一致', example: '主播姓名' },
-          { field: '1号', required: false, description: '1号投流金额', example: '1000' },
-          { field: '2号', required: false, description: '2号投流金额', example: '1000' },
-          { field: '3号', required: false, description: '3号投流金额', example: '1000' },
-          { field: '...', required: false, description: '其他日期投流金额', example: '' },
-          { field: '31号', required: false, description: '31号投流金额', example: '1000' },
+          { field: '1 ADS', required: false, description: '1号投流金额', example: '1000' },
+          { field: '2 ADS', required: false, description: '2号投流金额', example: '1000' },
+          { field: '3 ADS', required: false, description: '3号投流金额', example: '1000' },
+          { field: '...', required: false, description: '其他日期投流金额（格式：X ADS）', example: '' },
+          { field: '31 ADS', required: false, description: '31号投流金额', example: '1000' },
         ]}
       />
     </PageContainer>

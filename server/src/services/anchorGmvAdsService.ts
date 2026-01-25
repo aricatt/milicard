@@ -204,7 +204,7 @@ export class AnchorGmvAdsService {
     baseId: number,
     data: {
       month: string;
-      handlerId: string;
+      handlerId?: string;
       handlerName?: string;
       [key: string]: any; // day1Ads, day2Ads, ... day31Ads
     }
@@ -221,20 +221,34 @@ export class AnchorGmvAdsService {
         };
       }
 
-      // 验证主播存在
-      const handler = await prisma.personnel.findFirst({
-        where: {
-          id: handlerId,
-          baseId,
-          role: 'ANCHOR',
-          isActive: true,
-        },
-      });
+      // 查找主播：优先使用handlerId，如果没有则通过handlerName查找
+      let handler;
+      if (handlerId) {
+        handler = await prisma.personnel.findFirst({
+          where: {
+            id: handlerId,
+            baseId,
+            role: 'ANCHOR',
+            isActive: true,
+          },
+        });
+      } else if (handlerName) {
+        handler = await prisma.personnel.findFirst({
+          where: {
+            name: handlerName,
+            baseId,
+            role: 'ANCHOR',
+            isActive: true,
+          },
+        });
+      }
 
       if (!handler) {
         return {
           success: false,
-          message: '主播不存在或已停用',
+          message: handlerName 
+            ? `主播"${handlerName}"不存在或已停用` 
+            : '主播不存在或已停用',
         };
       }
 
@@ -247,24 +261,24 @@ export class AnchorGmvAdsService {
         }
       }
 
-      // 创建或更新记录
+      // 创建或更新记录（使用找到的handler.id）
       const record = await prisma.anchorMonthlyAds.upsert({
         where: {
           baseId_month_handlerId: {
             baseId,
             month,
-            handlerId,
+            handlerId: handler.id,
           },
         },
         create: {
           baseId,
           month,
-          handlerId,
-          handlerName: handlerName || handler.name,
+          handlerId: handler.id,
+          handlerName: handler.name,
           ...adsData,
         },
         update: {
-          handlerName: handlerName || handler.name,
+          handlerName: handler.name,
           ...adsData,
         },
       });

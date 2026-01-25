@@ -74,8 +74,8 @@ export const useAdsRecordExcel = ({ baseId, baseName, selectedMonth, selectedHan
         for (let day = 1; day <= daysInMonth; day++) {
           const gmvFieldName = `day${day}Gmv`;
           const adsFieldName = `day${day}Ads`;
-          row[`${day}号GMV`] = record[gmvFieldName] || 0;
-          row[`${day}号投流`] = record[adsFieldName] || 0;
+          row[`${day} GMV`] = record[gmvFieldName] || 0;
+          row[`${day} ADS`] = record[adsFieldName] || 0;
         }
 
         return row;
@@ -85,8 +85,8 @@ export const useAdsRecordExcel = ({ baseId, baseName, selectedMonth, selectedHan
       const daysInMonth = selectedMonth.daysInMonth();
       const headers = ['月份', '主播', '总GMV', '总投流', '投流比(%)', '直播天数', '日均GMV'];
       for (let day = 1; day <= daysInMonth; day++) {
-        headers.push(`${day}号GMV`);
-        headers.push(`${day}号投流`);
+        headers.push(`${day} GMV`);
+        headers.push(`${day} ADS`);
       }
 
       const ws = exportData.length > 0 
@@ -119,7 +119,7 @@ export const useAdsRecordExcel = ({ baseId, baseName, selectedMonth, selectedHan
 
     // 添加每日投流金额列
     for (let day = 1; day <= daysInMonth; day++) {
-      templateRow[`${day}号`] = day === 1 ? 1000 : 0;
+      templateRow[`${day} ADS`] = day === 1 ? 1000 : 0;
     }
 
     const templateData = [templateRow];
@@ -180,13 +180,13 @@ export const useAdsRecordExcel = ({ baseId, baseName, selectedMonth, selectedHan
           // 提取每日投流金额
           const dailyAds: any = {};
           for (let day = 1; day <= 31; day++) {
-            const value = row[`${day}号`];
+            const value = row[`${day} ADS`];
             if (value !== undefined && value !== null && value !== '') {
               dailyAds[`day${day}Ads`] = parseFloat(value) || 0;
             }
           }
 
-          const result = await request(`/api/v1/bases/${baseId}/anchor-gmv-ads/import`, {
+          const result = await request(`/api/v1/anchor-gmv-ads/${baseId}`, {
             method: 'POST',
             data: {
               month,
