@@ -224,6 +224,12 @@ export default {
   'anchorProfit.column.profitRate': 'Tỷ lệ lợi nhuận gộp',
   'anchorProfit.column.goodsName': 'Tên sản phẩm',
   'anchorProfit.column.avgPackPrice': 'Giá trung bình/gói',
+  'anchorProfit.tooltip.salesAmount': 'GMV thực = GMV màn hình + Đơn cửa hàng + Thanh toán ngoại tuyến - Hủy đơn - Hoàn trả',
+  'anchorProfit.tooltip.calculatedCostPrice': 'Tính toán động dựa trên giá gói: Giá/Gói × Số gói + Giá/Hộp × Số hộp + Giá/Thùng × Số thùng',
+  'anchorProfit.tooltip.platformFee': 'Phí nền tảng = (GMV màn hình - Hủy đơn - Hoàn trả) × Tỷ lệ phí%',
+  'anchorProfit.tooltip.profitAmount': 'Lợi nhuận gộp = GMV thực - Giá lấy hàng - Phí nền tảng',
+  'anchorProfit.tooltip.profitRate': 'Tỷ lệ lợi nhuận gộp% = (Lợi nhuận gộp / GMV thực) × 100',
+  'anchorProfit.tooltip.avgPackPrice': 'GMV thực: {salesAmount} / Số gói tiêu thụ: {totalPacks}',
   'anchorProfit.warning.needsReview': 'Cần kiểm tra',
   'anchorProfit.import.title': 'Nhập lợi nhuận streamer',
 

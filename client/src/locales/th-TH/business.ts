@@ -224,6 +224,12 @@ export default {
   'anchorProfit.column.profitRate': 'อัตรากำไรขั้นต้น',
   'anchorProfit.column.goodsName': 'ชื่อสินค้า',
   'anchorProfit.column.avgPackPrice': 'ราคาเฉลี่ย/กล่อง',
+  'anchorProfit.tooltip.salesAmount': 'GMV จริง = GMV หน้าจอ + ออร์เดอร์ร้านค้า + ชำระออฟไลน์ - ยกเลิกออร์เดอร์ - คืนเงิน',
+  'anchorProfit.tooltip.calculatedCostPrice': 'คำนวณแบบไดนามิกจากราคากล่อง: ราคา/กล่อง × จำนวนกล่อง + ราคา/กล่อง × จำนวนกล่อง + ราคา/กล่อง × จำนวนกล่อง',
+  'anchorProfit.tooltip.platformFee': 'ค่าธรรมเนียมแพลตฟอร์ม = (GMV หน้าจอ - ยกเลิกออร์เดอร์ - คืนเงิน) × อัตราค่าธรรมเนียม%',
+  'anchorProfit.tooltip.profitAmount': 'กำไรขั้นต้น = GMV จริง - ราคาสินค้า - ค่าธรรมเนียมแพลตฟอร์ม',
+  'anchorProfit.tooltip.profitRate': 'อัตรากำไรขั้นต้น% = (กำไรขั้นต้น / GMV จริง) × 100',
+  'anchorProfit.tooltip.avgPackPrice': 'GMV จริง: {salesAmount} / จำนวนกล่องที่ใช้: {totalPacks}',
   'anchorProfit.warning.needsReview': 'ต้องตรวจสอบ',
   'anchorProfit.import.title': 'นำเข้ากำไรสตรีมเมอร์',
 

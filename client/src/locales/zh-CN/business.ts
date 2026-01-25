@@ -229,6 +229,12 @@ export default {
   'anchorProfit.column.profitRate': '毛利率',
   'anchorProfit.column.goodsName': '品名',
   'anchorProfit.column.avgPackPrice': '平均单包价',
+  'anchorProfit.tooltip.salesAmount': '真实GMV = 大屏GMV + 店铺订单 + 走水 - 取消订单 - 退款',
+  'anchorProfit.tooltip.calculatedCostPrice': '基于商品平拆价(一包)动态计算：单价/包 × 包数 + 单价/盒 × 盒数 + 单价/箱 × 箱数',
+  'anchorProfit.tooltip.platformFee': '平台扣点 = (大屏GMV - 取消订单 - 退款) × 平台费率%',
+  'anchorProfit.tooltip.profitAmount': '毛利 = 真实GMV - 拿货价 - 平台扣点',
+  'anchorProfit.tooltip.profitRate': '毛利率% = (毛利 / 真实GMV) × 100',
+  'anchorProfit.tooltip.avgPackPrice': '真实GMV: {salesAmount} / 消耗包数: {totalPacks}',
   'anchorProfit.warning.needsReview': '需要核查',
   'anchorProfit.import.title': '导入主播利润',
 

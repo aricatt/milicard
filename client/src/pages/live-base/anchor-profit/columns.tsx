@@ -124,7 +124,7 @@ export const getColumns = (
     width: 120,
     sorter: true,
     render: (_, record) => (
-      <Tooltip title="真实GMV = 大屏GMV + 店铺订单 + 走水 - 取消订单 - 退款">
+      <Tooltip title={intl?.formatMessage({ id: 'anchorProfit.tooltip.salesAmount' })}>
         <span style={{ color: '#722ed1', fontWeight: 500 }}>
           {formatAmount(record.salesAmount)}
         </span>
@@ -137,7 +137,7 @@ export const getColumns = (
     valueType: 'money',
     width: 110,
     render: (_, record) => (
-      <Tooltip title="基于商品平拆价(一包)动态计算：单价/包 × 包数 + 单价/盒 × 盒数 + 单价/箱 × 箱数">
+      <Tooltip title={intl?.formatMessage({ id: 'anchorProfit.tooltip.calculatedCostPrice' })}>
         <span style={{ color: '#13c2c2' }}>
           {formatAmount(record.calculatedCostPrice || 0)}
         </span>
@@ -150,7 +150,7 @@ export const getColumns = (
     valueType: 'money',
     width: 110,
     render: (_, record) => (
-      <Tooltip title="平台扣点 = (大屏GMV - 取消订单 - 退款) × 平台费率%">
+      <Tooltip title={intl?.formatMessage({ id: 'anchorProfit.tooltip.platformFee' })}>
         <span style={{ color: '#faad14' }}>
           {formatAmount(record.platformFeeAmount)}
         </span>
@@ -164,7 +164,7 @@ export const getColumns = (
     width: 120,
     sorter: true,
     render: (_, record) => (
-      <Tooltip title="毛利 = 真实GMV - 拿货价 - 平台扣点">
+      <Tooltip title={intl?.formatMessage({ id: 'anchorProfit.tooltip.profitAmount' })}>
         <span style={{ 
           color: record.profitAmount >= 0 ? '#52c41a' : '#ff4d4f', 
           fontWeight: 'bold' 
@@ -185,7 +185,7 @@ export const getColumns = (
       if (rate < 30) color = '#ff4d4f';
       else if (rate < 50) color = '#faad14';
       return (
-        <Tooltip title="毛利率% = (毛利 / 真实GMV) × 100">
+        <Tooltip title={intl?.formatMessage({ id: 'anchorProfit.tooltip.profitRate' })}>
           <Tag color={rate >= 50 ? 'green' : rate >= 30 ? 'orange' : 'red'}>
             {rate.toFixed(2)}%
           </Tag>
@@ -213,8 +213,12 @@ export const getColumns = (
           
           if (totalPacks > 0 && record.salesAmount > 0) {
             const avgPrice = record.salesAmount / totalPacks;
+            const tooltipText = intl?.formatMessage(
+              { id: 'anchorProfit.tooltip.avgPackPrice' },
+              { salesAmount: formatAmount(record.salesAmount), totalPacks: totalPacks.toFixed(2) }
+            );
             return (
-              <Tooltip title={`真实GMV: ${formatAmount(record.salesAmount)} / 消耗包数: ${totalPacks.toFixed(2)}`}>
+              <Tooltip title={tooltipText}>
                 <span style={{ color: '#1890ff', fontWeight: 500 }}>
                   {formatAmount(avgPrice)}
                 </span>

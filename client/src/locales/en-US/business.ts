@@ -229,6 +229,12 @@ export default {
   'anchorProfit.column.profitRate': 'Gross Margin',
   'anchorProfit.column.goodsName': 'Product Name',
   'anchorProfit.column.avgPackPrice': 'Avg Pack Price',
+  'anchorProfit.tooltip.salesAmount': 'Real GMV = Screen GMV + Shop Orders + Offline Payment - Cancel Orders - Refunds',
+  'anchorProfit.tooltip.calculatedCostPrice': 'Dynamically calculated based on pack price: Price/Pack × Packs + Price/Box × Boxes + Price/Carton × Cartons',
+  'anchorProfit.tooltip.platformFee': 'Platform Fee = (Screen GMV - Cancel Orders - Refunds) × Fee Rate%',
+  'anchorProfit.tooltip.profitAmount': 'Gross Profit = Real GMV - Cost Price - Platform Fee',
+  'anchorProfit.tooltip.profitRate': 'Gross Margin% = (Gross Profit / Real GMV) × 100',
+  'anchorProfit.tooltip.avgPackPrice': 'Real GMV: {salesAmount} / Consumed Packs: {totalPacks}',
   'anchorProfit.warning.needsReview': 'Needs Review',
   'anchorProfit.import.title': 'Import Anchor Profit',
 
