@@ -23,6 +23,7 @@ export default {
   'menu.live-base.transfers': 'โอนย้าย',
   'menu.live-base.inventory-consumption': 'สต็อกและการใช้',
   'menu.live-base.anchor-profit': 'กำไรสตรีมเมอร์',
+  'menu.live-base.ads-record': 'บันทึก ADS',
   'menu.live-base.stock-out': 'เบิกสินค้า',
   'menu.live-base.real-time-stock': 'สต็อกเรียลไทม์',
   'menu.live-base.payables': 'เจ้าหนี้',

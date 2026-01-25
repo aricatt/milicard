@@ -240,11 +240,14 @@ export default {
 
   // ==================== 投流记录 ====================
   'adsRecord.title': '投流记录',
-  'adsRecord.add': '新增记录',
-  'adsRecord.edit': '编辑记录',
   'adsRecord.selectMonth': '选择月份',
   'adsRecord.selectHandlers': '选择主播',
   'adsRecord.selectDates': '选择日期',
+  'adsRecord.add': '新增记录',
+  'adsRecord.addRecord': '新增投流记录',
+  'adsRecord.editRecord': '编辑投流记录',
+  'adsRecord.selectHandlerRequired': '请选择主播',
+  'adsRecord.dailyAdsInput': '每日投流金额',
   'adsRecord.column.month': '月份',
   'adsRecord.column.handler': '主播',
   'adsRecord.column.totalGmv': '累计GMV',

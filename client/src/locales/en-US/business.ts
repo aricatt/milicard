@@ -238,6 +238,24 @@ export default {
   'anchorProfit.warning.needsReview': 'Needs Review',
   'anchorProfit.import.title': 'Import Anchor Profit',
 
+  // ==================== ADS Record ====================
+  'adsRecord.title': 'ADS Record',
+  'adsRecord.selectMonth': 'Select Month',
+  'adsRecord.selectHandlers': 'Select Streamers',
+  'adsRecord.selectDates': 'Select Dates',
+  'adsRecord.add': 'Add Record',
+  'adsRecord.addRecord': 'Add ADS Record',
+  'adsRecord.editRecord': 'Edit ADS Record',
+  'adsRecord.selectHandlerRequired': 'Please select a streamer',
+  'adsRecord.dailyAdsInput': 'Daily ADS Amount',
+  'adsRecord.column.month': 'Month',
+  'adsRecord.column.handler': 'Streamer',
+  'adsRecord.column.totalGmv': 'Total GMV',
+  'adsRecord.column.totalAds': 'ADS Amount',
+  'adsRecord.column.adsRatio': 'GMV Ratio',
+  'adsRecord.column.liveDays': 'Live Days',
+  'adsRecord.column.avgDailyGmv': 'Avg Daily GMV',
+
   // ==================== Locations ====================
   'locations.title': 'Live Rooms/Warehouses',
   'locations.add': 'Add Location',

@@ -23,6 +23,7 @@ export default {
   'menu.live-base.transfers': '調貨',
   'menu.live-base.inventory-consumption': '庫存和消耗',
   'menu.live-base.anchor-profit': '主播利潤',
+  'menu.live-base.ads-record': '投流記錄',
   'menu.live-base.stock-out': '出庫',
   'menu.live-base.real-time-stock': '實時庫存',
   'menu.live-base.payables': '應付',

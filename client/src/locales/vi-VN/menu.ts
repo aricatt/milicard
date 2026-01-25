@@ -23,6 +23,7 @@ export default {
   'menu.live-base.transfers': 'Chuyển kho',
   'menu.live-base.inventory-consumption': 'Tồn kho và tiêu thụ',
   'menu.live-base.anchor-profit': 'Lợi nhuận streamer',
+  'menu.live-base.ads-record': 'Bản ghi ADS',
   'menu.live-base.stock-out': 'Xuất kho',
   'menu.live-base.real-time-stock': 'Tồn kho thời gian thực',
   'menu.live-base.payables': 'Phải trả',

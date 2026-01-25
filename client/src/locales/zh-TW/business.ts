@@ -232,6 +232,24 @@ export default {
   'anchorProfit.warning.needsReview': '需要核查',
   'anchorProfit.import.title': '導入主播利潤',
 
+  // ==================== 投流記錄 ====================
+  'adsRecord.title': '投流記錄',
+  'adsRecord.selectMonth': '選擇月份',
+  'adsRecord.selectHandlers': '選擇主播',
+  'adsRecord.selectDates': '選擇日期',
+  'adsRecord.add': '新增記錄',
+  'adsRecord.addRecord': '新增投流記錄',
+  'adsRecord.editRecord': '編輯投流記錄',
+  'adsRecord.selectHandlerRequired': '請選擇主播',
+  'adsRecord.dailyAdsInput': '每日投流金額',
+  'adsRecord.column.month': '月份',
+  'adsRecord.column.handler': '主播',
+  'adsRecord.column.totalGmv': '累計GMV',
+  'adsRecord.column.totalAds': '投流金額',
+  'adsRecord.column.adsRatio': 'GMV佔比',
+  'adsRecord.column.liveDays': '直播天數',
+  'adsRecord.column.avgDailyGmv': '日均GMV',
+
   // ==================== 直播間/倉庫 ====================
   'locations.title': '直播間/倉庫',
   'locations.add': '新增直播間',

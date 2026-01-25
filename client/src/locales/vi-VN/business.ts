@@ -233,6 +233,24 @@ export default {
   'anchorProfit.warning.needsReview': 'Cần kiểm tra',
   'anchorProfit.import.title': 'Nhập lợi nhuận streamer',
 
+  // ==================== Bản ghi ADS ====================
+  'adsRecord.title': 'Bản ghi ADS',
+  'adsRecord.selectMonth': 'Chọn tháng',
+  'adsRecord.selectHandlers': 'Chọn streamer',
+  'adsRecord.selectDates': 'Chọn ngày',
+  'adsRecord.add': 'Thêm bản ghi',
+  'adsRecord.addRecord': 'Thêm bản ghi ADS',
+  'adsRecord.editRecord': 'Sửa bản ghi ADS',
+  'adsRecord.selectHandlerRequired': 'Vui lòng chọn streamer',
+  'adsRecord.dailyAdsInput': 'Số tiền ADS hàng ngày',
+  'adsRecord.column.month': 'Tháng',
+  'adsRecord.column.handler': 'Streamer',
+  'adsRecord.column.totalGmv': 'Tổng GMV',
+  'adsRecord.column.totalAds': 'Số tiền ADS',
+  'adsRecord.column.adsRatio': 'Tỷ lệ GMV',
+  'adsRecord.column.liveDays': 'Số ngày live',
+  'adsRecord.column.avgDailyGmv': 'GMV trung bình/ngày',
+
   // ==================== Phòng live/Kho ====================
   'locations.title': 'Phòng live/Kho',
   'locations.add': 'Thêm vị trí',

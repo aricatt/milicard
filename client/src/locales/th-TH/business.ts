@@ -233,6 +233,24 @@ export default {
   'anchorProfit.warning.needsReview': 'ต้องตรวจสอบ',
   'anchorProfit.import.title': 'นำเข้ากำไรสตรีมเมอร์',
 
+  // ==================== บันทึก ADS ====================
+  'adsRecord.title': 'บันทึก ADS',
+  'adsRecord.selectMonth': 'เลือกเดือน',
+  'adsRecord.selectHandlers': 'เลือกสตรีมเมอร์',
+  'adsRecord.selectDates': 'เลือกวันที่',
+  'adsRecord.add': 'เพิ่มบันทึก',
+  'adsRecord.addRecord': 'เพิ่มบันทึก ADS',
+  'adsRecord.editRecord': 'แก้ไขบันทึก ADS',
+  'adsRecord.selectHandlerRequired': 'กรุณาเลือกสตรีมเมอร์',
+  'adsRecord.dailyAdsInput': 'จำนวนเงิน ADS รายวัน',
+  'adsRecord.column.month': 'เดือน',
+  'adsRecord.column.handler': 'สตรีมเมอร์',
+  'adsRecord.column.totalGmv': 'GMV รวม',
+  'adsRecord.column.totalAds': 'จำนวนเงิน ADS',
+  'adsRecord.column.adsRatio': 'อัตราส่วน GMV',
+  'adsRecord.column.liveDays': 'จำนวนวันไลฟ์',
+  'adsRecord.column.avgDailyGmv': 'GMV เฉลี่ย/วัน',
+
   // ==================== ห้องไลฟ์/คลังสินค้า ====================
   'locations.title': 'ห้องไลฟ์/คลังสินค้า',
   'locations.add': 'เพิ่มตำแหน่ง',

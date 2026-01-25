@@ -29,6 +29,7 @@ export default {
   'menu.live-base.transfers': 'Transfers',
   'menu.live-base.inventory-consumption': 'Inventory & Consumption',
   'menu.live-base.anchor-profit': 'Streamer Profit',
+  'menu.live-base.ads-record': 'ADS Record',
   'menu.live-base.stock-out': 'Stock Out',
   'menu.live-base.real-time-stock': 'Real-time Stock',
   'menu.live-base.payables': 'Payables',

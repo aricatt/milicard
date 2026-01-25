@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable, { ProColumns, ActionType } from '@ant-design/pro-table';
-import { Card, Select, Space, DatePicker, Button, message, Modal } from 'antd';
-import { PlusOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Card, Select, Space, DatePicker, Button, message, Modal, Tooltip, Popconfirm } from 'antd';
+import { PlusOutlined, CalendarOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import dayjs from 'dayjs';
 import { useBase } from '@/contexts/BaseContext';
 import MultiDateCalendar from './components/MultiDateCalendar';
+import AdsRecordForm from './components/AdsRecordForm';
 import type { MonthlyGmvAdsStats, HandlerOption } from './types';
-import { getAdsRecordList, getHandlerList } from '@/services/adsRecord';
+import { getAdsRecordList, getHandlerList, upsertAdsRecord, deleteAdsRecord } from '@/services/adsRecord';
 
 const AdsRecordPage: React.FC = () => {
   const intl = useIntl();
@@ -19,7 +20,7 @@ const AdsRecordPage: React.FC = () => {
   // 金额格式化函数
   const formatAmount = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return '-';
-    return `¥${amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const [selectedMonth, setSelectedMonth] = useState<string>(dayjs().format('YYYY-MM'));
@@ -40,6 +41,8 @@ const AdsRecordPage: React.FC = () => {
   });
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [handlerOptions, setHandlerOptions] = useState<HandlerOption[]>([]);
+  const [formVisible, setFormVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<MonthlyGmvAdsStats | null>(null);
 
   // 动态生成列（只显示选中日期的列）
   const getDynamicColumns = (): ProColumns<MonthlyGmvAdsStats>[] => {
@@ -58,7 +61,7 @@ const AdsRecordPage: React.FC = () => {
     selectedDays.forEach(day => {
       // GMV列
       columns.push({
-        title: `${day}号GMV`,
+        title: `${day} GMV`,
         dataIndex: `day${day}Gmv`,
         width: 100,
         hideInSearch: true,
@@ -76,7 +79,7 @@ const AdsRecordPage: React.FC = () => {
 
       // ADS列
       columns.push({
-        title: `${day}号ADS`,
+        title: `${day} ADS`,
         dataIndex: `day${day}Ads`,
         width: 100,
         hideInSearch: true,
@@ -155,7 +158,7 @@ const AdsRecordPage: React.FC = () => {
       hideInSearch: true,
       render: (_, record) => (
         <span style={{ color: '#722ed1' }}>
-          {record.liveDays} 天
+          {record.liveDays}
         </span>
       ),
     },
@@ -172,6 +175,46 @@ const AdsRecordPage: React.FC = () => {
       ),
     },
     ...getDynamicColumns(),
+    {
+      title: intl.formatMessage({ id: 'table.column.action' }),
+      valueType: 'option',
+      width: 100,
+      fixed: 'right',
+      render: (_, record) => {
+        // 只有有 ADS 记录的才能编辑和删除（临时ID的不能操作）
+        if (record.id.startsWith('temp-')) {
+          return null;
+        }
+        
+        return (
+          <Space size="small">
+            <Tooltip title={intl.formatMessage({ id: 'button.edit' })}>
+              <Button
+                type="link"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+              />
+            </Tooltip>
+            <Popconfirm
+              title={intl.formatMessage({ id: 'message.confirmDelete' })}
+              onConfirm={() => handleDelete(record.id)}
+              okText={intl.formatMessage({ id: 'button.confirm' })}
+              cancelText={intl.formatMessage({ id: 'button.cancel' })}
+            >
+              <Tooltip title={intl.formatMessage({ id: 'button.delete' })}>
+                <Button
+                  type="link"
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                />
+              </Tooltip>
+            </Popconfirm>
+          </Space>
+        );
+      },
+    },
   ];
 
   // 查询数据
@@ -217,6 +260,57 @@ const AdsRecordPage: React.FC = () => {
   useEffect(() => {
     loadHandlerOptions();
   }, [baseId]);
+
+  const handleAdd = () => {
+    setEditingRecord(null);
+    setFormVisible(true);
+  };
+
+  const handleEdit = (record: MonthlyGmvAdsStats) => {
+    setEditingRecord(record);
+    setFormVisible(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!baseId) return;
+    
+    try {
+      await deleteAdsRecord(baseId, id);
+      message.success(intl.formatMessage({ id: 'message.deleteSuccess' }));
+      actionRef.current?.reload();
+    } catch (error) {
+      message.error(intl.formatMessage({ id: 'message.deleteFailed' }));
+    }
+  };
+
+  const handleFormSubmit = async (values: any) => {
+    if (!baseId) return;
+
+    try {
+      const data = {
+        month: selectedMonth,
+        handlerId: values.handlerId,
+        ...values,
+      };
+
+      await upsertAdsRecord(baseId, data);
+      message.success(
+        editingRecord
+          ? intl.formatMessage({ id: 'message.updateSuccess' })
+          : intl.formatMessage({ id: 'message.createSuccess' })
+      );
+
+      setFormVisible(false);
+      setEditingRecord(null);
+      actionRef.current?.reload();
+    } catch (error) {
+      message.error(
+        editingRecord
+          ? intl.formatMessage({ id: 'message.updateFailed' })
+          : intl.formatMessage({ id: 'message.createFailed' })
+      );
+    }
+  };
 
   return (
     <PageContainer>
@@ -283,10 +377,7 @@ const AdsRecordPage: React.FC = () => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => {
-                // TODO: 打开新增/编辑表单
-                message.info('新增功能开发中');
-              }}
+              onClick={handleAdd}
             >
               {intl.formatMessage({ id: 'adsRecord.add' })}
             </Button>
@@ -332,6 +423,19 @@ const AdsRecordPage: React.FC = () => {
           onMonthChange={setSelectedMonth}
         />
       </Modal>
+
+      {/* 新增/编辑表单 */}
+      <AdsRecordForm
+        visible={formVisible}
+        record={editingRecord}
+        month={selectedMonth}
+        handlerOptions={handlerOptions}
+        onCancel={() => {
+          setFormVisible(false);
+          setEditingRecord(null);
+        }}
+        onSubmit={handleFormSubmit}
+      />
     </PageContainer>
   );
 };
