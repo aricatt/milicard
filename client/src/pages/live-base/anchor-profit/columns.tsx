@@ -41,6 +41,27 @@ export const getColumns = (
     ),
   },
   {
+    title: intl?.formatMessage({ id: 'anchorProfit.column.goodsName' }) || '品名',
+    dataIndex: 'goodsName',
+    width: 150,
+    ellipsis: true,
+    render: (_, record) => {
+      // 从关联的消耗记录获取商品信息
+      // 格式：[品类名]商品名称
+      if (record.consumption?.goods) {
+        const goods = record.consumption.goods;
+        const categoryName = goods.category?.name || '';
+        const goodsName = goods.name || '';
+        return (
+          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {categoryName && `[${categoryName}]`}{goodsName}
+          </div>
+        );
+      }
+      return '-';
+    },
+  },
+  {
     title: intl?.formatMessage({ id: 'anchorProfit.column.gmv' }) || 'GMV金额',
     dataIndex: 'gmvAmount',
     valueType: 'money',
@@ -103,7 +124,7 @@ export const getColumns = (
     width: 120,
     sorter: true,
     render: (_, record) => (
-      <Tooltip title="GMV + 店铺订单 + 走水 - 取消订单 - 退款">
+      <Tooltip title="真实GMV = 大屏GMV + 店铺订单 + 走水 - 取消订单 - 退款">
         <span style={{ color: '#722ed1', fontWeight: 500 }}>
           {formatAmount(record.salesAmount)}
         </span>
@@ -124,25 +145,16 @@ export const getColumns = (
     ),
   },
   {
-    title: intl?.formatMessage({ id: 'anchorProfit.column.adSpend' }) || '投流金额',
-    dataIndex: 'adSpendAmount',
-    valueType: 'money',
-    width: 110,
-    render: (_, record) => (
-      <span style={{ color: '#eb2f96' }}>
-        {formatAmount(record.adSpendAmount)}
-      </span>
-    ),
-  },
-  {
     title: intl?.formatMessage({ id: 'anchorProfit.column.platformFee' }) || '平台扣点',
     dataIndex: 'platformFeeAmount',
     valueType: 'money',
     width: 110,
     render: (_, record) => (
-      <span style={{ color: '#faad14' }}>
-        {formatAmount(record.platformFeeAmount)}
-      </span>
+      <Tooltip title="平台扣点 = (大屏GMV - 取消订单 - 退款) × 平台费率%">
+        <span style={{ color: '#faad14' }}>
+          {formatAmount(record.platformFeeAmount)}
+        </span>
+      </Tooltip>
     ),
   },
   {
@@ -152,7 +164,7 @@ export const getColumns = (
     width: 120,
     sorter: true,
     render: (_, record) => (
-      <Tooltip title="销售 - 消耗 - 投流 - 平台扣点">
+      <Tooltip title="毛利 = 真实GMV - 拿货价 - 平台扣点">
         <span style={{ 
           color: record.profitAmount >= 0 ? '#52c41a' : '#ff4d4f', 
           fontWeight: 'bold' 
@@ -173,10 +185,45 @@ export const getColumns = (
       if (rate < 30) color = '#ff4d4f';
       else if (rate < 50) color = '#faad14';
       return (
-        <Tag color={rate >= 50 ? 'green' : rate >= 30 ? 'orange' : 'red'}>
-          {rate.toFixed(2)}%
-        </Tag>
+        <Tooltip title="毛利率% = (毛利 / 真实GMV) × 100">
+          <Tag color={rate >= 50 ? 'green' : rate >= 30 ? 'orange' : 'red'}>
+            {rate.toFixed(2)}%
+          </Tag>
+        </Tooltip>
       );
+    },
+  },
+  {
+    title: intl?.formatMessage({ id: 'anchorProfit.column.avgPackPrice' }) || '平均单包价',
+    dataIndex: 'avgPackPrice',
+    width: 120,
+    render: (_, record) => {
+      // 平均单包价 = 真实GMV / 消耗数量(换算为包)
+      if (record.consumption) {
+        const consumption = record.consumption;
+        const goods = consumption.goods;
+        if (goods) {
+          const packPerBox = goods.packPerBox || 1;  // 多少盒1箱
+          const piecePerPack = goods.piecePerPack || 1;  // 多少包1盒
+          // 将消耗数量换算为包（piece是最小单位"包"）
+          // 总包数 = 箱数×(盒/箱)×(包/盒) + 盒数×(包/盒) + 包数
+          const totalPacks = (consumption.boxQuantity || 0) * packPerBox * piecePerPack +
+                            (consumption.packQuantity || 0) * piecePerPack +
+                            (consumption.pieceQuantity || 0);
+          
+          if (totalPacks > 0 && record.salesAmount > 0) {
+            const avgPrice = record.salesAmount / totalPacks;
+            return (
+              <Tooltip title={`真实GMV: ${formatAmount(record.salesAmount)} / 消耗包数: ${totalPacks.toFixed(2)}`}>
+                <span style={{ color: '#1890ff', fontWeight: 500 }}>
+                  {formatAmount(avgPrice)}
+                </span>
+              </Tooltip>
+            );
+          }
+        }
+      }
+      return '-';
     },
   },
   {

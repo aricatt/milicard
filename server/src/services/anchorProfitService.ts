@@ -71,8 +71,15 @@ export class AnchorProfitService {
                 goods: {
                   select: {
                     id: true,
+                    name: true,
                     packPerBox: true,
                     piecePerPack: true,
+                    category: {
+                      select: {
+                        id: true,
+                        name: true,
+                      }
+                    },
                     localSettings: {
                       where: { baseId },
                       select: {
@@ -137,6 +144,20 @@ export class AnchorProfitService {
           notes: record.notes,
           createdAt: record.createdAt.toISOString(),
           updatedAt: record.updatedAt.toISOString(),
+          // 包含关联的消耗记录信息，用于前端显示品名和计算平均单包价
+          consumption: record.consumption ? {
+            goods: {
+              name: record.consumption.goods.name,
+              category: record.consumption.goods.category ? {
+                name: record.consumption.goods.category.name,
+              } : undefined,
+              packPerBox: Number(record.consumption.goods.packPerBox),
+              piecePerPack: Number(record.consumption.goods.piecePerPack),
+            },
+            boxQuantity: Number(record.consumption.boxQuantity),
+            packQuantity: Number(record.consumption.packQuantity),
+            pieceQuantity: Number(record.consumption.pieceQuantity),
+          } : undefined,
         };
       });
 

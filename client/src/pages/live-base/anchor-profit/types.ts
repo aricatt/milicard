@@ -5,6 +5,19 @@ export interface AnchorProfitRecord {
   handlerId: string;               // 主播ID
   handlerName?: string;            // 主播名称
   consumptionId?: string;          // 关联的消耗记录ID
+  consumption?: {                  // 关联的消耗记录详细信息（用于显示品名和计算平均单包价）
+    goods?: {
+      name: string;
+      category?: {
+        name: string;
+      };
+      packPerBox: number;
+      piecePerPack: number;
+    };
+    boxQuantity: number;
+    packQuantity: number;
+    pieceQuantity: number;
+  };
   baseId: number;
   baseName?: string;
   

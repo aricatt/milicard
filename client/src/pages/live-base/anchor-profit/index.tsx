@@ -712,11 +712,12 @@ const AnchorProfitPage: React.FC = () => {
             />
           </Form.Item>
         </Col>
-        <Col span={8}>
+        <Col span={8} style={{ display: 'none' }}>
           <Form.Item
             label={intl.formatMessage({ id: 'anchorProfit.form.adSpendAmount' })}
             name="adSpendAmount"
             initialValue={0}
+            hidden
           >
             <InputNumber
               min={0}
