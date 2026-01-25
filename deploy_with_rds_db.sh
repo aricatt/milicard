@@ -174,8 +174,8 @@ ROOT_AVAIL=$(df -BG / | awk 'NR==2 {print $4}' | sed 's/G//')
 echo "Root partition usage: ${ROOT_USAGE}%"
 echo "Available space: ${ROOT_AVAIL}GB"
 
-# 检查是否空间不足（使用率>90% 或 可用空间<5GB）
-if [ "$ROOT_USAGE" -gt 90 ] || [ "$ROOT_AVAIL" -lt 5 ]; then
+# 检查是否空间不足（使用率>90% 或 可用空间<2GB）
+if [ "$ROOT_USAGE" -gt 90 ] || [ "$ROOT_AVAIL" -lt 2 ]; then
     echo -e "${RED}=========================================="
     echo "  ❌ INSUFFICIENT DISK SPACE!"
     echo "=========================================="
