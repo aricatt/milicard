@@ -125,7 +125,7 @@ const AdsRecordForm: React.FC<AdsRecordFormProps> = ({
               style={{ marginBottom: 12 }}
             >
               <InputNumber
-                placeholder="投流金额"
+                placeholder={intl.formatMessage({ id: 'adsRecord.adsAmountPlaceholder' })}
                 style={{ width: '100%' }}
                 min={0}
                 precision={2}

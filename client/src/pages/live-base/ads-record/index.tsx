@@ -1,20 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable, { ProColumns, ActionType } from '@ant-design/pro-table';
-import { Card, Select, Space, DatePicker, Button, message, Modal, Tooltip, Popconfirm } from 'antd';
-import { PlusOutlined, CalendarOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Select, Space, DatePicker, Button, message, Modal, Tooltip, Popconfirm, Checkbox } from 'antd';
+import { PlusOutlined, CalendarOutlined, EditOutlined, DeleteOutlined, ExportOutlined, ImportOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
 import dayjs from 'dayjs';
 import { useBase } from '@/contexts/BaseContext';
 import MultiDateCalendar from './components/MultiDateCalendar';
 import AdsRecordForm from './components/AdsRecordForm';
+import ImportModal from '@/components/ImportModal';
+import { useAdsRecordExcel } from './useAdsRecordExcel';
 import type { MonthlyGmvAdsStats, HandlerOption } from './types';
 import { getAdsRecordList, getHandlerList, upsertAdsRecord, deleteAdsRecord } from '@/services/adsRecord';
 
 const AdsRecordPage: React.FC = () => {
   const intl = useIntl();
   const actionRef = useRef<ActionType>();
-  const { currentBase } = useBase();
+  const { currentBase, currencyRate } = useBase();
   const baseId = currentBase?.id;
 
   // 金额格式化函数
@@ -43,6 +45,27 @@ const AdsRecordPage: React.FC = () => {
   const [handlerOptions, setHandlerOptions] = useState<HandlerOption[]>([]);
   const [formVisible, setFormVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState<MonthlyGmvAdsStats | null>(null);
+  const [showInCNY, setShowInCNY] = useState(false);
+
+  // Excel导入导出Hook
+  const {
+    importModalVisible,
+    setImportModalVisible,
+    importLoading,
+    importProgress,
+    handleExport,
+    handleImport,
+    handleDownloadTemplate,
+  } = useAdsRecordExcel({
+    baseId: currentBase?.id || 0,
+    baseName: currentBase?.name || '',
+    selectedMonth: dayjs(selectedMonth, 'YYYY-MM'),
+    selectedHandlers,
+    selectedDates,
+    onImportSuccess: () => {
+      actionRef.current?.reload();
+    },
+  });
 
   // 动态生成列（只显示选中日期的列）
   const getDynamicColumns = (): ProColumns<MonthlyGmvAdsStats>[] => {
@@ -313,97 +336,126 @@ const AdsRecordPage: React.FC = () => {
   };
 
   return (
-    <PageContainer>
-      <Card>
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
-          {/* 搜索栏 */}
-          <Space size="middle">
-            <DatePicker
-              picker="month"
-              format="YYYY-MM"
-              value={dayjs(selectedMonth, 'YYYY-MM')}
-              onChange={(date) => {
-                if (date) {
-                  const newMonth = date.format('YYYY-MM');
-                  setSelectedMonth(newMonth);
-                  
-                  // 自动选中该月已过去的所有天（包括今天）
-                  const today = dayjs();
-                  const selectedMonthObj = dayjs(newMonth, 'YYYY-MM');
-                  const startOfMonth = selectedMonthObj.startOf('month');
-                  const endOfMonth = selectedMonthObj.endOf('month');
-                  const dates: string[] = [];
-                  
-                  let current = startOfMonth;
-                  // 如果选择的是当前月份，选中到今天；否则选中整月
-                  const endDate = selectedMonthObj.isSame(today, 'month') ? today : endOfMonth;
-                  
-                  while (current.isBefore(endDate) || current.isSame(endDate, 'day')) {
-                    dates.push(current.format('YYYY-MM-DD'));
-                    current = current.add(1, 'day');
+    <PageContainer header={{ title: false }}>
+      <ProTable<MonthlyGmvAdsStats>
+        actionRef={actionRef}
+        columns={columns}
+        request={fetchData}
+        rowKey="id"
+        search={false}
+        pagination={{
+          pageSize: 20,
+          showSizeChanger: true,
+          showQuickJumper: true,
+        }}
+        scroll={{ x: 'max-content' }}
+        options={{
+          reload: true,
+          density: true,
+          setting: true,
+        }}
+        toolbar={{
+          search: (
+            <Space size="middle">
+              <DatePicker
+                picker="month"
+                format="YYYY-MM"
+                value={dayjs(selectedMonth, 'YYYY-MM')}
+                onChange={(date) => {
+                  if (date) {
+                    const newMonth = date.format('YYYY-MM');
+                    setSelectedMonth(newMonth);
+                    
+                    // 自动选中该月已过去的所有天（包括今天）
+                    const today = dayjs();
+                    const selectedMonthObj = dayjs(newMonth, 'YYYY-MM');
+                    const startOfMonth = selectedMonthObj.startOf('month');
+                    const endOfMonth = selectedMonthObj.endOf('month');
+                    const dates: string[] = [];
+                    
+                    let current = startOfMonth;
+                    // 如果选择的是当前月份，选中到今天；否则选中整月
+                    const endDate = selectedMonthObj.isSame(today, 'month') ? today : endOfMonth;
+                    
+                    while (current.isBefore(endDate) || current.isSame(endDate, 'day')) {
+                      dates.push(current.format('YYYY-MM-DD'));
+                      current = current.add(1, 'day');
+                    }
+                    
+                    setSelectedDates(dates);
+                    actionRef.current?.reload();
                   }
-                  
-                  setSelectedDates(dates);
+                }}
+                placeholder={intl.formatMessage({ id: 'adsRecord.selectMonth' })}
+              />
+
+              <Select
+                mode="multiple"
+                placeholder={intl.formatMessage({ id: 'adsRecord.selectHandlers' })}
+                style={{ minWidth: 200 }}
+                value={selectedHandlers}
+                onChange={(values) => {
+                  setSelectedHandlers(values);
                   actionRef.current?.reload();
-                }
-              }}
-              placeholder={intl.formatMessage({ id: 'adsRecord.selectMonth' })}
-            />
+                }}
+                options={handlerOptions.map(h => ({
+                  label: h.name,
+                  value: h.id,
+                }))}
+                maxTagCount="responsive"
+              />
 
-            <Select
-              mode="multiple"
-              placeholder={intl.formatMessage({ id: 'adsRecord.selectHandlers' })}
-              style={{ minWidth: 200 }}
-              value={selectedHandlers}
-              onChange={(values) => {
-                setSelectedHandlers(values);
-                actionRef.current?.reload();
-              }}
-              options={handlerOptions.map(h => ({
-                label: h.name,
-                value: h.id,
-              }))}
-              maxTagCount="responsive"
-            />
-
-            <Button
-              icon={<CalendarOutlined />}
-              onClick={() => setCalendarVisible(true)}
+              <Button
+                icon={<CalendarOutlined />}
+                onClick={() => setCalendarVisible(true)}
+              >
+                {intl.formatMessage({ id: 'adsRecord.selectDates' })}
+                {selectedDates.length > 0 && ` (${selectedDates.length})`}
+              </Button>
+            </Space>
+          ),
+        }}
+        toolBarRender={() => [
+          currencyRate && currencyRate.fixedRate !== 1 && (
+            <Checkbox
+              key="showInCNY"
+              checked={showInCNY}
+              onChange={(e) => setShowInCNY(e.target.checked)}
             >
-              {intl.formatMessage({ id: 'adsRecord.selectDates' })}
-              {selectedDates.length > 0 && ` (${selectedDates.length})`}
-            </Button>
-
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAdd}
-            >
-              {intl.formatMessage({ id: 'adsRecord.add' })}
-            </Button>
-          </Space>
-
-          {/* 数据表格 */}
-          <ProTable<MonthlyGmvAdsStats>
-            actionRef={actionRef}
-            columns={columns}
-            request={fetchData}
-            rowKey="id"
-            search={false}
-            pagination={{
-              pageSize: 20,
-              showSizeChanger: true,
-              showQuickJumper: true,
-            }}
-            scroll={{ x: 'max-content' }}
-            options={{
-              reload: true,
-              density: true,
-              setting: true,
-            }}
-          />
-        </Space>
-      </Card>
+              {intl.formatMessage({ id: 'products.showInCNY' })}
+            </Checkbox>
+          ),
+          <Button
+            key="template"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadTemplate}
+          >
+            {intl.formatMessage({ id: 'button.downloadTemplate' })}
+          </Button>,
+          <Button
+            key="import"
+            icon={<ImportOutlined />}
+            onClick={() => setImportModalVisible(true)}
+          >
+            {intl.formatMessage({ id: 'button.import' })}
+          </Button>,
+          <Button
+            key="export"
+            icon={<ExportOutlined />}
+            onClick={handleExport}
+          >
+            {intl.formatMessage({ id: 'button.export' })}
+          </Button>,
+          <Button
+            key="add"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+          >
+            {intl.formatMessage({ id: 'adsRecord.add' })}
+          </Button>,
+        ]}
+      />
 
       {/* 日历多选弹窗 */}
       <Modal
@@ -435,6 +487,26 @@ const AdsRecordPage: React.FC = () => {
           setEditingRecord(null);
         }}
         onSubmit={handleFormSubmit}
+      />
+
+      {/* 导入模态框 */}
+      <ImportModal
+        title={intl.formatMessage({ id: 'adsRecord.title' })}
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        onImport={handleImport}
+        loading={importLoading}
+        progress={importProgress}
+        width={700}
+        fields={[
+          { field: '月份', required: true, description: '格式为YYYY-MM', example: '2025-01' },
+          { field: '主播', required: true, description: '需与系统中主播姓名一致', example: '主播姓名' },
+          { field: '1号', required: false, description: '1号投流金额', example: '1000' },
+          { field: '2号', required: false, description: '2号投流金额', example: '1000' },
+          { field: '3号', required: false, description: '3号投流金额', example: '1000' },
+          { field: '...', required: false, description: '其他日期投流金额', example: '' },
+          { field: '31号', required: false, description: '31号投流金额', example: '1000' },
+        ]}
       />
     </PageContainer>
   );
