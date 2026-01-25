@@ -247,6 +247,11 @@ const AdsRecordPage: React.FC = () => {
       return { data: [], success: false, total: 0 };
     }
 
+    // 如果没有选中任何主播，直接返回空数据
+    if (!selectedHandlers || selectedHandlers.length === 0) {
+      return { data: [], success: true, total: 0 };
+    }
+
     try {
       const response = await getAdsRecordList({
         baseId,
@@ -273,7 +278,17 @@ const AdsRecordPage: React.FC = () => {
     try {
       const response = await getHandlerList(baseId);
       if (response.success) {
-        setHandlerOptions(response.data || []);
+        const handlers = response.data || [];
+        setHandlerOptions(handlers);
+        
+        // 默认选中所有主播
+        const allHandlerIds = handlers.map(h => h.id);
+        setSelectedHandlers(allHandlerIds);
+        
+        // 延迟刷新表格，确保状态已更新
+        setTimeout(() => {
+          actionRef.current?.reload();
+        }, 100);
       }
     } catch (error) {
       message.error('加载主播列表失败');
@@ -392,7 +407,7 @@ const AdsRecordPage: React.FC = () => {
               <Select
                 mode="multiple"
                 placeholder={intl.formatMessage({ id: 'adsRecord.selectHandlers' })}
-                style={{ minWidth: 200 }}
+                style={{ minWidth: 400 }}
                 value={selectedHandlers}
                 onChange={(values) => {
                   setSelectedHandlers(values);
@@ -403,6 +418,48 @@ const AdsRecordPage: React.FC = () => {
                   value: h.id,
                 }))}
                 maxTagCount="responsive"
+                dropdownRender={(menu) => (
+                  <>
+                    <div style={{ padding: '4px 8px', borderBottom: '1px solid #f0f0f0' }}>
+                      <Space>
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() => {
+                            const allIds = handlerOptions.map(h => h.id);
+                            setSelectedHandlers(allIds);
+                            actionRef.current?.reload();
+                          }}
+                        >
+                          全选
+                        </Button>
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() => {
+                            const allIds = handlerOptions.map(h => h.id);
+                            const unselectedIds = allIds.filter(id => !selectedHandlers.includes(id));
+                            setSelectedHandlers(unselectedIds);
+                            actionRef.current?.reload();
+                          }}
+                        >
+                          反选
+                        </Button>
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() => {
+                            setSelectedHandlers([]);
+                            actionRef.current?.reload();
+                          }}
+                        >
+                          清空
+                        </Button>
+                      </Space>
+                    </div>
+                    {menu}
+                  </>
+                )}
               />
 
               <Button
