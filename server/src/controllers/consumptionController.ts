@@ -25,7 +25,8 @@ export class ConsumptionController {
         locationId: req.query.locationId ? parseInt(req.query.locationId as string) : undefined,
         handlerId: req.query.handlerId as string,
         startDate: req.query.startDate as string,
-        endDate: req.query.endDate as string
+        endDate: req.query.endDate as string,
+        latestStock: req.query.latestStock === 'true'
       };
 
       const result = await ConsumptionService.getConsumptionList(baseId, params);

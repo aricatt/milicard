@@ -12,6 +12,7 @@ export interface ConsumptionQueryParams {
   handlerId?: string;
   startDate?: string;
   endDate?: string;
+  latestStock?: boolean; // 最新剩余库存筛选
 }
 
 export interface CreateConsumptionRequest {
@@ -80,7 +81,7 @@ export class ConsumptionService {
     params: ConsumptionQueryParams
   ): Promise<{ success: boolean; data: ConsumptionResponse[]; total: number }> {
     try {
-      const { current = 1, pageSize = 10, goodsId, goodsName, locationId, handlerId, startDate, endDate } = params;
+      const { current = 1, pageSize = 10, goodsId, goodsName, locationId, handlerId, startDate, endDate, latestStock } = params;
       const skip = (current - 1) * pageSize;
 
       const where: any = { baseId };
@@ -113,6 +114,112 @@ export class ConsumptionService {
         }
       }
 
+      // 如果启用"最新剩余库存"筛选
+      if (latestStock) {
+        // 先查询所有符合条件的记录
+        const allRecords = await prisma.stockConsumption.findMany({
+          where,
+          include: {
+            goods: { 
+              select: { 
+                id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true,
+                category: { select: { code: true, name: true, nameI18n: true } },
+                localSettings: {
+                  where: { baseId },
+                  select: {
+                    packPrice: true,
+                  }
+                }
+              } 
+            },
+            location: { select: { id: true, name: true } },
+            handler: { select: { id: true, name: true } },
+            base: { select: { id: true, name: true } }
+          },
+          orderBy: [
+            { consumptionDate: 'desc' },
+            { createdAt: 'desc' }
+          ],
+        });
+
+        // 按主播+商品分组，只保留每组的最新一条记录
+        const latestRecordsMap = new Map<string, any>();
+        allRecords.forEach(record => {
+          const key = `${record.handlerId}_${record.goodsId}`;
+          if (!latestRecordsMap.has(key)) {
+            // 只保留库存>0的记录
+            const hasStock = 
+              Number(record.closingBoxQty) > 0 || 
+              Number(record.closingPackQty) > 0 || 
+              Number(record.closingPieceQty) > 0;
+            
+            if (hasStock) {
+              latestRecordsMap.set(key, record);
+            }
+          }
+        });
+
+        const latestRecords = Array.from(latestRecordsMap.values());
+        const total = latestRecords.length;
+        const records = latestRecords.slice(skip, skip + pageSize);
+
+        const data = records.map(record => {
+          // 计算拿货价（基于 packPrice）
+          let calculatedCostPrice = 0;
+          const packPerBox = Number(record.goods?.packPerBox) || 1;
+          const piecePerPack = Number(record.goods?.piecePerPack) || 1;
+          const packPrice = (record.goods as any)?.localSettings?.[0]?.packPrice;
+          
+          if (packPrice) {
+            const unitPricePerPiece = Number(packPrice);
+            const unitPricePerPack = unitPricePerPiece * piecePerPack;
+            const unitPricePerBox = unitPricePerPack * packPerBox;
+            
+            calculatedCostPrice = 
+              Number(record.boxQuantity) * unitPricePerBox +
+              Number(record.packQuantity) * unitPricePerPack +
+              Number(record.pieceQuantity) * unitPricePerPiece;
+          }
+          
+          return {
+            id: record.id,
+            consumptionDate: record.consumptionDate.toISOString().split('T')[0],
+            goodsId: record.goodsId,
+            goodsCode: record.goods?.code || '',
+            goodsName: record.goods?.name || '',
+            goodsNameI18n: record.goods?.nameI18n as any,
+            categoryCode: (record.goods as any)?.category?.code || '',
+            categoryName: (record.goods as any)?.category?.name || '',
+            categoryNameI18n: (record.goods as any)?.category?.nameI18n as any,
+            packPerBox: record.goods?.packPerBox || 1,
+            piecePerPack: record.goods?.piecePerPack || 1,
+            locationId: record.locationId,
+            locationName: record.location?.name || '',
+            handlerId: record.handlerId,
+            handlerName: record.handler?.name || '',
+            baseId: record.baseId,
+            baseName: record.base?.name || '',
+            openingBoxQty: Number(record.openingBoxQty),
+            openingPackQty: Number(record.openingPackQty),
+            openingPieceQty: Number(record.openingPieceQty),
+            closingBoxQty: Number(record.closingBoxQty),
+            closingPackQty: Number(record.closingPackQty),
+            closingPieceQty: Number(record.closingPieceQty),
+            boxQuantity: Number(record.boxQuantity),
+            packQuantity: Number(record.packQuantity),
+            pieceQuantity: Number(record.pieceQuantity),
+            unitPricePerBox: Number(record.unitPricePerBox),
+            calculatedCostPrice: calculatedCostPrice, // 添加计算的消耗金额
+            notes: record.notes || '',
+            createdAt: record.createdAt.toISOString(),
+            updatedAt: record.updatedAt.toISOString(),
+          };
+        });
+
+        return { success: true, data, total };
+      }
+
+      // 正常查询（非最新剩余库存模式）
       const [records, total] = await Promise.all([
         prisma.stockConsumption.findMany({
           where,
@@ -124,7 +231,7 @@ export class ConsumptionService {
                 localSettings: {
                   where: { baseId },
                   select: {
-                    packPrice: true, // 注意：packPrice 字段实际存储的是 piecePrice（每包的价格），历史原因字段名未修改
+                    packPrice: true,
                   }
                 }
               } 

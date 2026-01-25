@@ -101,6 +101,9 @@ const ConsumptionManagement: React.FC = () => {
   // 以人民币显示金额
   const [showInCNY, setShowInCNY] = useState(false);
   
+  // 最新剩余库存筛选
+  const [showLatestStock, setShowLatestStock] = useState(false);
+  
   // 批量选择
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   
@@ -587,6 +590,7 @@ const ConsumptionManagement: React.FC = () => {
                 handlerId: params.handlerId,
                 startDate: params.consumptionDate?.[0],
                 endDate: params.consumptionDate?.[1],
+                latestStock: showLatestStock, // 最新剩余库存筛选
               },
             });
 
@@ -631,6 +635,19 @@ const ConsumptionManagement: React.FC = () => {
         search={{
           labelWidth: 'auto',
           defaultCollapsed: true,
+          optionRender: (searchConfig, formProps, dom) => [
+            <Button
+              key="latestStock"
+              type={showLatestStock ? 'primary' : 'default'}
+              onClick={() => {
+                setShowLatestStock(!showLatestStock);
+                actionRef.current?.reload();
+              }}
+            >
+              最新剩余库存
+            </Button>,
+            ...dom,
+          ],
         }}
         options={{
           setting: { listsHeight: 400 },
