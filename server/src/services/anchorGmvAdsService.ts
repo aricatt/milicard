@@ -180,7 +180,8 @@ export class AnchorGmvAdsService {
       totalGmv += gmv;
       totalAds += ads;
 
-      if (gmv > 0) {
+      // 只要有GMV或ADS数据，就算作直播天数
+      if (gmv > 0 || ads > 0) {
         liveDays++;
       }
     });
