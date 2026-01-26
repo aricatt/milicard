@@ -323,6 +323,18 @@ class DataPermissionService {
       create: data,
     });
   }
+
+  /**
+   * 删除指定资源的所有字段权限配置
+   */
+  async deleteResourceFieldPermissions(roleId: string, resource: string) {
+    return prisma.fieldPermission.deleteMany({
+      where: {
+        roleId,
+        resource,
+      },
+    });
+  }
 }
 
 export const dataPermissionService = new DataPermissionService();

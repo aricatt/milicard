@@ -789,8 +789,18 @@ export const filterResponseFields = () => {
     res.json = (body: any) => {
       const fieldPermissions = req.permissionContext?.fieldPermissions
       
+      // 开发环境下，附加字段权限调试信息
+      const isDev = process.env.NODE_ENV === 'development'
+      
       // 如果没有字段权限配置或允许所有字段，直接返回
       if (!fieldPermissions || fieldPermissions.readable.includes('*')) {
+        if (isDev && body && body.success) {
+          body._debug_fieldPermissions = {
+            readable: ['*'],
+            writable: ['*'],
+            message: '无字段权限限制或允许所有字段'
+          }
+        }
         return originalJson(body)
       }
 
@@ -806,22 +816,35 @@ export const filterResponseFields = () => {
         // 处理标准响应格式：{ success: true, data: ... }
         if (body.success && body.data) {
           if (Array.isArray(body.data)) {
-            // 调试：查看第一条数据的字段
-            if (body.data.length > 0) {
-              console.log('🔍 过滤前的字段:', Object.keys(body.data[0]))
-            }
             body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
-            // 调试：查看过滤后的字段
-            if (body.data.length > 0) {
-              console.log('🔍 过滤后的字段:', Object.keys(body.data[0]))
-            }
           } else if (typeof body.data === 'object') {
             body.data = filterObject(body.data, fieldPermissions.readable)
+          }
+          
+          // 开发环境下，附加字段权限调试信息
+          if (isDev) {
+            body._debug_fieldPermissions = {
+              readable: fieldPermissions.readable,
+              writable: fieldPermissions.writable,
+              resource: req.permissionContext?.resource,
+              relatedResources: req.permissionContext?.relatedResources,
+              message: '当前请求的字段权限配置'
+            }
           }
         }
         // 处理分页响应格式：{ data: [...], pagination: {...} }
         else if (body.data && Array.isArray(body.data) && body.pagination) {
           body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
+          
+          if (isDev) {
+            body._debug_fieldPermissions = {
+              readable: fieldPermissions.readable,
+              writable: fieldPermissions.writable,
+              resource: req.permissionContext?.resource,
+              relatedResources: req.permissionContext?.relatedResources,
+              message: '当前请求的字段权限配置'
+            }
+          }
         }
         // 处理直接数组响应：[...]
         else if (Array.isArray(body)) {

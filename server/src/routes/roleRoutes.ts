@@ -49,6 +49,9 @@ router.get('/:roleId/field-permissions', checkSystemPermission('role', 'read'), 
 // 更新角色字段权限（需要 role:update 权限）
 router.put('/:roleId/field-permissions', checkSystemPermission('role', 'update'), DataPermissionController.updateFieldPermissions);
 
+// 重置指定资源的字段权限（需要 role:update 权限）
+router.delete('/:roleId/field-permissions/:resource', checkSystemPermission('role', 'update'), DataPermissionController.resetResourceFieldPermissions);
+
 // 获取角色详情（需要 role:read 权限）
 router.get('/:roleId', checkSystemPermission('role', 'read'), PermissionController.getRoleDetail);
 

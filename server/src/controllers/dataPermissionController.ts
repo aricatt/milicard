@@ -88,14 +88,49 @@ const RESOURCES = [
     key: 'goods',
     label: '商品',
     fields: [
+      { key: 'id', label: '商品ID', type: 'string' },
+      { key: 'code', label: '商品编号', type: 'string' },
+      { key: 'name', label: '商品名称', type: 'string' },
+      { key: 'nameI18n', label: '商品名称(多语言)', type: 'string' },
+      { key: 'manufacturer', label: '厂家名称', type: 'string' },
+      { key: 'category', label: '品类', type: 'string' },
+      { key: 'categoryId', label: '品类ID', type: 'string' },
+      { key: 'packPerBox', label: '每箱盒数', type: 'number' },
+      { key: 'piecePerPack', label: '每盒包数', type: 'number' },
+      { key: 'description', label: '描述', type: 'string' },
+      { key: 'imageUrl', label: '图片', type: 'string' },
+      { key: 'isActive', label: '状态', type: 'boolean' },
       { key: 'baseId', label: '基地ID', type: 'number' },
       { key: 'createdBy', label: '创建人ID', type: 'string' },
+      { key: 'createdAt', label: '创建时间', type: 'date' },
+      { key: 'updatedAt', label: '更新时间', type: 'date' },
     ],
   },
   {
-    key: 'goodsCategory',
+    key: 'goodsLocalSetting',
+    label: '商品设置',
+    fields: [
+      { key: 'id', label: 'ID', type: 'string' },
+      { key: 'goodsId', label: '商品ID', type: 'string' },
+      { key: 'baseId', label: '基地ID', type: 'number' },
+      { key: 'alias', label: '别名', type: 'string' },
+      { key: 'retailPrice', label: '零售价(一箱)', type: 'number' },
+      { key: 'packPrice', label: '平拆价(一包)', type: 'number' },
+      { key: 'purchasePrice', label: '采购价', type: 'number' },
+      { key: 'isActive', label: '状态', type: 'boolean' },
+      { key: 'goods', label: '商品信息', type: 'object' },
+      { key: 'createdAt', label: '创建时间', type: 'date' },
+      { key: 'updatedAt', label: '更新时间', type: 'date' },
+    ],
+  },
+  {
+    key: 'category',
     label: '商品分类',
     fields: [
+      { key: 'id', label: '分类ID', type: 'string' },
+      { key: 'code', label: '分类编号', type: 'string' },
+      { key: 'name', label: '分类名称', type: 'string' },
+      { key: 'nameI18n', label: '分类名称(多语言)', type: 'string' },
       { key: 'baseId', label: '基地ID', type: 'number' },
     ],
   },
@@ -399,6 +434,35 @@ export class DataPermissionController {
       res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : '更新字段权限失败',
+      });
+    }
+  }
+
+  /**
+   * 重置指定资源的字段权限（清理所有配置）
+   * DELETE /api/v1/roles/:roleId/field-permissions/:resource
+   */
+  static async resetResourceFieldPermissions(req: Request, res: Response) {
+    try {
+      const { roleId, resource } = req.params;
+
+      const deleted = await dataPermissionService.deleteResourceFieldPermissions(roleId, resource);
+
+      res.json({
+        success: true,
+        data: { count: deleted.count },
+        message: `已清理 ${deleted.count} 条字段权限配置`,
+      });
+    } catch (error) {
+      logger.error('重置资源字段权限失败', {
+        error: error instanceof Error ? error.message : String(error),
+        roleId: req.params.roleId,
+        resource: req.params.resource,
+      });
+
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : '重置字段权限失败',
       });
     }
   }

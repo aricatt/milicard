@@ -9,9 +9,9 @@ const router = Router({ mergeParams: true })
 router.use(authenticateToken)
 
 // 基地商品设置路由
-router.get('/', injectDataPermission('goodsLocalSetting'), filterResponseFields(), GoodsLocalSettingController.list)
-router.get('/available', injectDataPermission('goodsLocalSetting'), filterResponseFields(), GoodsLocalSettingController.getAvailableGoods)
-router.get('/:id', injectDataPermission('goodsLocalSetting'), filterResponseFields(), GoodsLocalSettingController.getById)
+router.get('/', injectDataPermission('goodsLocalSetting', ['goods', 'category']), filterResponseFields(), GoodsLocalSettingController.list)
+router.get('/available', injectDataPermission('goodsLocalSetting', ['goods', 'category']), filterResponseFields(), GoodsLocalSettingController.getAvailableGoods)
+router.get('/:id', injectDataPermission('goodsLocalSetting', ['goods', 'category']), filterResponseFields(), GoodsLocalSettingController.getById)
 router.post('/', GoodsLocalSettingController.create)
 router.put('/:id', GoodsLocalSettingController.update)
 router.delete('/:id', GoodsLocalSettingController.delete)

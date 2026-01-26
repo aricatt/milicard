@@ -3,8 +3,8 @@
  * 用于配置角色的字段级权限（可读/可写）
  */
 import React, { useState, useEffect } from 'react';
-import { Table, Checkbox, Button, Select, Space, App, Empty } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
+import { Table, Checkbox, Button, Select, Space, App, Empty, Popconfirm } from 'antd';
+import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import { request } from '@umijs/max';
 
 interface FieldPermission {
@@ -197,8 +197,8 @@ const RESOURCES: Resource[] = [
       { key: 'goods', label: '商品信息', type: 'object' },
       { key: 'baseId', label: '基地ID', type: 'number' },
       { key: 'retailPrice', label: '零售价', type: 'number' },
-      { key: 'purchasePrice', label: '采购价', type: 'number' },
-      { key: 'packPrice', label: '盒价', type: 'number' },
+      { key: 'purchasePrice', label: '授权价', type: 'number' },
+      { key: 'packPrice', label: '平拆价', type: 'number' },
       { key: 'alias', label: '别名', type: 'string' },
       { key: 'isActive', label: '状态', type: 'boolean' },
       { key: 'createdAt', label: '创建时间', type: 'date' },
@@ -636,6 +636,29 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName, readOnly = f
     }
   };
 
+  // 重置当前资源的字段权限（清理所有配置）
+  const handleReset = async () => {
+    setSaving(true);
+    try {
+      const result = await request(`/api/v1/roles/${roleId}/field-permissions/${selectedResource}`, {
+        method: 'DELETE',
+      });
+
+      if (result.success) {
+        message.success(`已清理 ${result.data.count} 条字段权限配置`);
+        // 重新加载权限数据
+        await fetchPermissions();
+        setHasChanges(false);
+      } else {
+        message.error(result.message || '重置失败');
+      }
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || '重置失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // 全选/取消全选
   const handleSelectAll = (type: 'canRead' | 'canWrite', value: boolean) => {
     const newPermissions = new Map(permissions);
@@ -736,15 +759,31 @@ const FieldPermissionConfig: React.FC<Props> = ({ roleId, roleName, readOnly = f
           />
         </Space>
         {!readOnly && (
-          <Button
-            type="primary"
-            icon={<SaveOutlined />}
-            onClick={handleSave}
-            loading={saving}
-            disabled={!hasChanges}
-          >
-            保存
-          </Button>
+          <Space>
+            <Popconfirm
+              title="重置字段权限"
+              description={`确定要清理当前资源的所有字段权限配置吗？清理后将恢复为默认状态（所有字段可读可写）。`}
+              onConfirm={handleReset}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button
+                icon={<ReloadOutlined />}
+                loading={saving}
+              >
+                重置
+              </Button>
+            </Popconfirm>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={handleSave}
+              loading={saving}
+              disabled={!hasChanges}
+            >
+              保存
+            </Button>
+          </Space>
         )}
       </div>
 
