@@ -515,11 +515,11 @@ model AnchorProfit {
   offlineAmount      Decimal           @default(0) @map("offline_amount") @db.Decimal(12, 2)
   consumptionValue   Decimal           @default(0) @map("consumption_value") @db.Decimal(12, 2)
   adCost             Decimal           @default(0) @map("ad_cost") @db.Decimal(12, 2)
-  platformFeeRate    Decimal           @default(0) @map("platform_fee_rate") @db.Decimal(5, 2)
+  platformFeeRate    Decimal           @default(0) @map("platform_fee_rate") @db.Decimal(8, 2)
   platformFee        Decimal           @default(0) @map("platform_fee") @db.Decimal(12, 2)
   dailySales         Decimal           @default(0) @map("daily_sales") @db.Decimal(12, 2)
   profitAmount       Decimal           @default(0) @map("profit_amount") @db.Decimal(12, 2)
-  profitRate         Decimal           @default(0) @map("profit_rate") @db.Decimal(5, 2)
+  profitRate         Decimal           @default(0) @map("profit_rate") @db.Decimal(8, 2)
   notes              String?
   createdBy          String            @map("created_by")
   createdAt          DateTime          @default(now()) @map("created_at")
