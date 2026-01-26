@@ -154,6 +154,14 @@ export const layout: RunTimeLayoutConfig = ({
       
       // 根据基地类型过滤菜单
       return menuData.filter((item) => {
+        // 如果没有选择基地，隐藏所有基地相关菜单
+        if (!baseType) {
+          if (item.path === '/live-base' || item.path === '/offline-region') {
+            return false;
+          }
+          return true;
+        }
+        
         // 如果是直播基地类型，隐藏线下区域菜单
         if (baseType === BaseType.LIVE_BASE && item.path === '/offline-region') {
           return false;
