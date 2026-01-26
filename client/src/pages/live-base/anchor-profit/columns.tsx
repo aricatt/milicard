@@ -181,6 +181,9 @@ export const getColumns = (
     sorter: true,
     render: (_, record) => {
       const rate = record.profitRate;
+      if (rate === null || rate === undefined) {
+        return <Tag color="default">-</Tag>;
+      }
       let color = '#52c41a';
       if (rate < 30) color = '#ff4d4f';
       else if (rate < 50) color = '#faad14';

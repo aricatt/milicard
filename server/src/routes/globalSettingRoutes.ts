@@ -11,11 +11,11 @@ router.use(authenticateToken);
 // 获取所有分类
 router.get('/categories', checkSystemPermission('global_setting', 'read'), GlobalSettingController.getCategories);
 
-// 根据 key 获取配置值（仅返回 value）
-router.get('/value/:key', checkSystemPermission('global_setting', 'read'), GlobalSettingController.getValue);
+// 根据 key 获取配置值（仅返回 value）- 允许所有登录用户访问
+router.get('/value/:key', GlobalSettingController.getValue);
 
-// 批量获取配置值
-router.post('/values/batch', checkSystemPermission('global_setting', 'read'), GlobalSettingController.getValues);
+// 批量获取配置值 - 允许所有登录用户访问
+router.post('/values/batch', GlobalSettingController.getValues);
 
 // 批量设置配置值
 router.post('/values/batch-set', checkSystemPermission('global_setting', 'update'), GlobalSettingController.setValues);
