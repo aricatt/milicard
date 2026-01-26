@@ -241,9 +241,9 @@ const RealTimeStockPage: React.FC = () => {
   // 统计详情弹出内容
   const statsContent = (
     <Descriptions column={1} size="small">
-      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalGoods' })}>{stats.totalGoods}</Descriptions.Item>
-      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}>¥{stats.totalValue.toLocaleString()}</Descriptions.Item>
-      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.lowStock' })}>{stats.lowStockCount}</Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalGoods' })}>{stats.totalGoods || 0}</Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}>¥{(stats.totalValue || 0).toLocaleString()}</Descriptions.Item>
+      <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.lowStock' })}>{stats.lowStockCount || 0}</Descriptions.Item>
     </Descriptions>
   );
 
@@ -276,7 +276,7 @@ const RealTimeStockPage: React.FC = () => {
           <Card>
             <Statistic
               title={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}
-              value={stats.totalValue}
+              value={stats.totalValue || 0}
               precision={2}
               prefix={<DollarOutlined />}
             />
