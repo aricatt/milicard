@@ -530,10 +530,10 @@ model AnchorProfit {
   location           Location          @relation(fields: [locationId], references: [id])
   consumption        StockConsumption? @relation(fields: [consumptionId], references: [id])
 
-  @@unique([locationId, profitDate])
   @@index([locationId])
   @@index([profitDate])
   @@index([consumptionId])
+  @@index([locationId, profitDate])
   @@map("anchor_profits")
 }
 

@@ -75,7 +75,9 @@ export class AnchorProfitController {
     } catch (error) {
       logger.error('创建主播利润记录失败', {
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
         baseId: req.params.baseId,
+        body: req.body,
         controller: 'AnchorProfitController',
       });
       res.status(500).json({

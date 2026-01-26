@@ -187,6 +187,8 @@ export class AnchorProfitService {
       consumptionId: string; // 关联的消耗记录ID
       gmvAmount: number;
       refundAmount: number;
+      cancelOrderAmount?: number;
+      shopOrderAmount?: number;
       waterAmount: number;
       consumptionAmount: number;
       adSpendAmount: number;
@@ -245,6 +247,20 @@ export class AnchorProfitService {
         data: record,
       };
     } catch (error) {
+      // 捕获 Prisma 唯一约束错误
+      if (error instanceof Error && error.message.includes('Unique constraint failed')) {
+        logger.warn('创建主播利润记录失败：唯一约束冲突', {
+          error: error.message,
+          baseId,
+          data,
+          service: 'milicard-api',
+        });
+        return {
+          success: false,
+          message: '该消耗记录已关联利润记录，或该直播间当天已有利润记录',
+        };
+      }
+
       logger.error('创建主播利润记录失败', {
         error: error instanceof Error ? error.message : String(error),
         baseId,
