@@ -125,6 +125,9 @@ export default function access(
     
     // 直播基地模块权限（权限字符串与后端 ResourceModule 一致）
     canAccessProducts: hasPermission(roles, 'goods:read') || isAdmin(roles),
+    canCreateProductSetting: hasPermission(roles, 'goods_local_setting:create') || isAdmin(roles),
+    canUpdateProductSetting: hasPermission(roles, 'goods_local_setting:update') || isAdmin(roles),
+    canDeleteProductSetting: hasPermission(roles, 'goods_local_setting:delete') || isAdmin(roles),
     canAccessProcurement: hasPermission(roles, 'purchase_order:read') || isAdmin(roles),
     canAccessArrivals: hasPermission(roles, 'arrival_order:read') || isAdmin(roles),
     canAccessTransfers: hasPermission(roles, 'stock_transfer:read') || isAdmin(roles),
