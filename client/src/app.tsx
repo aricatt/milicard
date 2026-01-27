@@ -18,6 +18,8 @@ import { App } from 'antd';
 import type { MenuDataItem } from '@ant-design/pro-components';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
+import { useVersionCheck } from '@/hooks/useVersionCheck';
+import VersionDisplay from '@/components/VersionDisplay';
 import '@ant-design/v5-patch-for-react-19';
 
 // 抑制 umi-presets-pro 的内置组件错误（giveFreely、远程配置等）
@@ -250,6 +252,20 @@ export const layout: RunTimeLayoutConfig = ({
 };
 
 /**
+ * 版本检测包装组件
+ */
+const VersionCheckWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // 启用版本检测：每 5 分钟检查一次，弹窗提示用户刷新
+  useVersionCheck({
+    interval: 5 * 60 * 1000, // 5 分钟
+    autoRefresh: false, // 弹窗提示，不自动刷新
+    disableInDev: true, // 开发环境禁用
+  });
+  
+  return <>{children}</>;
+};
+
+/**
  * @name rootContainer 根容器
  * 用于包裹整个应用，使 BaseProvider 在 layout 的 actionsRender 中也能使用
  */
@@ -257,7 +273,10 @@ export function rootContainer(container: React.ReactNode) {
   return (
     <App>
       <BaseProvider>
-        {container}
+        <VersionCheckWrapper>
+          {container}
+          <VersionDisplay />
+        </VersionCheckWrapper>
       </BaseProvider>
     </App>
   );
