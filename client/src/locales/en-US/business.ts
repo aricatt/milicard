@@ -78,7 +78,7 @@ export default {
   'unit.piece': 'Piece',
   'unit.item': 'Item',
   'unit.yuan': 'Yuan',
-
+  'unit.perBox': '/Box',
   'unit.perPack': '/Pack',
   'unit.perPiece': '/Piece',
   'unit.pricePerPack': 'Price/Pack',
@@ -121,6 +121,14 @@ export default {
   'products.category.stamp': 'Stamp',
   'products.category.luckyCat': 'Lucky Cat',
   'products.import.title': 'Import Products',
+  'products.form.stockThreshold': 'Stock Alert Settings',
+  'products.form.enableStockAlert': 'Enable Stock Alert',
+  'products.form.whenStockLessThan': 'When stock less than',
+  'products.form.showAlert': 'show alert',
+  'products.form.thresholdRequired': 'Please enter threshold',
+  'products.form.thresholdMinZero': 'Threshold cannot be less than 0',
+  'products.form.thresholdPlaceholder': 'Threshold',
+  'products.form.unitRequired': 'Please select unit',
 
   // ==================== Suppliers ====================
   'suppliers.title': 'Suppliers',
@@ -376,6 +384,7 @@ export default {
   'realTimeStock.stats.totalGoods': 'Product Types',
   'realTimeStock.stats.totalValue': 'Total Value',
   'realTimeStock.stats.lowStock': 'Low Stock Items',
+  'realTimeStock.stats.outOfStock': 'Out of Stock Items',
   'realTimeStock.filter.allWarehouses': 'All Warehouses',
   'realTimeStock.filter.stockLessThan': 'Stock Less Than',
   'realTimeStock.lastUpdated': 'Last updated: {time}, updates every 10 minutes',

@@ -77,8 +77,9 @@ export default {
   'unit.pack': '盒',
   'unit.piece': '包',
   'unit.item': '个',
-  'unit.rmb': '元',
   'unit.yuan': '元',
+  'unit.perBox': '/箱',
+  'unit.perPack': '/盒',
   'unit.perPiece': '/包',
   'unit.pricePerPack': '单价/盒',
 
@@ -120,6 +121,14 @@ export default {
   'products.category.stamp': '邮票',
   'products.category.luckyCat': '招财猫',
   'products.import.title': '导入商品数据',
+  'products.form.stockThreshold': '库存预警设置',
+  'products.form.enableStockAlert': '启用库存预警',
+  'products.form.whenStockLessThan': '当库存少于',
+  'products.form.showAlert': '时显示预警',
+  'products.form.thresholdRequired': '请输入阈值',
+  'products.form.thresholdMinZero': '阈值不能小于0',
+  'products.form.thresholdPlaceholder': '阈值',
+  'products.form.unitRequired': '请选择单位',
 
   // ==================== 供应商管理 ====================
   'suppliers.title': '供应商管理',
@@ -375,6 +384,7 @@ export default {
   'realTimeStock.stats.totalGoods': '商品种类',
   'realTimeStock.stats.totalValue': '库存总价值',
   'realTimeStock.stats.lowStock': '低库存商品',
+  'realTimeStock.stats.outOfStock': '无库存商品',
   'realTimeStock.filter.allWarehouses': '全部仓库',
   'realTimeStock.filter.stockLessThan': '库存少于',
   'realTimeStock.lastUpdated': '最后更新: {time}，每10分钟更新一次',

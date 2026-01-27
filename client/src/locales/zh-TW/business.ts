@@ -72,8 +72,9 @@ export default {
   'unit.pack': '盒',
   'unit.piece': '包',
   'unit.item': '個',
-  'unit.rmb': '元',
   'unit.yuan': '元',
+  'unit.perBox': '/箱',
+  'unit.perPack': '/盒',
   'unit.perPiece': '/包',
   'unit.pricePerPack': '單價/盒',
 
@@ -115,6 +116,14 @@ export default {
   'products.category.stamp': '郵票',
   'products.category.luckyCat': '招財貓',
   'products.import.title': '導入商品數據',
+  'products.form.stockThreshold': '庫存預警設置',
+  'products.form.enableStockAlert': '啟用庫存預警',
+  'products.form.whenStockLessThan': '當庫存少於',
+  'products.form.showAlert': '時顯示預警',
+  'products.form.thresholdRequired': '請輸入阈值',
+  'products.form.thresholdMinZero': '阈值不能小於0',
+  'products.form.thresholdPlaceholder': '阈值',
+  'products.form.unitRequired': '請選擇單位',
 
   // ==================== 供應商管理 ====================
   'suppliers.title': '供應商管理',
@@ -369,6 +378,7 @@ export default {
   'realTimeStock.stats.totalGoods': '商品種類',
   'realTimeStock.stats.totalValue': '庫存總價值',
   'realTimeStock.stats.lowStock': '低庫存商品',
+  'realTimeStock.stats.outOfStock': '無庫存商品',
   'realTimeStock.filter.allWarehouses': '全部倉庫',
   'realTimeStock.filter.stockLessThan': '庫存少於',
   'realTimeStock.lastUpdated': '最後更新: {time}，每10分鐘更新一次',

@@ -116,6 +116,14 @@ export default {
   'products.category.stamp': 'Tem',
   'products.category.luckyCat': 'Mèo may mắn',
   'products.import.title': 'Nhập sản phẩm',
+  'products.form.stockThreshold': 'Cài đặt cảnh báo tồn kho',
+  'products.form.enableStockAlert': 'Bật cảnh báo tồn kho',
+  'products.form.whenStockLessThan': 'Khi tồn kho ít hơn',
+  'products.form.showAlert': 'hiển thị cảnh báo',
+  'products.form.thresholdRequired': 'Vui lòng nhập ngưỡng',
+  'products.form.thresholdMinZero': 'Ngưỡng không thể nhỏ hơn 0',
+  'products.form.thresholdPlaceholder': 'Ngưỡng',
+  'products.form.unitRequired': 'Vui lòng chọn đơn vị',
 
   // ==================== Quản lý nhà cung cấp ====================
   'suppliers.title': 'Nhà cung cấp',
@@ -371,6 +379,7 @@ export default {
   'realTimeStock.stats.totalGoods': 'Loại sản phẩm',
   'realTimeStock.stats.totalValue': 'Tổng giá trị',
   'realTimeStock.stats.lowStock': 'Sản phẩm tồn kho thấp',
+  'realTimeStock.stats.outOfStock': 'Sản phẩm hết hàng',
   'realTimeStock.filter.allWarehouses': 'Tất cả kho',
   'realTimeStock.filter.stockLessThan': 'Tồn kho ít hơn',
   'realTimeStock.lastUpdated': 'Cập nhật lần cuối: {time}, cập nhật mỗi 10 phút',

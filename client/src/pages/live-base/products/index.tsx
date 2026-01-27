@@ -1203,14 +1203,14 @@ const ProductSettingsPage: React.FC = () => {
           </Form.Item>
 
           {/* 库存阈值配置 */}
-          <Form.Item label="库存预警设置">
+          <Form.Item label={intl.formatMessage({ id: 'products.form.stockThreshold' })}>
             <Space direction="vertical" style={{ width: '100%' }}>
               <Form.Item
                 name={['stockThreshold', 'enabled']}
                 valuePropName="checked"
                 noStyle
               >
-                <Checkbox>启用库存预警</Checkbox>
+                <Checkbox>{intl.formatMessage({ id: 'products.form.enableStockAlert' })}</Checkbox>
               </Form.Item>
               
               <Form.Item noStyle shouldUpdate>
@@ -1218,34 +1218,34 @@ const ProductSettingsPage: React.FC = () => {
                   const enabled = getFieldValue(['stockThreshold', 'enabled']);
                   return enabled ? (
                     <Space>
-                      <span>当库存少于</span>
+                      <span>{intl.formatMessage({ id: 'products.form.whenStockLessThan' })}</span>
                       <Form.Item
                         name={['stockThreshold', 'value']}
                         noStyle
                         rules={[
-                          { required: true, message: '请输入阈值' },
-                          { type: 'number', min: 0, message: '阈值不能小于0' }
+                          { required: true, message: intl.formatMessage({ id: 'products.form.thresholdRequired' }) },
+                          { type: 'number', min: 0, message: intl.formatMessage({ id: 'products.form.thresholdMinZero' }) }
                         ]}
                       >
                         <InputNumber
                           min={0}
                           precision={0}
                           style={{ width: 100 }}
-                          placeholder="阈值"
+                          placeholder={intl.formatMessage({ id: 'products.form.thresholdPlaceholder' })}
                         />
                       </Form.Item>
                       <Form.Item
                         name={['stockThreshold', 'unit']}
                         noStyle
-                        rules={[{ required: true, message: '请选择单位' }]}
+                        rules={[{ required: true, message: intl.formatMessage({ id: 'products.form.unitRequired' }) }]}
                       >
                         <Select style={{ width: 80 }}>
-                          <Select.Option value="box">箱</Select.Option>
-                          <Select.Option value="pack">盒</Select.Option>
-                          <Select.Option value="piece">包</Select.Option>
+                          <Select.Option value="box">{intl.formatMessage({ id: 'unit.box' })}</Select.Option>
+                          <Select.Option value="pack">{intl.formatMessage({ id: 'unit.pack' })}</Select.Option>
+                          <Select.Option value="piece">{intl.formatMessage({ id: 'unit.piece' })}</Select.Option>
                         </Select>
                       </Form.Item>
-                      <span>时显示预警</span>
+                      <span>{intl.formatMessage({ id: 'products.form.showAlert' })}</span>
                     </Space>
                   ) : null;
                 }}

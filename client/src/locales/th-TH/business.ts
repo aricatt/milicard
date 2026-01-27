@@ -116,6 +116,14 @@ export default {
   'products.category.stamp': 'แสตมป์',
   'products.category.luckyCat': 'แมวนำโชค',
   'products.import.title': 'นำเข้าสินค้า',
+  'products.form.stockThreshold': 'การตั้งค่าเตือนสต็อก',
+  'products.form.enableStockAlert': 'เปิดใช้งานการเตือนสต็อก',
+  'products.form.whenStockLessThan': 'เมื่อสต็อกน้อยกว่า',
+  'products.form.showAlert': 'แสดงการเตือน',
+  'products.form.thresholdRequired': 'กรุณาใส่ค่าเกณฑ์',
+  'products.form.thresholdMinZero': 'ค่าเกณฑ์ต้องไม่น้อยกว่า 0',
+  'products.form.thresholdPlaceholder': 'ค่าเกณฑ์',
+  'products.form.unitRequired': 'กรุณาเลือกหน่วย',
 
   // ==================== จัดการซัพพลายเออร์ ====================
   'suppliers.title': 'ซัพพลายเออร์',
@@ -371,6 +379,7 @@ export default {
   'realTimeStock.stats.totalGoods': 'ประเภทสินค้า',
   'realTimeStock.stats.totalValue': 'มูลค่ารวม',
   'realTimeStock.stats.lowStock': 'สินค้าสต็อกต่ำ',
+  'realTimeStock.stats.outOfStock': 'สินค้าหมดสต็อก',
   'realTimeStock.filter.allWarehouses': 'ทุกคลัง',
   'realTimeStock.filter.stockLessThan': 'สต็อกน้อยกว่า',
   'realTimeStock.lastUpdated': 'อัปเดตล่าสุด: {time}, อัปเดตทุก 10 นาที',

@@ -377,7 +377,7 @@ const RealTimeStockPage: React.FC = () => {
         <Col span={6}>
           <Card>
             <Statistic
-              title="无库存商品"
+              title={intl.formatMessage({ id: 'realTimeStock.stats.outOfStock' })}
               value={stats.outOfStockCount}
               prefix={<WarningOutlined />}
               valueStyle={{ color: stats.outOfStockCount > 0 ? '#ff4d4f' : undefined }}
