@@ -488,7 +488,10 @@ export class StockService {
     params?: {
       goodsName?: string;
       goodsCode?: string;
+      categoryCode?: string;
       locationId?: number;
+      stockThreshold?: number;
+      stockUnit?: 'box' | 'pack' | 'piece';
       current?: number;
       pageSize?: number;
     }
@@ -513,7 +516,7 @@ export class StockService {
     total: number;
   }> {
     try {
-      const { goodsName, goodsCode, locationId, current = 1, pageSize = 20 } = params || {};
+      const { goodsName, goodsCode, categoryCode, locationId, stockThreshold, stockUnit, current = 1, pageSize = 20 } = params || {};
 
       // 构建商品查询条件 - 商品现在是全局的，通过 localSettings 关联基地
       const goodsWhere: any = {
@@ -530,6 +533,21 @@ export class StockService {
       }
       if (goodsCode) {
         goodsWhere.code = { contains: goodsCode, mode: 'insensitive' };
+      }
+      // 品类筛选 - 通过categoryCode查找categoryId
+      if (categoryCode) {
+        const categoryCodes = categoryCode.split(',').filter(code => code.trim());
+        if (categoryCodes.length > 0) {
+          // 查找对应的品类ID
+          const categories = await prisma.category.findMany({
+            where: { code: { in: categoryCodes } },
+            select: { id: true },
+          });
+          const categoryIds = categories.map(cat => cat.id);
+          if (categoryIds.length > 0) {
+            goodsWhere.categoryId = { in: categoryIds };
+          }
+        }
       }
 
       // 获取商品列表（分页）
@@ -559,13 +577,17 @@ export class StockService {
       ]);
 
       // 获取仓库列表
-      let locations: { id: number }[];
+      let locations: { id: number; name: string }[];
       if (locationId) {
-        locations = [{ id: locationId }];
+        const location = await prisma.location.findUnique({
+          where: { id: locationId },
+          select: { id: true, name: true },
+        });
+        locations = location ? [location] : [];
       } else {
         locations = await prisma.location.findMany({
           where: { baseId, isActive: true, type: { in: ['MAIN_WAREHOUSE', 'WAREHOUSE'] } },
-          select: { id: true },
+          select: { id: true, name: true },
         });
       }
 
@@ -575,13 +597,22 @@ export class StockService {
         let totalBox = 0;
         let totalPack = 0;
         let totalPiece = 0;
+        const warehouseNames: string[] = [];
 
         // 汇总所有仓库的库存
         for (const loc of locations) {
           const stock = await this.getStock(baseId, goods.id, loc.id);
+          if (stock.currentBox > 0 || stock.currentPack > 0 || stock.currentPiece > 0) {
+            warehouseNames.push(loc.name);
+          }
           totalBox += stock.currentBox;
           totalPack += stock.currentPack;
           totalPiece += stock.currentPiece;
+        }
+
+        // 如果指定了仓库筛选，且该商品在该仓库没有库存，则跳过
+        if (locationId && warehouseNames.length === 0) {
+          continue;
         }
 
         // 获取平均成本
@@ -623,27 +654,50 @@ export class StockService {
         const totalBoxEquivalent = totalBox + totalPack / packPerBox + totalPiece / (packPerBox * piecePerPack);
         const totalValue = totalBoxEquivalent * avgCostPerBox;
 
-        results.push({
-          goodsId: goods.id,
-          goodsCode: goods.code,
-          goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
-          goodsNameI18n: goods.nameI18n as NameI18n | null,
-          categoryCode: goods.category?.code || '',
-          categoryName: goods.category?.name || '',
-          categoryNameI18n: (goods.category as any)?.nameI18n as NameI18n | null,
-          packPerBox,
-          piecePerPack,
-          stockBox: totalBox,
-          stockPack: totalPack,
-          stockPiece: totalPiece,
-          avgPricePerBox: Math.round(avgCostPerBox * 100) / 100,
-          avgPricePerPack: Math.round(avgCostPerPack * 100) / 100,
-          avgPricePerPiece: Math.round(avgCostPerPiece * 100) / 100,
-          totalValue: Math.round(totalValue * 100) / 100,
-        });
+        // 应用库存阈值筛选（需要做单位换算）
+        let shouldInclude = true;
+        if (stockThreshold !== undefined && stockThreshold > 0 && stockUnit) {
+          // 将所有库存统一换算成选定的单位
+          let totalInSelectedUnit = 0;
+          if (stockUnit === 'box') {
+            // 换算成箱：箱 + 盒/每箱盒数 + 包/(每箱盒数*每盒包数)
+            totalInSelectedUnit = totalBox + totalPack / packPerBox + totalPiece / (packPerBox * piecePerPack);
+          } else if (stockUnit === 'pack') {
+            // 换算成盒：箱*每箱盒数 + 盒 + 包/每盒包数
+            totalInSelectedUnit = totalBox * packPerBox + totalPack + totalPiece / piecePerPack;
+          } else if (stockUnit === 'piece') {
+            // 换算成包：箱*每箱盒数*每盒包数 + 盒*每盒包数 + 包
+            totalInSelectedUnit = totalBox * packPerBox * piecePerPack + totalPack * piecePerPack + totalPiece;
+          }
+          shouldInclude = totalInSelectedUnit < stockThreshold;
+        }
+
+        if (shouldInclude) {
+          results.push({
+            goodsId: goods.id,
+            goodsCode: goods.code,
+            goodsName: typeof goods.name === 'string' ? goods.name : (goods.name as any)?.zh_CN || '',
+            goodsNameI18n: goods.nameI18n as NameI18n | null,
+            categoryCode: goods.category?.code || '',
+            categoryName: goods.category?.name || '',
+            categoryNameI18n: (goods.category as any)?.nameI18n as NameI18n | null,
+            packPerBox,
+            piecePerPack,
+            stockBox: totalBox,
+            stockPack: totalPack,
+            stockPiece: totalPiece,
+            warehouseNames: warehouseNames.join(', '),
+            avgPricePerBox: Math.round(avgCostPerBox * 100) / 100,
+            avgPricePerPack: Math.round(avgCostPerPack * 100) / 100,
+            avgPricePerPiece: Math.round(avgCostPerPiece * 100) / 100,
+            totalValue: Math.round(totalValue * 100) / 100,
+          });
+        }
       }
 
-      return { data: results, total };
+      // 注意：由于库存阈值筛选是在内存中进行的，total 数量可能不准确
+      // 如果需要准确的 total，需要先获取所有数据再筛选，但这会影响性能
+      return { data: results, total: results.length };
     } catch (error) {
       logger.error('获取基地实时库存失败', {
         error: error instanceof Error ? error.message : String(error),

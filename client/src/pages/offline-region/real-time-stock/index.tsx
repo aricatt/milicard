@@ -10,6 +10,8 @@ import {
   Select,
   Popover,
   Descriptions,
+  InputNumber,
+  Button,
 } from 'antd';
 import {
   DatabaseOutlined,
@@ -44,6 +46,7 @@ interface RealTimeStock {
   stockBox: number;
   stockPack: number;
   stockPiece: number;
+  warehouseNames?: string;
   avgPricePerBox: number;
   avgPricePerPack: number;
   avgPricePerPiece: number;
@@ -80,7 +83,11 @@ const RealTimeStockPage: React.FC = () => {
     lowStockCount: 0,
   });
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [selectedWarehouse, setSelectedWarehouse] = useState<number | undefined>(undefined);
+  const [selectedWarehouse, setSelectedWarehouse] = useState<number | undefined>();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [stockThreshold, setStockThreshold] = useState<number>(0);
+  const [stockUnit, setStockUnit] = useState<'box' | 'pack' | 'piece'>('box');
 
   // 获取仓库列表
   const fetchWarehouses = async () => {
@@ -92,6 +99,16 @@ const RealTimeStockPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch warehouses', error);
+    }
+  };
+
+  // 获取品类列表
+  const fetchCategories = async () => {
+    try {
+      const result = await request('/api/v1/categories/all', { method: 'GET' });
+      setCategories(result || []);
+    } catch (error) {
+      console.error('Failed to fetch categories', error);
     }
   };
 
@@ -113,6 +130,7 @@ const RealTimeStockPage: React.FC = () => {
       fetchWarehouses();
       fetchStats();
     }
+    fetchCategories();
   }, [currentBase?.id]);
 
   // 表格列定义
@@ -124,7 +142,27 @@ const RealTimeStockPage: React.FC = () => {
       copyable: true,
     },
     {
-      title: intl.formatMessage({ id: 'form.label.name' }),
+      title: intl.formatMessage({ id: 'realTimeStock.column.category' }),
+      dataIndex: 'categoryCode',
+      width: 120,
+      valueType: 'select',
+      fieldProps: {
+        mode: 'multiple',
+        placeholder: intl.formatMessage({ id: 'products.filter.category' }),
+        allowClear: true,
+        maxTagCount: 2,
+        options: categories.map((cat) => ({
+          label: cat.name,
+          value: cat.code,
+        })),
+      },
+      render: (_, record) => {
+        if (!record.categoryName) return '-';
+        return <Tag color="geekblue">{record.categoryName}</Tag>;
+      },
+    },
+    {
+      title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'goodsName',
       width: 200,
       render: (_, record) => (
@@ -164,6 +202,13 @@ const RealTimeStockPage: React.FC = () => {
       align: 'right',
     },
     {
+      title: intl.formatMessage({ id: 'realTimeStock.column.warehouse' }),
+      dataIndex: 'warehouseNames',
+      width: 150,
+      search: false,
+      ellipsis: true,
+    },
+    {
       title: intl.formatMessage({ id: 'realTimeStock.column.avgPriceBox' }),
       dataIndex: 'avgPricePerBox',
       width: 60,
@@ -192,13 +237,18 @@ const RealTimeStockPage: React.FC = () => {
       align: 'right',
     },
     {
-      title: intl.formatMessage({ id: 'form.label.status' }),
+      title: intl.formatMessage({ id: 'table.column.status' }),
       key: 'status',
       width: 80,
       search: false,
       render: (_, record) => {
+        // 检查是否无库存（箱、盒、包都为0）
+        if (record.stockBox === 0 && record.stockPack === 0 && record.stockPiece === 0) {
+          return <Tag color="red">无库存</Tag>;
+        }
+        // 检查库存不足（箱数少于5）
         if (record.stockBox < 5) {
-          return <Tag color="red">{intl.formatMessage({ id: 'inventory.status.lowStock' })}</Tag>;
+          return <Tag color="warning">库存不足</Tag>;
         }
         return <Tag color="green">{intl.formatMessage({ id: 'inventory.status.normal' })}</Tag>;
       },
@@ -295,6 +345,53 @@ const RealTimeStockPage: React.FC = () => {
                 </Select.Option>
               ))}
             </Select>,
+            <Space key="stock-filter">
+              <Space.Compact>
+                <Select
+                  style={{ width: 80 }}
+                  value={stockUnit}
+                  onChange={(value) => {
+                    setStockUnit(value);
+                    actionRef.current?.reload();
+                  }}
+                >
+                  <Select.Option value="box">箱</Select.Option>
+                  <Select.Option value="pack">盒</Select.Option>
+                  <Select.Option value="piece">包</Select.Option>
+                </Select>
+                <InputNumber
+                  style={{ width: 120 }}
+                  min={0}
+                  precision={0}
+                  placeholder="库存少于"
+                  value={stockThreshold}
+                  onChange={(value: number | null) => {
+                    setStockThreshold(value || 0);
+                    actionRef.current?.reload();
+                  }}
+                />
+              </Space.Compact>
+              <Button
+                onClick={() => {
+                  setStockThreshold(0);
+                  setStockUnit('box');
+                  actionRef.current?.reload();
+                }}
+              >
+                重置
+              </Button>
+              <Button
+                type="primary"
+                danger
+                onClick={() => {
+                  setStockUnit('piece');
+                  setStockThreshold(1);
+                  actionRef.current?.reload();
+                }}
+              >
+                无库存
+              </Button>
+            </Space>,
           ],
         }}
         request={async (params) => {
@@ -309,7 +406,10 @@ const RealTimeStockPage: React.FC = () => {
                 pageSize: params.pageSize,
                 goodsCode: params.goodsCode,
                 goodsName: params.goodsName,
+                categoryCode: params.categoryCode?.join(','),
                 locationId: selectedWarehouse,
+                stockThreshold: stockThreshold,
+                stockUnit: stockUnit,
               },
             });
 
@@ -327,6 +427,13 @@ const RealTimeStockPage: React.FC = () => {
           }
         }}
         columns={columns}
+        rowClassName={(record) => {
+          // 如果设置了库存阈值，为筛选出的数据行添加淡红色背景
+          if (stockThreshold > 0) {
+            return 'low-stock-row';
+          }
+          return '';
+        }}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
@@ -345,3 +452,15 @@ const RealTimeStockPage: React.FC = () => {
 };
 
 export default RealTimeStockPage;
+
+// 添加样式
+const style = document.createElement('style');
+style.textContent = `
+  .low-stock-row {
+    background-color: #fff1f0 !important;
+  }
+  .low-stock-row:hover {
+    background-color: #ffe7e5 !important;
+  }
+`;
+document.head.appendChild(style);
