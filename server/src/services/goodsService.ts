@@ -430,6 +430,7 @@ export class GoodsService {
       if (data.packPrice !== undefined) localUpdates.packPrice = data.packPrice
       if (data.purchasePrice !== undefined) localUpdates.purchasePrice = data.purchasePrice
       if (data.alias !== undefined) localUpdates.alias = data.alias
+      if (data.stockThreshold !== undefined) localUpdates.stockThreshold = data.stockThreshold
       if (typeof data.isActive === 'boolean') localUpdates.isActive = data.isActive
 
       // 更新全局商品属性
@@ -592,6 +593,7 @@ export class GoodsService {
       retailPrice: Number(setting.retailPrice),
       packPrice: setting.packPrice ? Number(setting.packPrice) : null,
       purchasePrice: setting.purchasePrice ? Number(setting.purchasePrice) : null,
+      stockThreshold: setting.stockThreshold || null,
       boxQuantity: goods.boxQuantity,
       packPerBox: goods.packPerBox,
       piecePerPack: goods.piecePerPack,

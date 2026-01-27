@@ -78,6 +78,12 @@ export default {
   'unit.pricePerPack': 'ราคา/แพ็ค',
   'unit.yuan': 'หยวน',
 
+  // ==================== เวลา ====================
+  'time.justNow': 'เพิ่งกี้',
+  'time.minutesAgo': '{minutes} นาทีที่แล้ว',
+  'time.hoursAgo': '{hours} ชั่วโมงที่แล้ว',
+  'time.daysAgo': '{days} วันที่แล้ว',
+
   // ==================== จัดการสินค้า ====================
   'products.title': 'จัดการสินค้า',
   'products.add': 'เพิ่มสินค้า',
@@ -86,6 +92,7 @@ export default {
   'products.column.name': 'ชื่อสินค้า',
   'products.column.alias': 'ชื่อเล่น',
   'products.column.category': 'หมวดหมู่',
+  'products.filter.category': 'กรองหมวดหมู่',
   'products.column.manufacturer': 'ผู้ผลิต',
   'products.column.retailPrice': 'ราคาขายปลีก (กล่อง)',
   'products.column.retailPricePerPiece': 'ราคาขายปลีก (ชิ้น)',
@@ -352,6 +359,7 @@ export default {
   'realTimeStock.column.category': 'หมวดหมู่',
   'realTimeStock.column.product': 'สินค้า',
   'realTimeStock.column.location': 'ตำแหน่ง',
+  'realTimeStock.column.warehouse': 'คลังสินค้า',
   'realTimeStock.column.boxQty': 'สต็อก/กล่อง',
   'realTimeStock.column.packQty': 'สต็อก/แพ็ค',
   'realTimeStock.column.pieceQty': 'สต็อก/ชิ้น',
@@ -364,7 +372,9 @@ export default {
   'realTimeStock.stats.totalValue': 'มูลค่ารวม',
   'realTimeStock.stats.lowStock': 'สินค้าสต็อกต่ำ',
   'realTimeStock.filter.allWarehouses': 'ทุกคลัง',
-  'realTimeStock.message.fetchFailed': 'ไม่สามารถดึงข้อมูลสต็อก',
+  'realTimeStock.filter.stockLessThan': 'สต็อกน้อยกว่า',
+  'realTimeStock.lastUpdated': 'อัปเดตล่าสุด: {time}, อัปเดตทุก 10 นาที',
+  'realTimeStock.message.fetchFailed': 'ไม่สามารถดึงข้อมูลสต็อกได้',
   'inventory.column.stockQty': 'สต็อกปัจจุบัน',
   'inventory.column.avgCost': 'ต้นทุนเฉลี่ย',
   'inventory.column.totalValue': 'มูลค่ารวม',

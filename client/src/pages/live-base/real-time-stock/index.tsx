@@ -49,6 +49,7 @@ interface RealTimeStock {
   stockPack: number;
   stockPiece: number;
   warehouseNames?: string;
+  isLowStock?: boolean;
   avgPricePerBox: number;
   avgPricePerPack: number;
   avgPricePerPiece: number;
@@ -60,6 +61,7 @@ interface StockStats {
   totalGoods: number;
   totalValue: number;
   lowStockCount: number;
+  outOfStockCount: number;
 }
 
 // 仓库类型
@@ -83,6 +85,7 @@ const RealTimeStockPage: React.FC = () => {
     totalGoods: 0,
     totalValue: 0,
     lowStockCount: 0,
+    outOfStockCount: 0,
   });
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState<number | undefined>();
@@ -90,6 +93,7 @@ const RealTimeStockPage: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [stockThreshold, setStockThreshold] = useState<number>(0);
   const [stockUnit, setStockUnit] = useState<'box' | 'pack' | 'piece'>('box');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // 以人民币显示金额
   const [showInCNY, setShowInCNY] = useState(false);
@@ -97,6 +101,21 @@ const RealTimeStockPage: React.FC = () => {
   // 获取当前汇率和货币代码
   const currentExchangeRate = currencyRate?.fixedRate || 1;
   const currentCurrencyCode = currentBase?.currency || 'CNY';
+
+  // 计算相对时间（多少分钟前）
+  const getRelativeTime = (date: Date | null) => {
+    if (!date) return '';
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    
+    if (diffMinutes < 1) return intl.formatMessage({ id: 'time.justNow' });
+    if (diffMinutes < 60) return intl.formatMessage({ id: 'time.minutesAgo' }, { minutes: diffMinutes });
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return intl.formatMessage({ id: 'time.hoursAgo' }, { hours: diffHours });
+    const diffDays = Math.floor(diffHours / 24);
+    return intl.formatMessage({ id: 'time.daysAgo' }, { days: diffDays });
+  };
 
   // 金额格式化函数，支持以人民币显示
   const formatAmount = (amount: number | undefined | null) => {
@@ -159,12 +178,14 @@ const RealTimeStockPage: React.FC = () => {
       dataIndex: 'goodsCode',
       width: 120,
       copyable: true,
+      order: 1, // 查询栏顺序：第4位（order值越大越靠前，所以用1）
     },
     {
       title: intl.formatMessage({ id: 'realTimeStock.column.category' }),
       dataIndex: 'categoryCode',
       width: 120,
       valueType: 'select',
+      order: 3, // 查询栏顺序：第2位（order值越大越靠前，所以用3）
       fieldProps: {
         mode: 'multiple',
         placeholder: intl.formatMessage({ id: 'products.filter.category' }),
@@ -182,9 +203,29 @@ const RealTimeStockPage: React.FC = () => {
       },
     },
     {
+      title: intl.formatMessage({ id: 'table.column.status' }),
+      dataIndex: 'stockStatus',
+      width: 120,
+      valueType: 'select',
+      hideInTable: true, // 不在表格中显示，只在搜索栏显示
+      order: 2, // 查询栏顺序：第3位（order值越大越靠前，所以用2）
+      fieldProps: {
+        mode: 'multiple',
+        placeholder: '筛选状态',
+        allowClear: true,
+        maxTagCount: 2,
+        options: [
+          { label: '无库存', value: 'out_of_stock' },
+          { label: '库存不足', value: 'low_stock' },
+          { label: '库存充足', value: 'normal' },
+        ],
+      },
+    },
+    {
       title: intl.formatMessage({ id: 'products.column.name' }),
       dataIndex: 'goodsName',
       width: 200,
+      order: 4, // 查询栏顺序：第1位（order值越大越靠前，所以用4）
       render: (_, record) => (
         <GoodsNameText 
           text={record.goodsName} 
@@ -267,11 +308,11 @@ const RealTimeStockPage: React.FC = () => {
       render: (_, record) => {
         // 检查是否无库存（箱、盒、包都为0）
         if (record.stockBox === 0 && record.stockPack === 0 && record.stockPiece === 0) {
-          return <Tag color="red">无库存</Tag>;
+          return <Tag color="red">{intl.formatMessage({ id: 'inventory.status.outOfStock' })}</Tag>;
         }
-        // 检查库存不足（箱数少于5）
-        if (record.stockBox < 5) {
-          return <Tag color="warning">库存不足</Tag>;
+        // 使用后端返回的isLowStock标志判断库存不足
+        if (record.isLowStock) {
+          return <Tag color="warning">{intl.formatMessage({ id: 'inventory.status.lowStock' })}</Tag>;
         }
         return <Tag color="green">{intl.formatMessage({ id: 'inventory.status.normal' })}</Tag>;
       },
@@ -284,6 +325,7 @@ const RealTimeStockPage: React.FC = () => {
       <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalGoods' })}>{stats.totalGoods || 0}</Descriptions.Item>
       <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}>¥{(stats.totalValue || 0).toLocaleString()}</Descriptions.Item>
       <Descriptions.Item label={intl.formatMessage({ id: 'realTimeStock.stats.lowStock' })}>{stats.lowStockCount || 0}</Descriptions.Item>
+      <Descriptions.Item label="无库存商品">{stats.outOfStockCount || 0}</Descriptions.Item>
     </Descriptions>
   );
 
@@ -303,7 +345,7 @@ const RealTimeStockPage: React.FC = () => {
     <PageContainer header={{ title: false }}>
       {/* 统计卡片 */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={8}>
+        <Col span={6}>
           <Card>
             <Statistic
               title={intl.formatMessage({ id: 'realTimeStock.stats.totalGoods' })}
@@ -312,7 +354,7 @@ const RealTimeStockPage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Card>
             <Statistic
               title={intl.formatMessage({ id: 'realTimeStock.stats.totalValue' })}
@@ -322,13 +364,23 @@ const RealTimeStockPage: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Card>
             <Statistic
               title={intl.formatMessage({ id: 'realTimeStock.stats.lowStock' })}
               value={stats.lowStockCount}
               prefix={<WarningOutlined />}
-              valueStyle={{ color: stats.lowStockCount > 0 ? '#ff4d4f' : undefined }}
+              valueStyle={{ color: stats.lowStockCount > 0 ? '#faad14' : undefined }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="无库存商品"
+              value={stats.outOfStockCount}
+              prefix={<WarningOutlined />}
+              valueStyle={{ color: stats.outOfStockCount > 0 ? '#ff4d4f' : undefined }}
             />
           </Card>
         </Col>
@@ -339,6 +391,11 @@ const RealTimeStockPage: React.FC = () => {
         headerTitle={
           <Space>
             <span>{intl.formatMessage({ id: 'list.title.realTimeStock' })}</span>
+            {lastUpdated && (
+              <span style={{ fontSize: '12px', color: '#999' }}>
+                ({intl.formatMessage({ id: 'realTimeStock.lastUpdated' }, { time: getRelativeTime(lastUpdated) })})
+              </span>
+            )}
             <Popover content={statsContent} title={intl.formatMessage({ id: 'realTimeStock.stats.title' })}>
               <InfoCircleOutlined style={{ cursor: 'pointer' }} />
             </Popover>
@@ -387,15 +444,15 @@ const RealTimeStockPage: React.FC = () => {
                     actionRef.current?.reload();
                   }}
                 >
-                  <Select.Option value="box">箱</Select.Option>
-                  <Select.Option value="pack">盒</Select.Option>
-                  <Select.Option value="piece">包</Select.Option>
+                  <Select.Option value="box">{intl.formatMessage({ id: 'unit.box' })}</Select.Option>
+                  <Select.Option value="pack">{intl.formatMessage({ id: 'unit.pack' })}</Select.Option>
+                  <Select.Option value="piece">{intl.formatMessage({ id: 'unit.piece' })}</Select.Option>
                 </Select>
                 <InputNumber
                   style={{ width: 120 }}
                   min={0}
                   precision={0}
-                  placeholder="库存少于"
+                  placeholder={intl.formatMessage({ id: 'realTimeStock.filter.stockLessThan' })}
                   value={stockThreshold}
                   onChange={(value: number | null) => {
                     setStockThreshold(value || 0);
@@ -410,18 +467,7 @@ const RealTimeStockPage: React.FC = () => {
                   actionRef.current?.reload();
                 }}
               >
-                重置
-              </Button>
-              <Button
-                type="primary"
-                danger
-                onClick={() => {
-                  setStockUnit('piece');
-                  setStockThreshold(1);
-                  actionRef.current?.reload();
-                }}
-              >
-                无库存
+                {intl.formatMessage({ id: 'button.reset' })}
               </Button>
             </Space>,
           ],
@@ -432,6 +478,18 @@ const RealTimeStockPage: React.FC = () => {
           }
 
           try {
+            // 处理排序参数
+            let sortField: string | undefined;
+            let sortOrder: 'ascend' | 'descend' | undefined;
+            
+            if (params.sorter && typeof params.sorter === 'object') {
+              const sorterObj = params.sorter as any;
+              if (sorterObj.field) {
+                sortField = Array.isArray(sorterObj.field) ? sorterObj.field.join('.') : sorterObj.field;
+                sortOrder = sorterObj.order;
+              }
+            }
+
             const response = await request(`/api/v1/bases/${currentBase.id}/real-time-stock`, {
               params: {
                 current: params.current,
@@ -439,13 +497,20 @@ const RealTimeStockPage: React.FC = () => {
                 goodsCode: params.goodsCode,
                 goodsName: params.goodsName,
                 categoryCode: params.categoryCode?.join(','),
+                stockStatus: params.stockStatus?.join(','),
                 locationId: selectedWarehouse,
                 stockThreshold: stockThreshold,
                 stockUnit: stockUnit,
+                sortField: sortField,
+                sortOrder: sortOrder,
               },
             });
 
             if (response.success) {
+              // 保存最后更新时间
+              if (response.lastUpdated) {
+                setLastUpdated(new Date(response.lastUpdated));
+              }
               return {
                 data: response.data,
                 success: true,

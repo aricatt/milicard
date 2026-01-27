@@ -11,6 +11,11 @@ export interface GoodsLocalSettingData {
   purchasePrice?: number
   packPrice?: number
   alias?: string
+  stockThreshold?: {
+    value: number
+    unit: 'box' | 'pack' | 'piece'
+    enabled: boolean
+  } | null
   isActive?: boolean
 }
 
@@ -72,6 +77,7 @@ export class GoodsLocalSettingService {
           purchasePrice: data.purchasePrice,
           packPrice: data.packPrice,
           alias: data.alias,
+          stockThreshold: data.stockThreshold,
           isActive: data.isActive ?? true
         },
         include: {
@@ -118,6 +124,7 @@ export class GoodsLocalSettingService {
           ...(data.purchasePrice !== undefined && { purchasePrice: data.purchasePrice }),
           ...(data.packPrice !== undefined && { packPrice: data.packPrice }),
           ...(data.alias !== undefined && { alias: data.alias }),
+          ...(data.stockThreshold !== undefined && { stockThreshold: data.stockThreshold }),
           ...(data.isActive !== undefined && { isActive: data.isActive })
         },
         include: {

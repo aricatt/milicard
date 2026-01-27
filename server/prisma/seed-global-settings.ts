@@ -13,6 +13,16 @@ const SYSTEM_SETTINGS = [
     description: '毛利率预警值（低于此值需要核查）',
     category: 'business',
   },
+  {
+    key: 'stock.low_quantity_threshold',
+    value: {
+      value: 5,
+      unit: 'box',
+      enabled: true,
+    },
+    description: '库存不足预警阈值（全局默认值）',
+    category: 'stock',
+  },
 ];
 
 async function seedGlobalSettings() {

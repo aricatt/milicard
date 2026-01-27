@@ -47,6 +47,7 @@ interface RealTimeStock {
   stockPack: number;
   stockPiece: number;
   warehouseNames?: string;
+  isLowStock?: boolean;
   avgPricePerBox: number;
   avgPricePerPack: number;
   avgPricePerPiece: number;
@@ -246,8 +247,8 @@ const RealTimeStockPage: React.FC = () => {
         if (record.stockBox === 0 && record.stockPack === 0 && record.stockPiece === 0) {
           return <Tag color="red">无库存</Tag>;
         }
-        // 检查库存不足（箱数少于5）
-        if (record.stockBox < 5) {
+        // 使用后端返回的isLowStock标志判断库存不足
+        if (record.isLowStock) {
           return <Tag color="warning">库存不足</Tag>;
         }
         return <Tag color="green">{intl.formatMessage({ id: 'inventory.status.normal' })}</Tag>;

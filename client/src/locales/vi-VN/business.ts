@@ -78,6 +78,12 @@ export default {
   'unit.pricePerPack': 'Đơn giá/Hộp',
   'unit.yuan': 'Nhân dân tệ',
 
+  // ==================== Thời gian ====================
+  'time.justNow': 'Vừa xong',
+  'time.minutesAgo': '{minutes} phút trước',
+  'time.hoursAgo': '{hours} giờ trước',
+  'time.daysAgo': '{days} ngày trước',
+
   // ==================== Quản lý sản phẩm ====================
   'products.title': 'Quản lý sản phẩm',
   'products.add': 'Thêm sản phẩm',
@@ -86,6 +92,7 @@ export default {
   'products.column.name': 'Tên sản phẩm',
   'products.column.alias': 'Tên khác',
   'products.column.category': 'Danh mục',
+  'products.filter.category': 'Lọc danh mục',
   'products.column.manufacturer': 'Nhà sản xuất',
   'products.column.retailPrice': 'Giá bán lẻ (Thùng)',
   'products.column.retailPricePerPiece': 'Giá bán lẻ (Gói)',
@@ -352,6 +359,7 @@ export default {
   'realTimeStock.column.category': 'Danh mục',
   'realTimeStock.column.product': 'Sản phẩm',
   'realTimeStock.column.location': 'Vị trí',
+  'realTimeStock.column.warehouse': 'Kho',
   'realTimeStock.column.boxQty': 'Tồn/Thùng',
   'realTimeStock.column.packQty': 'Tồn/Hộp',
   'realTimeStock.column.pieceQty': 'Tồn/Gói',
@@ -362,8 +370,10 @@ export default {
   'realTimeStock.stats.title': 'Thống kê tồn kho',
   'realTimeStock.stats.totalGoods': 'Loại sản phẩm',
   'realTimeStock.stats.totalValue': 'Tổng giá trị',
-  'realTimeStock.stats.lowStock': 'Sản phẩm sắp hết',
+  'realTimeStock.stats.lowStock': 'Sản phẩm tồn kho thấp',
   'realTimeStock.filter.allWarehouses': 'Tất cả kho',
+  'realTimeStock.filter.stockLessThan': 'Tồn kho ít hơn',
+  'realTimeStock.lastUpdated': 'Cập nhật lần cuối: {time}, cập nhật mỗi 10 phút',
   'realTimeStock.message.fetchFailed': 'Lấy dữ liệu tồn kho thất bại',
   'inventory.column.stockQty': 'Tồn kho hiện tại',
   'inventory.column.avgCost': 'Giá trung bình',

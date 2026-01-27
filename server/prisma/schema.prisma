@@ -233,18 +233,19 @@ model Goods {
 
 // 基地级商品设置（价格、别名、状态等）
 model GoodsLocalSetting {
-  id            String   @id @default(uuid())
-  goodsId       String   @map("goods_id")
-  baseId        Int      @map("base_id")
-  retailPrice   Decimal  @map("retail_price") @db.Decimal(12, 2)
-  purchasePrice Decimal? @map("purchase_price") @db.Decimal(12, 2)
-  packPrice     Decimal? @map("pack_price") @db.Decimal(12, 2)
-  alias         String?
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  goods         Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
-  base          Base     @relation(fields: [baseId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  goodsId        String   @map("goods_id")
+  baseId         Int      @map("base_id")
+  retailPrice    Decimal  @map("retail_price") @db.Decimal(12, 2)
+  purchasePrice  Decimal? @map("purchase_price") @db.Decimal(12, 2)
+  packPrice      Decimal? @map("pack_price") @db.Decimal(12, 2)
+  alias          String?
+  stockThreshold Json?    @map("stock_threshold")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  goods          Goods    @relation(fields: [goodsId], references: [id], onDelete: Cascade)
+  base           Base     @relation(fields: [baseId], references: [id], onDelete: Cascade)
 
   @@unique([goodsId, baseId])
   @@index([goodsId])

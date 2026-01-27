@@ -120,6 +120,11 @@ interface ProductSetting {
   purchasePrice?: number;
   packPrice?: number;
   alias?: string;
+  stockThreshold?: {
+    value: number;
+    unit: 'box' | 'pack' | 'piece';
+    enabled: boolean;
+  } | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -464,6 +469,7 @@ const ProductSettingsPage: React.FC = () => {
       packPrice: typeof record.packPrice === 'number' ? record.packPrice : parseFloat(record.packPrice as any || '0'),
       purchasePrice: typeof record.purchasePrice === 'number' ? record.purchasePrice : parseFloat(record.purchasePrice as any || '0'),
       alias: record.alias,
+      stockThreshold: record.stockThreshold || null,
       isActive: record.isActive,
     });
     setEditModalVisible(true);
@@ -1194,6 +1200,57 @@ const ProductSettingsPage: React.FC = () => {
             name="alias"
           >
             <Input placeholder={intl.formatMessage({ id: 'products.form.aliasPlaceholder' })} />
+          </Form.Item>
+
+          {/* 库存阈值配置 */}
+          <Form.Item label="库存预警设置">
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Form.Item
+                name={['stockThreshold', 'enabled']}
+                valuePropName="checked"
+                noStyle
+              >
+                <Checkbox>启用库存预警</Checkbox>
+              </Form.Item>
+              
+              <Form.Item noStyle shouldUpdate>
+                {({ getFieldValue }) => {
+                  const enabled = getFieldValue(['stockThreshold', 'enabled']);
+                  return enabled ? (
+                    <Space>
+                      <span>当库存少于</span>
+                      <Form.Item
+                        name={['stockThreshold', 'value']}
+                        noStyle
+                        rules={[
+                          { required: true, message: '请输入阈值' },
+                          { type: 'number', min: 0, message: '阈值不能小于0' }
+                        ]}
+                      >
+                        <InputNumber
+                          min={0}
+                          precision={0}
+                          style={{ width: 100 }}
+                          placeholder="阈值"
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        name={['stockThreshold', 'unit']}
+                        noStyle
+                        rules={[{ required: true, message: '请选择单位' }]}
+                      >
+                        <Select style={{ width: 80 }}>
+                          <Select.Option value="box">箱</Select.Option>
+                          <Select.Option value="pack">盒</Select.Option>
+                          <Select.Option value="piece">包</Select.Option>
+                        </Select>
+                      </Form.Item>
+                      <span>时显示预警</span>
+                    </Space>
+                  ) : null;
+                }}
+              </Form.Item>
+            </Space>
           </Form.Item>
 
           <Form.Item

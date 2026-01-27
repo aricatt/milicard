@@ -77,11 +77,17 @@ export default {
   'unit.pack': 'Pack',
   'unit.piece': 'Piece',
   'unit.item': 'Item',
-  'unit.perBox': '/Box',
+  'unit.yuan': 'Yuan',
+
   'unit.perPack': '/Pack',
   'unit.perPiece': '/Piece',
   'unit.pricePerPack': 'Price/Pack',
-  'unit.yuan': 'Yuan',
+
+  // ==================== Time ====================
+  'time.justNow': 'Just now',
+  'time.minutesAgo': '{minutes} minutes ago',
+  'time.hoursAgo': '{hours} hours ago',
+  'time.daysAgo': '{days} days ago',
 
   // ==================== Products ====================
   'products.title': 'Products',
@@ -91,6 +97,7 @@ export default {
   'products.column.name': 'Product Name',
   'products.column.alias': 'Alias',
   'products.column.category': 'Category',
+  'products.filter.category': 'Filter Category',
   'products.column.manufacturer': 'Manufacturer',
   'products.column.retailPrice': 'Retail Price (Box)',
   'products.column.retailPricePerPiece': 'Retail Price (Piece)',
@@ -357,6 +364,7 @@ export default {
   'realTimeStock.column.category': 'Category',
   'realTimeStock.column.product': 'Product',
   'realTimeStock.column.location': 'Location',
+  'realTimeStock.column.warehouse': 'Warehouse',
   'realTimeStock.column.boxQty': 'Stock/Box',
   'realTimeStock.column.packQty': 'Stock/Pack',
   'realTimeStock.column.pieceQty': 'Stock/Piece',
@@ -369,6 +377,8 @@ export default {
   'realTimeStock.stats.totalValue': 'Total Value',
   'realTimeStock.stats.lowStock': 'Low Stock Items',
   'realTimeStock.filter.allWarehouses': 'All Warehouses',
+  'realTimeStock.filter.stockLessThan': 'Stock Less Than',
+  'realTimeStock.lastUpdated': 'Last updated: {time}, updates every 10 minutes',
   'realTimeStock.message.fetchFailed': 'Failed to fetch stock data',
   'inventory.column.stockQty': 'Stock Qty',
   'inventory.column.avgCost': 'Avg Cost',

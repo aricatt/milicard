@@ -10,23 +10,27 @@ export class StockController {
   static async getRealTimeStock(req: Request, res: Response) {
     try {
       const baseId = parseInt(req.params.baseId, 10);
-      const { goodsName, goodsCode, categoryCode, locationId, stockThreshold, stockUnit, current, pageSize } = req.query;
+      const { goodsName, goodsCode, categoryCode, stockStatus, locationId, stockThreshold, stockUnit, current, pageSize, sortField, sortOrder } = req.query;
 
       const result = await StockService.getBaseRealTimeStock(baseId, {
         goodsName: goodsName as string,
         goodsCode: goodsCode as string,
         categoryCode: categoryCode as string,
+        stockStatus: stockStatus as string,
         locationId: locationId ? parseInt(locationId as string, 10) : undefined,
         stockThreshold: stockThreshold ? parseInt(stockThreshold as string, 10) : undefined,
         stockUnit: stockUnit as 'box' | 'pack' | 'piece' | undefined,
         current: current ? parseInt(current as string, 10) : 1,
         pageSize: pageSize ? parseInt(pageSize as string, 10) : 20,
+        sortField: sortField as string,
+        sortOrder: sortOrder as 'ascend' | 'descend' | undefined,
       });
 
       res.json({
         success: true,
         data: result.data,
         total: result.total,
+        lastUpdated: result.lastUpdated,
       });
     } catch (error) {
       logger.error('获取实时库存失败', {

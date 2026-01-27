@@ -31,6 +31,16 @@ export enum GoodsUnit {
   SET = 'SET'
 }
 
+// 库存阈值单位
+export type StockThresholdUnit = 'box' | 'pack' | 'piece';
+
+// 库存阈值配置
+export interface StockThreshold {
+  value: number;
+  unit: StockThresholdUnit;
+  enabled: boolean;
+}
+
 export interface CreateGoodsRequest {
   // 方式1：关联现有全局商品到基地
   globalGoodsId?: string
@@ -64,6 +74,7 @@ export interface UpdateGoodsRequest {
   piecePerPack?: number
   packPrice?: number
   purchasePrice?: number
+  stockThreshold?: StockThreshold | null
   description?: string
   imageUrl?: string
   notes?: string
@@ -105,6 +116,7 @@ export interface GoodsResponse {
   baseName?: string
   packPrice?: number | null
   purchasePrice?: number | null
+  stockThreshold?: StockThreshold | null
   description?: string | null
   alias?: string | null
   imageUrl?: string | null
