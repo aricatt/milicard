@@ -221,6 +221,18 @@ export default {
   'consumption.column.endingBox': '期末/箱',
   'consumption.column.endingPack': '期末/盒',
   'consumption.column.endingPiece': '期末/包',
+  'consumption.column.consumptionAmount': '消耗金额',
+  'consumption.column.openingPiece': '期初/包',
+  'consumption.column.openingPack': '期初/盒',
+  'consumption.column.openingBox': '期初/箱',
+  'consumption.column.closingPiece': '期末/包',
+  'consumption.column.closingPack': '期末/盒',
+  'consumption.column.closingBox': '期末/箱',
+  'consumption.column.unitPricePerPiece': '单价/包',
+  'consumption.column.consumptionPiece': '消耗/包',
+  'consumption.column.consumptionPack': '消耗/盒',
+  'consumption.column.consumptionBox': '消耗/箱',
+  'consumption.column.inventoryValue': '库存货值',
   'consumption.import.title': '导入消耗记录',
 
   // ==================== 主播利润 ====================

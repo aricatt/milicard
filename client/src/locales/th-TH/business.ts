@@ -216,6 +216,18 @@ export default {
   'consumption.column.endingBox': 'คงเหลือ/กล่อง',
   'consumption.column.endingPack': 'คงเหลือ/แพ็ค',
   'consumption.column.endingPiece': 'คงเหลือ/ชิ้น',
+  'consumption.column.consumptionAmount': 'จำนวนการใช้',
+  'consumption.column.openingPiece': 'ยอดต้น/ชิ้น',
+  'consumption.column.openingPack': 'ยอดต้น/แพ็ค',
+  'consumption.column.openingBox': 'ยอดต้น/กล่อง',
+  'consumption.column.closingPiece': 'คงเหลือ/ชิ้น',
+  'consumption.column.closingPack': 'คงเหลือ/แพ็ค',
+  'consumption.column.closingBox': 'คงเหลือ/กล่อง',
+  'consumption.column.unitPricePerPiece': 'ราคาต่อหน่วย/ชิ้น',
+  'consumption.column.consumptionPiece': 'การใช้/ชิ้น',
+  'consumption.column.consumptionPack': 'การใช้/แพ็ค',
+  'consumption.column.consumptionBox': 'การใช้/กล่อง',
+  'consumption.column.inventoryValue': 'มูลค่าสินค้าคงเหลือ',
   'consumption.import.title': 'นำเข้าข้อมูลการใช้',
 
   // ==================== กำไรสตรีมเมอร์ ====================

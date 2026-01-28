@@ -216,6 +216,18 @@ export default {
   'consumption.column.endingBox': 'Cuối kỳ/Thùng',
   'consumption.column.endingPack': 'Cuối kỳ/Hộp',
   'consumption.column.endingPiece': 'Cuối kỳ/Gói',
+  'consumption.column.consumptionAmount': 'Số tiền tiêu thụ',
+  'consumption.column.openingPiece': 'Đầu kỳ/Gói',
+  'consumption.column.openingPack': 'Đầu kỳ/Hộp',
+  'consumption.column.openingBox': 'Đầu kỳ/Thùng',
+  'consumption.column.closingPiece': 'Cuối kỳ/Gói',
+  'consumption.column.closingPack': 'Cuối kỳ/Hộp',
+  'consumption.column.closingBox': 'Cuối kỳ/Thùng',
+  'consumption.column.unitPricePerPiece': 'Đơn giá/Gói',
+  'consumption.column.consumptionPiece': 'Tiêu thụ/Gói',
+  'consumption.column.consumptionPack': 'Tiêu thụ/Hộp',
+  'consumption.column.consumptionBox': 'Tiêu thụ/Thùng',
+  'consumption.column.inventoryValue': 'Giá trị tồn kho',
   'consumption.import.title': 'Nhập dữ liệu tiêu thụ',
 
   // ==================== Lợi nhuận streamer ====================

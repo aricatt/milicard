@@ -73,12 +73,15 @@ export class AnchorProfitService {
                   select: {
                     id: true,
                     name: true,
+                    nameI18n: true, // 商品名国际化
                     packPerBox: true,
                     piecePerPack: true,
                     category: {
                       select: {
                         id: true,
+                        code: true, // 品类编码
                         name: true,
+                        nameI18n: true, // 品类名国际化
                       }
                     },
                     localSettings: {
@@ -216,8 +219,11 @@ export class AnchorProfitService {
           consumption: record.consumption ? {
             goods: {
               name: record.consumption.goods.name,
+              nameI18n: record.consumption.goods.nameI18n, // 商品名国际化
               category: record.consumption.goods.category ? {
+                code: record.consumption.goods.category.code, // 品类编码
                 name: record.consumption.goods.category.name,
+                nameI18n: record.consumption.goods.category.nameI18n, // 品类名国际化
               } : undefined,
               packPerBox: Number(record.consumption.goods.packPerBox),
               piecePerPack: Number(record.consumption.goods.piecePerPack),

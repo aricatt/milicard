@@ -135,7 +135,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 6. 消耗金额
   {
-    title: '消耗金额',
+    title: intl?.formatMessage({ id: 'consumption.column.consumptionAmount' }) || '消耗金额',
     key: 'calculatedCostPrice',
     width: 100,
     align: 'right',
@@ -151,7 +151,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 7. 期初/包
   {
-    title: '期初/包',
+    title: intl?.formatMessage({ id: 'consumption.column.openingPiece' }) || '期初/包',
     dataIndex: 'openingPieceQty',
     key: 'openingPieceQty',
     width: 70,
@@ -160,7 +160,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 8. 期初/盒
   {
-    title: '期初/盒',
+    title: intl?.formatMessage({ id: 'consumption.column.openingPack' }) || '期初/盒',
     dataIndex: 'openingPackQty',
     key: 'openingPackQty',
     width: 70,
@@ -169,7 +169,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 9. 期初/箱
   {
-    title: '期初/箱',
+    title: intl?.formatMessage({ id: 'consumption.column.openingBox' }) || '期初/箱',
     dataIndex: 'openingBoxQty',
     key: 'openingBoxQty',
     width: 70,
@@ -178,7 +178,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 10. 期末/包
   {
-    title: '期末/包',
+    title: intl?.formatMessage({ id: 'consumption.column.closingPiece' }) || '期末/包',
     dataIndex: 'closingPieceQty',
     key: 'closingPieceQty',
     width: 70,
@@ -187,7 +187,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 11. 期末/盒
   {
-    title: '期末/盒',
+    title: intl?.formatMessage({ id: 'consumption.column.closingPack' }) || '期末/盒',
     dataIndex: 'closingPackQty',
     key: 'closingPackQty',
     width: 70,
@@ -196,7 +196,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 12. 期末/箱
   {
-    title: '期末/箱',
+    title: intl?.formatMessage({ id: 'consumption.column.closingBox' }) || '期末/箱',
     dataIndex: 'closingBoxQty',
     key: 'closingBoxQty',
     width: 70,
@@ -205,7 +205,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 13. 单价/包（从单价/箱计算）
   {
-    title: '单价/包',
+    title: intl?.formatMessage({ id: 'consumption.column.unitPricePerPiece' }) || '单价/包',
     key: 'unitPricePerPiece',
     width: 90,
     align: 'right',
@@ -217,7 +217,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 14. 消耗/包
   {
-    title: '消耗/包',
+    title: intl?.formatMessage({ id: 'consumption.column.consumptionPiece' }) || '消耗/包',
     dataIndex: 'pieceQuantity',
     key: 'pieceQuantity',
     width: 70,
@@ -226,7 +226,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 15. 消耗/盒
   {
-    title: '消耗/盒',
+    title: intl?.formatMessage({ id: 'consumption.column.consumptionPack' }) || '消耗/盒',
     dataIndex: 'packQuantity',
     key: 'packQuantity',
     width: 70,
@@ -235,7 +235,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 16. 消耗/箱
   {
-    title: '消耗/箱',
+    title: intl?.formatMessage({ id: 'consumption.column.consumptionBox' }) || '消耗/箱',
     dataIndex: 'boxQuantity',
     key: 'boxQuantity',
     width: 70,
@@ -244,7 +244,7 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   },
   // 17. 库存货值
   {
-    title: '库存货值',
+    title: intl?.formatMessage({ id: 'consumption.column.inventoryValue' }) || '库存货值',
     key: 'inventoryValue',
     width: 100,
     align: 'right',

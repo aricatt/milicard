@@ -8,8 +8,11 @@ export interface AnchorProfitRecord {
   consumption?: {                  // 关联的消耗记录详细信息（用于显示品名和计算平均单包价）
     goods?: {
       name: string;
+      nameI18n?: Record<string, string>; // 商品名国际化
       category?: {
+        code: string;                    // 品类编码
         name: string;
+        nameI18n?: Record<string, string>; // 品类名国际化
       };
       packPerBox: number;
       piecePerPack: number;

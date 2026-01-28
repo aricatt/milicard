@@ -3,6 +3,7 @@ import { Tag, Space, Popconfirm, Button, Tooltip } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import type { AnchorProfitRecord } from './types';
 import type { IntlShape } from 'react-intl';
+import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
 
 export const getColumns = (
   onEdit: (record: AnchorProfitRecord) => void,
@@ -50,12 +51,17 @@ export const getColumns = (
       // 格式：[品类名]商品名称
       if (record.consumption?.goods) {
         const goods = record.consumption.goods;
-        const categoryName = goods.category?.name || '';
-        const goodsName = goods.name || '';
+        const category = goods.category;
+        
         return (
-          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-            {categoryName && `[${categoryName}]`}{goodsName}
-          </div>
+          <GoodsNameText 
+            text={goods.name || ''} 
+            nameI18n={goods.nameI18n}
+            categoryCode={category?.code}
+            categoryName={category?.name}
+            categoryNameI18n={category?.nameI18n}
+            showCategory={true}
+          />
         );
       }
       return '-';

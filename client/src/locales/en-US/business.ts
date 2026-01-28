@@ -221,6 +221,18 @@ export default {
   'consumption.column.endingBox': 'Ending Box',
   'consumption.column.endingPack': 'Ending Pack',
   'consumption.column.endingPiece': 'Ending Piece',
+  'consumption.column.consumptionAmount': 'Consumption Amount',
+  'consumption.column.openingPiece': 'Opening/Piece',
+  'consumption.column.openingPack': 'Opening/Pack',
+  'consumption.column.openingBox': 'Opening/Box',
+  'consumption.column.closingPiece': 'Closing/Piece',
+  'consumption.column.closingPack': 'Closing/Pack',
+  'consumption.column.closingBox': 'Closing/Box',
+  'consumption.column.unitPricePerPiece': 'Unit Price/Piece',
+  'consumption.column.consumptionPiece': 'Consumed/Piece',
+  'consumption.column.consumptionPack': 'Consumed/Pack',
+  'consumption.column.consumptionBox': 'Consumed/Box',
+  'consumption.column.inventoryValue': 'Inventory Value',
   'consumption.import.title': 'Import Consumption',
 
   // ==================== Anchor Profit ====================
