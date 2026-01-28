@@ -1480,7 +1480,7 @@ export default {
   'globalSetting.form.value': 'Value',
   'globalSetting.form.valueRequired': 'Please enter value',
   'globalSetting.form.valuePlaceholder': 'Please enter value',
-  'globalSetting.form.valueJsonPlaceholder': 'e.g: {"key": "value"}',
+  'globalSetting.form.valueJsonPlaceholder': "e.g: '{\"key\": \"value\"}'",
   'globalSetting.form.category': 'Category',
   'globalSetting.form.categoryPlaceholder': 'Select or enter category',
   'globalSetting.form.description': 'Description',

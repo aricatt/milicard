@@ -770,7 +770,8 @@ const AnchorProfitPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.resultSection' })}</Divider>
+      {/* 隐藏利润结果区域 */}
+      {/* <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.resultSection' })}</Divider>
       <Alert
         message={intl.formatMessage({ id: 'anchorProfit.form.formula' })}
         description={
@@ -800,7 +801,7 @@ const AnchorProfitPage: React.FC = () => {
             valueStyle={{ color: '#faad14' }}
           />
         </Col>
-      </Row>
+      </Row> */}
 
       <Divider style={{ margin: '16px 0' }} />
       <Form.Item label={intl.formatMessage({ id: 'anchorProfit.form.notes' })} name="notes">

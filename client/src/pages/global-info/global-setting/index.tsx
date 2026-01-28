@@ -107,7 +107,7 @@ const GlobalSettingPage: React.FC = () => {
         key: record.key,
         value: formatValueForForm(record.value, detectedType),
         description: record.description,
-        category: record.category,
+        category: record.category ? [record.category] : [],
         isActive: record.isActive,
         isSystem: record.isSystem,
         valueType: detectedType,
@@ -169,7 +169,7 @@ const GlobalSettingPage: React.FC = () => {
         key: values.key,
         value: parsedValue,
         description: values.description,
-        category: values.category,
+        category: Array.isArray(values.category) ? values.category[0] : values.category,
         isActive: values.isActive,
       };
 
@@ -392,7 +392,7 @@ const GlobalSettingPage: React.FC = () => {
         onCancel={() => setModalVisible(false)}
         confirmLoading={loading}
         width={600}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}

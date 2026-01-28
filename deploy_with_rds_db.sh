@@ -175,7 +175,7 @@ echo "Root partition usage: ${ROOT_USAGE}%"
 echo "Available space: ${ROOT_AVAIL}GB"
 
 # 检查是否空间不足（使用率>90% 或 可用空间<2GB）
-if [ "$ROOT_USAGE" -gt 90 ] || [ "$ROOT_AVAIL" -lt 2 ]; then
+if [ "$ROOT_USAGE" -gt 90 ] || [ "$ROOT_AVAIL" -lt 4 ]; then
     echo -e "${RED}=========================================="
     echo "  ❌ INSUFFICIENT DISK SPACE!"
     echo "=========================================="
