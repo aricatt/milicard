@@ -114,8 +114,10 @@ const AnchorProfitPage: React.FC = () => {
     profitRate: 0,
   });
 
-  // 消耗金额（从选择的消耗记录获取）
+  // 消耗金额（从选择的消耗记录获取，仅用于显示）
   const [consumptionAmount, setConsumptionAmount] = useState(0);
+  // 拿货价（用于毛利计算）
+  const [costPrice, setCostPrice] = useState(0);
 
   /**
    * 加载统计数据
@@ -181,6 +183,7 @@ const AnchorProfitPage: React.FC = () => {
     if (!currentBase || !handlerId) {
       setConsumptionOptions([]);
       setConsumptionAmount(0);
+      setCostPrice(0);
       return;
     }
 
@@ -214,11 +217,17 @@ const AnchorProfitPage: React.FC = () => {
   const handleConsumptionChange = useCallback((consumptionId: string) => {
     const selected = consumptionOptions.find(c => c.id === consumptionId);
     if (selected) {
-      setConsumptionAmount(selected.consumptionAmount);
+      // 直接使用后端计算好的值
+      // - consumptionAmount: 消耗金额（基于 packPrice，仅用于显示）
+      // - costPrice: 拿货价（基于 averageCost，用于计算毛利）
+      setConsumptionAmount(selected.consumptionAmount); // 用于显示
+      setCostPrice(selected.costPrice); // 用于毛利计算
+      
       // 自动设置日期为消耗记录的日期
       form.setFieldValue('profitDate', dayjs(selected.consumptionDate));
     } else {
       setConsumptionAmount(0);
+      setCostPrice(0);
     }
   }, [consumptionOptions, form]);
 
@@ -238,9 +247,9 @@ const AnchorProfitPage: React.FC = () => {
     const salesAmount = gmv + shopOrder + water - cancelOrder - refund;
     // 平台扣点 = (GMV - 取消订单 - 退款) * 扣点比例
     const platformFeeAmount = (gmv - cancelOrder - refund) * (platformFeeRate / 100);
-    // 利润 = 销售 - 消耗 - 投流 - 平台扣点
-    const profitAmount = salesAmount - consumptionAmount - adSpend - platformFeeAmount;
-    // 毛利率 = 利润 / 销售 * 100
+    // 毛利 = 真实GMV - 拿货价 - 投流 - 平台扣点
+    const profitAmount = salesAmount - costPrice - adSpend - platformFeeAmount;
+    // 毛利率 = 毛利 / 真实GMV * 100
     const profitRate = salesAmount > 0 ? (profitAmount / salesAmount) * 100 : 0;
 
     setCalculatedValues({
@@ -249,7 +258,7 @@ const AnchorProfitPage: React.FC = () => {
       profitAmount,
       profitRate,
     });
-  }, [form, consumptionAmount]);
+  }, [form, costPrice]);
 
   /**
    * 主播选择变化时加载消耗记录
@@ -258,6 +267,7 @@ const AnchorProfitPage: React.FC = () => {
     // 清空之前选择的消耗记录
     form.setFieldValue('consumptionId', undefined);
     setConsumptionAmount(0);
+    setCostPrice(0);
     // 加载该主播的未关联消耗记录
     loadUnlinkedConsumptions(handlerId);
     calculateProfit();
@@ -351,13 +361,15 @@ const AnchorProfitPage: React.FC = () => {
         consumptionId: values.consumptionId, // 关联的消耗记录ID
         gmvAmount: values.gmvAmount || 0,
         refundAmount: values.refundAmount || 0,
+        cancelOrderAmount: values.cancelOrderAmount || 0,
+        shopOrderAmount: values.shopOrderAmount || 0,
         waterAmount: values.waterAmount || 0,
-        consumptionAmount: consumptionAmount,
+        consumptionAmount: consumptionAmount, // 消耗金额（客户端计算）
         adSpendAmount: values.adSpendAmount || 0,
         platformFeeAmount: calculatedValues.platformFeeAmount,
         salesAmount: calculatedValues.salesAmount,
-        profitAmount: calculatedValues.profitAmount,
-        profitRate: calculatedValues.profitRate,
+        profitAmount: calculatedValues.profitAmount, // 毛利
+        profitRate: calculatedValues.profitRate, // 毛利率
         notes: values.notes,
       };
 
@@ -371,6 +383,7 @@ const AnchorProfitPage: React.FC = () => {
         setCreateModalVisible(false);
         form.resetFields();
         setConsumptionAmount(0);
+        setCostPrice(0);
         setConsumptionOptions([]);
         setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         actionRef.current?.reload();
@@ -412,7 +425,9 @@ const AnchorProfitPage: React.FC = () => {
         : 17,
       notes: record.notes,
     });
+    // 消耗金额用于显示，拿货价用于计算
     setConsumptionAmount(record.consumptionAmount);
+    setCostPrice(record.calculatedCostPrice || record.consumptionAmount); // 优先使用拿货价
     setCalculatedValues({
       salesAmount: record.salesAmount,
       platformFeeAmount: record.platformFeeAmount,
@@ -435,13 +450,15 @@ const AnchorProfitPage: React.FC = () => {
         handlerId: values.handlerId,
         gmvAmount: values.gmvAmount || 0,
         refundAmount: values.refundAmount || 0,
+        cancelOrderAmount: values.cancelOrderAmount || 0,
+        shopOrderAmount: values.shopOrderAmount || 0,
         waterAmount: values.waterAmount || 0,
-        consumptionAmount: consumptionAmount,
+        consumptionAmount: consumptionAmount, // 消耗金额（客户端计算）
         adSpendAmount: values.adSpendAmount || 0,
         platformFeeAmount: calculatedValues.platformFeeAmount,
         salesAmount: calculatedValues.salesAmount,
-        profitAmount: calculatedValues.profitAmount,
-        profitRate: calculatedValues.profitRate,
+        profitAmount: calculatedValues.profitAmount, // 毛利
+        profitRate: calculatedValues.profitRate, // 毛利率
         notes: values.notes,
       };
 
@@ -459,6 +476,7 @@ const AnchorProfitPage: React.FC = () => {
         setEditingRecord(null);
         form.resetFields();
         setConsumptionAmount(0);
+        setCostPrice(0);
         setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         actionRef.current?.reload();
         loadStats();
@@ -702,32 +720,21 @@ const AnchorProfitPage: React.FC = () => {
 
       <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.costSection' })}</Divider>
       <Row gutter={16}>
-        <Col span={8}>
-          <Form.Item label={intl.formatMessage({ id: 'anchorProfit.form.costPrice' })} extra={intl.formatMessage({ id: 'anchorProfit.form.costPriceHint' })}>
-            <InputNumber
-              value={consumptionAmount}
-              disabled
-              style={{ width: '100%' }}
-              precision={2}
-            />
-          </Form.Item>
-        </Col>
-        <Col span={8} style={{ display: 'none' }}>
+        <Col span={12}>
           <Form.Item
-            label={intl.formatMessage({ id: 'anchorProfit.form.adSpendAmount' })}
-            name="adSpendAmount"
-            initialValue={0}
-            hidden
+            label={intl.formatMessage({ id: 'anchorProfit.form.costPrice' })}
+            extra="根据选择的消耗记录自动计算"
           >
             <InputNumber
-              min={0}
+              value={consumptionAmount}
               precision={2}
               style={{ width: '100%' }}
-              placeholder="0"
+              disabled
+              placeholder="请先选择消耗记录"
             />
           </Form.Item>
         </Col>
-        <Col span={8}>
+        <Col span={12}>
           <Form.Item
             label={intl.formatMessage({ id: 'anchorProfit.form.platformFeeRate' })}
             name="platformFeeRate"
@@ -745,6 +752,23 @@ const AnchorProfitPage: React.FC = () => {
           </Form.Item>
         </Col>
       </Row>
+      <Row gutter={16}>
+        <Col span={8} style={{ display: 'none' }}>
+          <Form.Item
+            label={intl.formatMessage({ id: 'anchorProfit.form.adSpendAmount' })}
+            name="adSpendAmount"
+            initialValue={0}
+            hidden
+          >
+            <InputNumber
+              min={0}
+              precision={2}
+              style={{ width: '100%' }}
+              placeholder="0"
+            />
+          </Form.Item>
+        </Col>
+      </Row>
 
       <Divider orientation="left" style={{ margin: '8px 0 16px' }}>{intl.formatMessage({ id: 'anchorProfit.form.resultSection' })}</Divider>
       <Alert
@@ -753,15 +777,14 @@ const AnchorProfitPage: React.FC = () => {
           <div style={{ fontSize: 12 }}>
             <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaSales' })}</div>
             <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaPlatformFee' })}</div>
-            <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaProfit' })}</div>
-            <div>{intl.formatMessage({ id: 'anchorProfit.form.formulaProfitRate' })}</div>
+            <div style={{ color: '#999' }}>拿货价、毛利、毛利率由后端自动计算</div>
           </div>
         }
         type="info"
         style={{ marginBottom: 16 }}
       />
       <Row gutter={16}>
-        <Col span={6}>
+        <Col span={12}>
           <Statistic
             title={intl.formatMessage({ id: 'anchorProfit.form.salesAmount' })}
             value={calculatedValues.salesAmount}
@@ -769,32 +792,12 @@ const AnchorProfitPage: React.FC = () => {
             valueStyle={{ color: '#722ed1' }}
           />
         </Col>
-        <Col span={6}>
+        <Col span={12}>
           <Statistic
             title={intl.formatMessage({ id: 'anchorProfit.form.platformFeeAmount' })}
             value={calculatedValues.platformFeeAmount}
             precision={2}
             valueStyle={{ color: '#faad14' }}
-          />
-        </Col>
-        <Col span={6}>
-          <Statistic
-            title={intl.formatMessage({ id: 'anchorProfit.form.profitAmount' })}
-            value={calculatedValues.profitAmount}
-            precision={2}
-            valueStyle={{ color: calculatedValues.profitAmount >= 0 ? '#52c41a' : '#ff4d4f' }}
-          />
-        </Col>
-        <Col span={6}>
-          <Statistic
-            title={intl.formatMessage({ id: 'anchorProfit.form.profitRate' })}
-            value={calculatedValues.profitRate}
-            precision={2}
-            suffix="%"
-            valueStyle={{ 
-              color: calculatedValues.profitRate >= 50 ? '#52c41a' : 
-                     calculatedValues.profitRate >= 30 ? '#faad14' : '#ff4d4f' 
-            }}
           />
         </Col>
       </Row>
@@ -948,6 +951,7 @@ const AnchorProfitPage: React.FC = () => {
             onClick={() => {
               form.resetFields();
               setConsumptionAmount(0);
+              setCostPrice(0);
               setConsumptionOptions([]); // 清空消耗记录选项
               setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
               setCreateModalVisible(true);
@@ -968,6 +972,7 @@ const AnchorProfitPage: React.FC = () => {
           setCreateModalVisible(false);
           form.resetFields();
           setConsumptionAmount(0);
+          setCostPrice(0);
           setConsumptionOptions([]); // 清空消耗记录选项
           setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         }}
@@ -990,6 +995,7 @@ const AnchorProfitPage: React.FC = () => {
           setEditingRecord(null);
           form.resetFields();
           setConsumptionAmount(0);
+          setCostPrice(0);
           setConsumptionOptions([]); // 清空消耗记录选项
           setCalculatedValues({ salesAmount: 0, platformFeeAmount: 0, profitAmount: 0, profitRate: 0 });
         }}

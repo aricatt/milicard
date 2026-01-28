@@ -212,6 +212,14 @@ export class AnchorProfitController {
         currentConsumptionId as string | undefined
       );
 
+      // 🔴 DEBUG: 打印 Controller 返回前的数据
+      logger.error('🔴 [Controller] 准备返回的数据', {
+        success: result.success,
+        dataCount: result.data?.length || 0,
+        firstRecordFields: result.data?.[0] ? Object.keys(result.data[0]) : [],
+        firstRecordConsumptionAmount: result.data?.[0]?.consumptionAmount,
+      });
+
       res.json(result);
     } catch (error) {
       logger.error('获取未关联消耗记录失败', {

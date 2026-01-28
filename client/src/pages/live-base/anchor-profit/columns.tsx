@@ -133,13 +133,13 @@ export const getColumns = (
   },
   {
     title: intl?.formatMessage({ id: 'anchorProfit.column.consumptionAmount' }) || '消耗金额',
-    dataIndex: 'calculatedCostPrice',
+    dataIndex: 'consumptionAmount',
     valueType: 'money',
     width: 110,
     render: (_, record) => (
-      <Tooltip title={intl?.formatMessage({ id: 'anchorProfit.tooltip.calculatedCostPrice' })}>
+      <Tooltip title="消耗金额（基于商品平拆价计算，仅用于显示）">
         <span style={{ color: '#13c2c2' }}>
-          {formatAmount(record.calculatedCostPrice || 0)}
+          {formatAmount(record.consumptionAmount || 0)}
         </span>
       </Tooltip>
     ),

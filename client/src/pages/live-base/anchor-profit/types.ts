@@ -90,6 +90,13 @@ export interface ConsumptionOption {
   boxQuantity: number;
   packQuantity: number;
   pieceQuantity: number;
-  consumptionAmount: number;
+  // 计算所需的基础字段
+  packPerBox: number;
+  piecePerPack: number;
+  packPrice: number; // 商品平拆价（每包价格），用于计算消耗金额
+  unitPricePerBox: number; // 来自 Inventory.averageCost（每箱成本），用于计算拿货价
+  // 计算好的值
+  consumptionAmount: number; // 消耗金额（基于 packPrice，仅用于显示）
+  costPrice: number; // 拿货价（基于 averageCost，用于计算毛利）
   label: string;
 }

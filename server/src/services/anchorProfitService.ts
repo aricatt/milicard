@@ -65,6 +65,7 @@ export class AnchorProfitService {
                 boxQuantity: true,
                 packQuantity: true,
                 pieceQuantity: true,
+                unitPricePerBox: true, // 来自 Inventory.averageCost，用于计算拿货价
                 handler: {
                   select: { id: true, name: true },
                 },
@@ -83,7 +84,7 @@ export class AnchorProfitService {
                     localSettings: {
                       where: { baseId },
                       select: {
-                        packPrice: true, // 注意：packPrice 字段实际存储的是 piecePrice（每包的价格），历史原因字段名未修改
+                        packPrice: true, // 商品平拆价（每包价格），用于计算消耗金额
                       }
                     }
                   }
@@ -100,25 +101,92 @@ export class AnchorProfitService {
 
       // 格式化数据
       const formattedRecords = records.map((record) => {
-        // 计算拿货价（基于 packPrice）
-        let calculatedCostPrice = 0;
+        let calculatedConsumptionAmount = 0; // 消耗金额（基于 packPrice，仅用于显示）
+        let calculatedCostPrice = 0; // 拿货价（基于 averageCost，用于计算毛利）
+        
         if (record.consumption) {
           const packPerBox = Number(record.consumption.goods.packPerBox) || 1;
           const piecePerPack = Number(record.consumption.goods.piecePerPack) || 1;
-          const packPrice = record.consumption.goods.localSettings?.[0]?.packPrice;
           
+          logger.info('=== 利润计算详情 ===', {
+            profitId: record.id,
+            goodsName: record.consumption.goods.name,
+            packPerBox,
+            piecePerPack,
+            boxQuantity: record.consumption.boxQuantity,
+            packQuantity: record.consumption.packQuantity,
+            pieceQuantity: record.consumption.pieceQuantity,
+          });
+          
+          // 1. 计算消耗金额（基于 packPrice，仅用于显示）
+          const packPrice = record.consumption.goods.localSettings?.[0]?.packPrice;
           if (packPrice) {
-            // packPrice 实际是 piecePrice（每包的价格）
-            const unitPricePerPiece = Number(packPrice);
-            const unitPricePerPack = unitPricePerPiece * piecePerPack;  // 单价/盒 = 单价/包 × 多少包1盒
-            const unitPricePerBox = unitPricePerPack * packPerBox;      // 单价/箱 = 单价/盒 × 多少盒1箱
+            const unitPricePerPiece = Number(packPrice); // packPrice 是每包价格
+            const unitPricePerPack = unitPricePerPiece * piecePerPack;  // 单价/盒 = 单价/包 × 包数
+            const unitPricePerBox_fromPackPrice = unitPricePerPack * packPerBox; // 单价/箱 = 单价/盒 × 盒数
             
-            // 拿货价 = 箱数×单价/箱 + 盒数×单价/盒 + 包数×单价/包
+            calculatedConsumptionAmount = 
+              Number(record.consumption.boxQuantity) * unitPricePerBox_fromPackPrice +
+              Number(record.consumption.packQuantity) * unitPricePerPack +
+              Number(record.consumption.pieceQuantity) * unitPricePerPiece;
+            
+            logger.info('1. 消耗金额计算（基于 packPrice，仅显示）', {
+              packPrice: unitPricePerPiece,
+              unitPricePerPack,
+              unitPricePerBox_fromPackPrice,
+              calculatedConsumptionAmount,
+            });
+          }
+          
+          // 2. 计算拿货价（基于 Inventory.averageCost，用于计算毛利）
+          const unitPricePerBox = Number(record.consumption.unitPricePerBox) || 0;
+          if (unitPricePerBox > 0) {
+            const unitPricePerPack = unitPricePerBox / packPerBox;      // 单价/盒 = 单价/箱 ÷ 盒数
+            const unitPricePerPiece = unitPricePerPack / piecePerPack;  // 单价/包 = 单价/盒 ÷ 包数
+            
             calculatedCostPrice = 
               Number(record.consumption.boxQuantity) * unitPricePerBox +
               Number(record.consumption.packQuantity) * unitPricePerPack +
               Number(record.consumption.pieceQuantity) * unitPricePerPiece;
+            
+            logger.info('2. 拿货价计算（基于 averageCost，用于毛利计算）', {
+              unitPricePerBox_fromAverageCost: unitPricePerBox,
+              unitPricePerPack,
+              unitPricePerPiece,
+              calculatedCostPrice,
+            });
           }
+          
+          // 3. 毛利计算
+          const gmv = Number(record.gmvAmount);
+          const refund = Number(record.refundAmount);
+          const cancelOrder = Number(record.cancelOrderAmount);
+          const shopOrder = Number(record.shopOrderAmount);
+          const water = Number(record.offlineAmount);
+          const adSpend = Number(record.adCost);
+          const platformFee = Number(record.platformFee);
+          const salesAmount = Number(record.dailySales);
+          const profitAmount = Number(record.profitAmount);
+          const profitRate = Number(record.profitRate);
+          
+          logger.info('3. 毛利计算', {
+            gmv,
+            refund,
+            cancelOrder,
+            shopOrder,
+            water,
+            salesAmount_stored: salesAmount,
+            salesAmount_formula: `${gmv} + ${shopOrder} + ${water} - ${cancelOrder} - ${refund} = ${gmv + shopOrder + water - cancelOrder - refund}`,
+            calculatedCostPrice,
+            adSpend,
+            platformFee,
+            profitAmount_stored: profitAmount,
+            profitAmount_formula: `${salesAmount} - ${calculatedCostPrice} - ${adSpend} - ${platformFee} = ${salesAmount - calculatedCostPrice - adSpend - platformFee}`,
+            profitRate_stored: profitRate,
+            profitRate_formula: salesAmount > 0 ? `(${profitAmount} / ${salesAmount}) * 100 = ${(profitAmount / salesAmount) * 100}` : '0',
+          });
+          
+          logger.info('===================\n');
         }
         
         return {
@@ -135,8 +203,8 @@ export class AnchorProfitService {
           shopOrderAmount: Number(record.shopOrderAmount),
           waterAmount: Number(record.offlineAmount),
           salesAmount: Number(record.dailySales),
-          consumptionAmount: Number(record.consumptionValue),
-          calculatedCostPrice, // 新增：基于 packPrice 计算的拿货价
+          consumptionAmount: calculatedConsumptionAmount, // 消耗金额（基于 packPrice，仅用于显示）
+          calculatedCostPrice, // 拿货价（基于 averageCost，用于计算毛利）
           adSpendAmount: Number(record.adCost),
           platformFeeAmount: Number(record.platformFee),
           profitAmount: Number(record.profitAmount),
@@ -476,6 +544,12 @@ export class AnchorProfitService {
                   code: true,
                   name: true,
                 }
+              },
+              localSettings: {
+                where: { baseId },
+                select: {
+                  packPrice: true,
+                }
               }
             } 
           },
@@ -485,31 +559,54 @@ export class AnchorProfitService {
         orderBy: { consumptionDate: 'desc' },
       });
 
-      // 计算每条消耗记录的消耗金额
+      // 计算每条消耗记录的消耗金额和拿货价
       const result = consumptions.map((c) => {
-        const unitPricePerBox = Number(c.unitPricePerBox);
         const packPerBox = Number(c.goods.packPerBox) || 1;
         const piecePerPack = Number(c.goods.piecePerPack) || 1;
         
-        // 计算单价/盒 和 单价/包
-        const unitPricePerPack = unitPricePerBox / packPerBox;
-        const unitPricePerPiece = unitPricePerPack / piecePerPack;
+        // 1. 计算消耗金额（基于 packPrice，仅用于显示）
+        let consumptionAmount = 0;
+        const packPrice = (c.goods as any)?.localSettings?.[0]?.packPrice;
+        if (packPrice) {
+          const unitPricePerPiece = Number(packPrice); // packPrice 是每包价格
+          const unitPricePerPack = unitPricePerPiece * piecePerPack;  // 单价/盒 = 单价/包 × 包数
+          const unitPricePerBox_fromPackPrice = unitPricePerPack * packPerBox; // 单价/箱 = 单价/盒 × 盒数
+          
+          consumptionAmount = 
+            Number(c.boxQuantity) * unitPricePerBox_fromPackPrice +
+            Number(c.packQuantity) * unitPricePerPack +
+            Number(c.pieceQuantity) * unitPricePerPiece;
+        }
         
-        // 消耗金额 = 箱数×单价/箱 + 盒数×单价/盒 + 包数×单价/包
-        const consumptionAmount = 
-          Number(c.boxQuantity) * unitPricePerBox +
-          Number(c.packQuantity) * unitPricePerPack +
-          Number(c.pieceQuantity) * unitPricePerPiece;
+        // 2. 计算拿货价（基于 Inventory.averageCost，用于计算毛利）
+        let costPrice = 0;
+        const unitPricePerBox = Number(c.unitPricePerBox) || 0;
+        if (unitPricePerBox > 0) {
+          const unitPricePerPack = unitPricePerBox / packPerBox;      // 单价/盒 = 单价/箱 ÷ 盒数
+          const unitPricePerPiece = unitPricePerPack / piecePerPack;  // 单价/包 = 单价/盒 ÷ 包数
+          
+          costPrice = 
+            Number(c.boxQuantity) * unitPricePerBox +
+            Number(c.packQuantity) * unitPricePerPack +
+            Number(c.pieceQuantity) * unitPricePerPiece;
+        }
           
         // 品类显示
         const categoryDisplay = c.goods.category 
           ? `[${c.goods.category.name || c.goods.category.code}]` 
           : '';
         
+        // 构建 label，确保即使字段被过滤也能显示
+        const dateStr = c.consumptionDate.toISOString().split('T')[0];
+        const goodsNameStr = c.goods.name || '未知商品';
+        const quantityStr = `${c.boxQuantity}箱${c.packQuantity}盒${c.pieceQuantity}包`;
+        const amountStr = `¥${consumptionAmount.toFixed(2)}`;
+        const label = `${dateStr} - ${categoryDisplay}${goodsNameStr} (${quantityStr}) ${amountStr}`;
+        
         return {
           id: c.id,
           consumptionDate: c.consumptionDate,
-          goodsName: c.goods.name,
+          goodsName: c.goods.name || '未知商品',
           categoryCode: c.goods.category?.code || '',
           categoryName: c.goods.category?.name || '',
           locationName: c.location.name,
@@ -517,8 +614,15 @@ export class AnchorProfitService {
           boxQuantity: c.boxQuantity,
           packQuantity: c.packQuantity,
           pieceQuantity: c.pieceQuantity,
-          consumptionAmount,
-          label: `${c.consumptionDate.toISOString().split('T')[0]} - ${categoryDisplay}${c.goods.name} (${c.boxQuantity}箱${c.packQuantity}盒${c.pieceQuantity}包) ¥${consumptionAmount.toFixed(2)}`,
+          // 返回计算所需的基础字段
+          packPerBox,
+          piecePerPack,
+          packPrice: packPrice ? Number(packPrice) : 0, // 商品平拆价（每包价格），用于计算消耗金额
+          unitPricePerBox, // 来自 Inventory.averageCost，用于计算拿货价
+          // 返回计算好的值
+          consumptionAmount, // 消耗金额（基于 packPrice，仅用于显示）
+          costPrice, // 拿货价（基于 averageCost，用于计算毛利）
+          label, // 使用构建好的 label
         };
       });
 

@@ -12,7 +12,7 @@ router.use(authenticateToken);
 router.get('/:baseId/anchor-profits/stats', checkPermission('anchor_profit', 'read'), injectDataPermission('anchorProfit'), filterResponseFields(), AnchorProfitController.getStats);
 
 // 获取未关联利润的消耗记录
-router.get('/:baseId/anchor-profits/unlinked-consumptions', checkPermission('anchor_profit', 'read'), AnchorProfitController.getUnlinkedConsumptions);
+router.get('/:baseId/anchor-profits/unlinked-consumptions', checkPermission('anchor_profit', 'read'), injectDataPermission('stockConsumption', ['goods', 'category']), filterResponseFields(), AnchorProfitController.getUnlinkedConsumptions);
 
 // 获取消耗金额
 router.get('/:baseId/anchor-profits/consumption-amount', checkPermission('anchor_profit', 'read'), AnchorProfitController.getConsumptionAmount);

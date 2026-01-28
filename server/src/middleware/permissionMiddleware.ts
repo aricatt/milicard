@@ -873,9 +873,18 @@ function filterObject(obj: any, allowedFields: string[]): any {
 
   const filtered: any = {}
   
-  // 始终保留 id 字段
-  if ('id' in obj) {
-    filtered.id = obj.id
+  // 始终保留关键字段，不受字段权限限制
+  // - id: 唯一标识
+  // - label: 用于下拉选项显示
+  // - consumptionAmount: 消耗金额（基于 packPrice，仅显示）
+  // - costPrice: 拿货价（基于 averageCost，用于计算）
+  // - packPerBox, piecePerPack, packPrice, unitPricePerBox: 计算所需的基础字段
+  const alwaysIncludeFields = ['id', 'label', 'consumptionAmount', 'costPrice', 'packPerBox', 'piecePerPack', 'packPrice', 'unitPricePerBox']
+  
+  for (const field of alwaysIncludeFields) {
+    if (field in obj) {
+      filtered[field] = obj[field]
+    }
   }
 
   for (const field of allowedFields) {
