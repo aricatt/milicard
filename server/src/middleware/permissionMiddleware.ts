@@ -792,8 +792,27 @@ export const filterResponseFields = () => {
       // 开发环境下，附加字段权限调试信息
       const isDev = process.env.NODE_ENV === 'development'
       
+      // 🔍 添加详细日志：检查字段权限配置（仅开发环境）
+      if (isDev) {
+        console.log('🔍 [字段权限过滤] 开始执行', {
+          url: req.url,
+          method: req.method,
+          user: req.user?.username,
+          roles: req.permissionContext?.roles,
+          resource: req.permissionContext?.resource,
+          hasFieldPermissions: !!fieldPermissions,
+          readable: fieldPermissions?.readable,
+          readableCount: fieldPermissions?.readable?.length
+        })
+      }
+      
       // 如果没有字段权限配置或允许所有字段，直接返回
       if (!fieldPermissions || fieldPermissions.readable.includes('*')) {
+        if (isDev) {
+          console.log('⚠️ [字段权限过滤] 跳过过滤 - 无限制或允许所有字段', {
+            reason: !fieldPermissions ? '无字段权限配置' : '允许所有字段(*)'
+          })
+        }
         if (isDev && body && body.success) {
           body._debug_fieldPermissions = {
             readable: ['*'],
@@ -810,15 +829,68 @@ export const filterResponseFields = () => {
         url: req.url,
         method: req.method
       })
+      
+      // 🔍 添加详细日志：检查 unitPricePerBox 字段（仅开发环境）
+      if (isDev) {
+        const hasUnitPricePerBox = fieldPermissions.readable.includes('unitPricePerBox')
+        console.log('🔍 [字段权限过滤] unitPricePerBox 字段检查', {
+          hasPermission: hasUnitPricePerBox,
+          readableFields: fieldPermissions.readable,
+          willBeFiltered: !hasUnitPricePerBox
+        })
+      }
 
       // 过滤响应数据
       if (body) {
+        let filterStats = {
+          totalItems: 0,
+          originalFieldsSet: new Set<string>(),
+          removedFieldsSet: new Set<string>(),
+          keptFieldsSet: new Set<string>()
+        }
+
+        // 辅助函数：收集字段统计信息
+        const collectFieldStats = (item: any) => {
+          if (item && typeof item === 'object') {
+            const originalFields = Object.keys(item)
+            originalFields.forEach(f => filterStats.originalFieldsSet.add(f))
+            
+            const filtered = filterObject(item, fieldPermissions.readable)
+            const keptFields = Object.keys(filtered)
+            keptFields.forEach(f => filterStats.keptFieldsSet.add(f))
+            
+            const removedFields = originalFields.filter(f => !keptFields.includes(f))
+            removedFields.forEach(f => filterStats.removedFieldsSet.add(f))
+            
+            filterStats.totalItems++
+            return filtered
+          }
+          return item
+        }
+
         // 处理标准响应格式：{ success: true, data: ... }
         if (body.success && body.data) {
           if (Array.isArray(body.data)) {
-            body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
+            body.data = body.data.map(collectFieldStats)
           } else if (typeof body.data === 'object') {
-            body.data = filterObject(body.data, fieldPermissions.readable)
+            body.data = collectFieldStats(body.data)
+          }
+          
+          // 🔍 打印字段过滤统计信息（仅开发环境）
+          if (isDev && filterStats.totalItems > 0) {
+            console.log('📊 [字段权限过滤] 过滤统计', {
+              url: req.url,
+              user: req.user?.username,
+              roles: req.permissionContext?.roles,
+              totalItems: filterStats.totalItems,
+              originalFields: Array.from(filterStats.originalFieldsSet).sort(),
+              keptFields: Array.from(filterStats.keptFieldsSet).sort(),
+              removedFields: Array.from(filterStats.removedFieldsSet).sort(),
+              removedCount: filterStats.removedFieldsSet.size,
+              summary: filterStats.removedFieldsSet.size > 0 
+                ? `❌ 已过滤 ${filterStats.removedFieldsSet.size} 个字段: ${Array.from(filterStats.removedFieldsSet).join(', ')}`
+                : '✅ 未过滤任何字段'
+            })
           }
           
           // 开发环境下，附加字段权限调试信息
@@ -826,33 +898,90 @@ export const filterResponseFields = () => {
             body._debug_fieldPermissions = {
               readable: fieldPermissions.readable,
               writable: fieldPermissions.writable,
-              resource: req.permissionContext?.resource,
-              relatedResources: req.permissionContext?.relatedResources,
+              originalFields: Array.from(filterStats.originalFieldsSet).sort(),
+              keptFields: Array.from(filterStats.keptFieldsSet).sort(),
+              removedFields: Array.from(filterStats.removedFieldsSet).sort(),
               message: '当前请求的字段权限配置'
             }
           }
         }
         // 处理分页响应格式：{ data: [...], pagination: {...} }
         else if (body.data && Array.isArray(body.data) && body.pagination) {
-          body.data = body.data.map((item: any) => filterObject(item, fieldPermissions.readable))
+          body.data = body.data.map(collectFieldStats)
+          
+          // 🔍 打印字段过滤统计信息（仅开发环境）
+          if (isDev && filterStats.totalItems > 0) {
+            console.log('📊 [字段权限过滤] 过滤统计', {
+              url: req.url,
+              user: req.user?.username,
+              roles: req.permissionContext?.roles,
+              totalItems: filterStats.totalItems,
+              originalFields: Array.from(filterStats.originalFieldsSet).sort(),
+              keptFields: Array.from(filterStats.keptFieldsSet).sort(),
+              removedFields: Array.from(filterStats.removedFieldsSet).sort(),
+              removedCount: filterStats.removedFieldsSet.size,
+              summary: filterStats.removedFieldsSet.size > 0 
+                ? `❌ 已过滤 ${filterStats.removedFieldsSet.size} 个字段: ${Array.from(filterStats.removedFieldsSet).join(', ')}`
+                : '✅ 未过滤任何字段'
+            })
+          }
           
           if (isDev) {
             body._debug_fieldPermissions = {
               readable: fieldPermissions.readable,
               writable: fieldPermissions.writable,
-              resource: req.permissionContext?.resource,
-              relatedResources: req.permissionContext?.relatedResources,
+              originalFields: Array.from(filterStats.originalFieldsSet).sort(),
+              keptFields: Array.from(filterStats.keptFieldsSet).sort(),
+              removedFields: Array.from(filterStats.removedFieldsSet).sort(),
               message: '当前请求的字段权限配置'
             }
           }
         }
         // 处理直接数组响应：[...]
         else if (Array.isArray(body)) {
-          return originalJson(body.map((item: any) => filterObject(item, fieldPermissions.readable)))
+          const filtered = body.map(collectFieldStats)
+          
+          // 🔍 打印字段过滤统计信息（仅开发环境）
+          if (isDev && filterStats.totalItems > 0) {
+            console.log('📊 [字段权限过滤] 过滤统计', {
+              url: req.url,
+              user: req.user?.username,
+              roles: req.permissionContext?.roles,
+              totalItems: filterStats.totalItems,
+              originalFields: Array.from(filterStats.originalFieldsSet).sort(),
+              keptFields: Array.from(filterStats.keptFieldsSet).sort(),
+              removedFields: Array.from(filterStats.removedFieldsSet).sort(),
+              removedCount: filterStats.removedFieldsSet.size,
+              summary: filterStats.removedFieldsSet.size > 0 
+                ? `❌ 已过滤 ${filterStats.removedFieldsSet.size} 个字段: ${Array.from(filterStats.removedFieldsSet).join(', ')}`
+                : '✅ 未过滤任何字段'
+            })
+          }
+          
+          return originalJson(filtered)
         }
         // 处理直接对象响应：{...}
         else if (typeof body === 'object' && !body.success && !body.data) {
-          return originalJson(filterObject(body, fieldPermissions.readable))
+          const filtered = collectFieldStats(body)
+          
+          // 🔍 打印字段过滤统计信息（仅开发环境）
+          if (isDev && filterStats.totalItems > 0) {
+            console.log('📊 [字段权限过滤] 过滤统计', {
+              url: req.url,
+              user: req.user?.username,
+              roles: req.permissionContext?.roles,
+              totalItems: filterStats.totalItems,
+              originalFields: Array.from(filterStats.originalFieldsSet).sort(),
+              keptFields: Array.from(filterStats.keptFieldsSet).sort(),
+              removedFields: Array.from(filterStats.removedFieldsSet).sort(),
+              removedCount: filterStats.removedFieldsSet.size,
+              summary: filterStats.removedFieldsSet.size > 0 
+                ? `❌ 已过滤 ${filterStats.removedFieldsSet.size} 个字段: ${Array.from(filterStats.removedFieldsSet).join(', ')}`
+                : '✅ 未过滤任何字段'
+            })
+          }
+          
+          return originalJson(filtered)
         }
       }
 
@@ -877,9 +1006,9 @@ function filterObject(obj: any, allowedFields: string[]): any {
   // - id: 唯一标识
   // - label: 用于下拉选项显示
   // - consumptionAmount: 消耗金额（基于 packPrice，仅显示）
-  // - costPrice: 拿货价（基于 averageCost，用于计算）
-  // - packPerBox, piecePerPack, packPrice, unitPricePerBox: 计算所需的基础字段
-  const alwaysIncludeFields = ['id', 'label', 'consumptionAmount', 'costPrice', 'packPerBox', 'piecePerPack', 'packPrice', 'unitPricePerBox']
+  // - packPerBox, piecePerPack: 计算所需的基础字段
+  // 注意：unitPricePerBox 已移除，现在受字段权限控制
+  const alwaysIncludeFields = ['id', 'label', 'packPerBox', 'piecePerPack', 'packPrice']
   
   for (const field of alwaysIncludeFields) {
     if (field in obj) {

@@ -25,6 +25,11 @@ interface ColumnsConfig {
  * 计算单价（盒/包）
  */
 const calcUnitPrice = (record: ConsumptionRecord) => {
+  // 如果 unitPricePerBox 字段不存在（被权限过滤），返回 null
+  if (!('unitPricePerBox' in record) || record.unitPricePerBox === undefined) {
+    return { boxPrice: null, packPrice: null, piecePrice: null };
+  }
+  
   const boxPrice = record.unitPricePerBox || 0;
   const packPerBox = record.packPerBox || 1;
   const piecePerPack = record.piecePerPack || 1;
@@ -38,6 +43,10 @@ const calcUnitPrice = (record: ConsumptionRecord) => {
  */
 const calcConsumptionAmount = (record: ConsumptionRecord) => {
   const { boxPrice, packPrice, piecePrice } = calcUnitPrice(record);
+  // 如果价格字段被权限过滤，返回 null
+  if (boxPrice === null || packPrice === null || piecePrice === null) {
+    return null;
+  }
   return (
     record.boxQuantity * boxPrice +
     record.packQuantity * packPrice +
@@ -50,6 +59,10 @@ const calcConsumptionAmount = (record: ConsumptionRecord) => {
  */
 const calcInventoryValue = (record: ConsumptionRecord) => {
   const { boxPrice, packPrice, piecePrice } = calcUnitPrice(record);
+  // 如果价格字段被权限过滤，返回 null
+  if (boxPrice === null || packPrice === null || piecePrice === null) {
+    return null;
+  }
   return (
     record.closingBoxQty * boxPrice +
     record.closingPackQty * packPrice +
@@ -206,7 +219,8 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
   // 13. 单价/包（从单价/箱计算）
   {
     title: intl?.formatMessage({ id: 'consumption.column.unitPricePerPiece' }) || '单价/包',
-    key: 'unitPricePerPiece',
+    key: 'unitPricePerBox',
+    dataIndex: 'unitPricePerBox',
     width: 90,
     align: 'right',
     search: false,

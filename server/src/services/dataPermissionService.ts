@@ -178,6 +178,10 @@ class DataPermissionService {
   ): Promise<FieldPermissions> {
     // 管理员级别角色拥有所有字段权限
     if (await this.isAdminRole(ctx.roles)) {
+      console.log('🔍 [字段权限查询] 管理员角色，返回所有权限', {
+        roles: ctx.roles,
+        resource
+      });
       return { readable: ['*'], writable: ['*'] };
     }
 
@@ -186,15 +190,44 @@ class DataPermissionService {
         role: { name: { in: ctx.roles } },
         resource,
       },
+      include: {
+        role: true
+      }
+    });
+
+    console.log('🔍 [字段权限查询] 数据库查询结果', {
+      roles: ctx.roles,
+      resource,
+      totalPermissions: permissions.length,
+      permissions: permissions.map(p => ({
+        role: p.role.name,
+        field: p.field,
+        canRead: p.canRead,
+        canWrite: p.canWrite
+      }))
     });
 
     if (permissions.length === 0) {
       // 没有配置字段权限，默认允许所有
+      console.log('⚠️ [字段权限查询] 未找到任何字段权限配置，默认允许所有', {
+        roles: ctx.roles,
+        resource
+      });
       return { readable: ['*'], writable: ['*'] };
     }
 
     const readable = permissions.filter((p) => p.canRead).map((p) => p.field);
     const writable = permissions.filter((p) => p.canWrite).map((p) => p.field);
+
+    console.log('🔍 [字段权限查询] 过滤后的结果', {
+      roles: ctx.roles,
+      resource,
+      readableCount: readable.length,
+      readable: readable.sort(),
+      writableCount: writable.length,
+      writable: writable.sort(),
+      hasUnitPricePerBox: readable.includes('unitPricePerBox')
+    });
 
     return { readable, writable };
   }
