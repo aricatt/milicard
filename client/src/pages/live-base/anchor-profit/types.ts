@@ -88,6 +88,10 @@ export interface ConsumptionOption {
   id: string;
   consumptionDate: string;
   goodsName: string;
+  goodsNameI18n?: Record<string, string>; // 商品名国际化
+  categoryCode: string;
+  categoryName: string;
+  categoryNameI18n?: Record<string, string>; // 品类名国际化
   locationName: string;
   handlerName: string;
   boxQuantity: number;

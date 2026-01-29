@@ -543,12 +543,14 @@ export class AnchorProfitService {
           goods: { 
             select: { 
               name: true,
+              nameI18n: true,  // 商品名国际化
               packPerBox: true,  // 多少盒/箱
               piecePerPack: true, // 多少包/盒
               category: {
                 select: {
                   code: true,
                   name: true,
+                  nameI18n: true,  // 品类名国际化
                 }
               },
               localSettings: {
@@ -597,24 +599,29 @@ export class AnchorProfitService {
             Number(c.pieceQuantity) * unitPricePerPiece;
         }
           
-        // 品类显示
-        const categoryDisplay = c.goods.category 
-          ? `[${c.goods.category.name || c.goods.category.code}]` 
-          : '';
+        // 品类和商品名的国际化处理将在前端完成
+        // 这里返回原始数据和国际化数据
+        const categoryCode = c.goods.category?.code || '';
+        const categoryName = c.goods.category?.name || '';
+        const categoryNameI18n = c.goods.category?.nameI18n || {};
+        const goodsName = c.goods.name || '未知商品';
+        const goodsNameI18n = c.goods.nameI18n || {};
         
-        // 构建 label，确保即使字段被过滤也能显示
+        // 构建基础 label（不含国际化，前端会重新构建）
         const dateStr = c.consumptionDate.toISOString().split('T')[0];
-        const goodsNameStr = c.goods.name || '未知商品';
+        const categoryDisplay = categoryName ? `[${categoryName}]` : '';
         const quantityStr = `${c.boxQuantity}箱${c.packQuantity}盒${c.pieceQuantity}包`;
         const amountStr = `¥${consumptionAmount.toFixed(2)}`;
-        const label = `${dateStr} - ${categoryDisplay}${goodsNameStr} (${quantityStr}) ${amountStr}`;
+        const label = `${dateStr} - ${categoryDisplay}${goodsName} (${quantityStr}) ${amountStr}`;
         
         return {
           id: c.id,
           consumptionDate: c.consumptionDate,
-          goodsName: c.goods.name || '未知商品',
-          categoryCode: c.goods.category?.code || '',
-          categoryName: c.goods.category?.name || '',
+          goodsName,
+          goodsNameI18n,  // 商品名国际化
+          categoryCode,
+          categoryName,
+          categoryNameI18n,  // 品类名国际化
           locationName: c.location.name,
           handlerName: c.handler.name,
           boxQuantity: c.boxQuantity,
@@ -628,7 +635,7 @@ export class AnchorProfitService {
           // 返回计算好的值
           consumptionAmount, // 消耗金额（基于 packPrice，仅用于显示）
           costPrice, // 拿货价（基于 averageCost，用于计算毛利）
-          label, // 使用构建好的 label
+          label, // 基础 label（前端会根据语言重新构建）
         };
       });
 

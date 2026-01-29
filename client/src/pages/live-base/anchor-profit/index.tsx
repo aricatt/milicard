@@ -201,7 +201,48 @@ const AnchorProfitPage: React.FC = () => {
       );
 
       if (result.success) {
-        setConsumptionOptions(result.data || []);
+        // 处理国际化并重新构建 label
+        const processedOptions = (result.data || []).map((option: ConsumptionOption) => {
+          const currentLocale = intl.locale;
+          
+          // 语言代码降级匹配：en-US -> en, zh-CN -> zh, vi-VN -> vi
+          const getLocalizedValue = (i18nObj: Record<string, string> | undefined, fallback: string) => {
+            if (!i18nObj) return fallback;
+            
+            // 1. 尝试完整匹配 (如 en-US)
+            if (i18nObj[currentLocale]) return i18nObj[currentLocale];
+            
+            // 2. 尝试语言代码前缀匹配 (如 en-US -> en)
+            const langPrefix = currentLocale.split('-')[0];
+            if (i18nObj[langPrefix]) return i18nObj[langPrefix];
+            
+            // 3. 使用默认值
+            return fallback;
+          };
+          
+          // 获取本地化的品类名
+          const localizedCategoryName = getLocalizedValue(option.categoryNameI18n, option.categoryName);
+          const categoryDisplay = localizedCategoryName ? `[${localizedCategoryName}]` : '';
+          
+          // 获取本地化的商品名
+          const localizedGoodsName = getLocalizedValue(option.goodsNameI18n, option.goodsName);
+          
+          // 重新构建 label（本地化单位）
+          const dateStr = option.consumptionDate.split('T')[0];
+          const boxUnit = intl.formatMessage({ id: 'unit.box' });
+          const packUnit = intl.formatMessage({ id: 'unit.pack' });
+          const pieceUnit = intl.formatMessage({ id: 'unit.piece' });
+          const quantityStr = `${option.boxQuantity}${boxUnit}${option.packQuantity}${packUnit}${option.pieceQuantity}${pieceUnit}`;
+          const amountStr = `¥${option.consumptionAmount.toFixed(2)}`;
+          const localizedLabel = `${dateStr} - ${categoryDisplay}${localizedGoodsName} (${quantityStr}) ${amountStr}`;
+          
+          return {
+            ...option,
+            label: localizedLabel,
+          };
+        });
+        
+        setConsumptionOptions(processedOptions);
       }
     } catch (error) {
       console.error('获取消耗记录失败:', error);
@@ -209,7 +250,7 @@ const AnchorProfitPage: React.FC = () => {
     } finally {
       setConsumptionOptionsLoading(false);
     }
-  }, [currentBase]);
+  }, [currentBase, intl]);
 
   /**
    * 选择消耗记录后更新消耗金额
@@ -284,6 +325,53 @@ const AnchorProfitPage: React.FC = () => {
   useEffect(() => {
     calculateProfit();
   }, [consumptionAmount, calculateProfit]);
+
+  // 语言切换时重新处理消耗记录选项的 label
+  useEffect(() => {
+    if (consumptionOptions.length > 0) {
+      const currentLocale = intl.locale;
+      
+      // 语言代码降级匹配函数
+      const getLocalizedValue = (i18nObj: Record<string, string> | undefined, fallback: string) => {
+        if (!i18nObj) return fallback;
+        
+        // 1. 尝试完整匹配 (如 en-US)
+        if (i18nObj[currentLocale]) return i18nObj[currentLocale];
+        
+        // 2. 尝试语言代码前缀匹配 (如 en-US -> en)
+        const langPrefix = currentLocale.split('-')[0];
+        if (i18nObj[langPrefix]) return i18nObj[langPrefix];
+        
+        // 3. 使用默认值
+        return fallback;
+      };
+      
+      const updatedOptions = consumptionOptions.map((option) => {
+        // 获取本地化的品类名
+        const localizedCategoryName = getLocalizedValue(option.categoryNameI18n, option.categoryName);
+        const categoryDisplay = localizedCategoryName ? `[${localizedCategoryName}]` : '';
+        
+        // 获取本地化的商品名
+        const localizedGoodsName = getLocalizedValue(option.goodsNameI18n, option.goodsName);
+        
+        // 重新构建 label（本地化单位）
+        const dateStr = option.consumptionDate.split('T')[0];
+        const boxUnit = intl.formatMessage({ id: 'unit.box' });
+        const packUnit = intl.formatMessage({ id: 'unit.pack' });
+        const pieceUnit = intl.formatMessage({ id: 'unit.piece' });
+        const quantityStr = `${option.boxQuantity}${boxUnit}${option.packQuantity}${packUnit}${option.pieceQuantity}${pieceUnit}`;
+        const amountStr = `¥${option.consumptionAmount.toFixed(2)}`;
+        const localizedLabel = `${dateStr} - ${categoryDisplay}${localizedGoodsName} (${quantityStr}) ${amountStr}`;
+        
+        return {
+          ...option,
+          label: localizedLabel,
+        };
+      });
+      
+      setConsumptionOptions(updatedOptions);
+    }
+  }, [intl.locale]); // 只监听语言变化，不包含 consumptionOptions 避免循环
 
   /**
    * 获取系统参数 - 毛利率预警阈值
@@ -966,7 +1054,7 @@ const AnchorProfitPage: React.FC = () => {
 
       {/* 创建模态框 */}
       <Modal
-        title="新增利润记录"
+        title={intl.formatMessage({ id: 'anchorProfit.add' })}
         open={createModalVisible}
         onOk={() => form.submit()}
         onCancel={() => {
@@ -988,7 +1076,7 @@ const AnchorProfitPage: React.FC = () => {
 
       {/* 编辑模态框 */}
       <Modal
-        title="编辑利润记录"
+        title={intl.formatMessage({ id: 'anchorProfit.edit' })}
         open={editModalVisible}
         onOk={() => form.submit()}
         onCancel={() => {
