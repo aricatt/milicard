@@ -271,7 +271,7 @@ export class AnchorProfitService {
     userId: string
   ) {
     try {
-      // 验证消耗记录存在且未被关联，并获取商品信息用于计算消耗金额
+      // 验证消耗记录存在且未被关联，并获取库存信息用于计算消耗金额
       const consumption = await prisma.stockConsumption.findFirst({
         where: {
           id: data.consumptionId,
@@ -281,8 +281,11 @@ export class AnchorProfitService {
         include: {
           goods: {
             include: {
-              localSettings: {
+              inventory: {
                 where: { baseId },
+                select: {
+                  averageCost: true,
+                },
               },
             },
           },
@@ -296,16 +299,16 @@ export class AnchorProfitService {
         };
       }
 
-      // 计算消耗金额（基于 packPrice）
+      // 计算消耗金额（基于 Inventory.averageCost 拿货价）
       const packPerBox = Number(consumption.goods.packPerBox) || 1;
       const piecePerPack = Number(consumption.goods.piecePerPack) || 1;
-      const packPrice = (consumption.goods as any)?.localSettings?.[0]?.packPrice;
+      const averageCost = (consumption.goods as any)?.inventory?.[0]?.averageCost;
       
       let consumptionValue = 0;
-      if (packPrice) {
-        const unitPricePerPiece = Number(packPrice);
-        const unitPricePerPack = unitPricePerPiece * piecePerPack;
-        const unitPricePerBox = unitPricePerPack * packPerBox;
+      if (averageCost) {
+        const unitPricePerBox = Number(averageCost); // averageCost 是每箱价格
+        const unitPricePerPack = unitPricePerBox / packPerBox; // 单价/盒 = 单价/箱 ÷ 盒数
+        const unitPricePerPiece = unitPricePerPack / piecePerPack; // 单价/包 = 单价/盒 ÷ 包数
         
         consumptionValue = 
           Number(consumption.boxQuantity) * unitPricePerBox +
@@ -403,7 +406,7 @@ export class AnchorProfitService {
     }
   ) {
     try {
-      // 获取现有记录及其关联的消耗记录
+      // 获取现有记录及其关联的消耗记录和库存信息
       const existingRecord = await prisma.anchorProfit.findUnique({
         where: { id },
         include: {
@@ -411,8 +414,11 @@ export class AnchorProfitService {
             include: {
               goods: {
                 include: {
-                  localSettings: {
+                  inventory: {
                     where: { baseId },
+                    select: {
+                      averageCost: true,
+                    },
                   },
                 },
               },
@@ -441,17 +447,17 @@ export class AnchorProfitService {
       if (data.platformFeeRate !== undefined) updateData.platformFeeRate = data.platformFeeRate;
       if (data.notes !== undefined) updateData.notes = data.notes;
 
-      // 重新计算消耗金额（如果消耗记录存在）
+      // 重新计算消耗金额（如果消耗记录存在，基于 Inventory.averageCost）
       if (existingRecord.consumption) {
         const consumption = existingRecord.consumption;
         const packPerBox = Number(consumption.goods.packPerBox) || 1;
         const piecePerPack = Number(consumption.goods.piecePerPack) || 1;
-        const packPrice = (consumption.goods as any)?.localSettings?.[0]?.packPrice;
+        const averageCost = (consumption.goods as any)?.inventory?.[0]?.averageCost;
         
-        if (packPrice) {
-          const unitPricePerPiece = Number(packPrice);
-          const unitPricePerPack = unitPricePerPiece * piecePerPack;
-          const unitPricePerBox = unitPricePerPack * packPerBox;
+        if (averageCost) {
+          const unitPricePerBox = Number(averageCost); // averageCost 是每箱价格
+          const unitPricePerPack = unitPricePerBox / packPerBox; // 单价/盒 = 单价/箱 ÷ 盒数
+          const unitPricePerPiece = unitPricePerPack / piecePerPack; // 单价/包 = 单价/盒 ÷ 包数
           
           updateData.consumptionValue = 
             Number(consumption.boxQuantity) * unitPricePerBox +
