@@ -392,6 +392,7 @@ export default {
   'realTimeStock.stats.lowStock': '低庫存商品',
   'realTimeStock.stats.outOfStock': '無庫存商品',
   'realTimeStock.filter.allWarehouses': '全部倉庫',
+  'realTimeStock.filter.statusPlaceholder': '篩選狀態',
   'realTimeStock.filter.stockLessThan': '庫存少於',
   'realTimeStock.lastUpdated': '最後更新: {time}，每10分鐘更新一次',
   'realTimeStock.message.fetchFailed': '獲取庫存數據失敗',

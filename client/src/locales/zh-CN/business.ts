@@ -398,6 +398,7 @@ export default {
   'realTimeStock.stats.lowStock': '低库存商品',
   'realTimeStock.stats.outOfStock': '无库存商品',
   'realTimeStock.filter.allWarehouses': '全部仓库',
+  'realTimeStock.filter.statusPlaceholder': '筛选状态',
   'realTimeStock.filter.stockLessThan': '库存少于',
   'realTimeStock.lastUpdated': '最后更新: {time}，每10分钟更新一次',
   'realTimeStock.message.fetchFailed': '获取库存数据失败',

@@ -393,6 +393,7 @@ export default {
   'realTimeStock.stats.lowStock': 'Sản phẩm tồn kho thấp',
   'realTimeStock.stats.outOfStock': 'Sản phẩm hết hàng',
   'realTimeStock.filter.allWarehouses': 'Tất cả kho',
+  'realTimeStock.filter.statusPlaceholder': 'Lọc trạng thái',
   'realTimeStock.filter.stockLessThan': 'Tồn kho ít hơn',
   'realTimeStock.lastUpdated': 'Cập nhật lần cuối: {time}, cập nhật mỗi 10 phút',
   'realTimeStock.message.fetchFailed': 'Lấy dữ liệu tồn kho thất bại',

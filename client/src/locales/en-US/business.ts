@@ -398,6 +398,7 @@ export default {
   'realTimeStock.stats.lowStock': 'Low Stock Items',
   'realTimeStock.stats.outOfStock': 'Out of Stock Items',
   'realTimeStock.filter.allWarehouses': 'All Warehouses',
+  'realTimeStock.filter.statusPlaceholder': 'Filter Status',
   'realTimeStock.filter.stockLessThan': 'Stock Less Than',
   'realTimeStock.lastUpdated': 'Last updated: {time}, updates every 10 minutes',
   'realTimeStock.message.fetchFailed': 'Failed to fetch stock data',

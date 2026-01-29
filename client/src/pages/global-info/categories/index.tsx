@@ -112,9 +112,12 @@ const CategoriesPage: React.FC = () => {
       setLoading(true);
 
       if (editingCategory) {
+        // 编辑时，移除 nameI18n 字段，避免覆盖已有的翻译数据
+        // nameI18n 应该通过专门的翻译弹窗来更新
+        const { nameI18n, ...updateData } = values;
         await request(`/api/v1/categories/${editingCategory.id}`, {
           method: 'PUT',
-          data: values,
+          data: updateData,
         });
         message.success(intl.formatMessage({ id: 'categories.message.updateSuccess' }));
       } else {

@@ -393,6 +393,7 @@ export default {
   'realTimeStock.stats.lowStock': 'สินค้าสต็อกต่ำ',
   'realTimeStock.stats.outOfStock': 'สินค้าหมดสต็อก',
   'realTimeStock.filter.allWarehouses': 'ทุกคลัง',
+  'realTimeStock.filter.statusPlaceholder': 'กรองสถานะ',
   'realTimeStock.filter.stockLessThan': 'สต็อกน้อยกว่า',
   'realTimeStock.lastUpdated': 'อัปเดตล่าสุด: {time}, อัปเดตทุก 10 นาที',
   'realTimeStock.message.fetchFailed': 'ไม่สามารถดึงข้อมูลสต็อกได้',

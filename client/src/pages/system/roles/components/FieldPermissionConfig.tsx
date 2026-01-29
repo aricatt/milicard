@@ -49,6 +49,7 @@ const RESOURCES: Resource[] = [
       { key: 'isActive', label: '状态', type: 'boolean' },
       { key: 'createdAt', label: '创建时间', type: 'date' },
       { key: 'updatedAt', label: '更新时间', type: 'date' },
+      { key: 'nameI18n', label: '多语言名称', type: 'object' },
     ],
   },
   {

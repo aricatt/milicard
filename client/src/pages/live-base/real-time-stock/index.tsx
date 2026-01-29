@@ -216,13 +216,13 @@ const RealTimeStockPage: React.FC = () => {
       order: 2, // 查询栏顺序：第3位（order值越大越靠前，所以用2）
       fieldProps: {
         mode: 'multiple',
-        placeholder: '筛选状态',
+        placeholder: intl.formatMessage({ id: 'realTimeStock.filter.statusPlaceholder' }),
         allowClear: true,
         maxTagCount: 2,
         options: [
-          { label: '无库存', value: 'out_of_stock' },
-          { label: '库存不足', value: 'low_stock' },
-          { label: '库存充足', value: 'normal' },
+          { label: intl.formatMessage({ id: 'inventory.status.outOfStock' }), value: 'out_of_stock' },
+          { label: intl.formatMessage({ id: 'inventory.status.lowStock' }), value: 'low_stock' },
+          { label: intl.formatMessage({ id: 'inventory.status.normal' }), value: 'normal' },
         ],
       },
     },

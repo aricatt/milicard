@@ -50,13 +50,9 @@ export function getCategoryDisplayName(
     return nameI18n[localeKey]!;
   }
   
-  // 中文显示品类名称
-  if (currentLocale === 'zh-CN' || currentLocale === 'zh-TW') {
-    return categoryName || CategoryNameMap[categoryCode] || categoryCode;
-  }
-  
-  // 其他语言显示品类编号
-  return categoryCode;
+  // 回退到品类名称（中文）
+  // 优先使用 categoryName，如果没有则使用映射表，最后才使用 categoryCode
+  return categoryName || CategoryNameMap[categoryCode] || categoryCode;
 }
 
 /**

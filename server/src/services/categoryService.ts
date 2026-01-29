@@ -98,7 +98,18 @@ export class CategoryService {
   async getAll(activeOnly: boolean = true): Promise<CategoryResponse[]> {
     const categories = await prisma.category.findMany({
       where: activeOnly ? { isActive: true } : {},
-      orderBy: [{ sortOrder: 'asc' }, { code: 'asc' }]
+      orderBy: [{ sortOrder: 'asc' }, { code: 'asc' }],
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        nameI18n: true,
+        description: true,
+        sortOrder: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      }
     })
     return categories.map(c => this.toResponse(c))
   }
