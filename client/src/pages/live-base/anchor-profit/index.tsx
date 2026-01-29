@@ -233,7 +233,7 @@ const AnchorProfitPage: React.FC = () => {
           const packUnit = intl.formatMessage({ id: 'unit.pack' });
           const pieceUnit = intl.formatMessage({ id: 'unit.piece' });
           const quantityStr = `${option.boxQuantity}${boxUnit}${option.packQuantity}${packUnit}${option.pieceQuantity}${pieceUnit}`;
-          const amountStr = `¥${option.consumptionAmount.toFixed(2)}`;
+          const amountStr = `¥${(option.consumptionAmount || 0).toFixed(2)}`;
           const localizedLabel = `${dateStr} - ${categoryDisplay}${localizedGoodsName} (${quantityStr}) ${amountStr}`;
           
           return {
@@ -360,7 +360,7 @@ const AnchorProfitPage: React.FC = () => {
         const packUnit = intl.formatMessage({ id: 'unit.pack' });
         const pieceUnit = intl.formatMessage({ id: 'unit.piece' });
         const quantityStr = `${option.boxQuantity}${boxUnit}${option.packQuantity}${packUnit}${option.pieceQuantity}${pieceUnit}`;
-        const amountStr = `¥${option.consumptionAmount.toFixed(2)}`;
+        const amountStr = `¥${(option.consumptionAmount || 0).toFixed(2)}`;
         const localizedLabel = `${dateStr} - ${categoryDisplay}${localizedGoodsName} (${quantityStr}) ${amountStr}`;
         
         return {
@@ -452,13 +452,15 @@ const AnchorProfitPage: React.FC = () => {
         cancelOrderAmount: values.cancelOrderAmount || 0,
         shopOrderAmount: values.shopOrderAmount || 0,
         waterAmount: values.waterAmount || 0,
-        consumptionAmount: consumptionAmount, // 消耗金额（客户端计算）
         adSpendAmount: values.adSpendAmount || 0,
-        platformFeeAmount: calculatedValues.platformFeeAmount,
-        salesAmount: calculatedValues.salesAmount,
-        profitAmount: calculatedValues.profitAmount, // 毛利
-        profitRate: calculatedValues.profitRate, // 毛利率
+        platformFeeRate: values.platformFeeRate || 17, // 平台扣点比例
         notes: values.notes,
+        // 以下字段由后端自动计算，不需要传递：
+        // - consumptionAmount (从消耗记录和商品信息计算)
+        // - platformFeeAmount (从GMV和扣点比例计算)
+        // - salesAmount (从GMV、退款等计算)
+        // - profitAmount (从销售额、成本等计算)
+        // - profitRate (从利润和销售额计算)
       };
 
       const result = await request(`/api/v1/bases/${currentBase.id}/anchor-profits`, {
@@ -541,13 +543,10 @@ const AnchorProfitPage: React.FC = () => {
         cancelOrderAmount: values.cancelOrderAmount || 0,
         shopOrderAmount: values.shopOrderAmount || 0,
         waterAmount: values.waterAmount || 0,
-        consumptionAmount: consumptionAmount, // 消耗金额（客户端计算）
         adSpendAmount: values.adSpendAmount || 0,
-        platformFeeAmount: calculatedValues.platformFeeAmount,
-        salesAmount: calculatedValues.salesAmount,
-        profitAmount: calculatedValues.profitAmount, // 毛利
-        profitRate: calculatedValues.profitRate, // 毛利率
+        platformFeeRate: values.platformFeeRate || 17, // 平台扣点比例
         notes: values.notes,
+        // 以下字段由后端自动计算，不需要传递
       };
 
       const result = await request(

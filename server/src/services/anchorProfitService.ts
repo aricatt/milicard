@@ -264,23 +264,28 @@ export class AnchorProfitService {
       cancelOrderAmount?: number;
       shopOrderAmount?: number;
       waterAmount: number;
-      consumptionAmount: number;
       adSpendAmount: number;
-      platformFeeAmount: number;
-      salesAmount: number;
-      profitAmount: number;
-      profitRate: number;
+      platformFeeRate?: number; // 平台扣点比例，默认17%
       notes?: string;
     },
     userId: string
   ) {
     try {
-      // 验证消耗记录存在且未被关联
+      // 验证消耗记录存在且未被关联，并获取商品信息用于计算消耗金额
       const consumption = await prisma.stockConsumption.findFirst({
         where: {
           id: data.consumptionId,
           baseId,
           anchorProfit: null, // 确保未被关联
+        },
+        include: {
+          goods: {
+            include: {
+              localSettings: {
+                where: { baseId },
+              },
+            },
+          },
         },
       });
 
@@ -291,28 +296,61 @@ export class AnchorProfitService {
         };
       }
 
-      // 使用消耗记录的直播间
+      // 计算消耗金额（基于 packPrice）
+      const packPerBox = Number(consumption.goods.packPerBox) || 1;
+      const piecePerPack = Number(consumption.goods.piecePerPack) || 1;
+      const packPrice = (consumption.goods as any)?.localSettings?.[0]?.packPrice;
+      
+      let consumptionValue = 0;
+      if (packPrice) {
+        const unitPricePerPiece = Number(packPrice);
+        const unitPricePerPack = unitPricePerPiece * piecePerPack;
+        const unitPricePerBox = unitPricePerPack * packPerBox;
+        
+        consumptionValue = 
+          Number(consumption.boxQuantity) * unitPricePerBox +
+          Number(consumption.packQuantity) * unitPricePerPack +
+          Number(consumption.pieceQuantity) * unitPricePerPiece;
+      }
+
+      // 计算销售金额
+      const salesAmount = data.gmvAmount + (data.shopOrderAmount || 0) + data.waterAmount 
+        - (data.cancelOrderAmount || 0) - data.refundAmount;
+      
+      // 计算平台扣点
+      const platformFeeRate = data.platformFeeRate ?? 17;
+      const platformFee = (data.gmvAmount - (data.cancelOrderAmount || 0) - data.refundAmount) * (platformFeeRate / 100);
+      
+      // 计算利润
+      const profitAmount = salesAmount - consumptionValue - data.adSpendAmount - platformFee;
+      const profitRate = salesAmount > 0 ? (profitAmount / salesAmount) * 100 : 0;
+
+      // 使用消耗记录的直播间，保存计算好的值
       const record = await prisma.anchorProfit.create({
         data: {
-          locationId: consumption.locationId,
-          consumptionId: data.consumptionId,
+          location: {
+            connect: { id: consumption.locationId }
+          },
+          consumption: {
+            connect: { id: data.consumptionId }
+          },
+          creator: {
+            connect: { id: userId }
+          },
           profitDate: new Date(data.profitDate),
           gmvAmount: data.gmvAmount,
           refundAmount: data.refundAmount,
           cancelOrderAmount: data.cancelOrderAmount || 0,
           shopOrderAmount: data.shopOrderAmount || 0,
           offlineAmount: data.waterAmount,
-          consumptionValue: data.consumptionAmount,
+          consumptionValue, // 后端计算
           adCost: data.adSpendAmount,
-          platformFee: data.platformFeeAmount,
-          platformFeeRate: data.salesAmount > 0 
-            ? (data.platformFeeAmount / data.salesAmount) * 100 
-            : 0,
-          dailySales: data.salesAmount,
-          profitAmount: data.profitAmount,
-          profitRate: data.profitRate,
+          platformFee, // 后端计算
+          platformFeeRate,
+          dailySales: salesAmount, // 后端计算
+          profitAmount, // 后端计算
+          profitRate, // 后端计算
           notes: data.notes,
-          createdBy: userId,
         },
       });
 
@@ -359,16 +397,38 @@ export class AnchorProfitService {
       cancelOrderAmount?: number;
       shopOrderAmount?: number;
       waterAmount?: number;
-      consumptionAmount?: number;
       adSpendAmount?: number;
-      platformFeeAmount?: number;
-      salesAmount?: number;
-      profitAmount?: number;
-      profitRate?: number;
+      platformFeeRate?: number;
       notes?: string;
     }
   ) {
     try {
+      // 获取现有记录及其关联的消耗记录
+      const existingRecord = await prisma.anchorProfit.findUnique({
+        where: { id },
+        include: {
+          consumption: {
+            include: {
+              goods: {
+                include: {
+                  localSettings: {
+                    where: { baseId },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!existingRecord) {
+        return {
+          success: false,
+          message: '利润记录不存在',
+        };
+      }
+
+      // 准备更新数据（基础字段）
       const updateData: any = {};
 
       if (data.profitDate) updateData.profitDate = new Date(data.profitDate);
@@ -377,20 +437,50 @@ export class AnchorProfitService {
       if (data.cancelOrderAmount !== undefined) updateData.cancelOrderAmount = data.cancelOrderAmount;
       if (data.shopOrderAmount !== undefined) updateData.shopOrderAmount = data.shopOrderAmount;
       if (data.waterAmount !== undefined) updateData.offlineAmount = data.waterAmount;
-      if (data.consumptionAmount !== undefined) updateData.consumptionValue = data.consumptionAmount;
       if (data.adSpendAmount !== undefined) updateData.adCost = data.adSpendAmount;
-      if (data.platformFeeAmount !== undefined) updateData.platformFee = data.platformFeeAmount;
-      if (data.salesAmount !== undefined) {
-        updateData.dailySales = data.salesAmount;
-        if (data.platformFeeAmount !== undefined) {
-          updateData.platformFeeRate = data.salesAmount > 0 
-            ? (data.platformFeeAmount / data.salesAmount) * 100 
-            : 0;
+      if (data.platformFeeRate !== undefined) updateData.platformFeeRate = data.platformFeeRate;
+      if (data.notes !== undefined) updateData.notes = data.notes;
+
+      // 重新计算消耗金额（如果消耗记录存在）
+      if (existingRecord.consumption) {
+        const consumption = existingRecord.consumption;
+        const packPerBox = Number(consumption.goods.packPerBox) || 1;
+        const piecePerPack = Number(consumption.goods.piecePerPack) || 1;
+        const packPrice = (consumption.goods as any)?.localSettings?.[0]?.packPrice;
+        
+        if (packPrice) {
+          const unitPricePerPiece = Number(packPrice);
+          const unitPricePerPack = unitPricePerPiece * piecePerPack;
+          const unitPricePerBox = unitPricePerPack * packPerBox;
+          
+          updateData.consumptionValue = 
+            Number(consumption.boxQuantity) * unitPricePerBox +
+            Number(consumption.packQuantity) * unitPricePerPack +
+            Number(consumption.pieceQuantity) * unitPricePerPiece;
         }
       }
-      if (data.profitAmount !== undefined) updateData.profitAmount = data.profitAmount;
-      if (data.profitRate !== undefined) updateData.profitRate = data.profitRate;
-      if (data.notes !== undefined) updateData.notes = data.notes;
+
+      // 使用更新后的值或现有值进行计算
+      const gmvAmount = data.gmvAmount ?? Number(existingRecord.gmvAmount);
+      const refundAmount = data.refundAmount ?? Number(existingRecord.refundAmount);
+      const cancelOrderAmount = data.cancelOrderAmount ?? Number(existingRecord.cancelOrderAmount);
+      const shopOrderAmount = data.shopOrderAmount ?? Number(existingRecord.shopOrderAmount);
+      const waterAmount = data.waterAmount ?? Number(existingRecord.offlineAmount);
+      const adSpendAmount = data.adSpendAmount ?? Number(existingRecord.adCost);
+      const platformFeeRate = data.platformFeeRate ?? Number(existingRecord.platformFeeRate);
+      const consumptionValue = updateData.consumptionValue ?? Number(existingRecord.consumptionValue);
+
+      // 重新计算所有派生字段
+      const salesAmount = gmvAmount + shopOrderAmount + waterAmount - cancelOrderAmount - refundAmount;
+      const platformFee = (gmvAmount - cancelOrderAmount - refundAmount) * (platformFeeRate / 100);
+      const profitAmount = salesAmount - consumptionValue - adSpendAmount - platformFee;
+      const profitRate = salesAmount > 0 ? (profitAmount / salesAmount) * 100 : 0;
+
+      // 添加计算字段到更新数据
+      updateData.dailySales = salesAmount;
+      updateData.platformFee = platformFee;
+      updateData.profitAmount = profitAmount;
+      updateData.profitRate = profitRate;
 
       const record = await prisma.anchorProfit.update({
         where: { id },

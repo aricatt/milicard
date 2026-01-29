@@ -6,7 +6,7 @@ param(
     [string]$Resource = "stockConsumption",
     
     [Parameter(Mandatory=$false)]
-    [string]$Field = "unitPricePerBox",
+    [string]$Field = "consumptionAmount",
     
     [Parameter(Mandatory=$false)]
     [string]$RoleName = "YUNYINGHEXIN",
@@ -122,7 +122,6 @@ if (![string]::IsNullOrEmpty($RoleName)) {
 }
 Write-Host ""
 
-# 执行查询
 $result = & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -c $sql -t -A -F "|" 2>&1
 
 if ($LASTEXITCODE -ne 0) {
@@ -230,93 +229,12 @@ ORDER BY u.username
         }
         Write-Host ""
     } else {
-        Write-Host "[WARNING] 没有找到拥有 '$RoleName' 角色的用户" -ForegroundColor Yellow
+        Write-Host "[WARNING] not found '$RoleName' user" -ForegroundColor Yellow
         Write-Host ""
     }
 }
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  检查项目 4: 后端路由配置验证" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
 
-Write-Host "[*] 需要检查的后端文件:" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "1. 路由文件: server/src/routes/consumptionRoutes.ts" -ForegroundColor Cyan
-Write-Host "   确认是否包含以下中间件:" -ForegroundColor Gray
-Write-Host "   - injectDataPermission('stockConsumption')" -ForegroundColor Gray
-Write-Host "   - filterResponseFields()" -ForegroundColor Gray
-Write-Host ""
-
-Write-Host "2. 权限中间件: server/src/middleware/permissionMiddleware.ts" -ForegroundColor Cyan
-Write-Host "   确认 filterResponseFields 函数是否正确实现" -ForegroundColor Gray
-Write-Host ""
-
-Write-Host "3. 字段过滤工具: server/src/utils/fieldFilter.ts" -ForegroundColor Cyan
-Write-Host "   确认 filterReadableFields 函数是否正确过滤字段" -ForegroundColor Gray
-Write-Host ""
-
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  检查项目 5: 前端网络请求验证" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
-
-Write-Host "[*] 如何检查前端网络请求:" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "1. 打开浏览器开发者工具 (F12)" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "2. 切换到 Network (网络) 标签" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "3. 刷新 /inventory-consumption 页面" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "4. 找到 API 请求: /api/v1/bases/{baseId}/consumptions" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "5. 查看响应数据 (Response):" -ForegroundColor Cyan
-Write-Host "   - 如果 unitPricePerBox 字段存在且有值 -> 后端没有过滤" -ForegroundColor Red
-Write-Host "   - 如果 unitPricePerBox 字段不存在或为 null -> 后端已正确过滤" -ForegroundColor Green
-Write-Host ""
-Write-Host "6. 检查请求头 (Request Headers):" -ForegroundColor Cyan
-Write-Host "   - 确认 Authorization token 是否正确" -ForegroundColor Gray
-Write-Host "   - 确认用户是否使用了正确的角色登录" -ForegroundColor Gray
-Write-Host ""
-
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  诊断完成 - 故障排查建议" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
-
-Write-Host "[*] 根据检查结果，可能的问题和解决方案:" -ForegroundColor Yellow
-Write-Host ""
-
-Write-Host "问题 1: 当前登录用户是管理员角色" -ForegroundColor Red
-Write-Host "  原因: SUPER_ADMIN 和 ADMIN 角色默认拥有所有权限" -ForegroundColor Gray
-Write-Host "  解决: 使用 '$RoleName' 角色的用户登录测试" -ForegroundColor Green
-Write-Host ""
-
-Write-Host "问题 2: 后端中间件未正确配置" -ForegroundColor Red
-Write-Host "  原因: 路由没有使用 filterResponseFields() 中间件" -ForegroundColor Gray
-Write-Host "  解决: 在 consumptionRoutes.ts 中添加中间件" -ForegroundColor Green
-Write-Host "  代码: router.get('/:baseId/consumptions', ..., filterResponseFields(), ...)" -ForegroundColor Cyan
-Write-Host ""
-
-Write-Host "问题 3: 前端列配置的 key 与字段名不匹配" -ForegroundColor Red
-Write-Host "  原因: columns.tsx 中的 key 或 dataIndex 与数据库字段名不一致" -ForegroundColor Gray
-Write-Host "  解决: 确保列定义为 { key: 'unitPricePerBox', dataIndex: 'unitPricePerBox' }" -ForegroundColor Green
-Write-Host ""
-
-Write-Host "问题 4: 前端缓存了旧数据" -ForegroundColor Red
-Write-Host "  原因: 浏览器缓存或 React 状态缓存" -ForegroundColor Gray
-Write-Host "  解决: 清除浏览器缓存，强制刷新页面 (Ctrl+Shift+R)" -ForegroundColor Green
-Write-Host ""
-
-Write-Host "[*] 推荐的调试步骤:" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "1. 确认当前登录用户的角色 (检查上面的用户角色关联表)" -ForegroundColor Cyan
-Write-Host "2. 使用 '$RoleName' 角色的用户重新登录" -ForegroundColor Cyan
-Write-Host "3. 打开浏览器开发者工具，查看网络请求" -ForegroundColor Cyan
-Write-Host "4. 检查 API 响应中是否包含 unitPricePerBox 字段" -ForegroundColor Cyan
-Write-Host "5. 如果响应中仍有该字段，检查后端日志和路由配置" -ForegroundColor Cyan
-Write-Host ""
 
 # Clean up environment variable
 $env:PGPASSWORD = ""
