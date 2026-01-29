@@ -144,7 +144,12 @@ const RealTimeStockPage: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const result = await request('/api/v1/categories/all', { method: 'GET' });
-      setCategories(result || []);
+      // 为每个品类添加本地化的显示名称
+      const categoriesWithI18n = (result || []).map((cat: any) => ({
+        ...cat,
+        displayName: getCategoryDisplayName(cat.code, cat.name, cat.nameI18n, intl.locale),
+      }));
+      setCategories(categoriesWithI18n);
     } catch (error) {
       console.error('Failed to fetch categories', error);
     }
@@ -192,7 +197,7 @@ const RealTimeStockPage: React.FC = () => {
         allowClear: true,
         maxTagCount: 2,
         options: categories.map((cat) => ({
-          label: cat.name,
+          label: cat.displayName || cat.name,
           value: cat.code,
         })),
       },

@@ -624,13 +624,31 @@ export class StockService {
       // 从缓存数据中筛选
       let filteredResults = allResults;
 
-      // 应用商品名称筛选
+      // 应用商品名称筛选（支持多语言）
       if (goodsName) {
         const searchLower = goodsName.toLowerCase();
-        filteredResults = filteredResults.filter(item => 
-          item.goodsName.toLowerCase().includes(searchLower) ||
-          item.goodsCode.toLowerCase().includes(searchLower)
-        );
+        filteredResults = filteredResults.filter(item => {
+          // 搜索中文名称
+          if (item.goodsName.toLowerCase().includes(searchLower)) {
+            return true;
+          }
+          // 搜索商品编号
+          if (item.goodsCode.toLowerCase().includes(searchLower)) {
+            return true;
+          }
+          // 搜索多语言名称
+          if (item.goodsNameI18n) {
+            const nameI18n = item.goodsNameI18n;
+            // 检查所有语言版本
+            for (const lang of ['en', 'th', 'vi', 'zh_TW']) {
+              const langValue = nameI18n[lang];
+              if (langValue && langValue.toLowerCase().includes(searchLower)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        });
       }
 
       // 应用商品编号筛选
