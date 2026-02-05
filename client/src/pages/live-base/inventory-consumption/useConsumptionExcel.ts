@@ -174,9 +174,16 @@ export const useConsumptionExcel = ({ baseId, baseName, currencyCode = 'CNY', ex
   /**
    * 处理导入
    */
-  const handleImport = async (file: File): Promise<boolean> => {
+  const handleImport = async (options: any): Promise<boolean> => {
     if (!baseId) {
       message.warning('请先选择基地');
+      return false;
+    }
+
+    // 从 customRequest 参数中提取 file 对象
+    const file = options.file as File;
+    if (!file) {
+      message.error('未找到文件');
       return false;
     }
 
@@ -184,7 +191,26 @@ export const useConsumptionExcel = ({ baseId, baseName, currencyCode = 'CNY', ex
     setImportProgress(0);
 
     try {
-      const data = await file.arrayBuffer();
+      // 兼容性处理：某些浏览器可能不支持 file.arrayBuffer()
+      let data: ArrayBuffer;
+      if (typeof file.arrayBuffer === 'function') {
+        data = await file.arrayBuffer();
+      } else {
+        // 使用 FileReader 作为兼容方案
+        data = await new Promise<ArrayBuffer>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            if (e.target?.result instanceof ArrayBuffer) {
+              resolve(e.target.result);
+            } else {
+              reject(new Error('读取文件失败'));
+            }
+          };
+          reader.onerror = () => reject(reader.error);
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
@@ -195,8 +221,59 @@ export const useConsumptionExcel = ({ baseId, baseName, currencyCode = 'CNY', ex
         return false;
       }
 
+      // Excel日期序列号转换为日期字符串
+      // Excel日期从1900-01-01开始计数，但有1900年闰年bug，需要减去2天
+      const excelDateToString = (value: any): string => {
+        if (!value) return '';
+        const strValue = String(value).trim();
+        
+        console.log('原始日期值:', value, '字符串值:', strValue);
+        
+        // 如果已经是日期格式字符串（包含-或/），使用dayjs解析并标准化为YYYY-MM-DD格式
+        if (strValue.includes('-') || strValue.includes('/')) {
+          // 先尝试直接解析
+          let parsed = dayjs(strValue);
+          
+          // 如果解析失败，尝试手动解析 YYYY/M/D 或 YYYY-M-D 格式
+          if (!parsed.isValid()) {
+            const parts = strValue.split(/[-/]/);
+            if (parts.length === 3) {
+              const year = parseInt(parts[0]);
+              const month = parseInt(parts[1]) - 1; // dayjs月份从0开始
+              const day = parseInt(parts[2]);
+              parsed = dayjs(new Date(year, month, day));
+            }
+          }
+          
+          if (parsed.isValid()) {
+            const result = parsed.format('YYYY-MM-DD');
+            console.log('日期解析结果:', result);
+            return result;
+          }
+          console.log('日期解析失败，返回原始值');
+          return strValue;
+        }
+        
+        // 如果是数字（Excel日期序列号），转换为日期
+        const num = parseFloat(strValue);
+        if (!isNaN(num) && num > 0) {
+          // Excel日期序列号转换：从1900-01-01开始，但Excel有个bug认为1900年是闰年
+          // 使用UTC时间避免时区问题
+          const excelEpoch = Date.UTC(1899, 11, 30); // 1899-12-30 UTC
+          const timestamp = excelEpoch + num * 24 * 60 * 60 * 1000;
+          const date = new Date(timestamp);
+          const year = date.getUTCFullYear();
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          const result = `${year}-${month}-${day}`;
+          console.log('Excel序列号', num, '转换结果:', result);
+          return result;
+        }
+        return strValue;
+      };
+
       const records: ImportRecord[] = jsonData.map((row) => ({
-        consumptionDate: row['消耗日期'] || row['日期'] || '',
+        consumptionDate: excelDateToString(row['消耗日期'] || row['日期']),
         categoryName: row['品类'] || '',
         goodsName: row['商品'] || row['商品名称'] || '',
         locationName: row['直播间'] || row['位置'] || '',

@@ -7,6 +7,7 @@ import { message, Modal } from 'antd';
 import type { UploadProps } from 'antd';
 import { request } from '@umijs/max';
 import { exportToExcel, readExcelFile, downloadTemplate, validateImportData, formatDateTime } from '@/utils/excelUtils';
+import dayjs from 'dayjs';
 
 interface UseTransferExcelProps {
   baseId: number;
@@ -95,9 +96,39 @@ export const useTransferExcel = ({ baseId, baseName, onImportSuccess }: UseTrans
 
       message.loading(`准备导入 ${jsonData.length} 条数据...`, 0);
 
+      // Excel日期序列号转换为日期字符串
+      const excelDateToString = (value: any): string => {
+        if (!value) return '';
+        const strValue = String(value).trim();
+        
+        // 如果已经是日期格式字符串（包含-或/），使用dayjs解析并标准化为YYYY-MM-DD格式
+        if (strValue.includes('-') || strValue.includes('/')) {
+          const parsed = dayjs(strValue);
+          if (parsed.isValid()) {
+            return parsed.format('YYYY-MM-DD');
+          }
+          return strValue;
+        }
+        
+        // 如果是数字（Excel日期序列号），转换为日期
+        const num = parseFloat(strValue);
+        if (!isNaN(num) && num > 0) {
+          // Excel日期序列号转换：从1900-01-01开始，但Excel有个bug认为1900年是闰年
+          // 使用UTC时间避免时区问题
+          const excelEpoch = Date.UTC(1899, 11, 30); // 1899-12-30 UTC
+          const timestamp = excelEpoch + num * 24 * 60 * 60 * 1000;
+          const date = new Date(timestamp);
+          const year = date.getUTCFullYear();
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+        return strValue;
+      };
+
       // 转换数据格式
       const importData = jsonData.map((row: any) => ({
-        transferDate: row['调货日期'] ? String(row['调货日期']).trim() : '',
+        transferDate: excelDateToString(row['调货日期']),
         categoryName: String(row['品类'] || '').trim(),
         goodsName: String(row['商品'] || '').trim(),
         sourceLocationName: String(row['调出直播间'] || '').trim(),

@@ -102,9 +102,16 @@ export const useLocationExcel = (baseId: number | undefined, onImportSuccess?: (
     }
   };
 
-  const handleImport = async (file: File) => {
+  const handleImport = async (options: any) => {
     if (!baseId) {
       message.error('请先选择基地');
+      return;
+    }
+
+    // 从 customRequest 参数中提取 file 对象
+    const file = options.file as File;
+    if (!file) {
+      message.error('未找到文件');
       return;
     }
 
@@ -114,7 +121,26 @@ export const useLocationExcel = (baseId: number | undefined, onImportSuccess?: (
     try {
       message.loading({ content: '正在读取文件...', key: 'import', duration: 0 });
 
-      const data = await file.arrayBuffer();
+      // 兼容性处理：某些浏览器可能不支持 file.arrayBuffer()
+      let data: ArrayBuffer;
+      if (typeof file.arrayBuffer === 'function') {
+        data = await file.arrayBuffer();
+      } else {
+        // 使用 FileReader 作为兼容方案
+        data = await new Promise<ArrayBuffer>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            if (e.target?.result instanceof ArrayBuffer) {
+              resolve(e.target.result);
+            } else {
+              reject(new Error('读取文件失败'));
+            }
+          };
+          reader.onerror = () => reject(reader.error);
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
       const workbook = XLSX.read(data);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData: LocationExcelRow[] = XLSX.utils.sheet_to_json(worksheet);
