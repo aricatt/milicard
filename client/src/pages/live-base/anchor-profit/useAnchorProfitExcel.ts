@@ -13,12 +13,16 @@ interface UseAnchorProfitExcelProps {
 
 interface ImportRecord {
   profitDate: string;
+  consumptionDate: string;
+  categoryName: string;
+  goodsName: string;
+  locationName: string;
   handlerName: string;
   gmvAmount: number;
   refundAmount: number;
+  cancelOrderAmount: number;
+  shopOrderAmount: number;
   waterAmount: number;
-  consumptionAmount: number;
-  adSpendAmount: number;
   platformFeeRate: number;
   notes?: string;
 }
@@ -88,12 +92,16 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
     const templateData = [
       {
         '日期': '2025-01-01',
-        '主播': '主播姓名（必须与系统中主播姓名一致）',
+        '消耗日期': '2025-01-01',
+        '品类': '卡牌',
+        '商品': '宫崎骏卡牌',
+        '直播间': '直播间A',
+        '主播': '张三',
         'GMV金额': 10000,
         '退款金额': 500,
+        '取消订单': 200,
+        '店铺订单': 300,
         '走水金额': 200,
-        '消耗金额': 2000,
-        '投流金额': 500,
         '平台扣点比例%': 17,
         '备注': '备注信息（可选）',
       },
@@ -160,15 +168,49 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
         return;
       }
 
+      // Excel日期序列号转换为日期字符串
+      const excelDateToString = (value: any): string => {
+        if (!value) return '';
+        const strValue = String(value).trim();
+        
+        // 如果已经是日期格式字符串（包含-或/），使用dayjs解析并标准化为YYYY-MM-DD格式
+        if (strValue.includes('-') || strValue.includes('/')) {
+          const parsed = dayjs(strValue);
+          if (parsed.isValid()) {
+            return parsed.format('YYYY-MM-DD');
+          }
+          return strValue;
+        }
+        
+        // 如果是数字（Excel日期序列号），转换为日期
+        const num = parseFloat(strValue);
+        if (!isNaN(num) && num > 0) {
+          // Excel日期序列号转换：从1900-01-01开始，但Excel有个bug认为1900年是闰年
+          // 使用UTC时间避免时区问题
+          const excelEpoch = Date.UTC(1899, 11, 30); // 1899-12-30 UTC
+          const timestamp = excelEpoch + num * 24 * 60 * 60 * 1000;
+          const date = new Date(timestamp);
+          const year = date.getUTCFullYear();
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(date.getUTCDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+        return strValue;
+      };
+
       // 转换数据格式
       const records: ImportRecord[] = jsonData.map((row) => ({
-        profitDate: row['日期'] || '',
-        handlerName: row['主播'] || '',
+        profitDate: excelDateToString(row['日期']),
+        consumptionDate: excelDateToString(row['消耗日期']),
+        categoryName: String(row['品类'] || '').trim(),
+        goodsName: String(row['商品'] || '').trim(),
+        locationName: String(row['直播间'] || '').trim(),
+        handlerName: String(row['主播'] || '').trim(),
         gmvAmount: parseFloat(row['GMV金额']) || 0,
         refundAmount: parseFloat(row['退款金额']) || 0,
+        cancelOrderAmount: parseFloat(row['取消订单']) || 0,
+        shopOrderAmount: parseFloat(row['店铺订单']) || 0,
         waterAmount: parseFloat(row['走水金额']) || 0,
-        consumptionAmount: parseFloat(row['消耗金额']) || 0,
-        adSpendAmount: parseFloat(row['投流金额']) || 0,
         platformFeeRate: parseFloat(row['平台扣点比例%']) || 17,
         notes: row['备注'] || '',
       }));
@@ -182,21 +224,10 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
         setImportProgress(Math.round(((i + 1) / records.length) * 100));
 
         try {
-          // 计算字段
-          const salesAmount = record.gmvAmount + record.waterAmount - record.refundAmount;
-          const platformFeeAmount = (record.gmvAmount - record.refundAmount) * (record.platformFeeRate / 100);
-          const profitAmount = salesAmount - record.consumptionAmount - record.adSpendAmount - platformFeeAmount;
-          const profitRate = salesAmount > 0 ? (profitAmount / salesAmount) * 100 : 0;
-
+          // 后端会根据消耗记录自动计算消耗金额、销售额、平台扣点、利润等字段
           const result = await request(`/api/v1/bases/${baseId}/anchor-profits/import`, {
             method: 'POST',
-            data: {
-              ...record,
-              salesAmount,
-              platformFeeAmount,
-              profitAmount,
-              profitRate,
-            },
+            data: record,
           });
 
           if (result.success) {

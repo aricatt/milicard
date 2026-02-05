@@ -796,86 +796,151 @@ export class AnchorProfitService {
   }
 
   /**
-   * 导入主播利润记录
+   * 导入主播利润记录（通过消耗记录关联）
    */
   static async importAnchorProfit(
     baseId: number,
     data: {
       profitDate: string;
+      consumptionDate: string;
+      categoryName: string;
+      goodsName: string;
+      locationName: string;
       handlerName: string;
       gmvAmount: number;
       refundAmount: number;
+      cancelOrderAmount: number;
+      shopOrderAmount: number;
       waterAmount: number;
-      consumptionAmount: number;
-      adSpendAmount: number;
-      platformFeeAmount: number;
-      salesAmount: number;
-      profitAmount: number;
-      profitRate: number;
+      platformFeeRate: number;
       notes?: string;
     },
     userId: string
   ) {
     try {
-      // 根据主播名称查找主播
-      const personnel = await prisma.personnel.findFirst({
+      // 1. 通过品类名称查找品类
+      const category = await prisma.category.findFirst({
+        where: { name: data.categoryName.trim() },
+      });
+
+      if (!category) {
+        return {
+          success: false,
+          message: `未找到品类: ${data.categoryName}`,
+        };
+      }
+
+      // 2. 通过品类ID + 商品名称查找商品
+      const goods = await prisma.goods.findFirst({
         where: {
+          name: data.goodsName.trim(),
+          categoryId: category.id,
+          isActive: true,
+        },
+      });
+
+      if (!goods) {
+        return {
+          success: false,
+          message: `未找到商品: ${data.goodsName}（品类: ${data.categoryName}）`,
+        };
+      }
+
+      // 3. 通过直播间名称查找直播间
+      const location = await prisma.location.findFirst({
+        where: {
+          name: data.locationName.trim(),
           baseId,
-          name: data.handlerName,
+          type: 'LIVE_ROOM',
+        },
+      });
+
+      if (!location) {
+        return {
+          success: false,
+          message: `未找到直播间: ${data.locationName}`,
+        };
+      }
+
+      // 4. 通过主播名称查找主播
+      const handler = await prisma.personnel.findFirst({
+        where: {
+          name: data.handlerName.trim(),
+          baseId,
           role: 'ANCHOR',
         },
       });
 
-      if (!personnel) {
+      if (!handler) {
         return {
           success: false,
           message: `未找到主播: ${data.handlerName}`,
         };
       }
 
-      // 获取该基地的第一个直播间
-      const location = await prisma.location.findFirst({
-        where: { baseId, type: 'LIVE_ROOM' },
-      });
-
-      if (!location) {
-        return {
-          success: false,
-          message: '未找到直播间',
-        };
-      }
-
-      // 检查是否已存在同一天同一主播的记录
-      const existingRecord = await prisma.anchorProfit.findFirst({
+      // 5. 定位消耗记录
+      const consumption = await prisma.stockConsumption.findUnique({
         where: {
-          locationId: location.id,
-          profitDate: new Date(data.profitDate),
+          consumptionDate_goodsId_locationId_handlerId: {
+            consumptionDate: new Date(data.consumptionDate),
+            goodsId: goods.id,
+            locationId: location.id,
+            handlerId: handler.id,
+          },
         },
       });
 
-      if (existingRecord) {
+      if (!consumption) {
         return {
           success: false,
-          message: `${data.profitDate} ${data.handlerName} 的利润记录已存在`,
+          message: `未找到消耗记录: ${data.consumptionDate} ${data.categoryName} ${data.goodsName} ${data.locationName} ${data.handlerName}`,
         };
       }
 
+      // 6. 检查消耗记录是否已被关联
+      const existingProfit = await prisma.anchorProfit.findFirst({
+        where: { consumptionId: consumption.id },
+      });
+
+      if (existingProfit) {
+        return {
+          success: false,
+          message: `该消耗记录已关联利润记录: ${data.consumptionDate} ${data.goodsName}`,
+        };
+      }
+
+      // 7. 计算消耗金额（从消耗记录获取）
+      const consumptionAmount = Number(consumption.unitPricePerBox) * 
+        (consumption.boxQuantity + 
+         consumption.packQuantity / goods.packPerBox + 
+         consumption.pieceQuantity / (goods.packPerBox * goods.piecePerPack));
+
+      // 8. 计算利润相关字段
+      // 销售额 = GMV + 走水金额 - 退款金额 - 取消订单 + 店铺订单
+      const salesAmount = data.gmvAmount + data.waterAmount - data.refundAmount - data.cancelOrderAmount + data.shopOrderAmount;
+      const platformFeeAmount = (data.gmvAmount - data.refundAmount) * (data.platformFeeRate / 100);
+      // 利润 = 销售额 - 消耗金额 - 平台扣点（投流金额不在导入中，设为0）
+      const profitAmount = salesAmount - consumptionAmount - platformFeeAmount;
+      const profitRate = salesAmount > 0 ? (profitAmount / salesAmount) * 100 : 0;
+
+      // 9. 创建利润记录并关联消耗记录
       const record = await prisma.anchorProfit.create({
         data: {
           locationId: location.id,
+          consumptionId: consumption.id,
           profitDate: new Date(data.profitDate),
           gmvAmount: data.gmvAmount,
           refundAmount: data.refundAmount,
+          cancelOrderAmount: data.cancelOrderAmount,
+          shopOrderAmount: data.shopOrderAmount,
           offlineAmount: data.waterAmount,
-          consumptionValue: data.consumptionAmount,
-          adCost: data.adSpendAmount,
-          platformFee: data.platformFeeAmount,
-          platformFeeRate: data.salesAmount > 0 
-            ? (data.platformFeeAmount / data.salesAmount) * 100 
-            : 0,
-          dailySales: data.salesAmount,
-          profitAmount: data.profitAmount,
-          profitRate: data.profitRate,
+          consumptionValue: consumptionAmount,
+          adCost: 0, // 投流金额不在导入中，设为0
+          platformFee: platformFeeAmount,
+          platformFeeRate: data.platformFeeRate,
+          dailySales: salesAmount,
+          profitAmount: profitAmount,
+          profitRate: profitRate,
           notes: data.notes,
           createdBy: userId,
         },

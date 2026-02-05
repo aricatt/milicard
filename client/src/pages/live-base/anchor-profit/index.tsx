@@ -1107,12 +1107,16 @@ const AnchorProfitPage: React.FC = () => {
         width={700}
         fields={[
           { field: '日期', required: true, description: '利润日期，格式YYYY-MM-DD', example: '2025-01-01' },
-          { field: '主播', required: true, description: '需与系统中主播姓名一致', example: '主播姓名' },
+          { field: '消耗日期', required: true, description: '消耗记录日期，用于定位消耗记录', example: '2025-01-01' },
+          { field: '品类', required: true, description: '商品品类名称，用于定位消耗记录', example: '卡牌' },
+          { field: '商品', required: true, description: '商品名称，用于定位消耗记录', example: '宫崎骏卡牌' },
+          { field: '直播间', required: true, description: '直播间名称，用于定位消耗记录', example: '直播间A' },
+          { field: '主播', required: true, description: '主播姓名，用于定位消耗记录', example: '张三' },
           { field: 'GMV金额', required: true, description: '当日GMV金额', example: '10000' },
           { field: '退款金额', required: false, description: '退款金额', example: '500' },
+          { field: '取消订单', required: false, description: '取消订单金额', example: '200' },
+          { field: '店铺订单', required: false, description: '店铺订单金额', example: '300' },
           { field: '走水金额', required: false, description: '补单等额外收入', example: '200' },
-          { field: '消耗金额', required: false, description: '当日消耗金额', example: '2000' },
-          { field: '投流金额', required: false, description: '广告投放金额', example: '500' },
           { field: '平台扣点比例%', required: false, description: '平台扣点比例，默认17', example: '17' },
           { field: '备注', required: false, description: '备注信息', example: '' },
         ]}
