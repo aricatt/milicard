@@ -216,19 +216,25 @@ class DataPermissionService {
       return { readable: ['*'], writable: ['*'] };
     }
 
+    // 🔧 修复：当有字段权限配置时，只返回明确允许的字段
+    // 如果所有配置的字段都是 canRead=false，说明这是一个限制性配置
+    // 此时应该返回空数组，而不是默认允许所有字段
     const readable = permissions.filter((p) => p.canRead).map((p) => p.field);
     const writable = permissions.filter((p) => p.canWrite).map((p) => p.field);
 
     console.log('🔍 [字段权限查询] 过滤后的结果', {
       roles: ctx.roles,
       resource,
+      totalConfigured: permissions.length,
       readableCount: readable.length,
       readable: readable.sort(),
       writableCount: writable.length,
       writable: writable.sort(),
-      hasUnitPricePerBox: readable.includes('unitPricePerBox')
+      note: readable.length === 0 ? '⚠️ 所有配置的字段都被禁止，将过滤所有字段' : '✅ 只允许已配置的字段'
     });
 
+    // 🔧 关键修复：如果有字段权限配置但 readable 为空，说明所有字段都被明确禁止
+    // 此时应该返回空数组，让 filterObject 过滤掉所有字段（除了 alwaysIncludeFields）
     return { readable, writable };
   }
 

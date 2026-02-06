@@ -237,6 +237,13 @@ export const injectDataPermission = (resource: string, relatedResources: string[
             readableCount: relatedPermissions.readable.length
           })
           
+          // 🔧 修复：如果相关资源返回 ['*']，跳过合并，因为主资源的配置应该优先
+          // 只有当主资源也是 ['*'] 时，才会最终返回 ['*']
+          if (relatedPermissions.readable.includes('*')) {
+            console.log(`⚠️ 相关资源 ${relatedResource} 返回 ['*']，跳过合并（主资源配置优先）`)
+            continue
+          }
+          
           const prefix = fieldPrefixMap[relatedResource]
           
           // 合并可读字段（原始字段名 + 带前缀的字段名）
@@ -250,13 +257,15 @@ export const injectDataPermission = (resource: string, relatedResources: string[
           })
           
           // 合并可写字段
-          relatedPermissions.writable.forEach(field => {
-            allWritableFields.add(field)
-            if (prefix && field !== 'id') {
-              const prefixedField = prefix + field.charAt(0).toUpperCase() + field.slice(1)
-              allWritableFields.add(prefixedField)
-            }
-          })
+          if (!relatedPermissions.writable.includes('*')) {
+            relatedPermissions.writable.forEach(field => {
+              allWritableFields.add(field)
+              if (prefix && field !== 'id') {
+                const prefixedField = prefix + field.charAt(0).toUpperCase() + field.slice(1)
+                allWritableFields.add(prefixedField)
+              }
+            })
+          }
         }
 
         // 最后处理主资源字段权限（优先级最高）

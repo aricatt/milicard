@@ -3,13 +3,13 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$Resource = "stockConsumption",
+    [string]$Resource = "purchaseOrder",
     
     [Parameter(Mandatory=$false)]
-    [string]$Field = "consumptionAmount",
+    [string]$Field = "unitPriceBox",
     
     [Parameter(Mandatory=$false)]
-    [string]$RoleName = "YUNYINGHEXIN",
+    [string]$RoleName = "YUNYING",
     
     [Parameter(Mandatory=$false)]
     [string]$DatabaseUrl = ""
