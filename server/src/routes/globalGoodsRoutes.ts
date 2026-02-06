@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { GlobalGoodsController } from '../controllers/globalGoodsController'
 import { authenticateToken } from '../middleware/authMiddleware'
-import { injectDataPermission, filterResponseFields } from '../middleware/permissionMiddleware'
+import { injectDataPermission, filterResponseFields, checkSystemPermission } from '../middleware/permissionMiddleware'
 
 const router = Router()
 
@@ -9,11 +9,11 @@ const router = Router()
 router.use(authenticateToken)
 
 // 全局商品路由
-router.get('/', injectDataPermission('goods'), filterResponseFields(), GlobalGoodsController.list)
-router.get('/manufacturers', GlobalGoodsController.getManufacturers)
-router.get('/:id', injectDataPermission('goods'), filterResponseFields(), GlobalGoodsController.getById)
-router.post('/', GlobalGoodsController.create)
-router.put('/:id', GlobalGoodsController.update)
-router.delete('/:id', GlobalGoodsController.delete)
+router.get('/', checkSystemPermission('goods', 'read'), injectDataPermission('goods'), filterResponseFields(), GlobalGoodsController.list)
+router.get('/manufacturers', checkSystemPermission('goods', 'read'), GlobalGoodsController.getManufacturers)
+router.get('/:id', checkSystemPermission('goods', 'read'), injectDataPermission('goods'), filterResponseFields(), GlobalGoodsController.getById)
+router.post('/', checkSystemPermission('goods', 'create'), GlobalGoodsController.create)
+router.put('/:id', checkSystemPermission('goods', 'update'), GlobalGoodsController.update)
+router.delete('/:id', checkSystemPermission('goods', 'delete'), GlobalGoodsController.delete)
 
 export default router
