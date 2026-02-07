@@ -151,6 +151,25 @@ const MODULE_LABELS: Record<string, string> = {
   currency_rate: '货币汇率',
 };
 
+// 必需权限配置：这些权限默认勾选且不允许取消
+// 格式：'模块:操作'，例如 'goods:read' 表示全局商品的查看权限
+const REQUIRED_PERMISSIONS: string[] = [
+  'base:read',
+  'supplier:read',
+  'category:read',      // 商品品类查看（基础数据，必须可见）
+  'goods:read',         // 商品查看（基础数据，必须可见）
+  'goods_local_setting:read', // 基地商品设置查看（基础数据，必须可见）
+  'location:read',      // 地点查看（基础数据，必须可见）
+  'global_setting:read',
+  'personnel:read',     // 人员查看（基础数据，必须可见）
+  'currency_rate:read', // 货币汇率查看（基础数据，必须可见）
+];
+
+// 判断某个权限是否为必需权限
+const isRequiredPermission = (permissionKey: string): boolean => {
+  return REQUIRED_PERMISSIONS.includes(permissionKey);
+};
+
 const RolesPage: React.FC = () => {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -237,7 +256,10 @@ const RolesPage: React.FC = () => {
     try {
       const result = await request(`/api/v1/roles/${roleId}/permissions`, { method: 'GET' });
       if (result.success) {
-        setCheckedKeys(new Set(result.data.permissions || []));
+        // 加载权限时，自动包含必需权限
+        const permissions = new Set<string>(result.data.permissions || []);
+        REQUIRED_PERMISSIONS.forEach(perm => permissions.add(perm));
+        setCheckedKeys(permissions);
       }
     } catch (error) {
       console.error('获取角色权限失败', error);
@@ -341,9 +363,13 @@ const RolesPage: React.FC = () => {
 
     setSaving(true);
     try {
+      // 确保必需权限始终被包含
+      const permissionsToSave = new Set(checkedKeys);
+      REQUIRED_PERMISSIONS.forEach(perm => permissionsToSave.add(perm));
+      
       const result = await request(`/api/v1/roles/${currentRole.id}/permissions`, {
         method: 'PUT',
-        data: { permissions: Array.from(checkedKeys) },
+        data: { permissions: Array.from(permissionsToSave) },
       });
       if (result.success) {
         message.success(`权限更新成功，新增 ${result.data.added} 项，删除 ${result.data.deleted} 项`);
@@ -387,6 +413,12 @@ const RolesPage: React.FC = () => {
     // 检查是否有权限配置
     if (!canConfigurePermission(key)) return;
     
+    // 检查是否为必需权限
+    if (isRequiredPermission(key)) {
+      message.warning('该权限为必需权限，不能取消');
+      return;
+    }
+    
     const newChecked = new Set(checkedKeys);
     if (newChecked.has(key)) {
       newChecked.delete(key);
@@ -399,10 +431,10 @@ const RolesPage: React.FC = () => {
   // 切换整行（模块的所有基础操作）- 只切换用户有权限的项
   const toggleRow = (module: string) => {
     const newChecked = new Set(checkedKeys);
-    // 只处理基础操作且用户有权限配置的项
+    // 只处理基础操作且用户有权限配置的项，排除必需权限
     const rowKeys = ACTIONS
       .map(a => `${module}:${a.key}`)
-      .filter(k => canConfigurePermission(k));
+      .filter(k => canConfigurePermission(k) && !isRequiredPermission(k));
     
     if (rowKeys.length === 0) return;
     
@@ -419,10 +451,10 @@ const RolesPage: React.FC = () => {
   // 切换整列（所有模块的某个操作）- 只切换用户有权限的项
   const toggleColumn = (action: string) => {
     const newChecked = new Set(checkedKeys);
-    // 只处理用户有权限配置的项
+    // 只处理用户有权限配置的项，排除必需权限
     const colKeys = modules
       .map(m => `${m.key}:${action}`)
-      .filter(k => canConfigurePermission(k));
+      .filter(k => canConfigurePermission(k) && !isRequiredPermission(k));
     
     if (colKeys.length === 0) return;
     
@@ -450,8 +482,8 @@ const RolesPage: React.FC = () => {
   };
 
   const clearAll = () => {
-    // 清空时，保留用户无权配置的已选项（不能取消别人配置的权限）
-    const keysToKeep = Array.from(checkedKeys).filter(k => !canConfigurePermission(k));
+    // 清空时，保留用户无权配置的已选项和必需权限
+    const keysToKeep = Array.from(checkedKeys).filter(k => !canConfigurePermission(k) || isRequiredPermission(k));
     setCheckedKeys(new Set(keysToKeep));
   };
 
@@ -578,13 +610,26 @@ const RolesPage: React.FC = () => {
         // 一级权限矩阵只显示基础操作，所有模块都支持
         const permKey = `${record.key}:${action.key}`;
         const canConfigure = canConfigurePermission(permKey);
+        const isRequired = isRequiredPermission(permKey);
+        
+        // 确定 tooltip 提示内容
+        let tooltipTitle = undefined;
+        if (isRequired) {
+          tooltipTitle = '该权限为必需权限，不能取消';
+        } else if (!canConfigure && !isReadOnly) {
+          tooltipTitle = '您没有此权限，无法授予他人';
+        }
+        
         return (
-          <Tooltip title={!canConfigure && !isReadOnly ? '您没有此权限，无法授予他人' : undefined}>
-            <Checkbox
-              checked={checkedKeys.has(permKey)}
-              onChange={() => togglePermission(record.key, action.key)}
-              disabled={isReadOnly || !canConfigure}
-            />
+          <Tooltip title={tooltipTitle}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <Checkbox
+                checked={checkedKeys.has(permKey) || isRequired}
+                onChange={() => togglePermission(record.key, action.key)}
+                disabled={isReadOnly || !canConfigure || isRequired}
+              />
+              {isRequired && <Tag color="blue" style={{ fontSize: 10, padding: '0 4px', lineHeight: '16px', margin: 0 }}>必需</Tag>}
+            </div>
           </Tooltip>
         );
       },
