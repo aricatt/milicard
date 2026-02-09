@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { message } from 'antd';
+import { message, Modal } from 'antd';
 import type { UploadProps } from 'antd';
 import { request } from '@umijs/max';
 import * as XLSX from 'xlsx';
@@ -218,6 +218,8 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
       // 批量导入
       let successCount = 0;
       let failCount = 0;
+      const errors: string[] = [];
+      const validationErrors: string[] = [];
 
       for (let i = 0; i < records.length; i++) {
         const record = records[i];
@@ -234,17 +236,42 @@ export const useAnchorProfitExcel = ({ baseId, baseName, onImportSuccess }: UseA
             successCount++;
           } else {
             failCount++;
+            const errorMsg = `第${i + 2}行: ${result.message || '导入失败'}`;
+            errors.push(errorMsg);
+            // 如果是验证错误或重复记录错误，添加到验证错误列表
+            if (result.message?.includes('已关联') || result.message?.includes('重复') || result.message?.includes('未找到')) {
+              validationErrors.push(errorMsg);
+            }
           }
-        } catch (error) {
+        } catch (error: any) {
           failCount++;
+          const errorMessage = error?.data?.message || error?.message || '导入失败';
+          const errorMsg = `第${i + 2}行: ${errorMessage}`;
+          errors.push(errorMsg);
+          // 如果是验证错误或重复记录错误，添加到验证错误列表
+          if (errorMessage?.includes('已关联') || errorMessage?.includes('重复') || errorMessage?.includes('未找到')) {
+            validationErrors.push(errorMsg);
+          }
         }
+      }
+
+      // 如果有验证错误，显示详细的错误弹窗
+      if (validationErrors.length > 0) {
+        const errorList = validationErrors.slice(0, 10).join('\n');
+        const moreErrors = validationErrors.length > 10 ? `\n...还有 ${validationErrors.length - 10} 个错误` : '';
+        Modal.error({
+          title: '数据验证失败',
+          content: errorList + moreErrors,
+          width: 600,
+        });
       }
 
       if (successCount > 0) {
         message.success(`导入完成: 成功 ${successCount} 条, 失败 ${failCount} 条`);
         onImportSuccess?.();
         options.onSuccess?.({});
-      } else {
+      } else if (validationErrors.length === 0 && errors.length > 0) {
+        // 如果没有验证错误但有其他错误，显示简单的错误提示
         message.error('导入失败，请检查数据格式');
         options.onError?.(new Error('导入失败'));
       }

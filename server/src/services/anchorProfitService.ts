@@ -924,27 +924,47 @@ export class AnchorProfitService {
       const profitRate = salesAmount > 0 ? (profitAmount / salesAmount) * 100 : 0;
 
       // 9. 创建利润记录并关联消耗记录
-      const record = await prisma.anchorProfit.create({
-        data: {
-          locationId: location.id,
-          consumptionId: consumption.id,
-          profitDate: new Date(data.profitDate),
-          gmvAmount: data.gmvAmount,
-          refundAmount: data.refundAmount,
-          cancelOrderAmount: data.cancelOrderAmount,
-          shopOrderAmount: data.shopOrderAmount,
-          offlineAmount: data.waterAmount,
-          consumptionValue: consumptionAmount,
-          adCost: 0, // 投流金额不在导入中，设为0
-          platformFee: platformFeeAmount,
-          platformFeeRate: data.platformFeeRate,
-          dailySales: salesAmount,
-          profitAmount: profitAmount,
-          profitRate: profitRate,
-          notes: data.notes,
-          createdBy: userId,
-        },
-      });
+      let record;
+      try {
+        record = await prisma.anchorProfit.create({
+          data: {
+            locationId: location.id,
+            consumptionId: consumption.id,
+            profitDate: new Date(data.profitDate),
+            gmvAmount: data.gmvAmount,
+            refundAmount: data.refundAmount,
+            cancelOrderAmount: data.cancelOrderAmount,
+            shopOrderAmount: data.shopOrderAmount,
+            offlineAmount: data.waterAmount,
+            consumptionValue: consumptionAmount,
+            adCost: 0, // 投流金额不在导入中，设为0
+            platformFee: platformFeeAmount,
+            platformFeeRate: data.platformFeeRate,
+            dailySales: salesAmount,
+            profitAmount: profitAmount,
+            profitRate: profitRate,
+            notes: data.notes,
+            createdBy: userId,
+          },
+        });
+      } catch (error: any) {
+        // 捕获唯一约束错误
+        if (error.code === 'P2002') {
+          const duplicateInfo = [
+            `利润日期: ${data.profitDate}`,
+            `消耗日期: ${data.consumptionDate}`,
+            `品类: ${data.categoryName}`,
+            `商品: ${data.goodsName}`,
+            `直播间: ${data.locationName}`,
+            `主播: ${data.handlerName}`
+          ].join(', ');
+          return {
+            success: false,
+            message: `该消耗记录已关联利润记录，不能重复导入。重复记录：${duplicateInfo}`,
+          };
+        }
+        throw error;
+      }
 
       return {
         success: true,

@@ -712,34 +712,52 @@ export class ConsumptionService {
       const pieceQuantity = remainingAfterBox % piecePerPack;
 
       // 创建消耗记录
-      const record = await prisma.stockConsumption.create({
-        data: {
-          consumptionDate: new Date(data.consumptionDate),
-          goodsId: goods.id,
-          locationId: location.id,
-          handlerId: handler.id,
-          baseId,
-          openingBoxQty,
-          openingPackQty,
-          openingPieceQty,
-          closingBoxQty,
-          closingPackQty,
-          closingPieceQty,
-          boxQuantity,
-          packQuantity,
-          pieceQuantity,
-          unitPricePerBox,
-          notes: data.notes,
-          createdBy: userId,
-          updatedBy: userId
-        },
-        include: {
-          goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
-          location: { select: { id: true, name: true } },
-          handler: { select: { id: true, name: true } },
-          base: { select: { id: true, name: true } }
+      let record;
+      try {
+        record = await prisma.stockConsumption.create({
+          data: {
+            consumptionDate: new Date(data.consumptionDate),
+            goodsId: goods.id,
+            locationId: location.id,
+            handlerId: handler.id,
+            baseId,
+            openingBoxQty,
+            openingPackQty,
+            openingPieceQty,
+            closingBoxQty,
+            closingPackQty,
+            closingPieceQty,
+            boxQuantity,
+            packQuantity,
+            pieceQuantity,
+            unitPricePerBox,
+            notes: data.notes,
+            createdBy: userId,
+            updatedBy: userId
+          },
+          include: {
+            goods: { select: { id: true, code: true, name: true, nameI18n: true, packPerBox: true, piecePerPack: true } },
+            location: { select: { id: true, name: true } },
+            handler: { select: { id: true, name: true } },
+            base: { select: { id: true, name: true } }
+          }
+        });
+      } catch (error: any) {
+        // 捕获唯一约束错误
+        if (error.code === 'P2002') {
+          const duplicateInfo = [
+            `消耗日期: ${data.consumptionDate}`,
+            `商品: ${data.goodsName}`,
+            `直播间: ${data.locationName}`,
+            `主播: ${data.handlerName}`
+          ].join(', ');
+          throw new BaseError(
+            `该消耗记录已存在，不能重复导入。重复记录：${duplicateInfo}`,
+            BaseErrorType.VALIDATION_ERROR
+          );
         }
-      });
+        throw error;
+      }
 
       logger.info('消耗记录导入成功', {
         recordId: record.id,
