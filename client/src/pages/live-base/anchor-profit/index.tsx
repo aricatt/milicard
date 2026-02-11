@@ -159,13 +159,15 @@ const AnchorProfitPage: React.FC = () => {
     try {
       const result = await request(`/api/v1/bases/${currentBase.id}/personnel`, {
         method: 'GET',
+        params: {
+          pageSize: 1000, // 获取所有主播，避免下拉框只显示10个
+          role: 'ANCHOR', // 只获取主播
+        },
       });
 
       if (result.success && result.data) {
-        // 只保留主播
-        setPersonnelOptions(
-          result.data.filter((p: PersonnelOption) => p.role === 'ANCHOR')
-        );
+        // 数据已经在后端过滤为主播，直接使用
+        setPersonnelOptions(result.data);
       }
     } catch (error) {
       console.error('加载人员列表失败:', error);
