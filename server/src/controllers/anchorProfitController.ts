@@ -16,7 +16,7 @@ export class AnchorProfitController {
         });
       }
 
-      const { page, pageSize, handlerId, startDate, endDate } = req.query;
+      const { page, pageSize, handlerId, startDate, endDate, goodsName } = req.query;
 
       const result = await AnchorProfitService.getAnchorProfits(baseId, {
         page: page ? parseInt(page as string) : 1,
@@ -24,6 +24,7 @@ export class AnchorProfitController {
         handlerId: handlerId as string,
         startDate: startDate as string,
         endDate: endDate as string,
+        goodsName: goodsName as string,
       });
 
       res.json(result);

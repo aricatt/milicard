@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../utils/logger';
+import { buildGoodsSearchConditions } from '../utils/multilingualHelper';
 
 const prisma = new PrismaClient();
 
@@ -15,10 +16,11 @@ export class AnchorProfitService {
       handlerId?: string;
       startDate?: string;
       endDate?: string;
+      goodsName?: string;
     }
   ) {
     try {
-      const { page = 1, pageSize = 20, handlerId, startDate, endDate } = params;
+      const { page = 1, pageSize = 20, handlerId, startDate, endDate, goodsName } = params;
       const skip = (page - 1) * pageSize;
 
       // 获取该基地的所有直播间ID
@@ -50,6 +52,22 @@ export class AnchorProfitService {
           where.profitDate.lte = new Date(endDate);
         }
       }
+
+      // 添加商品名过滤
+      if (goodsName) {
+        where.consumption = {
+          goods: {
+            OR: buildGoodsSearchConditions(goodsName, false),
+          },
+        };
+        logger.info('商品名过滤条件', {
+          goodsName,
+          searchConditions: buildGoodsSearchConditions(goodsName, false),
+          whereConsumption: where.consumption,
+        });
+      }
+
+      logger.info('最终查询条件', { where: JSON.stringify(where, null, 2) });
 
       // 查询数据
       const [records, total] = await Promise.all([
@@ -203,6 +221,7 @@ export class AnchorProfitService {
           consumptionId: record.consumptionId,
           handlerId: record.consumption?.handler?.id || '',
           handlerName: record.consumption?.handler?.name || '未关联',
+          goodsName: record.consumption?.goods?.name || '', // 添加顶层商品名字段，用于查询
           gmvAmount: Number(record.gmvAmount),
           refundAmount: Number(record.refundAmount),
           cancelOrderAmount: Number(record.cancelOrderAmount),
