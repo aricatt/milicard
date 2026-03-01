@@ -41,11 +41,14 @@ export class AnchorProfitService {
         locationId: { in: locationIds },
       };
 
-      if (startDate && endDate) {
-        where.profitDate = {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        };
+      if (startDate || endDate) {
+        where.profitDate = {};
+        if (startDate) {
+          where.profitDate.gte = new Date(startDate);
+        }
+        if (endDate) {
+          where.profitDate.lte = new Date(endDate);
+        }
       }
 
       // 查询数据

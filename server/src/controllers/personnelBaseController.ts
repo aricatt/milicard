@@ -155,6 +155,14 @@ export class PersonnelBaseController {
         });
       }
 
+      // 捕获关联数据错误
+      if (error instanceof Error && error.message.includes('已被其他数据关联使用')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
+
       res.status(500).json({
         success: false,
         message: '服务器内部错误',

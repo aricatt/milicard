@@ -88,8 +88,16 @@ export const getColumns = ({ onEdit, onDelete, intl, showInCNY = false, exchange
     dataIndex: 'consumptionDate',
     key: 'consumptionDate',
     width: 100,
-    valueType: 'date',
+    valueType: 'dateRange',
     render: (_, record) => dayjs(record.consumptionDate).format('YYYY-MM-DD'),
+    search: {
+      transform: (value) => {
+        return {
+          startDate: value[0],
+          endDate: value[1],
+        };
+      },
+    },
   },
   // 2. 主播（支持查询）
   {

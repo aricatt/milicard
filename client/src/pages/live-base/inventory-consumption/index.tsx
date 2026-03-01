@@ -588,8 +588,8 @@ const ConsumptionManagement: React.FC = () => {
                 pageSize: params.pageSize,
                 goodsName: params.goodsName,
                 handlerId: params.handlerId,
-                startDate: params.consumptionDate?.[0],
-                endDate: params.consumptionDate?.[1],
+                startDate: params.startDate,
+                endDate: params.endDate,
                 latestStock: showLatestStock, // 最新剩余库存筛选
               },
             });

@@ -312,9 +312,19 @@ export class PersonnelBaseService {
         throw new Error('人员不存在或不属于该基地');
       }
 
-      await prisma.personnel.delete({
-        where: { id: personnelId },
-      });
+      try {
+        await prisma.personnel.delete({
+          where: { id: personnelId },
+        });
+      } catch (deleteError: any) {
+        // 捕获外键约束错误
+        if (deleteError.code === 'P2003' || deleteError.code === 'P2014') {
+          throw new Error(
+            `无法删除人员"${existingPersonnel.name}"，该人员已被其他数据关联使用（如消耗记录、利润记录等）。请先删除相关联的数据，或将人员设置为停用状态。`
+          );
+        }
+        throw deleteError;
+      }
 
       logger.info('删除人员成功', {
         service: 'milicard-api',

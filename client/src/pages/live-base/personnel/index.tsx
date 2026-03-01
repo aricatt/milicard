@@ -306,9 +306,11 @@ const PersonnelManagement: React.FC = () => {
       } else {
         message.error(result.message || '删除失败');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('删除人员失败:', error);
-      message.error('删除人员失败');
+      // 提取后端返回的具体错误信息
+      const errorMessage = error?.data?.message || error?.message || '删除人员失败';
+      message.error(errorMessage);
     }
   };
 

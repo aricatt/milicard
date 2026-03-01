@@ -4,6 +4,7 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import type { AnchorProfitRecord } from './types';
 import type { IntlShape } from 'react-intl';
 import GoodsNameText, { getCategoryDisplayName } from '@/components/GoodsNameText';
+import dayjs from 'dayjs';
 
 export const getColumns = (
   onEdit: (record: AnchorProfitRecord) => void,
@@ -27,10 +28,19 @@ export const getColumns = (
   {
     title: intl?.formatMessage({ id: 'anchorProfit.column.date' }) || '日期',
     dataIndex: 'profitDate',
-    valueType: 'date',
+    valueType: 'dateRange',
     width: 110,
     sorter: true,
     fixed: 'left',
+    render: (_, record) => dayjs(record.profitDate).format('YYYY-MM-DD'),
+    search: {
+      transform: (value) => {
+        return {
+          startDate: value[0],
+          endDate: value[1],
+        };
+      },
+    },
   },
   {
     title: intl?.formatMessage({ id: 'anchorProfit.column.anchor' }) || '主播',
