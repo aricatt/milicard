@@ -234,6 +234,7 @@ export default {
   'consumption.column.consumptionBox': '消耗/箱',
   'consumption.column.inventoryValue': '库存货值',
   'consumption.import.title': '导入消耗记录',
+  'consumption.filter.latestStock': '最新剩余库存',
 
   // ==================== 主播利润 ====================
   'anchorProfit.title': '主播利润',

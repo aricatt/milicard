@@ -229,6 +229,7 @@ export default {
   'consumption.column.consumptionBox': 'การใช้/กล่อง',
   'consumption.column.inventoryValue': 'มูลค่าสินค้าคงเหลือ',
   'consumption.import.title': 'นำเข้าข้อมูลการใช้',
+  'consumption.filter.latestStock': 'สต็อกคงเหลือล่าสุด',
 
   // ==================== กำไรสตรีมเมอร์ ====================
   'anchorProfit.title': 'กำไรสตรีมเมอร์',
@@ -991,7 +992,6 @@ export default {
   'products.form.imageUrlPlaceholder': 'กรอก URL รูปภาพสินค้า (ไม่บังคับ)',
   'products.form.notesPlaceholder': 'กรอกหมายเหตุ',
   'products.form.status': 'สถานะ',
-  'products.form.purchasePrice': 'ราคาอนุญาต (หนึ่งแพ็ค)',
   'products.form.purchasePricePlaceholder': 'ราคาอนุญาต (หนึ่งแพ็ค)',
   'products.form.purchasePriceMin': 'ราคาอนุญาตต้องไม่เป็นลบ',
   'products.unit.pack': 'แพ็ค',

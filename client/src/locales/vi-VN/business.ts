@@ -229,6 +229,7 @@ export default {
   'consumption.column.consumptionBox': 'Tiêu thụ/Thùng',
   'consumption.column.inventoryValue': 'Giá trị tồn kho',
   'consumption.import.title': 'Nhập dữ liệu tiêu thụ',
+  'consumption.filter.latestStock': 'Tồn kho còn lại mới nhất',
 
   // ==================== Lợi nhuận streamer ====================
   'anchorProfit.title': 'Lợi nhuận Streamer',

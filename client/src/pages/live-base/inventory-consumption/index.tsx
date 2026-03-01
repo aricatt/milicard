@@ -644,7 +644,7 @@ const ConsumptionManagement: React.FC = () => {
                 actionRef.current?.reload();
               }}
             >
-              最新剩余库存
+              {intl.formatMessage({ id: 'consumption.filter.latestStock' })}
             </Button>,
             ...dom,
           ],

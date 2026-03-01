@@ -234,6 +234,7 @@ export default {
   'consumption.column.consumptionBox': 'Consumed/Box',
   'consumption.column.inventoryValue': 'Inventory Value',
   'consumption.import.title': 'Import Consumption',
+  'consumption.filter.latestStock': 'Latest Remaining Stock',
 
   // ==================== Anchor Profit ====================
   'anchorProfit.title': 'Streamer Profit',
